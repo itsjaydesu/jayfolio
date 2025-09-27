@@ -51,6 +51,22 @@ a {
   min-height: 100vh;
 }
 
+.transition-curtain {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at 20% 20%, rgba(6, 18, 24, 0.85), rgba(2, 8, 12, 0.92));
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.48s cubic-bezier(0.33, 1, 0.68, 1);
+  z-index: 13;
+  backdrop-filter: blur(10px);
+  will-change: opacity;
+}
+
+.transition-curtain.is-visible {
+  opacity: 1;
+}
+
 .menu-overlay {
   position: fixed;
   inset: 0;
@@ -84,7 +100,8 @@ a {
   padding: var(--stage-pad-top) var(--stage-pad-x) var(--stage-pad-bottom);
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.52s ease;
+  transition: opacity 0.42s cubic-bezier(0.33, 1, 0.68, 1);
+  will-change: opacity;
   z-index: 15;
 }
 
@@ -93,17 +110,28 @@ a {
   pointer-events: auto;
 }
 
+.content-stage.is-fading-in {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.content-stage.is-fading-out {
+  opacity: 0;
+  pointer-events: none;
+}
+
 .content-stage__backdrop {
   position: fixed;
   inset: 0;
   border: 0;
   background: rgba(2, 10, 12, 0.82);
   cursor: pointer;
-  transition: opacity 0.4s ease;
+  transition: opacity 0.48s cubic-bezier(0.33, 1, 0.68, 1);
   opacity: 0;
 }
 
-.content-stage.is-active .content-stage__backdrop {
+.content-stage.is-active .content-stage__backdrop,
+.content-stage.is-fading-in .content-stage__backdrop {
   opacity: 1;
 }
 
@@ -129,13 +157,24 @@ a {
   transform: translateY(28px) scale(0.96);
   opacity: 0;
   transition:
-    transform 0.6s cubic-bezier(0.16, 0.84, 0.44, 1),
-    opacity 0.6s ease;
+    transform 0.5s cubic-bezier(0.33, 1, 0.68, 1),
+    opacity 0.44s cubic-bezier(0.33, 1, 0.68, 1);
+  will-change: transform, opacity;
 }
 
 .content-stage.is-active .content-stage__panel {
   transform: translateY(0) scale(1);
   opacity: 1;
+}
+
+.content-stage.is-fading-in .content-stage__panel {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+
+.content-stage.is-fading-out .content-stage__panel {
+  transform: translateY(10px) scale(0.98);
+  opacity: 0;
 }
 
 .content-stage__menu {
@@ -431,16 +470,27 @@ a {
   min-height: 100vh;
   padding: clamp(3rem, 10vw, 5rem) clamp(2.4rem, 7vw, 5.4rem);
   backdrop-filter: blur(22px);
-  background: rgba(4, 8, 10, 0.88);
+  background: rgba(3, 9, 12, 0.95);
   overflow-y: auto;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.45s ease;
+  transition: opacity 0.48s cubic-bezier(0.33, 1, 0.68, 1);
+  will-change: opacity;
 }
 
 .detail-stage.is-visible {
   opacity: 1;
   pointer-events: auto;
+}
+
+.detail-stage.is-fading-in {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.detail-stage.is-fading-out {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .admin-stage {
