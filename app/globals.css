@@ -1620,6 +1620,18 @@ a {
   }
 }
 
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .site-shell {
   position: relative;
   z-index: 1;
@@ -1641,11 +1653,21 @@ a {
 }
 
 .site-shell__header {
+  position: sticky;
+  top: clamp(1.5rem, 4vh, 2.5rem);
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: clamp(1rem, 4vw, 2.5rem);
-  flex-wrap: wrap;
+  gap: clamp(1rem, 5vw, 3rem);
+  padding: clamp(0.8rem, 2vh, 1.1rem) clamp(1.2rem, 4vw, 2.4rem);
+  background: rgba(2, 6, 9, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 999px;
+  box-shadow:
+    0 16px 42px rgba(0, 0, 0, 0.42),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(18px);
+  z-index: 6;
 }
 
 
@@ -1685,9 +1707,9 @@ a {
   content: '';
   position: absolute;
   left: 0;
-  bottom: -0.35rem;
+  bottom: -0.45rem;
   width: 100%;
-  height: 1px;
+  height: 2px;
   background: currentColor;
   transform-origin: left center;
   transform: scaleX(0);
@@ -1706,7 +1728,7 @@ a {
 }
 
 .site-shell__nav-link.is-active {
-  color: var(--text-primary);
+  color: rgba(230, 244, 250, 0.92);
 }
 
 
@@ -1726,62 +1748,30 @@ a {
   color: rgba(236, 252, 255, 0.95);
 }
 
-.site-shell__status {
-  display: grid;
-  gap: 0.6rem;
-  max-width: 620px;
-}
-
-.site-shell__status-label {
-  margin: 0;
-  font-size: 0.7rem;
-  letter-spacing: 0.32em;
-  text-transform: uppercase;
-  color: rgba(192, 234, 244, 0.75);
-}
-
-.site-shell__status-description {
-  margin: 0;
-  line-height: 1.8;
-  font-size: 1rem;
-  color: rgba(226, 238, 242, 0.82);
-}
-
-.site-shell__status-mode {
-  width: fit-content;
-  padding: 0.25rem 0.9rem;
-  border-radius: 999px;
-  font-size: 0.64rem;
-  letter-spacing: 0.32em;
-  text-transform: uppercase;
-  background: rgba(138, 248, 255, 0.15);
-  color: rgba(172, 248, 255, 0.92);
-}
-
-.site-shell__status-mode.status-idle {
-  background: rgba(138, 248, 255, 0.12);
-  color: rgba(150, 236, 244, 0.82);
-}
-
-.site-shell__status-mode.status-preview {
-  background: rgba(255, 196, 118, 0.18);
-  color: rgba(255, 228, 194, 0.92);
-}
-
-.site-shell__status-mode.status-active {
-  background: rgba(132, 212, 255, 0.25);
-  color: rgba(232, 248, 255, 0.94);
-}
-
 .site-shell__main {
-  width: 100%;
-  margin: 0;
+  width: min(1180px, 100%);
+  margin: 0 auto;
   display: grid;
   gap: clamp(2.2rem, 6vw, 3.4rem);
 }
 
 .site-shell__main.is-detail {
   max-width: 880px;
+}
+
+.site-shell__transition {
+  animation: site-shell-fade 0.55s cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+@keyframes site-shell-fade {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .channel {

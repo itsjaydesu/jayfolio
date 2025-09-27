@@ -106,6 +106,7 @@ export default function SiteShell({ children }) {
   }
 
   const activeSectionForCanvas = activeSection ?? 'about';
+  const showCanvas = !isDetailView;
 
   if (isHome) {
     return (
@@ -130,7 +131,7 @@ export default function SiteShell({ children }) {
 
   return (
     <>
-      <SceneCanvas activeSection={activeSectionForCanvas} isPaused={false} />
+      {showCanvas ? <SceneCanvas activeSection={activeSectionForCanvas} isPaused={false} /> : null}
       <div className={`site-shell${isDetailView ? ' site-shell--detail' : ''}`}>
         <div className="site-shell__container">
           <header className="site-shell__header">
@@ -144,6 +145,7 @@ export default function SiteShell({ children }) {
                   <Link
                     key={item.id}
                     href={item.href}
+                    prefetch
                     className={`site-shell__nav-link${isActive ? ' is-active' : ''}`}
                     aria-current={isActive ? 'page' : undefined}
                     onMouseEnter={() => handlePreview(item, isActive)}
@@ -165,12 +167,15 @@ export default function SiteShell({ children }) {
               @itsjaydesu
             </Link>
           </header>
-          <section className="site-shell__status" aria-live="polite">
-            <p className="site-shell__status-label">{status.title}</p>
-            <p className="site-shell__status-description">{status.description}</p>
-            <span className={`site-shell__status-mode status-${status.mode}`}>{status.mode}</span>
-          </section>
-          <main className={`site-shell__main${isDetailView ? ' is-detail' : ''}`}>{children}</main>
+          <p className="sr-only" aria-live="polite">
+            {status.title}: {status.description}
+          </p>
+          <main
+            key={pathname}
+            className={`site-shell__main site-shell__transition${isDetailView ? ' is-detail' : ''}`}
+          >
+            {children}
+          </main>
         </div>
       </div>
     </>
