@@ -134,39 +134,41 @@ export default function SiteShell({ children }) {
       {showCanvas ? <SceneCanvas activeSection={activeSectionForCanvas} isPaused={false} /> : null}
       <div className={`site-shell${isDetailView ? ' site-shell--detail' : ''}`}>
         <div className="site-shell__container">
-          <header className="site-shell__header">
-            <Link href="/" className="site-shell__brand">
-              Jay Winder
-            </Link>
-            <nav className="site-shell__nav" aria-label="Primary navigation">
-              {MENU_ITEMS.map((item) => {
-                const isActive = item.id === activeSection;
-                return (
-                  <Link
-                    key={item.id}
-                    href={item.href}
-                    prefetch
-                    className={`site-shell__nav-link${isActive ? ' is-active' : ''}`}
-                    aria-current={isActive ? 'page' : undefined}
-                    onMouseEnter={() => handlePreview(item, isActive)}
-                    onMouseLeave={handleReset}
-                    onFocus={() => handlePreview(item, isActive)}
-                    onBlur={handleReset}
-                  >
-                    {item.label}
-                  </Link>
-                );
-              })}
-            </nav>
-            <Link
-              href="https://x.com/itsjaydesu"
-              className="site-shell__social"
-              target="_blank"
-              rel="noreferrer noopener"
-            >
-              @itsjaydesu
-            </Link>
-          </header>
+          {!isDetailView ? (
+            <header className="site-shell__header">
+              <Link href="/" className="site-shell__brand">
+                Jay Winder
+              </Link>
+              <nav className="site-shell__nav" aria-label="Primary navigation">
+                {MENU_ITEMS.map((item) => {
+                  const isActive = item.id === activeSection;
+                  return (
+                    <Link
+                      key={item.id}
+                      href={item.href}
+                      prefetch
+                      className={`site-shell__nav-link${isActive ? ' is-active' : ''}`}
+                      aria-current={isActive ? 'page' : undefined}
+                      onMouseEnter={() => handlePreview(item, isActive)}
+                      onMouseLeave={handleReset}
+                      onFocus={() => handlePreview(item, isActive)}
+                      onBlur={handleReset}
+                    >
+                      {item.label}
+                    </Link>
+                  );
+                })}
+              </nav>
+              <Link
+                href="https://x.com/itsjaydesu"
+                className="site-shell__social"
+                target="_blank"
+                rel="noreferrer noopener"
+              >
+                @itsjaydesu
+              </Link>
+            </header>
+          ) : null}
           <p className="sr-only" aria-live="polite">
             {status.title}: {status.description}
           </p>
