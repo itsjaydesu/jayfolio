@@ -1,24 +1,42 @@
-export default function SoundsPage() {
+import Link from 'next/link';
+import { readEntries } from '../../lib/contentStore';
+import { formatDisplayDate } from '../../lib/formatters';
+
+export const dynamic = 'force-dynamic';
+
+export default async function SoundsPage() {
+  const entries = await readEntries('sounds');
+
   return (
-    <>
-      <span className="badge">Audio Vault</span>
-      <h2>Sound Experiments</h2>
-      <p>
-        This panel will eventually host streaming embeds, liner notes, or patch diagrams for each sonic experiment. For
-        now we outline the vibe so you can drop in assets later.
-      </p>
-      <ul>
-        <li>Chromatic Drones — looping textures tuned for night sessions and focus rituals.</li>
-        <li>Pulse Sketches — percussive prototypes enabling live manipulation during performances.</li>
-        <li>Archive Reworks — archival stems reshaped into ambient suites for immersive rooms.</li>
-      </ul>
-      <section>
-        <h3>Release Strategy</h3>
+    <div className="section-screen">
+      <header className="section-screen__header">
+        <span className="badge">Audio Vault</span>
+        <h2>Sound Experiments</h2>
         <p>
-          Plan for platform drops, licensing notes, or merch pairings. When the files are ready, embed players or
-          scheduling widgets so visitors can listen without leaving the field.
+          Loops, drone suites, and live performance sketches. Dive into each archive entry to access liner notes and
+          embedded media players.
         </p>
-      </section>
-    </>
+      </header>
+
+      {entries.length === 0 ? (
+        <p className="section-empty">No sound entries yet. Upload one via the admin console.</p>
+      ) : (
+        <div className="entry-grid">
+          {entries.map((entry) => (
+            <article key={entry.slug} className="entry-card">
+              <div className="entry-card__meta">
+                {entry.createdAt && <span>{formatDisplayDate(entry.createdAt)}</span>}
+                {entry.tags?.length ? <span>{entry.tags.join(' • ')}</span> : null}
+              </div>
+              <h3>{entry.title}</h3>
+              {entry.summary && <p>{entry.summary}</p>}
+              <Link href={`/sounds/${entry.slug}`} className="entry-card__link">
+                Open Archive
+              </Link>
+            </article>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

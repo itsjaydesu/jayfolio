@@ -1,0 +1,28 @@
+{
+  "entries": [
+    {
+      "slug": "signal-grid",
+      "title": "Signal Grid",
+      "summary": "Immersive wavefield performance system linking choreography and reactive light.",
+      "content": "<p>Signal Grid is a modular performance instrument that syncs a WebGL wavefield with motion-tracked choreography. The piece toured through late-night galleries and residencies, adapting its tempo to the crowd.</p><p>The system couples custom MIDI routing with depth sensors to adjust amplitude sweeps, colour palettes, and ripple harmonics in real time.</p>",
+      "tags": ["installation", "performance"],
+      "createdAt": "2024-02-18"
+    },
+    {
+      "slug": "resonant-atlas",
+      "title": "Resonant Atlas",
+      "summary": "Browser-based instrument collaging field recordings with gestural synthesis.",
+      "content": "<p>Resonant Atlas invites visitors to blend captured ambisonic recordings with live synthesis. The UI tilts and warps the dotfield to reflect the current mix while exporting stems for further scoring.</p><p>The build includes patch diagrams, artist commentary, and tactile presets for installation use.</p>",
+      "tags": ["web", "audio"],
+      "createdAt": "2023-11-02"
+    },
+    {
+      "slug": "signal-bloom",
+      "title": "Signal Bloom",
+      "summary": "Light sculpture driven by bio-signal data and ambient pulse loops.",
+      "content": "<p>Signal Bloom pairs bio-signal sensors with a luminous canopy. Visitors trigger ripples that travel through the canopy while harmonising audio loops in spatial audio.</p><p>Documentation includes build process photos, sensor schematics, and audio impressions captured on-site.</p>",
+      "tags": ["light", "bio-signal"],
+      "createdAt": "2023-05-29"
+    }
+  ]
+}

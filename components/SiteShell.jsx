@@ -58,9 +58,19 @@ export default function SiteShell({ children }) {
   const pathname = usePathname();
   const router = useRouter();
 
-  const activeItem = useMemo(() => MENU_ITEMS.find((item) => item.href === pathname), [pathname]);
+  const pathSegments = useMemo(() => pathname?.split('/').filter(Boolean) ?? [], [pathname]);
+  const primarySegment = pathSegments[0] ?? null;
+  const activeItem = useMemo(
+    () => MENU_ITEMS.find((item) => item.id === primarySegment) ?? null,
+    [primarySegment]
+  );
   const activeSection = activeItem?.id ?? null;
-  const isContentActive = Boolean(activeItem);
+  const isDetailView = useMemo(
+    () => pathSegments.length > 1 && Boolean(activeItem) && activeItem.id !== 'about',
+    [activeItem, pathSegments]
+  );
+  const isAdminView = primarySegment === 'admin';
+  const isContentActive = Boolean(activeItem) && !isDetailView;
 
   const activeStatus = useMemo(
     () => (activeItem ? { ...activeItem.status, mode: 'active' } : DEFAULT_STATUS),
@@ -74,7 +84,9 @@ export default function SiteShell({ children }) {
   }, [activeStatus]);
 
   const canvasSection = activeSection ?? 'about';
-  const showOverlay = !isContentActive;
+  const isStandaloneView = isDetailView || isAdminView;
+  const showOverlay = !isContentActive && !isStandaloneView;
+  const shouldRenderCanvas = !isStandaloneView;
 
   const handleStatusChange = useCallback((next) => {
     setStatus(next);
@@ -99,7 +111,7 @@ export default function SiteShell({ children }) {
 
   return (
     <>
-      <SceneCanvas activeSection={canvasSection} isPaused={isContentActive} />
+      {shouldRenderCanvas && <SceneCanvas activeSection={canvasSection} isPaused={isContentActive} />}
       <div className="site-frame">
         <div className={`menu-overlay${showOverlay ? ' is-visible' : ''}`} aria-hidden={!showOverlay}>
           <RetroMenu
@@ -115,38 +127,50 @@ export default function SiteShell({ children }) {
           />
         </div>
 
-        <div className={`content-stage${isContentActive ? ' is-active' : ''}`}>
-          <button
-            type="button"
-            className="content-stage__backdrop"
-            aria-hidden={!isContentActive}
-            tabIndex={-1}
-            onClick={handleBackdropDismiss}
-          />
-          <section className="content-stage__panel" role="region" aria-live="polite">
-            <nav className="content-stage__menu" aria-label="Section navigation">
-              <button type="button" className="content-stage__menu-home" onClick={() => router.push('/')}>Menu</button>
-              <ul className="content-stage__menu-list">
-                {MENU_ITEMS.map((item) => {
-                  const isActive = item.href === pathname;
-                  return (
-                    <li key={item.id}>
-                      <button
-                        type="button"
-                        onClick={() => handleNestedNavigate(item.href)}
-                        className={`content-stage__menu-item${isActive ? ' is-active' : ''}`}
-                        aria-current={isActive ? 'page' : undefined}
-                      >
-                        {item.label}
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
-            </nav>
-            <article className="content-stage__body">{children}</article>
-          </section>
-        </div>
+        {!isStandaloneView ? (
+          <div className={`content-stage${isContentActive ? ' is-active' : ''}`}>
+            <button
+              type="button"
+              className="content-stage__backdrop"
+              aria-hidden={!isContentActive}
+              tabIndex={-1}
+              onClick={handleBackdropDismiss}
+            />
+            <section className="content-stage__panel" role="region" aria-live="polite">
+              <nav className="content-stage__menu" aria-label="Section navigation">
+                <button type="button" className="content-stage__menu-home" onClick={() => router.push('/')}>Menu</button>
+                <ul className="content-stage__menu-list">
+                  {MENU_ITEMS.map((item) => {
+                    const isActive = item.href === `/${primarySegment ?? ''}`;
+                    return (
+                      <li key={item.id}>
+                        <button
+                          type="button"
+                          onClick={() => handleNestedNavigate(item.href)}
+                          className={`content-stage__menu-item${isActive ? ' is-active' : ''}`}
+                          aria-current={isActive ? 'page' : undefined}
+                        >
+                          {item.label}
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </nav>
+              <article className="content-stage__body">{children}</article>
+            </section>
+          </div>
+        ) : (
+          isAdminView ? (
+            <div className="admin-stage" role="region" aria-live="polite">
+              {children}
+            </div>
+          ) : (
+            <div className="detail-stage" role="region" aria-live="polite">
+              {children}
+            </div>
+          )
+        )}
       </div>
     </>
   );

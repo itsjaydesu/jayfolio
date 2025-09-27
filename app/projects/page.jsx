@@ -1,24 +1,42 @@
-export default function ProjectsPage() {
+import Link from 'next/link';
+import { readEntries } from '../../lib/contentStore';
+import { formatDisplayDate } from '../../lib/formatters';
+
+export const dynamic = 'force-dynamic';
+
+export default async function ProjectsPage() {
+  const entries = await readEntries('projects');
+
   return (
-    <>
-      <span className="badge">Project Feed</span>
-      <h2>Selected Builds</h2>
-      <p>
-        Each entry here can expand into imagery, credits, and the interactive story behind the work. For now we stage a
-        trio of placeholders outlining the tone, collaborators, and medium.
-      </p>
-      <ul>
-        <li>Project Alpha — immersive WebGL wavefield powering a launch event, adaptive to live tempo shifts.</li>
-        <li>Signal Bloom — modular installation linking light pillars to sensor-driven melodic gestures.</li>
-        <li>Resonant Atlas — browser-based instrument that orchestrates field recordings with gestural input.</li>
-      </ul>
-      <section>
-        <h3>Next In Queue</h3>
+    <div className="section-screen">
+      <header className="section-screen__header">
+        <span className="badge">Project Feed</span>
+        <h2>Selected Builds</h2>
         <p>
-          Queue descriptions for works-in-progress: prototypes for spatial browsers, collaborative instruments, or
-          real-time typography experiments. Use this slot for teasers or calls for collaborators.
+          Explore interactive commissions, touring installations, and responsive tooling. Choose any dossier to open a
+          full-screen breakdown with media, credits, and embedded documentation.
         </p>
-      </section>
-    </>
+      </header>
+
+      {entries.length === 0 ? (
+        <p className="section-empty">No project entries yet. Add one from the admin console.</p>
+      ) : (
+        <div className="entry-grid">
+          {entries.map((entry) => (
+            <article key={entry.slug} className="entry-card">
+              <div className="entry-card__meta">
+                {entry.createdAt && <span>{formatDisplayDate(entry.createdAt)}</span>}
+                {entry.tags?.length ? <span>{entry.tags.join(' • ')}</span> : null}
+              </div>
+              <h3>{entry.title}</h3>
+              {entry.summary && <p>{entry.summary}</p>}
+              <Link href={`/projects/${entry.slug}`} className="entry-card__link">
+                View Project
+              </Link>
+            </article>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

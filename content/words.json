@@ -1,0 +1,28 @@
+{
+  "entries": [
+    {
+      "slug": "slow-scan-memo",
+      "title": "Memo on Slow-Scan Interfaces",
+      "summary": "A design note on pacing audiovisual systems for meditative interaction.",
+      "content": "<p>This essay explores how slow-scan aesthetics reshape attention. It documents the heuristics used to decide when the dotfield exhales, when the GUI breathes, and why latency can read as care.</p><p>Includes annotated prototypes, chroma studies, and references to cinematic inspirations.</p>",
+      "tags": ["design", "process"],
+      "createdAt": "2024-03-12"
+    },
+    {
+      "slug": "field-lexicon",
+      "title": "Field Lexicon",
+      "summary": "Working glossary for collaborators exploring the dotfield ecosystem.",
+      "content": "<p>An evolving document aligning collaborators on our shared vocabulary: from signal blooms to resonance sweeps. Each term links to captured clips and notes on use in rehearsal.</p>",
+      "tags": ["glossary"],
+      "createdAt": "2024-01-04"
+    },
+    {
+      "slug": "dispatch-09",
+      "title": "Dispatch 09: Resonance Study",
+      "summary": "Monthly signal report highlighting new research notes and studio sketches.",
+      "content": "<p>Notes from the latest studio session with wavefield modifiers, audio sketches captured in binaural, and work-in-progress cues for upcoming installations.</p>",
+      "tags": ["dispatch"],
+      "createdAt": "2023-12-21"
+    }
+  ]
+}

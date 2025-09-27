@@ -1,24 +1,42 @@
-export default function WordsPage() {
+import Link from 'next/link';
+import { readEntries } from '../../lib/contentStore';
+import { formatDisplayDate } from '../../lib/formatters';
+
+export const dynamic = 'force-dynamic';
+
+export default async function WordsPage() {
+  const entries = await readEntries('words');
+
   return (
-    <>
-      <span className="badge">Editorial Log</span>
-      <h2>Words & Essays</h2>
-      <p>
-        Drop previews for essays, manifestos, and process breakdowns here. The copy can link out to long-form writing or
-        tease unpublished drafts queued for release.
-      </p>
-      <ul>
-        <li>Notebook 07 — reflections on designing for glacial tempo and slow-scan motion.</li>
-        <li>Field Guide — glossary of studio phrases decoded for new collaborators.</li>
-        <li>Dispatch Waves — monthly signal check-in mixing research notes with sonic tests.</li>
-      </ul>
-      <section>
-        <h3>Publishing Rhythm</h3>
+    <div className="section-screen">
+      <header className="section-screen__header">
+        <span className="badge">Editorial Log</span>
+        <h2>Words & Essays</h2>
         <p>
-          Outline cadence, cross-posting habits, or newsletter rituals. Add placeholders for subscription forms or
-          syndication links when the infrastructure is ready.
+          Essays, dispatches, and glossaries documenting the studio process. Open any log to read the full rich-text
+          entry with embedded media and references.
         </p>
-      </section>
-    </>
+      </header>
+
+      {entries.length === 0 ? (
+        <p className="section-empty">No editorial entries yet. Draft one in the admin console.</p>
+      ) : (
+        <div className="entry-grid">
+          {entries.map((entry) => (
+            <article key={entry.slug} className="entry-card">
+              <div className="entry-card__meta">
+                {entry.createdAt && <span>{formatDisplayDate(entry.createdAt)}</span>}
+                {entry.tags?.length ? <span>{entry.tags.join(' • ')}</span> : null}
+              </div>
+              <h3>{entry.title}</h3>
+              {entry.summary && <p>{entry.summary}</p>}
+              <Link href={`/words/${entry.slug}`} className="entry-card__link">
+                Read Entry
+              </Link>
+            </article>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

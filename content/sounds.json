@@ -1,0 +1,28 @@
+{
+  "entries": [
+    {
+      "slug": "chromatic-drones",
+      "title": "Chromatic Drones",
+      "summary": "Looping nocturnal textures tuned for deep focus rituals.",
+      "content": "<p>An evolving suite of drones recorded with analogue synth layers and feedback delay networks. Includes session notes, tuning charts, and an embedded player once assets are uploaded.</p>",
+      "tags": ["ambient", "loops"],
+      "createdAt": "2024-02-02"
+    },
+    {
+      "slug": "pulse-sketches",
+      "title": "Pulse Sketches",
+      "summary": "Percussive prototypes for live manipulation on performance floors.",
+      "content": "<p>Modular rhythms assembled in Hydra and Ableton Link. The collection pairs notated diagrams with audio stems for remixing.</p>",
+      "tags": ["percussion"],
+      "createdAt": "2023-10-15"
+    },
+    {
+      "slug": "archive-reworks",
+      "title": "Archive Reworks",
+      "summary": "Ambient suites conjured from found stems and field recordings.",
+      "content": "<p>Dissected stems from the project archive reassembled into long-form ambient suites. Pair with photo essays and patch notes for each iteration.</p>",
+      "tags": ["rework", "ambient"],
+      "createdAt": "2023-07-08"
+    }
+  ]
+}
