@@ -5,7 +5,8 @@ import { readEntry } from '../../../lib/contentStore';
 export const dynamic = 'force-dynamic';
 
 export default async function SoundDetailPage({ params }) {
-  const entry = await readEntry('sounds', params.slug);
+  const { slug } = await params;
+  const entry = await readEntry('sounds', slug);
   if (!entry) {
     notFound();
   }

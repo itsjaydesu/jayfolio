@@ -181,7 +181,9 @@ export default function SiteShell({ children }) {
     }
 
     if (!isDetailView) {
-      setShouldRenderPanel(true);
+      if (!shouldRenderPanel) {
+        setShouldRenderPanel(true);
+      }
       panelFrameRef.current = requestAnimationFrame(() => {
         setIsPanelVisible(isContentActive);
         panelFrameRef.current = null;

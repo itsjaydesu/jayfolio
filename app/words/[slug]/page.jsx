@@ -5,7 +5,8 @@ import { readEntry } from '../../../lib/contentStore';
 export const dynamic = 'force-dynamic';
 
 export default async function WordDetailPage({ params }) {
-  const entry = await readEntry('words', params.slug);
+  const { slug } = await params;
+  const entry = await readEntry('words', slug);
   if (!entry) {
     notFound();
   }

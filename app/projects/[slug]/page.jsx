@@ -5,7 +5,8 @@ import { readEntry } from '../../../lib/contentStore';
 export const dynamic = 'force-dynamic';
 
 export default async function ProjectDetailPage({ params }) {
-  const entry = await readEntry('projects', params.slug);
+  const { slug } = await params;
+  const entry = await readEntry('projects', slug);
   if (!entry) {
     notFound();
   }
