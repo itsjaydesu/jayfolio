@@ -21,21 +21,24 @@ export default async function ProjectsPage() {
       {entries.length === 0 ? (
         <p className="section-empty">No project entries yet. Add one from the admin console.</p>
       ) : (
-        <div className="entry-grid">
+        <ul className="entry-ledger">
           {entries.map((entry) => (
-            <article key={entry.slug} className="entry-card">
-              <div className="entry-card__meta">
-                {entry.createdAt && <span>{formatDisplayDate(entry.createdAt)}</span>}
-                {entry.tags?.length ? <span>{entry.tags.join(' • ')}</span> : null}
+            <li key={entry.slug} className="entry-ledger__item">
+              <div className="entry-ledger__marker" aria-hidden="true" />
+              <div className="entry-ledger__meta">
+                {entry.createdAt && <span className="entry-ledger__date">{formatDisplayDate(entry.createdAt)}</span>}
+                {entry.tags?.length ? <span className="entry-ledger__tags">{entry.tags.join(' • ')}</span> : null}
               </div>
-              <h3>{entry.title}</h3>
-              {entry.summary && <p>{entry.summary}</p>}
-              <Link href={`/projects/${entry.slug}`} className="entry-card__link">
+              <div className="entry-ledger__body">
+                <h3>{entry.title}</h3>
+                {entry.summary && <p>{entry.summary}</p>}
+              </div>
+              <Link href={`/projects/${entry.slug}`} className="entry-ledger__cta">
                 View Project
               </Link>
-            </article>
+            </li>
           ))}
-        </div>
+        </ul>
       )}
     </div>
   );
