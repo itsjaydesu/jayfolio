@@ -4,26 +4,44 @@ import { put } from '@vercel/blob';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25MB cap for now
+const MAX_FILE_SIZE = 25 * 1024 * 1024; // Keep in sync with the editor.
+const ALLOWED_MIME_PREFIXES = ['image/', 'video/', 'audio/'];
+const ALLOWED_MIME_TYPES = new Set([
+  'application/zip',
+  'application/pdf',
+  'application/json',
+  'text/plain',
+  'text/markdown'
+]);
+const ALLOWED_EXTENSIONS = ['.zip', '.pdf', '.txt', '.md', '.json'];
 
-function isAllowedFileType(type) {
-  if (!type) return true;
-  return (
-    type.startsWith('image/') ||
-    type.startsWith('video/') ||
-    type.startsWith('audio/') ||
-    type === 'application/zip' ||
-    type === 'application/pdf' ||
-    type === 'text/plain' ||
-    type === 'text/markdown' ||
-    type === 'application/json'
-  );
+function sanitizeFileName(name) {
+  if (!name || typeof name !== 'string') {
+    return 'upload';
+  }
+  const trimmed = name.trim().replace(/\\/g, '/');
+  const base = trimmed.substring(trimmed.lastIndexOf('/') + 1);
+  const cleaned = base.replace(/[^a-zA-Z0-9._()-]/g, '-');
+  return cleaned.length > 0 ? cleaned.slice(-128) : 'upload';
+}
+
+function isAllowedFile(file) {
+  const type = file?.type ?? '';
+  if (ALLOWED_MIME_PREFIXES.some((prefix) => type.startsWith(prefix))) {
+    return true;
+  }
+  if (ALLOWED_MIME_TYPES.has(type)) {
+    return true;
+  }
+  const name = (file?.name ?? '').toLowerCase();
+  return ALLOWED_EXTENSIONS.some((extension) => name.endsWith(extension));
 }
 
 export async function POST(request) {
   try {
     const formData = await request.formData();
     const file = formData.get('file');
+
     if (!file) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
@@ -32,17 +50,17 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Invalid file payload' }, { status: 400 });
     }
 
-    if (!isAllowedFileType(file.type)) {
-      return NextResponse.json({ error: 'Unsupported file type' }, { status: 415 });
-    }
-
     if (file.size > MAX_FILE_SIZE) {
       return NextResponse.json({ error: 'File too large' }, { status: 413 });
     }
 
-    const safeName = file.name || 'upload';
+    if (!isAllowedFile(file)) {
+      return NextResponse.json({ error: 'Unsupported file type' }, { status: 415 });
+    }
 
-    const blob = await put(safeName, file, {
+    const fileName = sanitizeFileName(file.name);
+
+    const blob = await put(fileName, file, {
       access: 'public',
       addRandomSuffix: true,
       cacheControl: 'public, max-age=31536000, immutable'
@@ -56,6 +74,6 @@ export async function POST(request) {
     });
   } catch (error) {
     console.error('[upload] error', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error.message || 'Upload failed' }, { status: 500 });
   }
 }

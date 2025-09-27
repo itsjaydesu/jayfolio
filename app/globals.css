@@ -103,13 +103,16 @@ a {
 }
 
 .content-stage__panel {
+  --panel-pad-y: clamp(1.8rem, 4vw, 3rem);
+  --panel-pad-x: clamp(2.2rem, 6vw, 4rem);
+  --panel-menu-offset: clamp(3.6rem, 10vw, 4.8rem);
   position: relative;
   width: min(960px, 92vw);
   max-height: min(80vh, 780px);
   display: flex;
   flex-direction: column;
   gap: clamp(1.5rem, 3vw, 2.4rem);
-  padding: clamp(1.8rem, 4vw, 3rem) clamp(2.2rem, 6vw, 4rem);
+  padding: calc(var(--panel-pad-y) + var(--panel-menu-offset)) var(--panel-pad-x) var(--panel-pad-y);
   background: linear-gradient(180deg, rgba(12, 12, 12, 0.9) 0%, rgba(4, 4, 4, 0.94) 100%);
   border: 1px solid rgba(200, 200, 200, 0.08);
   box-shadow:
@@ -131,12 +134,17 @@ a {
 }
 
 .content-stage__menu {
+  position: absolute;
+  top: var(--panel-pad-y);
+  left: var(--panel-pad-x);
+  right: var(--panel-pad-x);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: clamp(1rem, 2vw, 1.75rem);
   flex-wrap: wrap;
   flex: 0 0 auto;
+  z-index: 2;
 }
 
 .content-stage__menu-home {
@@ -412,11 +420,22 @@ a {
 }
 
 .detail-stage {
-  position: relative;
+  position: fixed;
+  inset: 0;
+  z-index: 18;
   min-height: 100vh;
   padding: clamp(3rem, 10vw, 5rem) clamp(2.4rem, 7vw, 5.4rem);
   backdrop-filter: blur(22px);
   background: rgba(4, 8, 10, 0.88);
+  overflow-y: auto;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.45s ease;
+}
+
+.detail-stage.is-visible {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .admin-stage {
@@ -992,7 +1011,10 @@ a {
 }
 
 .retro-menu--centerpiece {
-  position: relative;
+  position: absolute;
+  top: clamp(3.2rem, 14vh, 5.8rem);
+  left: 50%;
+  transform: translateX(-50%);
   width: min(420px, 94vw);
   border-radius: 28px;
   box-shadow:
@@ -1285,13 +1307,17 @@ a {
   }
 
   .retro-menu--centerpiece {
+    top: clamp(2.6rem, 16vh, 4.2rem);
     width: min(360px, 92vw);
   }
 
   .content-stage__panel {
+    --panel-pad-y: clamp(1.4rem, 6vw, 2.2rem);
+    --panel-pad-x: clamp(1.6rem, 7vw, 2.8rem);
+    --panel-menu-offset: clamp(3rem, 14vw, 4.2rem);
     width: min(92vw, 720px);
     max-height: 86vh;
-    padding: clamp(1.6rem, 6vw, 2.4rem) clamp(1.6rem, 7vw, 2.8rem);
+    padding: calc(var(--panel-pad-y) + var(--panel-menu-offset)) var(--panel-pad-x) var(--panel-pad-y);
   }
 
   .content-stage__menu-list {
@@ -1350,9 +1376,16 @@ a {
     overflow-y: auto;
   }
 
+  .retro-menu--centerpiece {
+    top: clamp(2rem, 18vw, 3.4rem);
+  }
+
   .content-stage__panel {
+    --panel-pad-y: clamp(1.2rem, 6vw, 1.8rem);
+    --panel-pad-x: clamp(1.2rem, 6vw, 2rem);
+    --panel-menu-offset: clamp(2.8rem, 20vw, 3.6rem);
     gap: clamp(1.2rem, 5vw, 1.6rem);
-    padding: clamp(1.4rem, 6vw, 2rem);
+    padding: calc(var(--panel-pad-y) + var(--panel-menu-offset)) var(--panel-pad-x) var(--panel-pad-y);
   }
 
   .content-stage__menu {

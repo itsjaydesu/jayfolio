@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import RetroMenu from './RetroMenu';
 import SceneCanvas from './SceneCanvas';
@@ -54,6 +54,8 @@ const DEFAULT_STATUS = {
   mode: 'idle'
 };
 
+const DETAIL_FADE_MS = 420;
+
 export default function SiteShell({ children }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -78,15 +80,76 @@ export default function SiteShell({ children }) {
   );
 
   const [status, setStatus] = useState(activeStatus);
+  const [detailNode, setDetailNode] = useState(isDetailView ? children : null);
+  const [isDetailVisible, setIsDetailVisible] = useState(isDetailView);
+  const detailHideTimeoutRef = useRef(null);
+  const detailFrameRef = useRef(null);
 
   useEffect(() => {
     setStatus(activeStatus);
   }, [activeStatus]);
 
+  useEffect(() => {
+    if (isDetailView) {
+      setDetailNode(children);
+    }
+  }, [children, isDetailView]);
+
+  useEffect(() => {
+    if (detailFrameRef.current) {
+      cancelAnimationFrame(detailFrameRef.current);
+      detailFrameRef.current = null;
+    }
+    if (detailHideTimeoutRef.current) {
+      clearTimeout(detailHideTimeoutRef.current);
+      detailHideTimeoutRef.current = null;
+    }
+
+    if (isDetailView) {
+      detailFrameRef.current = requestAnimationFrame(() => {
+        setIsDetailVisible(true);
+        detailFrameRef.current = null;
+      });
+      return () => {
+        if (detailFrameRef.current) {
+          cancelAnimationFrame(detailFrameRef.current);
+          detailFrameRef.current = null;
+        }
+      };
+    }
+
+    if (detailNode) {
+      setIsDetailVisible(false);
+      detailHideTimeoutRef.current = setTimeout(() => {
+        setDetailNode(null);
+        detailHideTimeoutRef.current = null;
+      }, DETAIL_FADE_MS);
+      return () => {
+        if (detailHideTimeoutRef.current) {
+          clearTimeout(detailHideTimeoutRef.current);
+          detailHideTimeoutRef.current = null;
+        }
+      };
+    }
+
+    setIsDetailVisible(false);
+    return undefined;
+  }, [detailNode, isDetailView]);
+
+  useEffect(() => () => {
+    if (detailFrameRef.current) {
+      cancelAnimationFrame(detailFrameRef.current);
+    }
+    if (detailHideTimeoutRef.current) {
+      clearTimeout(detailHideTimeoutRef.current);
+    }
+  }, []);
+
   const canvasSection = activeSection ?? 'about';
   const isStandaloneView = isDetailView || isAdminView;
   const showOverlay = !isContentActive && !isStandaloneView;
-  const shouldRenderCanvas = !isStandaloneView;
+  const shouldRenderCanvas = !isAdminView;
+  const isCanvasPaused = isContentActive || isDetailView;
 
   const handleStatusChange = useCallback((next) => {
     setStatus(next);
@@ -111,7 +174,7 @@ export default function SiteShell({ children }) {
 
   return (
     <>
-      {shouldRenderCanvas && <SceneCanvas activeSection={canvasSection} isPaused={isContentActive} />}
+      {shouldRenderCanvas && <SceneCanvas activeSection={canvasSection} isPaused={isCanvasPaused} />}
       <div className="site-frame">
         <div className={`menu-overlay${showOverlay ? ' is-visible' : ''}`} aria-hidden={!showOverlay}>
           <RetroMenu
@@ -127,7 +190,7 @@ export default function SiteShell({ children }) {
           />
         </div>
 
-        {!isStandaloneView ? (
+        {!isStandaloneView && (
           <div className={`content-stage${isContentActive ? ' is-active' : ''}`}>
             <button
               type="button"
@@ -160,16 +223,18 @@ export default function SiteShell({ children }) {
               <article className="content-stage__body">{children}</article>
             </section>
           </div>
-        ) : (
-          isAdminView ? (
-            <div className="admin-stage" role="region" aria-live="polite">
-              {children}
-            </div>
-          ) : (
-            <div className="detail-stage" role="region" aria-live="polite">
-              {children}
-            </div>
-          )
+        )}
+
+        {isStandaloneView && isAdminView && (
+          <div className="admin-stage" role="region" aria-live="polite">
+            {children}
+          </div>
+        )}
+
+        {detailNode && (
+          <div className={`detail-stage${isDetailVisible ? ' is-visible' : ''}`} role="region" aria-live="polite">
+            {detailNode}
+          </div>
         )}
       </div>
     </>
