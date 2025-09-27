@@ -1,7 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { FIELD_DEFAULT_BASE, FIELD_DEFAULT_INFLUENCES } from '../../lib/fieldDefaults';
+import RichTextEditor from '../../components/rich-text-editor';
 
 const TYPE_OPTIONS = [
   { id: 'projects', label: 'Projects' },
@@ -117,137 +118,6 @@ function buildInitialForm() {
     createdAt: today,
     content: INITIAL_CONTENT
   };
-}
-
-function ToolbarButton({ label, onClick, disabled }) {
-  return (
-    <button type="button" className="admin-toolbar__button" onClick={onClick} disabled={disabled}>
-      {label}
-    </button>
-  );
-}
-
-function RichTextEditor({ value, onChange }) {
-  const editorRef = useRef(null);
-  const fileInputRef = useRef(null);
-  const [isUploading, setIsUploading] = useState(false);
-
-  useEffect(() => {
-    const node = editorRef.current;
-    if (!node) return;
-    const incoming = value || INITIAL_CONTENT;
-    if (node.innerHTML !== incoming) {
-      node.innerHTML = incoming;
-    }
-  }, [value]);
-
-  const emitChange = useCallback(() => {
-    const node = editorRef.current;
-    if (!node) return;
-    onChange?.(node.innerHTML);
-  }, [onChange]);
-
-  const applyCommand = useCallback(
-    (command, argument = null) => {
-      document.execCommand(command, false, argument);
-      emitChange();
-    },
-    [emitChange]
-  );
-
-  const insertHTML = useCallback(
-    (html) => {
-      document.execCommand('insertHTML', false, html);
-      emitChange();
-    },
-    [emitChange]
-  );
-
-  const handleUploadClick = useCallback(() => {
-    fileInputRef.current?.click();
-  }, []);
-
-  const handleFileChange = useCallback(
-    async (event) => {
-      const file = event.target.files?.[0];
-      if (!file) return;
-      try {
-        setIsUploading(true);
-        const data = new FormData();
-        data.append('file', file);
-        const response = await fetch('/api/upload', {
-          method: 'POST',
-          body: data
-        });
-        const result = await response.json();
-        if (!response.ok) {
-          throw new Error(result?.error || 'Upload failed');
-        }
-        const url = result.url;
-        let html = '';
-        if (file.type.startsWith('image/')) {
-          html = `<figure class="detail-embed detail-embed--image"><img src="${url}" alt="${file.name}" /></figure>`;
-        } else if (file.type.startsWith('video/')) {
-          html = `<figure class="detail-embed detail-embed--video"><video controls src="${url}"></video></figure>`;
-        } else if (file.type.startsWith('audio/')) {
-          html = `<figure class="detail-embed detail-embed--audio"><audio controls src="${url}"></audio></figure>`;
-        } else {
-          html = `<p><a href="${url}" target="_blank" rel="noopener">${file.name}</a></p>`;
-        }
-        insertHTML(html);
-      } catch (error) {
-        console.error(error);
-        alert(error.message);
-      } finally {
-        setIsUploading(false);
-        event.target.value = '';
-      }
-    },
-    [insertHTML]
-  );
-
-  const handleInput = useCallback(() => {
-    emitChange();
-  }, [emitChange]);
-
-  const wrapCodeBlock = useCallback(() => {
-    const selection = window.getSelection();
-    const selected = selection?.toString();
-    if (selected) {
-      insertHTML(`<pre><code>${selected}</code></pre>`);
-    } else {
-      insertHTML('<pre><code>// code</code></pre>');
-    }
-  }, [insertHTML]);
-
-  return (
-    <div className="admin-editor">
-      <div className="admin-toolbar">
-        <ToolbarButton label="Bold" onClick={() => applyCommand('bold')} />
-        <ToolbarButton label="Italic" onClick={() => applyCommand('italic')} />
-        <ToolbarButton label="Heading" onClick={() => applyCommand('formatBlock', 'h2')} />
-        <ToolbarButton label="Quote" onClick={() => applyCommand('formatBlock', 'blockquote')} />
-        <ToolbarButton label="List" onClick={() => applyCommand('insertUnorderedList')} />
-        <ToolbarButton label="Code" onClick={wrapCodeBlock} />
-        <ToolbarButton label={isUploading ? 'Uploading…' : 'Upload'} onClick={handleUploadClick} disabled={isUploading} />
-        <input
-          ref={fileInputRef}
-          type="file"
-          className="admin-toolbar__file"
-          onChange={handleFileChange}
-          accept="image/*,video/*,audio/*,.zip,.pdf,.txt,.md,.json"
-        />
-      </div>
-      <div
-        ref={editorRef}
-        className="admin-editor__surface"
-        contentEditable
-        suppressContentEditableWarning
-        onInput={handleInput}
-        spellCheck={false}
-      />
-    </div>
-  );
 }
 
 export default function AdminPage() {
@@ -725,7 +595,11 @@ export default function AdminPage() {
 
               <div className="admin-field">
                 <label>Body</label>
-                <RichTextEditor value={form.content} onChange={(value) => handleFieldChange('content', value)} />
+                <RichTextEditor
+                  value={form.content}
+                  initialContent={INITIAL_CONTENT}
+                  onChange={(value) => handleFieldChange('content', value)}
+                />
               </div>
 
               <div className="admin-actions">
