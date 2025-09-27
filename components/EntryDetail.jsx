@@ -27,16 +27,23 @@ export default function EntryDetail({ type, entry }) {
       const stageRect = stageNode.getBoundingClientRect();
       const detailRect = detailNode?.getBoundingClientRect() ?? null;
 
+      const activeState = stateOverride ?? stageStateRef.current;
       console.log('[EntryDetail layout]', label, {
-        stageState: stateOverride ?? stageStateRef.current,
-        stageRect,
-        detailRect,
+        stageState: activeState,
+        stageClassList: stageNode.className,
+        stageLeft: stageRect?.left,
+        stageWidth: stageRect?.width,
+        detailLeft: detailRect?.left,
+        detailWidth: detailRect?.width,
+        viewportWidth: window.innerWidth,
         stageAlign: stageStyles?.alignItems,
         stageJustify: stageStyles?.justifyContent,
         detailMarginLeft: detailStyles?.marginLeft,
         detailMarginRight: detailStyles?.marginRight,
         detailTransform: detailStyles?.transform,
-        detailDisplay: detailStyles?.display
+        detailDisplay: detailStyles?.display,
+        scrollX: window.scrollX,
+        scrollY: window.scrollY
       });
     },
     []
