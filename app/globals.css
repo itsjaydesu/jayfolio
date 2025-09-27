@@ -1,0 +1,443 @@
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600&display=swap");
+
+:root {
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  background: radial-gradient(circle at 20% 20%, #171717, #050505 65%);
+  color: #ededed;
+  overflow: hidden;
+}
+
+body {
+  position: relative;
+}
+
+.scene-container {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.scene-container canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.ui-overlay {
+  position: fixed;
+  top: 2.25rem;
+  left: 2.25rem;
+  max-width: 22rem;
+  line-height: 1.6;
+  letter-spacing: 0.04em;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  pointer-events: none;
+  opacity: 0.78;
+  z-index: 9;
+}
+
+.ui-overlay h1 {
+  margin: 0 0 0.35rem;
+  font-size: 0.92rem;
+  letter-spacing: 0.2em;
+  font-weight: 600;
+  font-family: "IBM Plex Mono", "Lucida Console", "Courier New", monospace;
+}
+
+.ui-overlay p {
+  margin: 0;
+}
+
+.retro-menu {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: clamp(240px, 26vw, 340px);
+  border: 2px solid #05344c;
+  background: linear-gradient(180deg, rgba(0, 133, 134, 0.92) 0%, rgba(1, 60, 70, 0.86) 100%);
+  box-shadow:
+    0 0 0 1px rgba(1, 92, 112, 0.55),
+    12px 12px 0 rgba(0, 0, 0, 0.65);
+  color: #daf3f4;
+  font-family: "IBM Plex Mono", "Lucida Console", "Courier New", monospace;
+  letter-spacing: 0.04em;
+  z-index: 12;
+  overflow: hidden;
+  backdrop-filter: blur(3px);
+}
+
+.retro-menu__titlebar {
+  background: linear-gradient(90deg, #003a63 0%, #008bb2 55%, #00c8d0 100%);
+  color: #f4faff;
+  padding: 10px 16px 9px;
+  font-size: 0.84rem;
+  text-transform: uppercase;
+  font-weight: 600;
+  border-bottom: 2px solid rgba(6, 6, 6, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.retro-menu__titlebar span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.retro-menu__titlebar small {
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  opacity: 0.85;
+}
+
+.retro-menu__body {
+  padding: 0.6rem 0.85rem 0.75rem;
+}
+
+.retro-menu__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.retro-menu__item .retro-menu__button {
+  width: 100%;
+  border: 1px solid rgba(5, 52, 76, 0.65);
+  background: rgba(4, 74, 90, 0.85);
+  color: inherit;
+  font: inherit;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.74rem;
+  padding: 0.65rem 0.8rem;
+  cursor: pointer;
+  display: block;
+  text-decoration: none;
+  position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.retro-menu__item .retro-menu__button::before {
+  content: "";
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(212, 244, 255, 0.6);
+  box-shadow: 0 0 10px rgba(212, 244, 255, 0.8);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.retro-menu__item .retro-menu__button::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(233, 253, 255, 0.2);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.retro-menu__item .retro-menu__button:hover,
+.retro-menu__item .retro-menu__button:focus-visible {
+  transform: translateX(6px);
+  box-shadow: 0 0 0 1px rgba(212, 244, 255, 0.4);
+  outline: none;
+}
+
+.retro-menu__item .retro-menu__button:hover::after,
+.retro-menu__item .retro-menu__button:focus-visible::after,
+.retro-menu__item.is-active .retro-menu__button::after,
+.retro-menu__item.is-active .retro-menu__button::before {
+  opacity: 1;
+}
+
+.retro-menu__item.is-active .retro-menu__button {
+  transform: translateX(6px);
+  background: rgba(0, 116, 128, 0.92);
+  box-shadow:
+    0 0 0 1px rgba(212, 244, 255, 0.25),
+    0 10px 18px rgba(0, 0, 0, 0.45);
+}
+
+.retro-menu__item .retro-menu__button:active {
+  transform: translateX(4px) translateY(2px);
+}
+
+.retro-menu__status {
+  margin: 0;
+  padding: 0.75rem 1rem 1rem;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  background: rgba(0, 48, 60, 0.8);
+  border-top: 1px solid rgba(5, 52, 76, 0.75);
+  min-height: 88px;
+  display: grid;
+  gap: 0.3rem;
+}
+
+.retro-menu__status strong {
+  font-size: 0.74rem;
+  letter-spacing: 0.22em;
+  font-weight: 600;
+}
+
+.retro-menu__status em {
+  font-style: normal;
+  line-height: 1.5;
+  letter-spacing: 0.06em;
+  opacity: 0.86;
+}
+
+.retro-menu__status span {
+  font-size: 0.64rem;
+  letter-spacing: 0.28em;
+  opacity: 0.65;
+}
+
+.retro-menu__status span::before {
+  content: "status ▸ ";
+  opacity: 0.6;
+}
+
+.indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: #8cfbff;
+  box-shadow: 0 0 14px rgba(140, 251, 255, 0.8);
+  animation: pulse 2.6s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.8;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+.content-region {
+  position: fixed;
+  right: 2.5rem;
+  bottom: 2.5rem;
+  width: clamp(280px, 32vw, 420px);
+  max-height: calc(100vh - 5rem);
+  overflow: hidden;
+  z-index: 11;
+}
+
+.content-panel {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+  padding: 1.5rem 1.8rem;
+  background: linear-gradient(180deg, rgba(12, 12, 12, 0.85) 0%, rgba(4, 4, 4, 0.92) 100%);
+  border: 1px solid rgba(200, 200, 200, 0.08);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 20px 50px rgba(0, 0, 0, 0.55);
+  color: #f3f3f3;
+  backdrop-filter: blur(12px);
+  overflow-y: auto;
+}
+
+.content-panel::-webkit-scrollbar {
+  width: 6px;
+}
+
+.content-panel::-webkit-scrollbar-thumb {
+  background: rgba(180, 180, 180, 0.25);
+  border-radius: 999px;
+}
+
+.content-panel h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 600;
+  font-family: "IBM Plex Mono", "Lucida Console", "Courier New", monospace;
+}
+
+.content-panel p {
+  margin: 0;
+  line-height: 1.7;
+  font-size: 0.88rem;
+  letter-spacing: 0.02em;
+  color: rgba(230, 230, 230, 0.9);
+}
+
+.content-panel ul {
+  margin: 0;
+  padding-left: 1.2rem;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.content-panel li {
+  font-size: 0.85rem;
+  letter-spacing: 0.03em;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  background: rgba(90, 90, 90, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(235, 235, 235, 0.85);
+}
+
+.panel-divider {
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin: 0;
+}
+
+@media (max-width: 1100px) {
+  .content-region {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    bottom: 2rem;
+    width: min(88vw, 520px);
+  }
+}
+
+@media (max-width: 720px) {
+  html,
+  body {
+    overflow: auto;
+  }
+
+  .scene-container {
+    position: absolute;
+  }
+
+  .ui-overlay {
+    position: static;
+    max-width: none;
+    padding: 1.25rem 1.5rem 0;
+  }
+
+  .retro-menu {
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
+    margin: 2rem auto 0;
+    width: min(90vw, 360px);
+  }
+
+  .content-region {
+    position: relative;
+    transform: none;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    width: min(92vw, 420px);
+    margin: 2rem auto 4rem;
+  }
+}
+.lil-gui {
+  --background-color: rgba(14, 14, 14, 0.82);
+  --text-color: #f2f2f2;
+  --title-background-color: rgba(34, 34, 34, 0.92);
+  --widget-color: rgba(30, 30, 30, 0.92);
+  --hover-color: rgba(82, 82, 82, 0.92);
+  --focus-color: rgba(180, 180, 180, 0.92);
+  font-family: "Inter", "Segoe UI", sans-serif;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.lil-gui.root {
+  position: fixed;
+  right: 24px;
+  top: 24px;
+  z-index: 20;
+}
+
+.lil-gui .title {
+  letter-spacing: 0.1em;
+}
+
+.lil-gui .controller-with-fixed {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.lil-gui .controller-with-fixed .fixed-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(220, 220, 220, 0.55);
+  opacity: 0.85;
+}
+
+.lil-gui .controller-with-fixed .fixed-toggle input {
+  margin: 0;
+  accent-color: #bcbcbc;
+}
+
+.lil-gui .controller-with-fixed.is-locked {
+  background: rgba(120, 120, 120, 0.08);
+}
+
+.lil-gui .controller-with-fixed.is-locked .fixed-toggle {
+  color: rgba(240, 240, 240, 0.85);
+}
+
+@media (max-width: 768px) {
+  .lil-gui.root {
+    right: auto;
+    left: 50%;
+    transform: translateX(-50%);
+    top: auto;
+    bottom: 1.5rem;
+  }
+}
