@@ -40,6 +40,17 @@ export default function RetroMenu({
           <span className="indicator" aria-hidden="true" /> Jay Winder
         </span>
         <div className="retro-menu__title-actions">
+          <Link
+            href="https://x.com/itsjaydesu"
+            target="_blank"
+            rel="noreferrer noopener"
+            className="retro-menu__social"
+            aria-label="Open Jay Winder's X profile"
+          >
+            <svg viewBox="0 0 20 20" aria-hidden="true">
+              <path d="M15.95 1h-1.62l-3.58 4.31L7.79 1H3.25l5.32 7.16L3.25 19h1.62l3.92-4.78L12.21 19h4.54l-5.58-7.4zM11.6 11.52 8.46 7.27l1.6-1.92 4.63 6.17z" />
+            </svg>
+          </Link>
           <small>v4.1</small>
           <button type="button" className="retro-menu__dismiss" onClick={handleDismiss}>
             Close

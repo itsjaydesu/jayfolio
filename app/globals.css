@@ -76,7 +76,12 @@ a {
   position: fixed;
   inset: 0;
   display: grid;
-  place-items: center;
+  align-items: start;
+  justify-items: center;
+  --stage-pad-top: clamp(4rem, 24vh, 7rem);
+  --stage-pad-x: clamp(1.5rem, 5vw, 3rem);
+  --stage-pad-bottom: clamp(2rem, 6vh, 3rem);
+  padding: var(--stage-pad-top) var(--stage-pad-x) var(--stage-pad-bottom);
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.52s ease;
@@ -89,7 +94,7 @@ a {
 }
 
 .content-stage__backdrop {
-  position: absolute;
+  position: fixed;
   inset: 0;
   border: 0;
   background: rgba(2, 10, 12, 0.82);
@@ -107,8 +112,8 @@ a {
   --panel-pad-x: clamp(2.2rem, 6vw, 4rem);
   --panel-menu-offset: clamp(3.6rem, 10vw, 4.8rem);
   position: relative;
-  width: min(960px, 92vw);
-  max-height: min(80vh, 780px);
+  width: min(960px, calc(100vw - (2 * var(--stage-pad-x))));
+  max-height: min(80vh, calc(100vh - var(--stage-pad-top) - var(--stage-pad-bottom)), 780px);
   display: flex;
   flex-direction: column;
   gap: clamp(1.5rem, 3vw, 2.4rem);
@@ -1012,7 +1017,7 @@ a {
 
 .retro-menu--centerpiece {
   position: absolute;
-  top: clamp(3.2rem, 14vh, 5.8rem);
+  top: clamp(5rem, 25vh, 11rem);
   left: 50%;
   transform: translateX(-50%);
   width: min(420px, 94vw);
@@ -1063,6 +1068,36 @@ a {
   display: inline-flex;
   align-items: center;
   gap: 10px;
+}
+
+.retro-menu__social {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: 1px solid rgba(244, 250, 255, 0.42);
+  color: #f4faff;
+  opacity: 0.88;
+  transition: opacity 150ms ease, transform 150ms ease;
+}
+
+.retro-menu__social svg {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+}
+
+.retro-menu__social:hover,
+.retro-menu__social:focus-visible {
+  opacity: 1;
+  transform: translateY(-1px);
+}
+
+.retro-menu__social:focus-visible {
+  outline: 2px solid rgba(244, 250, 255, 0.9);
+  outline-offset: 2px;
 }
 
 .retro-menu__dismiss {
@@ -1307,8 +1342,14 @@ a {
   }
 
   .retro-menu--centerpiece {
-    top: clamp(2.6rem, 16vh, 4.2rem);
+    top: clamp(3.6rem, 28vh, 5rem);
     width: min(360px, 92vw);
+  }
+
+  .content-stage {
+    --stage-pad-top: clamp(3.2rem, 28vh, 5rem);
+    --stage-pad-x: clamp(1.2rem, 6vw, 2.4rem);
+    --stage-pad-bottom: clamp(1.6rem, 10vh, 2.4rem);
   }
 
   .content-stage__panel {
@@ -1377,7 +1418,13 @@ a {
   }
 
   .retro-menu--centerpiece {
-    top: clamp(2rem, 18vw, 3.4rem);
+    top: clamp(2.4rem, 32vh, 3.6rem);
+  }
+
+  .content-stage {
+    --stage-pad-top: clamp(2.4rem, 32vh, 3.6rem);
+    --stage-pad-x: clamp(1rem, 7vw, 1.8rem);
+    --stage-pad-bottom: clamp(1.2rem, 14vh, 2rem);
   }
 
   .content-stage__panel {

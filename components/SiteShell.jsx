@@ -55,6 +55,7 @@ const DEFAULT_STATUS = {
 };
 
 const DETAIL_FADE_MS = 420;
+const PANEL_FADE_MS = 600;
 
 export default function SiteShell({ children }) {
   const pathname = usePathname();
@@ -73,6 +74,7 @@ export default function SiteShell({ children }) {
   );
   const isAdminView = primarySegment === 'admin';
   const isContentActive = Boolean(activeItem) && !isDetailView;
+  const isStandaloneView = isDetailView || isAdminView;
 
   const activeStatus = useMemo(
     () => (activeItem ? { ...activeItem.status, mode: 'active' } : DEFAULT_STATUS),
@@ -82,8 +84,13 @@ export default function SiteShell({ children }) {
   const [status, setStatus] = useState(activeStatus);
   const [detailNode, setDetailNode] = useState(isDetailView ? children : null);
   const [isDetailVisible, setIsDetailVisible] = useState(isDetailView);
+  const [panelNode, setPanelNode] = useState(!isStandaloneView ? children : null);
+  const [shouldRenderPanel, setShouldRenderPanel] = useState(!isStandaloneView);
+  const [isPanelVisible, setIsPanelVisible] = useState(isContentActive && !isStandaloneView);
   const detailHideTimeoutRef = useRef(null);
   const detailFrameRef = useRef(null);
+  const panelHideTimeoutRef = useRef(null);
+  const panelFrameRef = useRef(null);
 
   useEffect(() => {
     setStatus(activeStatus);
@@ -94,6 +101,11 @@ export default function SiteShell({ children }) {
       setDetailNode(children);
     }
   }, [children, isDetailView]);
+
+  useEffect(() => {
+    if (isDetailView || isAdminView) return;
+    setPanelNode(children);
+  }, [children, isAdminView, isDetailView]);
 
   useEffect(() => {
     if (detailFrameRef.current) {
@@ -143,10 +155,64 @@ export default function SiteShell({ children }) {
     if (detailHideTimeoutRef.current) {
       clearTimeout(detailHideTimeoutRef.current);
     }
+    if (panelFrameRef.current) {
+      cancelAnimationFrame(panelFrameRef.current);
+    }
+    if (panelHideTimeoutRef.current) {
+      clearTimeout(panelHideTimeoutRef.current);
+    }
   }, []);
 
+  useEffect(() => {
+    if (panelFrameRef.current) {
+      cancelAnimationFrame(panelFrameRef.current);
+      panelFrameRef.current = null;
+    }
+    if (panelHideTimeoutRef.current) {
+      clearTimeout(panelHideTimeoutRef.current);
+      panelHideTimeoutRef.current = null;
+    }
+
+    if (isAdminView) {
+      setIsPanelVisible(false);
+      setShouldRenderPanel(false);
+      setPanelNode(null);
+      return undefined;
+    }
+
+    if (!isDetailView) {
+      setShouldRenderPanel(true);
+      panelFrameRef.current = requestAnimationFrame(() => {
+        setIsPanelVisible(isContentActive);
+        panelFrameRef.current = null;
+      });
+      return () => {
+        if (panelFrameRef.current) {
+          cancelAnimationFrame(panelFrameRef.current);
+          panelFrameRef.current = null;
+        }
+      };
+    }
+
+    if (!shouldRenderPanel) {
+      setIsPanelVisible(false);
+      return undefined;
+    }
+
+    setIsPanelVisible(false);
+    panelHideTimeoutRef.current = setTimeout(() => {
+      setShouldRenderPanel(false);
+      panelHideTimeoutRef.current = null;
+    }, PANEL_FADE_MS);
+    return () => {
+      if (panelHideTimeoutRef.current) {
+        clearTimeout(panelHideTimeoutRef.current);
+        panelHideTimeoutRef.current = null;
+      }
+    };
+  }, [isAdminView, isContentActive, isDetailView, shouldRenderPanel]);
+
   const canvasSection = activeSection ?? 'about';
-  const isStandaloneView = isDetailView || isAdminView;
   const showOverlay = !isContentActive && !isStandaloneView;
   const shouldRenderCanvas = !isAdminView;
   const isCanvasPaused = isContentActive || isDetailView;
@@ -190,12 +256,12 @@ export default function SiteShell({ children }) {
           />
         </div>
 
-        {!isStandaloneView && (
-          <div className={`content-stage${isContentActive ? ' is-active' : ''}`}>
+        {shouldRenderPanel && (
+          <div className={`content-stage${isPanelVisible ? ' is-active' : ''}`}>
             <button
               type="button"
               className="content-stage__backdrop"
-              aria-hidden={!isContentActive}
+              aria-hidden={!isPanelVisible}
               tabIndex={-1}
               onClick={handleBackdropDismiss}
             />
@@ -220,7 +286,7 @@ export default function SiteShell({ children }) {
                   })}
                 </ul>
               </nav>
-              <article className="content-stage__body">{children}</article>
+              <article className="content-stage__body">{panelNode}</article>
             </section>
           </div>
         )}
