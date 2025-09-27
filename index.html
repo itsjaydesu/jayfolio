@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Hypnotic Monochrome Field</title>
   <style>
+    @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&display=swap");
+
     :root {
       color-scheme: dark;
     }
@@ -82,6 +84,192 @@
       top: 24px;
     }
 
+    .retro-menu {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: clamp(240px, 26vw, 340px);
+      border: 2px solid #05344c;
+      background: linear-gradient(180deg, rgba(0, 133, 134, 0.92) 0%, rgba(1, 60, 70, 0.86) 100%);
+      box-shadow:
+        0 0 0 1px rgba(1, 92, 112, 0.55),
+        12px 12px 0 rgba(0, 0, 0, 0.65);
+      color: #daf3f4;
+      font-family: "IBM Plex Mono", "Lucida Console", "Courier New", monospace;
+      letter-spacing: 0.04em;
+      z-index: 12;
+      overflow: hidden;
+      backdrop-filter: blur(3px);
+    }
+
+    .retro-menu::after {
+      inset: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      pointer-events: none;
+    }
+
+    .retro-menu__titlebar {
+      background: linear-gradient(90deg, #003a63 0%, #008bb2 55%, #00c8d0 100%);
+      color: #f4faff;
+      padding: 10px 16px 9px;
+      font-size: 0.84rem;
+      text-transform: uppercase;
+      font-weight: 600;
+      border-bottom: 2px solid rgba(6, 6, 6, 0.65);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .retro-menu__titlebar span {
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .retro-menu__titlebar small {
+      font-size: 0.72rem;
+      letter-spacing: 0.16em;
+      opacity: 0.75;
+    }
+
+    .retro-menu__titlebar .indicator {
+      width: 10px;
+      height: 10px;
+      background: #6cffcf;
+      box-shadow: 0 0 6px rgba(108, 255, 207, 0.75);
+      border: 1px solid rgba(0, 40, 36, 0.8);
+    }
+
+    .retro-menu__body {
+      padding: 14px 0 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .retro-menu__list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .retro-menu__item button {
+      all: unset;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 14px;
+      width: 100%;
+      padding: 11px 20px;
+      background: rgba(0, 70, 74, 0.25);
+      color: #daf3f4;
+      cursor: pointer;
+      position: relative;
+      transition: background 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .retro-menu__item button::before {
+      content: "▌";
+      font-size: 0.9rem;
+      color: #7fffd7;
+      text-shadow: 0 0 9px rgba(0, 255, 224, 0.7);
+    }
+
+    .retro-menu__item button::after {
+      content: "";
+      position: absolute;
+      left: 18px;
+      right: 18px;
+      bottom: 0;
+      height: 1px;
+      background: rgba(0, 204, 220, 0.25);
+      pointer-events: none;
+    }
+
+    .retro-menu__item:last-child button::after {
+      display: none;
+    }
+
+    .retro-menu__item button:hover,
+    .retro-menu__item button:focus-visible {
+      background: rgba(0, 148, 152, 0.78);
+      outline: 1px solid rgba(255, 255, 255, 0.45);
+      outline-offset: -3px;
+      transform: translateX(2px);
+      box-shadow: inset 0 0 0 1px rgba(0, 255, 255, 0.22);
+    }
+
+    .retro-menu__item button:active {
+      background: rgba(0, 88, 92, 0.95);
+    }
+
+    .retro-menu__item.is-active button {
+      background: rgba(0, 148, 152, 0.88);
+      box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.35),
+        inset 0 0 22px rgba(0, 255, 255, 0.25);
+    }
+
+    .retro-menu__item.is-active button::after {
+      background: rgba(255, 255, 255, 0.4);
+      opacity: 0.7;
+    }
+
+    .retro-menu__status {
+      margin: 0;
+      padding: 16px 20px 18px;
+      font-size: 0.78rem;
+      line-height: 1.6;
+      min-height: 128px;
+      background: linear-gradient(180deg, rgba(2, 38, 44, 0.8) 0%, rgba(2, 28, 34, 0.9) 100%);
+      border-top: 2px solid rgba(4, 62, 66, 0.8);
+      color: #dffdfd;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      box-shadow: inset 0 0 0 1px rgba(12, 102, 112, 0.35);
+    }
+
+    .retro-menu__status strong {
+      display: block;
+      font-size: 0.82rem;
+      letter-spacing: 0.12em;
+      margin-bottom: 6px;
+      color: #8affff;
+      text-shadow: 0 0 8px rgba(138, 255, 255, 0.55);
+    }
+
+    .retro-menu__status em {
+      display: block;
+      font-style: normal;
+      text-transform: none;
+      letter-spacing: 0.02em;
+      font-size: 0.72rem;
+      line-height: 1.55;
+      color: rgba(215, 248, 248, 0.82);
+    }
+
+    .retro-menu__status span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      font-size: 0.72rem;
+      letter-spacing: 0.16em;
+      color: rgba(222, 255, 255, 0.6);
+      text-transform: uppercase;
+    }
+
+    .retro-menu__status span::before {
+      content: "▎";
+      color: rgba(122, 255, 255, 0.75);
+    }
+
     .lil-gui .controller-with-fixed {
       display: flex;
       align-items: center;
@@ -132,6 +320,14 @@
         top: auto;
         bottom: 1rem;
       }
+
+      .retro-menu {
+        width: min(90vw, 360px);
+        transform: translate(-50%, -52%);
+        box-shadow:
+          0 0 0 1px rgba(1, 92, 112, 0.55),
+          10px 10px 0 rgba(0, 0, 0, 0.55);
+      }
     }
   </style>
 </head>
@@ -142,6 +338,29 @@
     <p>
       Glide to tilt the waves. Click or tap for gentle ripples. Tune, randomize, or export every setting.
     </p>
+  </div>
+  <div class="retro-menu" aria-label="Main navigation">
+    <div class="retro-menu__titlebar">
+      <span><div class="indicator" aria-hidden="true"></div> Jay Winder</span>
+      <small>v4.1</small>
+    </div>
+    <div class="retro-menu__body">
+      <ul class="retro-menu__list">
+        <li class="retro-menu__item" data-section="about">
+          <button type="button">About</button>
+        </li>
+        <li class="retro-menu__item" data-section="projects">
+          <button type="button">Projects</button>
+        </li>
+        <li class="retro-menu__item" data-section="words">
+          <button type="button">Words</button>
+        </li>
+        <li class="retro-menu__item" data-section="sounds">
+          <button type="button">Sounds</button>
+        </li>
+      </ul>
+    </div>
+    <p class="retro-menu__status" aria-live="polite"></p>
   </div>
   <script type="module">
     import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.157/build/three.module.js";
@@ -207,6 +426,34 @@
     const controllers = {};
     const fixedStates = {};
     const defaultLockedKeys = new Set(["opacity", "pointSize", "brightness", "contrast", "fogDensity"]);
+
+    let retroActiveKey = "about";
+    const retroMenu = {
+      items: [],
+      status: null,
+      content: {
+        about: {
+          title: "About",
+          description:
+            "Jay Winder curates lucid audiovisual experiments, shaping hypnotic interfaces that oscillate between nostalgia and the hyperreal."
+        },
+        projects: {
+          title: "Projects",
+          description:
+            "Highlights include kinetic WebGL fields, performance-driven installations, and tactile controls for curious collaborators."
+        },
+        words: {
+          title: "Words",
+          description:
+            "Dispatches chart process notes, essays on spatial computing, and glossaries for future signal-bearers."
+        },
+        sounds: {
+          title: "Sounds",
+          description:
+            "A rotating archive of ambient loops, chromatic drones, and responsive audio sketches tuned for late-night wanderers."
+        }
+      }
+    };
 
     init();
     animate();
@@ -308,6 +555,7 @@
       window.addEventListener("resize", onWindowResize);
 
       buildGui();
+      initRetroMenu();
     }
 
     function registerController(key, controller) {
@@ -476,6 +724,92 @@
       gui.add(actions, "randomize").name("Randomize");
       gui.add(actions, "copySettings").name("Copy Settings");
       gui.add(actions, "downloadSettings").name("Download Settings");
+    }
+
+    function initRetroMenu() {
+      const menuRoot = document.querySelector(".retro-menu");
+      retroMenu.status = menuRoot.querySelector(".retro-menu__status");
+      retroMenu.items = Array.from(menuRoot.querySelectorAll(".retro-menu__item"));
+
+      retroMenu.items.forEach((item) => {
+        const key = item.dataset.section;
+        const button = item.querySelector("button");
+        button.addEventListener("click", () => handleRetroMenuSelection(key));
+        button.addEventListener("mouseenter", () => previewRetroMenuStatus(key));
+        button.addEventListener("focus", () => previewRetroMenuStatus(key));
+        button.addEventListener("mouseleave", () => restoreRetroMenuStatus());
+        button.addEventListener("blur", () => restoreRetroMenuStatus());
+      });
+
+      handleRetroMenuSelection("about");
+    }
+
+    function handleRetroMenuSelection(key) {
+      retroActiveKey = key;
+      retroMenu.items.forEach((item) => {
+        item.classList.toggle("is-active", item.dataset.section === key);
+      });
+      updateRetroMenuStatus(key, true);
+      nudgeFieldForMenu(key);
+    }
+
+    function previewRetroMenuStatus(key) {
+      if (key === retroActiveKey) return;
+      updateRetroMenuStatus(key, false, true);
+    }
+
+    function restoreRetroMenuStatus() {
+      updateRetroMenuStatus(retroActiveKey, true);
+    }
+
+    function updateRetroMenuStatus(key, persistent = false, preview = false) {
+      const payload = retroMenu.content[key];
+      if (!payload || !retroMenu.status) return;
+      retroMenu.status.innerHTML = `<strong>${payload.title}</strong><em>${payload.description}</em><span>mode ▸ ${preview ? "preview" : "active"}</span>`;
+      if (persistent) {
+        retroMenu.status.dataset.active = key;
+      }
+    }
+
+    function nudgeFieldForMenu(key) {
+      const influence = {
+        about: () => {
+          applyMenuValue("mouseInfluence", 0.0035);
+          applyMenuValue("animationSpeed", 0.36);
+          applyMenuValue("brightness", 0.5);
+        },
+        projects: () => {
+          applyMenuValue("animationSpeed", 0.48);
+          applyMenuValue("swirlStrength", 1.6);
+          applyMenuValue("pointSize", 26);
+        },
+        words: () => {
+          applyMenuValue("animationSpeed", 0.24);
+          applyMenuValue("rippleWidth", 28);
+          applyMenuValue("contrast", 2.1);
+        },
+        sounds: () => {
+          applyMenuValue("rippleStrength", 58);
+          applyMenuValue("rippleDecay", 0.0012);
+          applyMenuValue("mouseInfluence", 0.0045);
+        }
+      };
+
+      influence[key]?.();
+    }
+
+    function applyMenuValue(key, value) {
+      const controller = controllers[key];
+      if (fixedStates[key]) {
+        controller?.updateDisplay();
+        return false;
+      }
+      if (controller) {
+        controller.setValue(value);
+      } else {
+        settings[key] = value;
+      }
+      return true;
     }
 
     function getSettingsSnapshot() {
