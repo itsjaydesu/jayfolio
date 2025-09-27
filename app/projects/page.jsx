@@ -12,10 +12,13 @@ export default function ProjectsPage() {
         <li>Signal Bloom — modular installation linking light pillars to sensor-driven melodic gestures.</li>
         <li>Resonant Atlas — browser-based instrument that orchestrates field recordings with gestural input.</li>
       </ul>
-      <p>
-        Replace these with the flagship case studies you want to surface. If you need richer formatting, nest cards or
-        timelines inside this panel.
-      </p>
+      <section>
+        <h3>Next In Queue</h3>
+        <p>
+          Queue descriptions for works-in-progress: prototypes for spatial browsers, collaborative instruments, or
+          real-time typography experiments. Use this slot for teasers or calls for collaborators.
+        </p>
+      </section>
     </>
   );
 }

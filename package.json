@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "eslint ."
   },
   "dependencies": {
     "lil-gui": "^0.20.0",
@@ -16,7 +16,11 @@
     "three": "^0.180.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.36.0",
+    "@next/eslint-plugin-next": "^15.5.4",
     "eslint": "^9.36.0",
-    "eslint-config-next": "15.5.4"
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "globals": "^16.4.0"
   }
 }

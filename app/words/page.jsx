@@ -12,9 +12,13 @@ export default function WordsPage() {
         <li>Field Guide — glossary of studio phrases decoded for new collaborators.</li>
         <li>Dispatch Waves — monthly signal check-in mixing research notes with sonic tests.</li>
       </ul>
-      <p>
-        Feel free to append calls-to-action or embed newsletter sign-up hooks once the content pipeline is defined.
-      </p>
+      <section>
+        <h3>Publishing Rhythm</h3>
+        <p>
+          Outline cadence, cross-posting habits, or newsletter rituals. Add placeholders for subscription forms or
+          syndication links when the infrastructure is ready.
+        </p>
+      </section>
     </>
   );
 }

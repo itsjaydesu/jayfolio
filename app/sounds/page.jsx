@@ -12,10 +12,13 @@ export default function SoundsPage() {
         <li>Pulse Sketches — percussive prototypes enabling live manipulation during performances.</li>
         <li>Archive Reworks — archival stems reshaped into ambient suites for immersive rooms.</li>
       </ul>
-      <p>
-        Consider pairing the audio library with download toggles, session metadata, or links to merch when the catalogue
-        grows.
-      </p>
+      <section>
+        <h3>Release Strategy</h3>
+        <p>
+          Plan for platform drops, licensing notes, or merch pairings. When the files are ready, embed players or
+          scheduling widgets so visitors can listen without leaving the field.
+        </p>
+      </section>
     </>
   );
 }
