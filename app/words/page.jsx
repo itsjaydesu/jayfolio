@@ -8,38 +8,43 @@ export default async function WordsPage() {
   const entries = await readEntries('words');
 
   return (
-    <div className="section-screen">
-      <header className="section-screen__header">
-        <span className="badge">Editorial Log</span>
-        <h2>Words & Essays</h2>
-        <p>
+    <section className="channel channel--words">
+      <header className="channel__intro">
+        <p className="channel__eyebrow">Editorial Log</p>
+        <h1 className="channel__title">Words &amp; Essays</h1>
+        <p className="channel__lead">
           Essays, dispatches, and glossaries documenting the studio process. Open any log to read the full rich-text
           entry with embedded media and references.
         </p>
       </header>
 
       {entries.length === 0 ? (
-        <p className="section-empty">No editorial entries yet. Draft one in the admin console.</p>
+        <p className="channel__empty">No editorial entries yet. Draft one in the admin console.</p>
       ) : (
-        <ul className="entry-ledger">
-          {entries.map((entry) => (
-            <li key={entry.slug} className="entry-ledger__item">
-              <div className="entry-ledger__marker" aria-hidden="true" />
-              <div className="entry-ledger__meta">
-                {entry.createdAt && <span className="entry-ledger__date">{formatDisplayDate(entry.createdAt)}</span>}
-                {entry.tags?.length ? <span className="entry-ledger__tags">{entry.tags.join(' • ')}</span> : null}
+        <div className="channel__grid">
+          {entries.map((entry, index) => (
+            <article key={entry.slug} className="channel-card">
+              <div className="channel-card__meta">
+                <span className="channel-card__index">{String(index + 1).padStart(2, '0')}</span>
+                {entry.createdAt ? (
+                  <time className="channel-card__date" dateTime={entry.createdAt}>
+                    {formatDisplayDate(entry.createdAt)}
+                  </time>
+                ) : null}
+                {entry.tags?.length ? <p className="channel-card__tags">{entry.tags.join(' • ')}</p> : null}
               </div>
-              <div className="entry-ledger__body">
-                <h3>{entry.title}</h3>
-                {entry.summary && <p>{entry.summary}</p>}
+
+              <div className="channel-card__body">
+                <h2 className="channel-card__title">{entry.title}</h2>
+                {entry.summary ? <p className="channel-card__summary">{entry.summary}</p> : null}
+                <Link href={`/words/${entry.slug}`} className="channel-card__link">
+                  Read essay
+                </Link>
               </div>
-              <Link href={`/words/${entry.slug}`} className="entry-ledger__cta">
-                Read Entry
-              </Link>
-            </li>
+            </article>
           ))}
-        </ul>
+        </div>
       )}
-    </div>
+    </section>
   );
 }
