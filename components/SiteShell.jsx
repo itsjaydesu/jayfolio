@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import RetroMenu from './RetroMenu';
 import SceneCanvas from './SceneCanvas';
 
@@ -56,10 +56,11 @@ const DEFAULT_STATUS = {
 
 export default function SiteShell({ children }) {
   const pathname = usePathname();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const router = useRouter();
 
   const activeItem = useMemo(() => MENU_ITEMS.find((item) => item.href === pathname), [pathname]);
   const activeSection = activeItem?.id ?? null;
+  const isContentActive = Boolean(activeItem);
 
   const activeStatus = useMemo(
     () => (activeItem ? { ...activeItem.status, mode: 'active' } : DEFAULT_STATUS),
@@ -70,45 +71,37 @@ export default function SiteShell({ children }) {
 
   useEffect(() => {
     setStatus(activeStatus);
-    setIsMenuOpen(false);
   }, [activeStatus]);
 
   const canvasSection = activeSection ?? 'about';
+  const showOverlay = !isContentActive;
 
   const handleStatusChange = useCallback((next) => {
     setStatus(next);
   }, []);
 
-  const handleMenuToggle = useCallback(() => {
-    setIsMenuOpen((value) => !value);
-  }, []);
+  const handleMenuReset = useCallback(() => {
+    setStatus(activeStatus);
+  }, [activeStatus]);
 
-  const handleCloseMenu = useCallback(() => {
-    setIsMenuOpen(false);
-  }, []);
+  const handleBackdropDismiss = useCallback(() => {
+    if (!isContentActive) return;
+    router.push('/');
+  }, [isContentActive, router]);
+
+  const handleNestedNavigate = useCallback(
+    (href) => {
+      if (pathname === href) return;
+      router.push(href);
+    },
+    [pathname, router]
+  );
 
   return (
     <>
-      <SceneCanvas activeSection={canvasSection} />
-      <div className="site-chrome">
-        <header className="site-header">
-          <div className="site-header__meta">
-            <span className="badge badge--soft">Jay Winder</span>
-            <h1>Hypnotic Field</h1>
-            <p>Glide to tilt the waves. Tap for gentle ripples. Tune, randomize, or export every setting.</p>
-          </div>
-          <button
-            type="button"
-            className="menu-toggle"
-            aria-expanded={isMenuOpen}
-            aria-controls="retro-menu"
-            onClick={handleMenuToggle}
-          >
-            {isMenuOpen ? 'Close Menu' : 'Open Menu'}
-          </button>
-        </header>
-
-        <div className="site-grid">
+      <SceneCanvas activeSection={canvasSection} isPaused={isContentActive} />
+      <div className="site-frame">
+        <div className={`menu-overlay${showOverlay ? ' is-visible' : ''}`} aria-hidden={!showOverlay}>
           <RetroMenu
             id="retro-menu"
             items={MENU_ITEMS}
@@ -116,21 +109,45 @@ export default function SiteShell({ children }) {
             status={status}
             activeStatus={activeStatus}
             onStatusChange={handleStatusChange}
-            isOpen={isMenuOpen}
-            onNavigate={handleCloseMenu}
+            isOpen
+            onNavigate={handleMenuReset}
+            variant="centerpiece"
           />
-          <main className="content-region" id="content" tabIndex={-1} aria-live="polite">
-            <article className="content-surface">{children}</article>
-          </main>
+        </div>
+
+        <div className={`content-stage${isContentActive ? ' is-active' : ''}`}>
+          <button
+            type="button"
+            className="content-stage__backdrop"
+            aria-hidden={!isContentActive}
+            tabIndex={-1}
+            onClick={handleBackdropDismiss}
+          />
+          <section className="content-stage__panel" role="region" aria-live="polite">
+            <nav className="content-stage__menu" aria-label="Section navigation">
+              <button type="button" className="content-stage__menu-home" onClick={() => router.push('/')}>Menu</button>
+              <ul className="content-stage__menu-list">
+                {MENU_ITEMS.map((item) => {
+                  const isActive = item.href === pathname;
+                  return (
+                    <li key={item.id}>
+                      <button
+                        type="button"
+                        onClick={() => handleNestedNavigate(item.href)}
+                        className={`content-stage__menu-item${isActive ? ' is-active' : ''}`}
+                        aria-current={isActive ? 'page' : undefined}
+                      >
+                        {item.label}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </nav>
+            <article className="content-stage__body">{children}</article>
+          </section>
         </div>
       </div>
-      <button
-        type="button"
-        className={`nav-backdrop${isMenuOpen ? ' is-visible' : ''}`}
-        aria-hidden={!isMenuOpen}
-        tabIndex={-1}
-        onClick={handleCloseMenu}
-      />
     </>
   );
 }

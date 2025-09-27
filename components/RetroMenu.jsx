@@ -9,8 +9,9 @@ export default function RetroMenu({
   status,
   onStatusChange,
   activeStatus,
-  isOpen,
-  onNavigate
+  isOpen = false,
+  onNavigate,
+  variant = 'sidebar'
 }) {
   const handleRestore = () => {
     if (onStatusChange) {
@@ -30,7 +31,7 @@ export default function RetroMenu({
   return (
     <nav
       id={id}
-      className={`retro-menu${isOpen ? ' is-open' : ''}`}
+      className={`retro-menu retro-menu--${variant}${isOpen ? ' is-open' : ''}`}
       data-open={isOpen}
       aria-label="Main navigation"
     >

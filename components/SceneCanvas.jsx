@@ -34,7 +34,7 @@ const RETRO_INFLUENCE = {
   }
 };
 
-export default function SceneCanvas({ activeSection }) {
+export default function SceneCanvas({ activeSection, isPaused = false }) {
   const containerRef = useRef(null);
   const stateRef = useRef(null);
 
@@ -49,6 +49,7 @@ export default function SceneCanvas({ activeSection }) {
     let gui;
     let particles;
     let animationFrame;
+    let paused = false;
 
     const clock = new THREE.Clock();
     let elapsedTime = 0;
@@ -514,6 +515,10 @@ export default function SceneCanvas({ activeSection }) {
 
     function animate() {
       animationFrame = requestAnimationFrame(animate);
+      if (paused) {
+        clock.getDelta();
+        return;
+      }
       render();
     }
 
@@ -623,6 +628,9 @@ export default function SceneCanvas({ activeSection }) {
         if (handler) {
           handler(applyMenuValue);
         }
+      },
+      setPaused: (value) => {
+        paused = value;
       }
     };
 
@@ -664,6 +672,10 @@ export default function SceneCanvas({ activeSection }) {
     const target = activeSection || 'about';
     state?.applyMenuInfluence?.(target);
   }, [activeSection]);
+
+  useEffect(() => {
+    stateRef.current?.setPaused?.(isPaused);
+  }, [isPaused]);
 
   return <div ref={containerRef} className="scene-container" />;
 }
