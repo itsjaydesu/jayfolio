@@ -538,10 +538,11 @@ a {
   inset: 0;
   z-index: 18;
   min-height: 100vh;
-  padding: clamp(3rem, 10vw, 5rem) clamp(2.4rem, 7vw, 5.4rem);
+  padding: clamp(1.8rem, 7vw, 3.6rem) clamp(2rem, 6vw, 4.8rem);
   backdrop-filter: blur(22px);
   background: rgba(3, 9, 12, 0.95);
   overflow-y: auto;
+  scrollbar-gutter: stable both-edges;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.48s cubic-bezier(0.33, 1, 0.68, 1);
@@ -574,7 +575,7 @@ a {
   max-width: 980px;
   margin: 0 auto;
   display: grid;
-  gap: clamp(2rem, 5vw, 3rem);
+  gap: clamp(1.2rem, 4vw, 2.4rem);
   color: rgba(232, 238, 240, 0.95);
 }
 
@@ -618,7 +619,7 @@ a {
 
 .detail-view__intro {
   display: grid;
-  gap: 1.1rem;
+  gap: clamp(0.6rem, 2vw, 1rem);
 }
 
 .detail-view__intro h1 {
@@ -1493,7 +1494,7 @@ a {
   }
 
   .detail-stage {
-    padding: clamp(2.2rem, 8vw, 3.5rem) clamp(1.6rem, 6vw, 3rem);
+    padding: clamp(1.4rem, 6vw, 2.6rem) clamp(1.4rem, 6vw, 2.6rem);
   }
 
   .detail-view__nav {
@@ -2143,10 +2144,10 @@ a {
 
 
 .detail-view {
-  max-width: 880px;
+  max-width: 980px;
   margin: 0 auto;
   display: grid;
-  gap: clamp(1.8rem, 5vw, 3rem);
+  gap: clamp(1.2rem, 4vw, 2.4rem);
   color: rgba(236, 244, 246, 0.92);
 }
 
@@ -2197,7 +2198,7 @@ a {
 
 .detail-view__intro {
   display: grid;
-  gap: clamp(0.8rem, 2vw, 1.4rem);
+  gap: clamp(0.6rem, 2vw, 1rem);
 }
 
 .detail-view__intro h1 {

@@ -85,7 +85,7 @@ export default function EntryDetail({ type, entry }) {
               className="detail-view__back"
               onClick={(event) => handleNavigateAway(event, `/${type}`)}
             >
-              ← Back to {type}
+              Back to {type}
             </Link>
             <div className="detail-view__stamps">
               {dateLabel && <span>{dateLabel}</span>}
