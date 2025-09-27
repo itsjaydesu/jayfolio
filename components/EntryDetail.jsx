@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { formatDisplayDate } from '../lib/formatters';
 
@@ -10,19 +10,22 @@ const TRANSITION_DURATION_MS = 480;
 export default function EntryDetail({ type, entry }) {
   const router = useRouter();
   const [stageState, setStageState] = useState('idle');
+  const stageRef = useRef(null);
   const leaveTimeoutRef = useRef();
   const enterTimeoutRef = useRef();
 
-  useEffect(() => {
-    const frame = requestAnimationFrame(() => {
-      setStageState('entering');
-      enterTimeoutRef.current = window.setTimeout(() => {
-        setStageState('visible');
-      }, TRANSITION_DURATION_MS);
-    });
+  useLayoutEffect(() => {
+    const node = stageRef.current;
+    if (node) {
+      node.scrollTo({ top: 0, behavior: 'auto' });
+    }
+
+    setStageState('entering');
+    enterTimeoutRef.current = window.setTimeout(() => {
+      setStageState('visible');
+    }, TRANSITION_DURATION_MS);
 
     return () => {
-      cancelAnimationFrame(frame);
       if (enterTimeoutRef.current) {
         clearTimeout(enterTimeoutRef.current);
       }
@@ -76,7 +79,7 @@ export default function EntryDetail({ type, entry }) {
   const stageClassName = stageClasses.join(' ');
 
   return (
-    <div className={stageClassName}>
+    <div className={stageClassName} ref={stageRef}>
       <div className={`detail-view detail-view--${type}`}>
         <header className="detail-view__header">
           <nav className="detail-view__nav" aria-label="Detail navigation">
