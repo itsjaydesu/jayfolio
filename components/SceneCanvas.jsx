@@ -2,8 +2,8 @@
 
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
-import GUI from 'lil-gui';
 import Stats from 'three/examples/jsm/libs/stats.module.js';
+import { FIELD_DEFAULT_BASE, FIELD_DEFAULT_INFLUENCES } from '../lib/fieldDefaults';
 
 const SEPARATION = 90;
 const AMOUNTX = 70;
@@ -11,28 +11,7 @@ const AMOUNTY = 70;
 const HALF_GRID_X = ((AMOUNTX - 1) * SEPARATION) / 2;
 const HALF_GRID_Y = ((AMOUNTY - 1) * SEPARATION) / 2;
 
-const RETRO_INFLUENCE = {
-  about: (apply) => {
-    apply('mouseInfluence', 0.0035);
-    apply('animationSpeed', 0.36);
-    apply('brightness', 0.5);
-  },
-  projects: (apply) => {
-    apply('animationSpeed', 0.48);
-    apply('swirlStrength', 1.6);
-    apply('pointSize', 26);
-  },
-  words: (apply) => {
-    apply('animationSpeed', 0.24);
-    apply('rippleWidth', 28);
-    apply('contrast', 2.1);
-  },
-  sounds: (apply) => {
-    apply('rippleStrength', 58);
-    apply('rippleDecay', 0.0012);
-    apply('mouseInfluence', 0.0045);
-  }
-};
+const DEFAULT_INFLUENCES = FIELD_DEFAULT_INFLUENCES;
 
 export default function SceneCanvas({ activeSection, isPaused = false }) {
   const containerRef = useRef(null);
