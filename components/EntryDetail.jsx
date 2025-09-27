@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { formatDisplayDate } from '../lib/formatters';
 
@@ -13,6 +13,34 @@ export default function EntryDetail({ type, entry }) {
   const stageRef = useRef(null);
   const leaveTimeoutRef = useRef();
   const enterTimeoutRef = useRef();
+  const stageStateRef = useRef('idle');
+
+  const logLayoutMetrics = useCallback(
+    (label, stateOverride) => {
+      if (typeof window === 'undefined') return;
+      const stageNode = stageRef.current;
+      if (!stageNode) return;
+
+      const detailNode = stageNode.querySelector('.detail-view');
+      const stageStyles = window.getComputedStyle(stageNode);
+      const detailStyles = detailNode ? window.getComputedStyle(detailNode) : null;
+      const stageRect = stageNode.getBoundingClientRect();
+      const detailRect = detailNode?.getBoundingClientRect() ?? null;
+
+      console.log('[EntryDetail layout]', label, {
+        stageState: stateOverride ?? stageStateRef.current,
+        stageRect,
+        detailRect,
+        stageAlign: stageStyles?.alignItems,
+        stageJustify: stageStyles?.justifyContent,
+        detailMarginLeft: detailStyles?.marginLeft,
+        detailMarginRight: detailStyles?.marginRight,
+        detailTransform: detailStyles?.transform,
+        detailDisplay: detailStyles?.display
+      });
+    },
+    []
+  );
 
   useLayoutEffect(() => {
     const node = stageRef.current;
@@ -20,8 +48,13 @@ export default function EntryDetail({ type, entry }) {
       node.scrollTo({ top: 0, behavior: 'auto' });
     }
 
+    logLayoutMetrics('mount-before-enter', 'idle');
+
     setStageState('entering');
+    logLayoutMetrics('mount-after-enter-set', 'entering');
+
     enterTimeoutRef.current = window.setTimeout(() => {
+      logLayoutMetrics('timeout-before-visible', 'entering');
       setStageState('visible');
     }, TRANSITION_DURATION_MS);
 
@@ -33,7 +66,12 @@ export default function EntryDetail({ type, entry }) {
         clearTimeout(leaveTimeoutRef.current);
       }
     };
-  }, []);
+  }, [logLayoutMetrics]);
+
+  useEffect(() => {
+    stageStateRef.current = stageState;
+    logLayoutMetrics(`state-change-${stageState}`, stageState);
+  }, [stageState, logLayoutMetrics]);
 
   const handleNavigateAway = useCallback(
     (event, href) => {

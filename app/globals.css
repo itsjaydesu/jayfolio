@@ -550,6 +550,7 @@ a {
   scrollbar-gutter: stable both-edges;
   opacity: 0;
   transform: translateY(18px) scale(0.995);
+  transform-origin: top left;
   pointer-events: none;
   transition: opacity 0.44s cubic-bezier(0.33, 1, 0.68, 1), transform 0.44s cubic-bezier(0.33, 1, 0.68, 1);
   will-change: opacity, transform;
