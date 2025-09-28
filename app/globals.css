@@ -597,6 +597,8 @@ a {
   display: grid;
   gap: clamp(1.2rem, 3vw, 2.2rem);
   color: rgba(232, 238, 240, 0.95);
+  justify-self: flex-start;
+  align-self: flex-start;
 }
 
 .detail-view__nav {
