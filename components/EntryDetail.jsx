@@ -31,6 +31,10 @@ export default function EntryDetail({ type, entry }) {
       console.log('[EntryDetail layout]', label, {
         stageState: activeState,
         stageClassList: stageNode.className,
+        stagePosition: stageStyles?.position,
+        stageTop: stageStyles?.top,
+        stageLeftCss: stageStyles?.left,
+        stageRightCss: stageStyles?.right,
         stageLeft: stageRect?.left,
         stageWidth: stageRect?.width,
         detailLeft: detailRect?.left,
