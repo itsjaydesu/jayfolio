@@ -1893,6 +1893,19 @@ a {
   box-shadow: none;
   backdrop-filter: none;
   z-index: 8;
+  opacity: 0;
+  transform: translate(-50%, -18px);
+  pointer-events: none;
+  transition:
+    opacity 0.6s cubic-bezier(0.33, 1, 0.68, 1),
+    transform 0.6s cubic-bezier(0.33, 1, 0.68, 1);
+  will-change: opacity, transform;
+}
+
+.site-shell__header[data-nav-ready='true'] {
+  opacity: 1;
+  transform: translate(-50%, 0);
+  pointer-events: auto;
 }
 
 .site-shell--detail .site-shell__container {
@@ -1907,7 +1920,17 @@ a {
   text-decoration: none;
   font-family: 'IBM Plex Mono', 'Lucida Console', 'Courier New', monospace;
   color: var(--text-primary);
-  transition: color 0.2s ease;
+  opacity: 0;
+  transform: translateY(8px);
+  transition:
+    color 0.2s ease,
+    opacity 0.5s cubic-bezier(0.33, 1, 0.68, 1),
+    transform 0.5s cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.site-shell__header[data-nav-ready='true'] .site-shell__brand {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .site-shell__brand:hover,
@@ -1929,7 +1952,17 @@ a {
   text-transform: uppercase;
   text-decoration: none;
   color: var(--text-tertiary);
-  transition: color 0.2s ease;
+  opacity: 0;
+  transform: translateY(12px);
+  transition:
+    color 0.2s ease,
+    opacity 0.45s cubic-bezier(0.33, 1, 0.68, 1),
+    transform 0.45s cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.site-shell__header[data-nav-ready='true'] .site-shell__nav-link {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .site-shell__nav-link::after {
@@ -1968,8 +2001,18 @@ a {
   text-transform: uppercase;
   text-decoration: none;
   color: rgba(196, 232, 240, 0.8);
-  transition: color 0.2s ease;
+  opacity: 0;
+  transform: translateY(8px);
+  transition:
+    color 0.2s ease,
+    opacity 0.5s cubic-bezier(0.33, 1, 0.68, 1),
+    transform 0.5s cubic-bezier(0.33, 1, 0.68, 1);
   white-space: nowrap;
+}
+
+.site-shell__header[data-nav-ready='true'] .site-shell__social {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .site-shell__social:hover,
@@ -2000,6 +2043,26 @@ a {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --nav-initial-opacity: 1;
+    --nav-initial-offset: 0;
+    --nav-item-initial-opacity: 1;
+    --nav-item-initial-offset: 0;
+  }
+
+  .site-shell__header {
+    transition: none !important;
+    pointer-events: auto !important;
+  }
+
+  .site-shell__brand,
+  .site-shell__nav-link,
+  .site-shell__social {
+    transition: color 0.2s ease !important;
   }
 }
 

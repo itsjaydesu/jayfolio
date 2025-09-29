@@ -74,6 +74,26 @@ export default function SiteShell({ children }) {
     [activeItem]
   );
   const [status, setStatus] = useState(activeStatus);
+  const [navReady, setNavReady] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    if (motionQuery.matches) {
+      setNavReady(true);
+      return;
+    }
+
+    let frameId = requestAnimationFrame(() => {
+      setNavReady(true);
+    });
+
+    return () => {
+      cancelAnimationFrame(frameId);
+    };
+  }, []);
 
   useEffect(() => {
     setStatus(activeStatus);
@@ -135,12 +155,34 @@ export default function SiteShell({ children }) {
       <div className={`site-shell${isDetailView ? ' site-shell--detail' : ''}`}>
         <div className="site-shell__container">
           {!isDetailView ? (
-            <header className="site-shell__header">
-              <Link href="/" className="site-shell__brand">
+            <header
+              className="site-shell__header"
+              data-nav-ready={navReady ? 'true' : 'false'}
+              style={
+                navReady
+                  ? undefined
+                  : {
+                      opacity: 'var(--nav-initial-opacity, 0)',
+                      transform: 'translate(-50%, var(--nav-initial-offset, -18px))'
+                    }
+              }
+            >
+              <Link
+                href="/"
+                className="site-shell__brand"
+                style={
+                  navReady
+                    ? undefined
+                    : {
+                        opacity: 'var(--nav-item-initial-opacity, 0)',
+                        transform: 'translateY(var(--nav-item-initial-offset, 8px))'
+                      }
+                }
+              >
                 Jay Winder
               </Link>
               <nav className="site-shell__nav" aria-label="Primary navigation">
-                {MENU_ITEMS.map((item) => {
+                {MENU_ITEMS.map((item, index) => {
                   const isActive = item.id === activeSection;
                   return (
                     <Link
@@ -153,6 +195,16 @@ export default function SiteShell({ children }) {
                       onMouseLeave={handleReset}
                       onFocus={() => handlePreview(item, isActive)}
                       onBlur={handleReset}
+                      style={
+                        navReady
+                          ? {
+                              transitionDelay: `${index * 60}ms`
+                            }
+                          : {
+                              opacity: 'var(--nav-item-initial-opacity, 0)',
+                              transform: 'translateY(var(--nav-item-initial-offset, 12px))'
+                            }
+                      }
                     >
                       {item.label}
                     </Link>
@@ -164,6 +216,14 @@ export default function SiteShell({ children }) {
                 className="site-shell__social"
                 target="_blank"
                 rel="noreferrer noopener"
+                style={
+                  navReady
+                    ? undefined
+                    : {
+                        opacity: 'var(--nav-item-initial-opacity, 0)',
+                        transform: 'translateY(var(--nav-item-initial-offset, 8px))'
+                      }
+                }
               >
                 @itsjaydesu
               </Link>
