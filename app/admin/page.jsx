@@ -115,6 +115,9 @@ function buildInitialForm() {
     slug: '',
     summary: '',
     tagsText: '',
+    status: 'draft',
+    coverImageUrl: '',
+    coverImageAlt: '',
     createdAt: today,
     content: INITIAL_CONTENT
   };
@@ -180,6 +183,9 @@ export default function AdminPage() {
         slug: entry.slug,
         summary: entry.summary ?? '',
         tagsText: (entry.tags ?? []).join(', '),
+        status: entry.status || 'draft',
+        coverImageUrl: entry.coverImage?.url || '',
+        coverImageAlt: entry.coverImage?.alt || '',
         createdAt: formatDateValue(entry.createdAt),
         content: entry.content || INITIAL_CONTENT
       });
@@ -217,6 +223,10 @@ export default function AdminPage() {
         summary: form.summary.trim(),
         content: form.content,
         tags: parseTags(form.tagsText),
+        status: form.status === 'published' ? 'published' : 'draft',
+        coverImage: form.coverImageUrl
+          ? { url: form.coverImageUrl.trim(), alt: form.coverImageAlt.trim() }
+          : null,
         createdAt: formatDateValue(form.createdAt) || new Date().toISOString().slice(0, 10)
       };
 
@@ -268,6 +278,26 @@ export default function AdminPage() {
       setStatusMessage(error.message);
     }
   }, [activeType, handleNew, refreshEntries, selectedSlug]);
+
+  const handleDuplicate = useCallback(async () => {
+    if (!selectedSlug) return;
+    try {
+      const res = await fetch(`/api/content/${activeType}/duplicate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug: selectedSlug })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || 'Duplicate failed');
+      const items = await refreshEntries(activeType);
+      setEntries(items);
+      setSelectedSlug(data.entry.slug);
+      setStatusMessage('Duplicated');
+    } catch (e) {
+      console.error(e);
+      setStatusMessage(e.message);
+    }
+  }, [activeType, refreshEntries, selectedSlug]);
 
   const isEditingExisting = useMemo(() => Boolean(selectedSlug), [selectedSlug]);
   const hasFieldData = Boolean(fieldSettings);
@@ -593,6 +623,51 @@ export default function AdminPage() {
                 />
               </div>
 
+          <div className="admin-field-row">
+            <div className="admin-field">
+              <label htmlFor="coverUrl">Cover Image URL</label>
+              <input
+                id="coverUrl"
+                type="url"
+                placeholder="https://..."
+                value={form.coverImageUrl}
+                onChange={(e) => handleFieldChange('coverImageUrl', e.target.value)}
+              />
+            </div>
+            <div className="admin-field">
+              <label htmlFor="coverAlt">Cover Alt</label>
+              <input
+                id="coverAlt"
+                type="text"
+                value={form.coverImageAlt}
+                onChange={(e) => handleFieldChange('coverImageAlt', e.target.value)}
+              />
+            </div>
+            <div className="admin-field">
+              <label>Status</label>
+              <div>
+                <label style={{ marginRight: '1rem' }}>
+                  <input
+                    type="radio"
+                    name="status"
+                    checked={form.status === 'draft'}
+                    onChange={() => handleFieldChange('status', 'draft')}
+                  />
+                  <span style={{ marginLeft: '0.4rem' }}>Draft</span>
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    name="status"
+                    checked={form.status === 'published'}
+                    onChange={() => handleFieldChange('status', 'published')}
+                  />
+                  <span style={{ marginLeft: '0.4rem' }}>Published</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
               <div className="admin-field">
                 <label>Body</label>
                 <RichTextEditor
@@ -605,6 +680,11 @@ export default function AdminPage() {
               <div className="admin-actions">
                 {statusMessage && <span className="admin-status">{statusMessage}</span>}
                 <div className="admin-actions__buttons">
+                  {isEditingExisting && (
+                    <button type="button" className="admin-ghost" onClick={handleDuplicate}>
+                      Duplicate
+                    </button>
+                  )}
                   {isEditingExisting && (
                     <button type="button" className="admin-danger" onClick={handleDelete}>
                       Delete

@@ -17,7 +17,16 @@ function normalizeEntry(payload) {
   if (!payload || typeof payload !== 'object') {
     return null;
   }
-  const { slug, title, summary = '', content = '', tags = [], createdAt = new Date().toISOString() } = payload;
+  const {
+    slug,
+    title,
+    summary = '',
+    content = '',
+    tags = [],
+    coverImage = null,
+    status = 'draft',
+    createdAt = new Date().toISOString()
+  } = payload;
   if (!slug || !title) {
     return null;
   }
@@ -27,7 +36,10 @@ function normalizeEntry(payload) {
     summary,
     content,
     tags,
-    createdAt
+    coverImage,
+    status: status === 'published' ? 'published' : 'draft',
+    createdAt,
+    updatedAt: new Date().toISOString()
   };
 }
 

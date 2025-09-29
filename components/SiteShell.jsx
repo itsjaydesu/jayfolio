@@ -4,50 +4,15 @@ import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import RetroMenu from './RetroMenu';
+import { SITE_TEXT_DEFAULTS } from '../lib/siteTextDefaults';
 import SceneCanvas from './SceneCanvas';
 
-const MENU_ITEMS = [
-  {
-    id: 'about',
-    label: 'About',
-    href: '/about',
-    status: {
-      title: 'About',
-      description:
-        'Jay Winder curates lucid audiovisual experiments, shaping hypnotic interfaces that oscillate between nostalgia and the hyperreal.'
-    }
-  },
-  {
-    id: 'projects',
-    label: 'Projects',
-    href: '/projects',
-    status: {
-      title: 'Projects',
-      description:
-        'Highlights include kinetic WebGL fields, performance-driven installations, and tactile controls for curious collaborators.'
-    }
-  },
-  {
-    id: 'words',
-    label: 'Words',
-    href: '/words',
-    status: {
-      title: 'Words',
-      description:
-        'Dispatches chart process notes, essays on spatial computing, and glossaries for future signal-bearers.'
-    }
-  },
-  {
-    id: 'sounds',
-    label: 'Sounds',
-    href: '/sounds',
-    status: {
-      title: 'Sounds',
-      description:
-        'A rotating archive of ambient loops, chromatic drones, and responsive audio sketches tuned for late-night wanderers.'
-    }
-  }
-];
+const DEFAULT_MENU_ITEMS = SITE_TEXT_DEFAULTS.primaryMenu.map((i) => ({
+  id: i.id,
+  label: i.label,
+  href: i.route,
+  status: { title: i.label, description: i.description }
+}));
 
 const DEFAULT_STATUS = {
   title: 'Signal Router',
@@ -57,12 +22,39 @@ const DEFAULT_STATUS = {
 
 export default function SiteShell({ children }) {
   const pathname = usePathname();
+  const [brand, setBrand] = useState(SITE_TEXT_DEFAULTS.brand);
+  const [menuItems, setMenuItems] = useState(DEFAULT_MENU_ITEMS);
+
+  useEffect(() => {
+    let ignore = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/site-text', { cache: 'no-store' });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data?.error || 'Failed to load site text');
+        if (ignore) return;
+        const items = (data.primaryMenu || []).map((i) => ({
+          id: i.id,
+          label: i.label,
+          href: i.route,
+          status: { title: i.label, description: i.description }
+        }));
+        setBrand(data.brand || SITE_TEXT_DEFAULTS.brand);
+        setMenuItems(items.length ? items : DEFAULT_MENU_ITEMS);
+      } catch (e) {
+        void e; // fallback silently
+      }
+    })();
+    return () => {
+      ignore = true;
+    };
+  }, []);
 
   const pathSegments = useMemo(() => pathname?.split('/').filter(Boolean) ?? [], [pathname]);
   const primarySegment = pathSegments[0] ?? null;
   const activeItem = useMemo(
-    () => MENU_ITEMS.find((item) => item.id === primarySegment) ?? null,
-    [primarySegment]
+    () => menuItems.find((item) => item.id === primarySegment) ?? null,
+    [primarySegment, menuItems]
   );
   const activeSection = activeItem?.id ?? null;
   const isDetailView = pathSegments.length > 1 && Boolean(activeItem);
@@ -135,7 +127,7 @@ export default function SiteShell({ children }) {
         <div className="menu-overlay is-visible">
           <RetroMenu
             id="retro-menu"
-            items={MENU_ITEMS}
+            items={menuItems}
             activeSection={activeSection}
             status={status}
             activeStatus={activeStatus}
@@ -179,10 +171,10 @@ export default function SiteShell({ children }) {
                       }
                 }
               >
-                Jay Winder
+                {brand}
               </Link>
               <nav className="site-shell__nav" aria-label="Primary navigation">
-                {MENU_ITEMS.map((item, index) => {
+                {menuItems.map((item, index) => {
                   const isActive = item.id === activeSection;
                   return (
                     <Link

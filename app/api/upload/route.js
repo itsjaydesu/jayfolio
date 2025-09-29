@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { put } from '@vercel/blob';
+import { appendMediaFile } from '../../../lib/mediaIndex';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -66,12 +67,20 @@ export async function POST(request) {
       cacheControl: 'public, max-age=31536000, immutable'
     });
 
-    return NextResponse.json({
+    const record = {
       url: blob.url,
       pathname: blob.pathname,
       size: blob.size,
       type: blob.contentType
-    });
+    };
+
+    try {
+      await appendMediaFile(record);
+    } catch (indexErr) {
+      console.warn('[upload] failed to append media index', indexErr);
+    }
+
+    return NextResponse.json(record);
   } catch (error) {
     console.error('[upload] error', error);
     return NextResponse.json({ error: error.message || 'Upload failed' }, { status: 500 });
