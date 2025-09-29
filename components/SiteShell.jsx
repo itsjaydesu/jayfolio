@@ -174,7 +174,7 @@ export default function SiteShell({ children }) {
           </p>
           <main
             key={pathname}
-            className={`site-shell__main site-shell__transition${isDetailView ? ' is-detail' : ''}`}
+            className={`site-shell__main${isDetailView ? ' is-detail' : ' site-shell__transition'}`}
           >
             {children}
           </main>
