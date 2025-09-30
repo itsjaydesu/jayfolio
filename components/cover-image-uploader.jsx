@@ -1,7 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Cropper from "react-easy-crop";
+import { createPortal } from "react-dom";
+import ReactCrop, { centerCrop, makeAspectCrop } from "react-image-crop";
+import "react-image-crop/dist/ReactCrop.css";
 
 const ACCEPT_INPUT = "image/*";
 const DEFAULT_ASPECT = 3 / 2;
@@ -15,37 +17,37 @@ function sanitizeAlt(value) {
     .trim();
 }
 
-function loadImage(src) {
-  return new Promise((resolve, reject) => {
-    const image = new Image();
-    image.addEventListener("load", () => resolve(image));
-    image.addEventListener("error", (error) => reject(error));
-    image.src = src;
-  });
-}
-
-async function getCroppedBlob(imageSrc, croppedAreaPixels, fileType) {
-  const image = await loadImage(imageSrc);
+async function getCroppedBlob(image, crop, fileType) {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
+
+  if (!ctx) {
+    throw new Error("No 2d context");
+  }
+
+  const scaleX = image.naturalWidth / image.width;
+  const scaleY = image.naturalHeight / image.height;
   const pixelRatio = window.devicePixelRatio || 1;
 
-  canvas.width = croppedAreaPixels.width * pixelRatio;
-  canvas.height = croppedAreaPixels.height * pixelRatio;
+  canvas.width = Math.floor(crop.width * scaleX * pixelRatio);
+  canvas.height = Math.floor(crop.height * scaleY * pixelRatio);
 
-  ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+  ctx.scale(pixelRatio, pixelRatio);
   ctx.imageSmoothingQuality = "high";
+
+  const cropX = crop.x * scaleX;
+  const cropY = crop.y * scaleY;
 
   ctx.drawImage(
     image,
-    croppedAreaPixels.x,
-    croppedAreaPixels.y,
-    croppedAreaPixels.width,
-    croppedAreaPixels.height,
+    cropX,
+    cropY,
+    crop.width * scaleX,
+    crop.height * scaleY,
     0,
     0,
-    croppedAreaPixels.width,
-    croppedAreaPixels.height
+    crop.width * scaleX,
+    crop.height * scaleY
   );
 
   return new Promise((resolve, reject) => {
@@ -74,20 +76,28 @@ async function readFileAsDataUrl(file) {
 
 export default function CoverImageUploader({ value, alt, onChange }) {
   const fileInputRef = useRef(null);
+  const imgRef = useRef(null);
   const [error, setError] = useState("");
   const [isCropping, setIsCropping] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [imageSrc, setImageSrc] = useState(null);
   const [activeFile, setActiveFile] = useState(null);
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1.4);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+  const [crop, setCrop] = useState();
+  const [completedCrop, setCompletedCrop] = useState();
   const [isExistingOpen, setIsExistingOpen] = useState(false);
   const [mediaItems, setMediaItems] = useState([]);
   const [isLoadingMedia, setIsLoadingMedia] = useState(false);
   const [hasLoadedMedia, setHasLoadedMedia] = useState(false);
+  const [portalTarget, setPortalTarget] = useState(() =>
+    typeof document !== "undefined" ? document.body : null
+  );
 
   const hasValue = Boolean(value);
+
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    setPortalTarget(document.body);
+  }, []);
 
   const handleTriggerFile = useCallback(() => {
     setError("");
@@ -109,51 +119,90 @@ export default function CoverImageUploader({ value, alt, onChange }) {
       setActiveFile(file);
       setImageSrc(dataUrl);
       setIsCropping(true);
-      setZoom(1.4);
-      setCrop({ x: 0, y: 0 });
-      setCroppedAreaPixels(null);
+      setCrop(undefined);
+      setCompletedCrop(undefined);
       setError("");
     } catch (err) {
       setError(err?.message || "Could not read file.");
     }
   }, []);
 
-  const handleCropComplete = useCallback((_area, areaPixels) => {
-    setCroppedAreaPixels(areaPixels);
+  const onImageLoad = useCallback((e) => {
+    const { naturalWidth: width, naturalHeight: height } = e.currentTarget;
+
+    const initialCrop = centerCrop(
+      makeAspectCrop(
+        { unit: "%", width: 90 },
+        DEFAULT_ASPECT,
+        width,
+        height
+      ),
+      width,
+      height
+    );
+
+    setCrop(initialCrop);
   }, []);
+
+  const renderOverlay = useCallback(
+    (node) => {
+      if (!node) return null;
+      return portalTarget ? createPortal(node, portalTarget) : node;
+    },
+    [portalTarget]
+  );
 
   const closeCropper = useCallback(() => {
     setIsCropping(false);
     setImageSrc(null);
     setActiveFile(null);
-    setCroppedAreaPixels(null);
+    setCrop(undefined);
+    setCompletedCrop(undefined);
   }, []);
 
   const handleUpload = useCallback(async () => {
-    if (!activeFile || !imageSrc || !croppedAreaPixels) return;
+    if (!activeFile || !imageSrc || !completedCrop || !imgRef.current) {
+      setError("Please adjust the crop before saving.");
+      return;
+    }
+
     try {
       setIsUploading(true);
       setError("");
-      const blob = await getCroppedBlob(imageSrc, croppedAreaPixels, activeFile.type);
+
+      const blob = await getCroppedBlob(
+        imgRef.current,
+        completedCrop,
+        activeFile.type
+      );
+
       const extension = activeFile.name.includes('.')
         ? `.${activeFile.name.split('.').pop()}`
         : '';
-      const uploadFile = new File([blob], `cover${extension || ".jpg"}`, { type: blob.type || activeFile.type });
+      const uploadFile = new File([blob], `cover${extension || '.jpg'}`, {
+        type: blob.type || activeFile.type
+      });
+
       const formData = new FormData();
       formData.append("file", uploadFile);
+
       const response = await fetch("/api/upload", { method: "POST", body: formData });
       const payload = await response.json();
+
       if (!response.ok) {
         throw new Error(payload?.error || "Upload failed");
       }
+
       const derivedAlt = sanitizeAlt(activeFile.name);
       onChange?.({ url: payload.url, alt: derivedAlt });
+
       setMediaItems((prev) => {
         const filtered = Array.isArray(prev)
           ? prev.filter((item) => item.pathname !== payload.pathname)
           : [];
         return [{ ...payload, alt: derivedAlt }, ...filtered];
       });
+
       setHasLoadedMedia(true);
       closeCropper();
     } catch (err) {
@@ -161,7 +210,7 @@ export default function CoverImageUploader({ value, alt, onChange }) {
     } finally {
       setIsUploading(false);
     }
-  }, [activeFile, closeCropper, croppedAreaPixels, imageSrc, onChange]);
+  }, [activeFile, closeCropper, completedCrop, imageSrc, onChange]);
 
   const toggleExisting = useCallback(() => {
     setError("");
@@ -251,79 +300,89 @@ export default function CoverImageUploader({ value, alt, onChange }) {
         </p>
       ) : null}
 
-      {isCropping ? (
-        <div className="cover-uploader__overlay" role="dialog" aria-modal="true">
-          <div className="cover-uploader__sheet">
-            <Cropper
-              image={imageSrc}
-              crop={crop}
-              zoom={zoom}
-              aspect={DEFAULT_ASPECT}
-              onCropChange={setCrop}
-              onZoomChange={setZoom}
-              onCropComplete={handleCropComplete}
-              classes={{ containerClassName: "cover-uploader__crop" }}
-            />
-            <div className="cover-uploader__controls">
-              <label htmlFor="cover-zoom">Zoom</label>
-              <input
-                id="cover-zoom"
-                type="range"
-                min="1"
-                max="3"
-                step="0.05"
-                value={zoom}
-                onChange={(event) => setZoom(Number(event.target.value))}
-              />
-            </div>
-            <div className="cover-uploader__footer">
-              <button type="button" className="admin-ghost" onClick={closeCropper} disabled={isUploading}>
-                Cancel
-              </button>
-              <button
-                type="button"
-                className="admin-primary"
-                onClick={handleUpload}
-                disabled={isUploading || !croppedAreaPixels}
-              >
-                {isUploading ? "Uploading…" : "Save"}
-              </button>
+      {renderOverlay(
+        isCropping ? (
+          <div className="cover-uploader__overlay" role="dialog" aria-modal="true">
+            <div className="cover-uploader__sheet cover-uploader__sheet--crop">
+              <header className="cover-uploader__sheet-header">
+                <h2>Crop cover image</h2>
+                <button
+                  type="button"
+                  className="admin-ghost"
+                  onClick={closeCropper}
+                  disabled={isUploading}
+                >
+                  Close
+                </button>
+              </header>
+              <div className="cover-uploader__crop-container">
+                <ReactCrop
+                  crop={crop}
+                  onChange={(c) => setCrop(c)}
+                  onComplete={(c) => setCompletedCrop(c)}
+                  aspect={DEFAULT_ASPECT}
+                >
+                  <img
+                    ref={imgRef}
+                    src={imageSrc}
+                    alt="Crop preview"
+                    onLoad={onImageLoad}
+                  />
+                </ReactCrop>
+              </div>
+              <div className="cover-uploader__footer">
+                <button type="button" className="admin-ghost" onClick={closeCropper} disabled={isUploading}>
+                  Back
+                </button>
+                <button
+                  type="button"
+                  className="admin-primary"
+                  onClick={handleUpload}
+                  disabled={isUploading}
+                >
+                  {isUploading ? "Uploading…" : "Save crop"}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      ) : null}
+        )
+          : null
+      )}
 
-      {isExistingOpen ? (
-        <div className="cover-uploader__overlay" role="dialog" aria-modal="true">
-          <div className="cover-uploader__sheet cover-uploader__sheet--media">
-            <header className="cover-uploader__sheet-header">
-              <h2>Select existing image</h2>
-              <button type="button" className="admin-ghost" onClick={toggleExisting}>
-                Close
-              </button>
-            </header>
-            <div className="cover-uploader__media-grid">
-              {isLoadingMedia ? (
-                <p className="cover-uploader__empty">Loading…</p>
-              ) : mediaItems.length ? (
-                mediaItems.map((item) => (
-                  <button
-                    type="button"
-                    key={item.pathname}
-                    className="cover-uploader__media-item"
-                    onClick={() => handleSelectExisting(item)}
-                  >
-                    <img src={item.url} alt={item.alt || item.title || "Media option"} />
-                    <span>{item.title || item.alt || sanitizeAlt(item.pathname)}</span>
-                  </button>
-                ))
-              ) : (
-                <p className="cover-uploader__empty">No images available yet.</p>
-              )}
+      {renderOverlay(
+        isExistingOpen ? (
+          <div className="cover-uploader__overlay" role="dialog" aria-modal="true">
+            <div className="cover-uploader__sheet cover-uploader__sheet--media">
+              <header className="cover-uploader__sheet-header">
+                <h2>Select existing image</h2>
+                <button type="button" className="admin-ghost" onClick={toggleExisting}>
+                  Close
+                </button>
+              </header>
+              <div className="cover-uploader__media-grid">
+                {isLoadingMedia ? (
+                  <p className="cover-uploader__empty">Loading…</p>
+                ) : mediaItems.length ? (
+                  mediaItems.map((item) => (
+                    <button
+                      type="button"
+                      key={item.pathname}
+                      className="cover-uploader__media-item"
+                      onClick={() => handleSelectExisting(item)}
+                    >
+                      <img src={item.url} alt={item.alt || item.title || "Media option"} />
+                      <span>{item.title || item.alt || sanitizeAlt(item.pathname)}</span>
+                    </button>
+                  ))
+                ) : (
+                  <p className="cover-uploader__empty">No images available yet.</p>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      ) : null}
+        )
+          : null
+      )}
     </div>
   );
 }

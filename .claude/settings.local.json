@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(lsof:*)",
+      "Bash(npx playwright:*)",
+      "Bash(node:*)",
+      "Bash(npm install:*)",
+      "Bash(open \"http://localhost:3000/admin\")",
+      "WebSearch",
+      "Bash(npm uninstall:*)",
+      "WebFetch(domain:www.npmjs.com)",
+      "WebFetch(domain:github.com)",
+      "Bash(xargs kill:*)",
+      "Bash(npm run dev:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
