@@ -155,7 +155,14 @@ function ColorControl({ id, label, value, onChange, onClear, disabled }) {
   );
 }
 
-export default function RichTextEditor({ value, onChange, placeholder = 'Start editing…', initialContent }) {
+export default function RichTextEditor({
+  value,
+  onChange,
+  placeholder = 'Start editing…',
+  initialContent,
+  isFullscreen = false,
+  onToggleFullscreen
+}) {
   const fileInputRef = useRef(null);
   const uploadFilesRef = useRef(null);
   const abortControllersRef = useRef(new Set());
@@ -543,8 +550,19 @@ export default function RichTextEditor({ value, onChange, placeholder = 'Start e
     onChange?.(lastSyncedHtmlRef.current);
   }, [editor, onChange, snapshot]);
 
+  useEffect(() => {
+    if (!isFullscreen) {
+      return undefined;
+    }
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isFullscreen]);
+
   if (!editor) {
-    return <div className="admin-editor">Loading editor…</div>;
+    return <div className={`admin-editor${isFullscreen ? ' admin-editor--fullscreen' : ''}`}>Loading editor…</div>;
   }
 
   const canUndo = editor.can().undo?.() ?? false;
@@ -558,8 +576,10 @@ export default function RichTextEditor({ value, onChange, placeholder = 'Start e
     ? new Date(snapshot.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     : null;
 
+  const editorClassName = `admin-editor${isFullscreen ? ' admin-editor--fullscreen' : ''}`;
+
   return (
-    <div className="admin-editor">
+    <div className={editorClassName}>
       <div className="admin-toolbar" role="toolbar" aria-label="Rich text controls">
         <ToolbarGroup>
           <ToolbarButton
@@ -789,6 +809,17 @@ export default function RichTextEditor({ value, onChange, placeholder = 'Start e
             accept={ACCEPTED_FILE_TYPES}
           />
         </ToolbarGroup>
+
+        {onToggleFullscreen ? (
+          <ToolbarGroup>
+            <ToolbarButton
+              label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+              icon={<span aria-hidden="true">{isFullscreen ? '⤡' : '⤢'}</span>}
+              onClick={onToggleFullscreen}
+              ariaLabel={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+            />
+          </ToolbarGroup>
+        ) : null}
       </div>
       {snapshotTimestamp ? (
         <p className="admin-status admin-status--hint" aria-live="polite">

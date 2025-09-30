@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import AdminNav from '../../../components/admin-nav';
 
 function FileCard({ file, onDelete, onSaveMeta }) {
   const [title, setTitle] = useState(file.title || '');
@@ -136,6 +137,7 @@ export default function MediaLibraryPage() {
 
   return (
     <div className="admin-shell">
+      <AdminNav />
       <header className="admin-shell__header">
         <div>
           <h1>Media Library</h1>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import AdminNav from '../../../../components/admin-nav';
 
 export default function SiteTextSettingsPage() {
   const [brand, setBrand] = useState('');
@@ -63,6 +64,7 @@ export default function SiteTextSettingsPage() {
 
   return (
     <div className="admin-shell">
+      <AdminNav />
       <header className="admin-shell__header">
         <div>
           <h1>Site Text</h1>
