@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { formatDisplayDate } from '../lib/formatters';
+import { storeEntryReturnTarget } from '../lib/entryReturn';
 
 const TRANSITION_DURATION_MS = 480;
 
@@ -101,12 +102,16 @@ export default function EntryDetail({ type, entry }) {
 
       if (stageState === 'leaving') return;
 
+      if (entry?.slug) {
+        storeEntryReturnTarget(type, entry.slug);
+      }
+
       setStageState('leaving');
       leaveTimeoutRef.current = window.setTimeout(() => {
         router.push(href);
       }, TRANSITION_DURATION_MS);
     },
-    [router, stageState]
+    [entry?.slug, router, stageState, type]
   );
 
   if (!entry) return null;

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import EntryReturnFocus from '../../components/EntryReturnFocus';
 import { readEntries } from '../../lib/contentStore';
 import { formatDisplayDate } from '../../lib/formatters';
 
@@ -27,13 +28,23 @@ export default async function ProjectsPage() {
       {entries.length === 0 ? (
         <p className="channel__empty">No project entries yet. Add one from the admin console.</p>
       ) : (
-        <div className="channel__grid">
-          {entries.map((entry) => {
-            const tone = PROJECT_TONES[entry.slug] ?? 'neutral';
-            const href = `/projects/${entry.slug}`;
-            return (
-              <article key={entry.slug} className="project-entry" data-tone={tone}>
-                <Link href={href} className="project-entry__surface" aria-label={`Open dossier for ${entry.title}`}>
+        <EntryReturnFocus type="projects">
+          <div className="channel__grid">
+            {entries.map((entry) => {
+              const tone = PROJECT_TONES[entry.slug] ?? 'neutral';
+              const href = `/projects/${entry.slug}`;
+              return (
+                <article
+                  key={entry.slug}
+                  className="project-entry"
+                  data-tone={tone}
+                  data-entry-slug={entry.slug}
+                >
+                  <Link
+                    href={href}
+                    className="project-entry__surface"
+                    aria-label={`Open dossier for ${entry.title}`}
+                  >
                   <div className="project-entry__content">
                     {entry.createdAt ? (
                       <time className="project-entry__date" dateTime={entry.createdAt}>
@@ -63,11 +74,12 @@ export default async function ProjectsPage() {
                       <div className="project-entry__art" aria-hidden="true" />
                     )}
                   </figure>
-                </Link>
-              </article>
-            );
-          })}
-        </div>
+                  </Link>
+                </article>
+              );
+            })}
+          </div>
+        </EntryReturnFocus>
       )}
     </section>
   );

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import EntryReturnFocus from '../../components/EntryReturnFocus';
 import { readEntries } from '../../lib/contentStore';
 import { formatDisplayDate } from '../../lib/formatters';
 
@@ -21,29 +22,31 @@ export default async function WordsPage() {
       {entries.length === 0 ? (
         <p className="channel__empty">No editorial entries yet. Draft one in the admin console.</p>
       ) : (
-        <div className="channel__grid">
-          {entries.map((entry, index) => (
-            <article key={entry.slug} className="channel-card">
-              <div className="channel-card__meta">
-                <span className="channel-card__index">{String(index + 1).padStart(2, '0')}</span>
-                {entry.createdAt ? (
-                  <time className="channel-card__date" dateTime={entry.createdAt}>
-                    {formatDisplayDate(entry.createdAt)}
-                  </time>
-                ) : null}
-                {entry.tags?.length ? <p className="channel-card__tags">{entry.tags.join(' • ')}</p> : null}
-              </div>
+        <EntryReturnFocus type="words">
+          <div className="channel__grid">
+            {entries.map((entry, index) => (
+              <article key={entry.slug} className="channel-card" data-entry-slug={entry.slug}>
+                <div className="channel-card__meta">
+                  <span className="channel-card__index">{String(index + 1).padStart(2, '0')}</span>
+                  {entry.createdAt ? (
+                    <time className="channel-card__date" dateTime={entry.createdAt}>
+                      {formatDisplayDate(entry.createdAt)}
+                    </time>
+                  ) : null}
+                  {entry.tags?.length ? <p className="channel-card__tags">{entry.tags.join(' • ')}</p> : null}
+                </div>
 
-              <div className="channel-card__body">
-                <h2 className="channel-card__title">{entry.title}</h2>
-                {entry.summary ? <p className="channel-card__summary">{entry.summary}</p> : null}
-                <Link href={`/words/${entry.slug}`} className="channel-card__link">
-                  Read essay
-                </Link>
-              </div>
-            </article>
-          ))}
-        </div>
+                <div className="channel-card__body">
+                  <h2 className="channel-card__title">{entry.title}</h2>
+                  {entry.summary ? <p className="channel-card__summary">{entry.summary}</p> : null}
+                  <Link href={`/words/${entry.slug}`} className="channel-card__link">
+                    Read essay
+                  </Link>
+                </div>
+              </article>
+            ))}
+          </div>
+        </EntryReturnFocus>
       )}
     </section>
   );
