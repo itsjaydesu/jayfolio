@@ -30,41 +30,40 @@ export default async function ProjectsPage() {
         <div className="channel__grid">
           {entries.map((entry) => {
             const tone = PROJECT_TONES[entry.slug] ?? 'neutral';
+            const href = `/projects/${entry.slug}`;
             return (
               <article key={entry.slug} className="project-entry" data-tone={tone}>
-                <div className="project-entry__content">
-                  {entry.createdAt ? (
-                    <time className="project-entry__date" dateTime={entry.createdAt}>
-                      {formatDisplayDate(entry.createdAt).toUpperCase()}
-                    </time>
-                  ) : null}
-
-                  <div className="project-entry__body">
-                    {entry.tags?.length ? (
-                      <p className="project-entry__tags">{entry.tags.join(' • ')}</p>
+                <Link href={href} className="project-entry__surface" aria-label={`Open dossier for ${entry.title}`}>
+                  <div className="project-entry__content">
+                    {entry.createdAt ? (
+                      <time className="project-entry__date" dateTime={entry.createdAt}>
+                        {formatDisplayDate(entry.createdAt).toUpperCase()}
+                      </time>
                     ) : null}
-                    <h2 className="project-entry__title">{entry.title}</h2>
-                    {entry.summary ? <p className="project-entry__summary">{entry.summary}</p> : null}
+
+                    <div className="project-entry__body">
+                      {entry.tags?.length ? (
+                        <p className="project-entry__tags">{entry.tags.join(' • ')}</p>
+                      ) : null}
+                      <h2 className="project-entry__title">{entry.title}</h2>
+                      {entry.summary ? <p className="project-entry__summary">{entry.summary}</p> : null}
+                    </div>
+
+                    <span className="project-entry__cta">Open dossier ↗</span>
                   </div>
 
-                  <footer className="project-entry__footer">
-                    <Link href={`/projects/${entry.slug}`} className="project-entry__link">
-                      Open dossier
-                    </Link>
-                  </footer>
-                </div>
-
-                <figure className="project-entry__figure">
-                  {entry.coverImage?.url ? (
-                    <img
-                      src={entry.coverImage.url}
-                      alt={entry.coverImage.alt || `${entry.title} cover image`}
-                      className="project-entry__image"
-                    />
-                  ) : (
-                    <div className="project-entry__art" aria-hidden="true" />
-                  )}
-                </figure>
+                  <figure className="project-entry__figure">
+                    {entry.coverImage?.url ? (
+                      <img
+                        src={entry.coverImage.url}
+                        alt={entry.coverImage.alt || `${entry.title} cover image`}
+                        className="project-entry__image"
+                      />
+                    ) : (
+                      <div className="project-entry__art" aria-hidden="true" />
+                    )}
+                  </figure>
+                </Link>
               </article>
             );
           })}

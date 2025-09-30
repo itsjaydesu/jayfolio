@@ -111,7 +111,7 @@ export default function EntryDetail({ type, entry }) {
 
   if (!entry) return null;
 
-  const { title, summary, content, tags, createdAt } = entry;
+  const { title, summary, content, tags, createdAt, coverImage } = entry;
   const dateLabel = createdAt ? formatDisplayDate(createdAt) : '';
   const stageClasses = ['detail-stage'];
 
@@ -144,9 +144,20 @@ export default function EntryDetail({ type, entry }) {
               {tags?.length ? <span>{tags.join(' • ')}</span> : null}
             </div>
           </nav>
-          <div className="detail-view__intro">
-            <h1>{title}</h1>
-            {summary && <p>{summary}</p>}
+          <div className="detail-view__hero">
+            <div className="detail-view__intro">
+              <h1>{title}</h1>
+              {summary && <p>{summary}</p>}
+            </div>
+            {coverImage?.url ? (
+              <figure className="detail-view__media">
+                <img
+                  src={coverImage.url}
+                  alt={coverImage.alt || `${title} cover image`}
+                  className="detail-view__media-image"
+                />
+              </figure>
+            ) : null}
           </div>
         </header>
         <article className="detail-view__body">
