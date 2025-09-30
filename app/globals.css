@@ -2889,7 +2889,7 @@ a {
 
 .is-return-focus {
   position: relative;
-  animation: return-focus-breathe 1.2s ease;
+  animation: return-focus-breathe 1.8s cubic-bezier(0.22, 1, 0.32, 1);
 }
 
 .project-entry.is-return-focus .project-entry__surface {
@@ -3306,7 +3306,17 @@ a {
     );
   mask-size: 220% 100%, 14px 100%;
   mask-repeat: no-repeat, repeat;
-  animation: signalSweep 10s linear infinite;
+  opacity: 1;
+  animation: signalSweep 12s linear infinite;
+}
+
+.project-entry.is-return-focus .project-entry__signal {
+  will-change: opacity, transform, filter;
+  animation:
+    signalReturnFade 2.1s cubic-bezier(0.16, 1, 0.3, 1) both,
+    signalSweep 12s linear infinite;
+  animation-delay: 0s, 0.18s;
+  animation-fill-mode: both, none;
 }
 
 @keyframes signalSweep {
@@ -3315,6 +3325,51 @@ a {
   }
   to {
     mask-position: -220% 0, 100% 0;
+  }
+}
+
+@keyframes signalReturnFade {
+  from {
+    opacity: 0;
+    transform: scale(1.08);
+    filter: blur(16px);
+  }
+
+  35% {
+    opacity: 0.45;
+    transform: scale(1.03);
+    filter: blur(8px);
+  }
+
+  68% {
+    opacity: 1;
+    transform: scale(1.005);
+    filter: blur(2px);
+  }
+
+  88% {
+    opacity: 0.92;
+    transform: scale(1);
+    filter: blur(1px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .is-return-focus {
+    animation: none;
+    filter: none;
+  }
+
+  .project-entry.is-return-focus .project-entry__signal {
+    animation: none;
+    filter: none;
+    opacity: 1;
   }
 }
 
@@ -3516,11 +3571,14 @@ a {
 @keyframes return-focus-breathe {
   0% {
     transform: translateY(0);
+    filter: drop-shadow(0 0 0 rgba(120, 200, 255, 0));
   }
   45% {
     transform: translateY(-4px);
+    filter: drop-shadow(0 18px 38px rgba(30, 120, 180, 0.22));
   }
   100% {
     transform: translateY(0);
+    filter: drop-shadow(0 0 0 rgba(120, 200, 255, 0));
   }
 }
