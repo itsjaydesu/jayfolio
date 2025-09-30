@@ -2726,53 +2726,87 @@ a {
   color: rgba(180, 204, 210, 0.6);
 }
 
+
 .project-entry {
   position: relative;
   display: grid;
-  gap: clamp(1.2rem, 3vw, 2rem);
-  padding-bottom: clamp(2rem, 4vw, 3rem);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.project-entry:last-child {
-  border-bottom: none;
+  gap: clamp(1.6rem, 4vw, 3.4rem);
+  align-items: stretch;
 }
 
 @media (min-width: 900px) {
   .project-entry {
-    grid-template-columns: minmax(220px, 0.95fr) minmax(0, 1fr);
-    align-items: stretch;
+    grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+  }
+
+  .project-entry__content {
+    grid-column: 1;
+  }
+
+  .project-entry__figure {
+    grid-column: 2;
   }
 }
 
-.project-entry__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1.5rem;
+.project-entry__content {
+  position: relative;
+  display: grid;
+  gap: clamp(1.2rem, 3vw, 2.2rem);
+  padding: clamp(1.6rem, 4vw, 2.8rem);
+  border-radius: 36px;
+  background: linear-gradient(
+      160deg,
+      rgba(12, 18, 26, 0.88),
+      rgba(4, 6, 10, 0.94)
+    );
+  border: 1px solid var(--border-soft);
+  box-shadow: 0 26px 48px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(18px);
+  isolation: isolate;
 }
 
-.project-entry__index {
-  font-size: clamp(1rem, 3.5vw, 2rem);
-  letter-spacing: 0.4em;
-  text-transform: uppercase;
-  color: rgba(180, 236, 242, 0.6);
+.project-entry__content::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at 18% -5%,
+    rgba(126, 208, 255, 0.18),
+    transparent 60%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+.project-entry__content > * {
+  position: relative;
+  z-index: 1;
 }
 
 .project-entry__date {
-  font-size: 0.75rem;
-  letter-spacing: 0.28em;
+  margin: 0;
+  font-size: clamp(0.82rem, 2.3vw, 1rem);
+  letter-spacing: 0.32em;
   text-transform: uppercase;
-  color: rgba(172, 216, 226, 0.6);
+  font-family: "IBM Plex Mono", "Lucida Console", "Courier New", monospace;
+  color: rgba(190, 242, 255, 0.82);
+  justify-self: start;
 }
 
 .project-entry__figure {
   position: relative;
   width: 100%;
-  aspect-ratio: 3 / 2;
-  border-radius: 24px;
+  aspect-ratio: 4 / 3;
+  border-radius: 40px;
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.04);
+  background: linear-gradient(
+    140deg,
+    rgba(20, 28, 40, 0.82),
+    rgba(4, 6, 12, 0.96)
+  );
+  border: 1px solid var(--border-soft);
+  box-shadow: 0 28px 54px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
 .project-entry__art {
@@ -2834,9 +2868,32 @@ a {
     linear-gradient(145deg, rgba(22, 32, 46, 0.85), rgba(6, 8, 12, 0.92));
 }
 
+.project-entry__figure::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+      circle at 24% 28%,
+      rgba(180, 240, 255, 0.15),
+      transparent 45%
+    ),
+    linear-gradient(160deg, rgba(0, 8, 16, 0.1), rgba(0, 0, 0, 0.48));
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+.project-entry__image {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  transform: scale(1.02);
+  filter: saturate(1.1) contrast(1.05);
+}
+
 .project-entry__body {
   display: grid;
-  gap: clamp(0.6rem, 1.5vw, 1.2rem);
+  gap: clamp(0.75rem, 2vw, 1.4rem);
   align-content: start;
 }
 
@@ -2845,7 +2902,7 @@ a {
   font-size: 0.72rem;
   letter-spacing: 0.36em;
   text-transform: uppercase;
-  color: rgba(182, 220, 232, 0.65);
+  color: rgba(182, 224, 236, 0.7);
 }
 
 .project-entry__title {
@@ -2853,12 +2910,13 @@ a {
   font-size: clamp(1.6rem, 4vw, 2.2rem);
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  color: rgba(238, 246, 250, 0.92);
 }
 
 .project-entry__summary {
   margin: 0;
   line-height: 1.75;
-  color: rgba(222, 234, 238, 0.82);
+  color: rgba(214, 228, 234, 0.86);
 }
 
 .project-entry__footer {
@@ -2874,8 +2932,8 @@ a {
   letter-spacing: 0.32em;
   text-transform: uppercase;
   text-decoration: none;
-  color: rgba(182, 248, 255, 0.85);
-  transition: transform 0.2s ease, color 0.2s ease;
+  color: rgba(186, 252, 255, 0.88);
+  transition: transform 0.2s ease, color 0.2s ease, text-shadow 0.2s ease;
 }
 
 .project-entry__link::after {
@@ -2888,6 +2946,7 @@ a {
 .project-entry__link:focus-visible {
   transform: translateX(0.25rem);
   color: rgba(226, 252, 255, 0.95);
+  text-shadow: 0 0 12px rgba(170, 240, 255, 0.4);
 }
 
 @media (max-width: 720px) {
