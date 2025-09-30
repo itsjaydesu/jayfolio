@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
-import { usePathname } from 'next/navigation';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import RetroMenu from './RetroMenu';
 import { SITE_TEXT_DEFAULTS } from '../lib/siteTextDefaults';
 import SceneCanvas from './SceneCanvas';
@@ -22,8 +22,12 @@ const DEFAULT_STATUS = {
 
 export default function SiteShell({ children }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [brand, setBrand] = useState(SITE_TEXT_DEFAULTS.brand);
   const [menuItems, setMenuItems] = useState(DEFAULT_MENU_ITEMS);
+  const [isReturningHome, setIsReturningHome] = useState(false);
+  const returnTimerRef = useRef(null);
+  const [menuVisible, setMenuVisible] = useState(() => !pathname || pathname === '/');
 
   useEffect(() => {
     let ignore = false;
@@ -70,6 +74,16 @@ export default function SiteShell({ children }) {
   const [hasScrolled, setHasScrolled] = useState(false);
 
   useEffect(() => {
+    router.prefetch('/');
+    return () => {
+      if (returnTimerRef.current) {
+        window.clearTimeout(returnTimerRef.current);
+        returnTimerRef.current = null;
+      }
+    };
+  }, [router]);
+
+  useEffect(() => {
     if (typeof window === 'undefined') return;
 
     const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -93,6 +107,21 @@ export default function SiteShell({ children }) {
   }, [activeStatus]);
 
   useEffect(() => {
+    if (!isHome) {
+      setMenuVisible(false);
+      return;
+    }
+
+    let frameId = requestAnimationFrame(() => {
+      setMenuVisible(true);
+    });
+
+    return () => {
+      cancelAnimationFrame(frameId);
+    };
+  }, [isHome]);
+
+  useEffect(() => {
     if (isDetailView || typeof window === 'undefined') {
       setHasScrolled(false);
       return;
@@ -110,6 +139,15 @@ export default function SiteShell({ children }) {
       window.removeEventListener('scroll', handleScroll);
     };
   }, [isDetailView, pathname]);
+
+  useEffect(() => {
+    if (!isHome) return;
+    if (returnTimerRef.current) {
+      window.clearTimeout(returnTimerRef.current);
+      returnTimerRef.current = null;
+    }
+    setIsReturningHome(false);
+  }, [isHome]);
 
   const handleStatusChange = (next) => {
     if (!next) return;
@@ -129,6 +167,39 @@ export default function SiteShell({ children }) {
     setStatus(activeStatus);
   };
 
+  const handleNavigateHome = (event) => {
+    if (isHome || isReturningHome) return;
+    if (event) {
+      if (
+        event.metaKey ||
+        event.ctrlKey ||
+        event.shiftKey ||
+        event.altKey ||
+        ('button' in event && event.button !== 0)
+      ) {
+        return;
+      }
+      event.preventDefault();
+    }
+
+    const reduceMotion =
+      typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (reduceMotion) {
+      router.push('/');
+      return;
+    }
+
+    setIsReturningHome(true);
+    if (returnTimerRef.current) {
+      window.clearTimeout(returnTimerRef.current);
+    }
+
+    returnTimerRef.current = window.setTimeout(() => {
+      router.push('/');
+    }, 520);
+  };
+
   if (isAdminView) {
     return (
       <div className="site-shell site-shell--plain">
@@ -144,7 +215,7 @@ export default function SiteShell({ children }) {
     return (
       <>
         <SceneCanvas activeSection={activeSectionForCanvas} isPaused={false} />
-        <div className="menu-overlay is-visible">
+        <div className={`menu-overlay${menuVisible ? ' is-visible' : ''}`}>
           <RetroMenu
             id="retro-menu"
             items={menuItems}
@@ -170,6 +241,7 @@ export default function SiteShell({ children }) {
             <header
               className={`site-shell__header${hasScrolled ? ' site-shell__header--shaded' : ''}`}
               data-nav-ready={navReady ? 'true' : 'false'}
+              data-returning-home={isReturningHome ? 'true' : 'false'}
               style={
                 navReady
                   ? undefined
@@ -182,6 +254,7 @@ export default function SiteShell({ children }) {
               <Link
                 href="/"
                 className="site-shell__brand"
+                onClick={handleNavigateHome}
                 style={
                   navReady
                     ? undefined
@@ -246,7 +319,9 @@ export default function SiteShell({ children }) {
           </p>
           <main
             key={pathname}
-            className={`site-shell__main${isDetailView ? ' is-detail' : ' site-shell__transition'}`}
+            className={`site-shell__main${isDetailView ? ' is-detail' : ' site-shell__transition'}${
+              isReturningHome ? ' is-fading-out' : ''
+            }`}
           >
             {children}
           </main>

@@ -1369,6 +1369,11 @@ a {
     backdrop-filter 0.36s cubic-bezier(0.33, 1, 0.68, 1);
   will-change: opacity, transform;
 }
+.site-shell__header[data-returning-home="true"] {
+  opacity: 0;
+  transform: translate(-50%, -28px);
+  pointer-events: none;
+}
 .site-shell__header::before,
 .site-shell__header::after {
   content: "";
@@ -2806,6 +2811,8 @@ a {
   margin: 0 auto;
   display: grid;
   gap: clamp(2.2rem, 6vw, 3.4rem);
+  transition: opacity 0.52s cubic-bezier(0.33, 1, 0.68, 1),
+    transform 0.52s cubic-bezier(0.33, 1, 0.68, 1);
 }
 
 .site-shell__main.is-detail {
@@ -2814,6 +2821,12 @@ a {
 
 .site-shell__transition {
   animation: site-shell-fade 0.55s cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.site-shell__main.is-fading-out {
+  opacity: 0;
+  transform: translateY(24px);
+  pointer-events: none;
 }
 
 @keyframes site-shell-fade {
