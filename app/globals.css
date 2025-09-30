@@ -114,6 +114,68 @@ a {
   transform: scale(1) translateY(0);
 }
 
+.menu-overlay .retro-menu--centerpiece {
+  opacity: 0;
+  transform: translate(-50%, 26px) scale(0.94);
+  filter: blur(20px);
+  transition: opacity 0.68s cubic-bezier(0.33, 1, 0.68, 1),
+    transform 0.68s cubic-bezier(0.33, 1, 0.68, 1),
+    filter 0.68s cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.menu-overlay.is-visible .retro-menu--centerpiece {
+  opacity: 1;
+  transform: translate(-50%, 0) scale(1);
+  filter: blur(0);
+  transition-delay: 0.12s;
+}
+
+.menu-overlay .retro-menu__list,
+.menu-overlay .retro-menu__status {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.52s cubic-bezier(0.33, 1, 0.68, 1),
+    transform 0.52s cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.menu-overlay.is-visible .retro-menu__list,
+.menu-overlay.is-visible .retro-menu__status {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.menu-overlay .retro-menu__item {
+  opacity: 0;
+  transform: translateX(-14px);
+  transition: opacity 0.42s cubic-bezier(0.33, 1, 0.68, 1),
+    transform 0.42s cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.menu-overlay.is-visible .retro-menu__item {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.menu-overlay.is-visible .retro-menu__item:nth-child(1) {
+  transition-delay: 0.22s;
+}
+
+.menu-overlay.is-visible .retro-menu__item:nth-child(2) {
+  transition-delay: 0.28s;
+}
+
+.menu-overlay.is-visible .retro-menu__item:nth-child(3) {
+  transition-delay: 0.34s;
+}
+
+.menu-overlay.is-visible .retro-menu__item:nth-child(4) {
+  transition-delay: 0.4s;
+}
+
+.menu-overlay.is-visible .retro-menu__status {
+  transition-delay: 0.46s;
+}
+
 .content-stage {
   position: fixed;
   inset: 0;
@@ -2857,6 +2919,30 @@ a {
   .site-shell__nav-link,
   .site-shell__social {
     transition: color 0.2s ease !important;
+  }
+
+  .menu-overlay,
+  .menu-overlay .retro-menu--centerpiece,
+  .menu-overlay .retro-menu__list,
+  .menu-overlay .retro-menu__status {
+    transition: none !important;
+  }
+
+  .menu-overlay .retro-menu--centerpiece {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+    filter: none;
+  }
+
+  .menu-overlay .retro-menu__list,
+  .menu-overlay .retro-menu__status {
+    opacity: 1;
+    transform: none;
+  }
+
+  .menu-overlay .retro-menu__item {
+    opacity: 1;
+    transform: none;
   }
 }
 
