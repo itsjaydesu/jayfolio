@@ -5,6 +5,12 @@ import { formatDisplayDate } from '../../lib/formatters';
 
 export const dynamic = 'force-dynamic';
 
+const WORD_TONES = {
+  'slow-scan-memo': 'violet',
+  'field-lexicon': 'teal',
+  'dispatch-09': 'magenta'
+};
+
 export default async function WordsPage() {
   const entries = await readEntries('words');
 
@@ -24,27 +30,45 @@ export default async function WordsPage() {
       ) : (
         <EntryReturnFocus type="words">
           <div className="channel__grid">
-            {entries.map((entry, index) => (
-              <article key={entry.slug} className="channel-card" data-entry-slug={entry.slug}>
-                <div className="channel-card__meta">
-                  <span className="channel-card__index">{String(index + 1).padStart(2, '0')}</span>
-                  {entry.createdAt ? (
-                    <time className="channel-card__date" dateTime={entry.createdAt}>
-                      {formatDisplayDate(entry.createdAt)}
-                    </time>
-                  ) : null}
-                  {entry.tags?.length ? <p className="channel-card__tags">{entry.tags.join(' • ')}</p> : null}
-                </div>
+            {entries.map((entry) => {
+              const tone = WORD_TONES[entry.slug] ?? 'neutral';
+              return (
+                <article
+                  key={entry.slug}
+                  className="project-entry project-entry--words"
+                  data-tone={tone}
+                  data-entry-slug={entry.slug}
+                >
+                  <Link
+                    href={`/words/${entry.slug}`}
+                    className="project-entry__surface"
+                    aria-label={`Open essay ${entry.title}`}
+                  >
+                    <div className="project-entry__content">
+                      {entry.createdAt ? (
+                        <time className="project-entry__date" dateTime={entry.createdAt}>
+                          {formatDisplayDate(entry.createdAt).toUpperCase()}
+                        </time>
+                      ) : null}
 
-                <div className="channel-card__body">
-                  <h2 className="channel-card__title">{entry.title}</h2>
-                  {entry.summary ? <p className="channel-card__summary">{entry.summary}</p> : null}
-                  <Link href={`/words/${entry.slug}`} className="channel-card__link">
-                    Read essay
+                      <div className="project-entry__body">
+                        {entry.tags?.length ? (
+                          <p className="project-entry__tags">{entry.tags.join(' • ')}</p>
+                        ) : null}
+                        <h2 className="project-entry__title">{entry.title}</h2>
+                        {entry.summary ? <p className="project-entry__summary">{entry.summary}</p> : null}
+                      </div>
+
+                      <span className="project-entry__cta">Open log ↗</span>
+                    </div>
+
+                    <figure className="project-entry__figure project-entry__figure--words" aria-hidden="true">
+                      <div className="project-entry__art" />
+                    </figure>
                   </Link>
-                </div>
-              </article>
-            ))}
+                </article>
+              );
+            })}
           </div>
         </EntryReturnFocus>
       )}
