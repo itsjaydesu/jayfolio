@@ -67,6 +67,7 @@ export default function SiteShell({ children }) {
   );
   const [status, setStatus] = useState(activeStatus);
   const [navReady, setNavReady] = useState(false);
+  const [hasScrolled, setHasScrolled] = useState(false);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -90,6 +91,25 @@ export default function SiteShell({ children }) {
   useEffect(() => {
     setStatus(activeStatus);
   }, [activeStatus]);
+
+  useEffect(() => {
+    if (isDetailView || typeof window === 'undefined') {
+      setHasScrolled(false);
+      return;
+    }
+
+    const SCROLL_TRIGGER_PX = 12;
+    const handleScroll = () => {
+      const next = window.scrollY > SCROLL_TRIGGER_PX;
+      setHasScrolled((prev) => (prev === next ? prev : next));
+    };
+
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [isDetailView, pathname]);
 
   const handleStatusChange = (next) => {
     if (!next) return;
@@ -148,7 +168,7 @@ export default function SiteShell({ children }) {
         <div className="site-shell__container">
           {!isDetailView ? (
             <header
-              className="site-shell__header"
+              className={`site-shell__header${hasScrolled ? ' site-shell__header--shaded' : ''}`}
               data-nav-ready={navReady ? 'true' : 'false'}
               style={
                 navReady
