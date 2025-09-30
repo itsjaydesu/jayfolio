@@ -114,6 +114,7 @@ export default function EntryDetail({ type, entry }) {
   const { title, summary, content, tags, createdAt, coverImage } = entry;
   const dateLabel = createdAt ? formatDisplayDate(createdAt) : '';
   const stageClasses = ['detail-stage'];
+  const typeLabel = type ? `${type.charAt(0).toUpperCase()}${type.slice(1)}` : '';
 
   if (stageState === 'entering') {
     stageClasses.push('is-fading-in');
@@ -130,36 +131,56 @@ export default function EntryDetail({ type, entry }) {
   return (
     <div className={stageClassName} ref={stageRef}>
       <div className={`detail-view detail-view--${type}`}>
-        <header className="detail-view__header">
-          <nav className="detail-view__nav" aria-label="Detail navigation">
-            <Link
-              href={`/${type}`}
-              className="detail-view__back"
-              onClick={(event) => handleNavigateAway(event, `/${type}`)}
-            >
-              Back to {type}
-            </Link>
-            <div className="detail-view__stamps">
-              {dateLabel && <span>{dateLabel}</span>}
-              {tags?.length ? <span>{tags.join(' • ')}</span> : null}
-            </div>
-          </nav>
-          <div className="detail-view__hero">
-            <div className="detail-view__intro">
-              <h1>{title}</h1>
-              {summary && <p>{summary}</p>}
-            </div>
-            {coverImage?.url ? (
-              <figure className="detail-view__media">
-                <img
-                  src={coverImage.url}
-                  alt={coverImage.alt || `${title} cover image`}
-                  className="detail-view__media-image"
-                />
-              </figure>
-            ) : null}
+        <nav className="detail-view__nav" aria-label="Detail navigation">
+          <Link
+            href={`/${type}`}
+            className="detail-view__back"
+            onClick={(event) => handleNavigateAway(event, `/${type}`)}
+          >
+            Back to {type}
+          </Link>
+          <div className="detail-view__stamps">
+            {typeLabel && <span>{typeLabel}</span>}
           </div>
+        </nav>
+
+        <header className="detail-view__header">
+          <div className="detail-view__title-group">
+            <h1 className="detail-view__title">{title}</h1>
+            {summary ? <p className="detail-view__summary">{summary}</p> : null}
+          </div>
+          {(dateLabel || tags?.length) && (
+            <div className="detail-view__meta" aria-label="Entry metadata">
+              {dateLabel ? (
+                <div className="detail-view__meta-item">
+                  <span className="detail-view__meta-label">Published</span>
+                  <span className="detail-view__meta-value">{dateLabel}</span>
+                </div>
+              ) : null}
+              {tags?.length ? (
+                <div className="detail-view__meta-item">
+                  <span className="detail-view__meta-label">Tags</span>
+                  <ul className="detail-view__meta-tags">
+                    {tags.map((tag) => (
+                      <li key={tag}>{tag}</li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+            </div>
+          )}
         </header>
+
+        {coverImage?.url ? (
+          <figure className="detail-view__media">
+            <img
+              src={coverImage.url}
+              alt={coverImage.alt || `${title} cover image`}
+              className="detail-view__media-image"
+            />
+          </figure>
+        ) : null}
+
         <article className="detail-view__body">
           <div className="detail-view__content" dangerouslySetInnerHTML={{ __html: content }} />
         </article>
