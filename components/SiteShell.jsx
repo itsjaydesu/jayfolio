@@ -27,7 +27,7 @@ export default function SiteShell({ children }) {
   const [menuItems, setMenuItems] = useState(DEFAULT_MENU_ITEMS);
   const [isReturningHome, setIsReturningHome] = useState(false);
   const returnTimerRef = useRef(null);
-  const [menuVisible, setMenuVisible] = useState(() => !pathname || pathname === '/');
+  const [menuVisible, setMenuVisible] = useState(false);
 
   useEffect(() => {
     let ignore = false;
@@ -109,6 +109,17 @@ export default function SiteShell({ children }) {
   useEffect(() => {
     if (!isHome) {
       setMenuVisible(false);
+      return;
+    }
+
+    if (typeof window === 'undefined') {
+      setMenuVisible(true);
+      return;
+    }
+
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (motionQuery.matches) {
+      setMenuVisible(true);
       return;
     }
 

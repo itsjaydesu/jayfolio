@@ -39,6 +39,7 @@ export default function SceneCanvas({ activeSection, isPaused = false }) {
       let stats;
       let particles;
       let animationFrame;
+      let readinessFrame = null;
       let paused = false;
 
       const clock = new THREE.Clock();
@@ -345,6 +346,20 @@ export default function SceneCanvas({ activeSection, isPaused = false }) {
       init();
       animate();
 
+      container.classList.remove('is-ready');
+
+      const markReady = () => {
+        container.classList.add('is-ready');
+        readinessFrame = null;
+      };
+
+      const reduceMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+      if (reduceMotionQuery.matches) {
+        markReady();
+      } else {
+        readinessFrame = requestAnimationFrame(markReady);
+      }
+
       stateRef.current = {
         applyMenuInfluence: (key) => {
           const influence = influences[key];
@@ -362,6 +377,10 @@ export default function SceneCanvas({ activeSection, isPaused = false }) {
 
       return () => {
         cancelAnimationFrame(animationFrame);
+        if (readinessFrame !== null) {
+          cancelAnimationFrame(readinessFrame);
+        }
+        container.classList.remove('is-ready');
         window.removeEventListener('resize', onWindowResize);
         container.removeEventListener('pointermove', onPointerMove);
         container.removeEventListener('pointerdown', onPointerDown);
