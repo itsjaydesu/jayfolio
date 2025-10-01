@@ -646,15 +646,14 @@ export default function RichTextEditor({
           />
         </ToolbarGroup>
 
-        <ToolbarGroup className="admin-toolbar__group--stacked">
-          <label htmlFor="admin-editor-block" className="admin-toolbar__select-label">
-            Block
-          </label>
+        <ToolbarGroup className="admin-toolbar__group--select">
           <select
             id="admin-editor-block"
-            className="admin-toolbar__select"
+            className="admin-toolbar__select admin-toolbar__select--compact"
             value={toolbarState.block}
             onChange={(event) => setBlockStyle(event.target.value)}
+            aria-label="Block style"
+            title="Block style"
           >
             {BLOCK_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
