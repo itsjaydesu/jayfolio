@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import AdminNav from '../../components/admin-nav';
 import CoverImageUploader from '../../components/cover-image-uploader';
 import RichTextEditor from '../../components/rich-text-editor';
-import { ChevronDoubleLeftIcon, ChevronDoubleRightIcon } from '../../components/icons';
+import { ChevronDoubleDownIcon, ChevronDoubleUpIcon } from '../../components/icons';
 
 const TYPE_OPTIONS = [
   { id: 'projects', label: 'Projects' },
@@ -70,7 +70,7 @@ export default function AdminPage() {
   const [selectedSlug, setSelectedSlug] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isEntryPanelCollapsed, setIsEntryPanelCollapsed] = useState(false);
   const [isEditorFullscreen, setIsEditorFullscreen] = useState(false);
 
   const refreshEntries = useCallback(async (type) => {
@@ -147,8 +147,8 @@ export default function AdminPage() {
     setForm((prev) => ({ ...prev, coverImageUrl: url || '', coverImageAlt: alt || '' }));
   }, []);
 
-  const toggleSidebar = useCallback(() => {
-    setIsSidebarCollapsed((prev) => !prev);
+  const toggleEntryPanel = useCallback(() => {
+    setIsEntryPanelCollapsed((prev) => !prev);
   }, []);
 
   const toggleEditorFullscreen = useCallback(() => {
@@ -267,44 +267,50 @@ export default function AdminPage() {
 
       <section
         className={`admin-layout${
-          isSidebarCollapsed ? ' admin-layout--sidebar-collapsed' : ''
+          isEntryPanelCollapsed ? ' admin-layout--panel-collapsed' : ''
         }${isEditorFullscreen ? ' admin-layout--editor-fullscreen' : ''}`}
       >
-        <aside className={`admin-drawer${isSidebarCollapsed ? ' is-collapsed' : ''}`} aria-label="Entries">
+        <div
+          className={`admin-drawer admin-drawer--top${isEntryPanelCollapsed ? ' is-collapsed' : ''}`}
+          aria-label="Entries"
+          role="region"
+        >
           <div className="admin-drawer__top">
             <button
               type="button"
               className="admin-icon-button"
-              onClick={toggleSidebar}
-              aria-label={isSidebarCollapsed ? 'Expand entry list' : 'Collapse entry list'}
+              onClick={toggleEntryPanel}
+              aria-label={isEntryPanelCollapsed ? 'Expand entry panel' : 'Collapse entry panel'}
             >
               <span aria-hidden="true" className="admin-icon-button__icon">
-                {isSidebarCollapsed ? <ChevronDoubleRightIcon /> : <ChevronDoubleLeftIcon />}
+                {isEntryPanelCollapsed ? <ChevronDoubleDownIcon /> : <ChevronDoubleUpIcon />}
               </span>
             </button>
             <button type="button" className="admin-ghost" onClick={handleNew}>
               New Entry
             </button>
           </div>
-          <ul className="admin-drawer__list">
-            {entries.map((entry) => {
-              const isActive = selectedSlug === entry.slug;
-              return (
-                <li key={entry.slug}>
-                  <button
-                    type="button"
-                    className={`admin-drawer__item${isActive ? ' is-selected' : ''}`}
-                    onClick={() => handleSelect(entry)}
-                  >
-                    <span className="admin-drawer__item-title">{entry.title || 'Untitled entry'}</span>
-                    <span className="admin-drawer__item-meta">{formatListMeta(entry)}</span>
-                  </button>
-                </li>
-              );
-            })}
-            {!entries.length && <li className="admin-drawer__empty">No entries yet</li>}
-          </ul>
-        </aside>
+          <div className="admin-drawer__scroller">
+            <ul className="admin-drawer__list">
+              {entries.map((entry) => {
+                const isActive = selectedSlug === entry.slug;
+                return (
+                  <li key={entry.slug}>
+                    <button
+                      type="button"
+                      className={`admin-drawer__item${isActive ? ' is-selected' : ''}`}
+                      onClick={() => handleSelect(entry)}
+                    >
+                      <span className="admin-drawer__item-title">{entry.title || 'Untitled entry'}</span>
+                      <span className="admin-drawer__item-meta">{formatListMeta(entry)}</span>
+                    </button>
+                  </li>
+                );
+              })}
+              {!entries.length && <li className="admin-drawer__empty">No entries yet</li>}
+            </ul>
+          </div>
+        </div>
 
         <div className="admin-workspace">
         <div className="admin-workspace__header">

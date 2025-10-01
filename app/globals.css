@@ -626,12 +626,13 @@ a {
 
 .admin-layout {
   display: grid;
-  grid-template-columns: clamp(240px, 28vw, 320px) minmax(0, 1fr);
-  gap: clamp(1.2rem, 3vw, 2.2rem);
-  align-items: start;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: clamp(1.4rem, 3vw, 2.2rem);
+  align-items: stretch;
 }
-.admin-layout--sidebar-collapsed {
-  grid-template-columns: minmax(72px, 96px) minmax(0, 1fr);
+.admin-layout--panel-collapsed {
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: clamp(0.8rem, 2.2vw, 1.4rem);
 }
 .admin-layout--editor-fullscreen::after {
   content: "";
@@ -646,8 +647,9 @@ a {
 .admin-drawer {
   position: relative;
   display: grid;
-  gap: 1rem;
+  gap: clamp(0.8rem, 2vw, 1.2rem);
   align-self: stretch;
+  width: 100%;
   padding: clamp(1rem, 3vw, 1.6rem);
   border-radius: 28px;
   border: 1px solid rgba(118, 202, 210, 0.24);
@@ -657,46 +659,63 @@ a {
     rgba(2, 14, 20, 0.92)
   );
   box-shadow: 0 24px 44px rgba(0, 0, 0, 0.46);
-  transition: width 0.3s ease;
+  transition: padding 0.3s ease, border-color 0.3s ease, background 0.3s ease;
+}
+.admin-drawer--top {
+  border-radius: 28px;
 }
 .admin-drawer.is-collapsed {
-  padding-inline: clamp(0.8rem, 2vw, 1.2rem);
+  padding-block: clamp(0.7rem, 2vw, 1rem);
 }
-.admin-drawer.is-collapsed .admin-ghost {
+.admin-drawer.is-collapsed .admin-drawer__scroller {
   display: none;
-}
-.admin-drawer.is-collapsed .admin-drawer__item-meta {
-  display: none;
-}
-.admin-drawer.is-collapsed .admin-drawer__item-title {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 .admin-drawer__top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.7rem;
+  gap: clamp(0.6rem, 2vw, 1rem);
+}
+.admin-drawer__scroller {
+  overflow-x: auto;
+  margin: 0 calc(-1 * clamp(0.35rem, 1.5vw, 0.8rem));
+  padding-inline: clamp(0.35rem, 1.5vw, 0.8rem);
+  padding-bottom: 0.35rem;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
+}
+.admin-drawer__scroller::-webkit-scrollbar {
+  height: 6px;
+}
+.admin-drawer__scroller::-webkit-scrollbar-thumb {
+  background: rgba(118, 202, 210, 0.28);
+  border-radius: 999px;
+}
+.admin-drawer__scroller::-webkit-scrollbar-track {
+  background: transparent;
 }
 .admin-drawer__list {
   list-style: none;
   margin: 0;
   padding: 0;
-  display: grid;
-  gap: 0.6rem;
+  display: inline-flex;
+  gap: clamp(0.6rem, 2vw, 1.1rem);
+  min-height: 100%;
+  width: max-content;
 }
 .admin-drawer__item {
-  width: 100%;
-  padding: 0.75rem 0.95rem;
+  flex: 0 0 auto;
+  min-width: clamp(200px, 28vw, 280px);
+  padding: 0.8rem 1rem;
   border-radius: 18px;
   border: 1px solid rgba(118, 202, 210, 0.18);
   background: rgba(5, 32, 40, 0.72);
   color: inherit;
   display: grid;
-  gap: 0.4rem;
+  gap: 0.45rem;
   text-align: left;
   cursor: pointer;
+  scroll-snap-align: start;
   transition: transform 0.18s ease, box-shadow 0.18s ease,
     border-color 0.18s ease;
 }
@@ -726,6 +745,7 @@ a {
   color: rgba(176, 214, 220, 0.68);
 }
 .admin-drawer__empty {
+  min-width: clamp(200px, 28vw, 240px);
   padding: 1rem;
   border-radius: 16px;
   border: 1px dashed rgba(118, 202, 210, 0.32);
@@ -734,6 +754,8 @@ a {
   text-transform: uppercase;
   font-size: 0.64rem;
   color: rgba(186, 220, 224, 0.6);
+  display: grid;
+  place-items: center;
 }
 
 .admin-workspace {
@@ -1055,10 +1077,10 @@ a {
 
 @media (max-width: 960px) {
   .admin-layout {
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
   }
-  .admin-layout--sidebar-collapsed {
-    grid-template-columns: minmax(0, 1fr);
+  .admin-layout--panel-collapsed {
+    grid-template-rows: auto minmax(0, 1fr);
   }
   .admin-drawer {
     position: sticky;

@@ -149,6 +149,42 @@ export function ChevronDoubleRightIcon({ className }) {
   );
 }
 
+export function ChevronDoubleUpIcon({ className }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      className={['icon', className].filter(Boolean).join(' ')}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="m7 16 5-5 5 5" />
+      <path d="m7 10 5-5 5 5" />
+    </svg>
+  );
+}
+
+export function ChevronDoubleDownIcon({ className }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      className={['icon', className].filter(Boolean).join(' ')}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="m7 8 5 5 5-5" />
+      <path d="m7 14 5 5 5-5" />
+    </svg>
+  );
+}
+
 export function UndoIcon({ className }) {
   return (
     <svg
