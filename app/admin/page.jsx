@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import AdminNav from '../../components/admin-nav';
 import CoverImageUploader from '../../components/cover-image-uploader';
 import RichTextEditor from '../../components/rich-text-editor';
+import { ChevronDoubleLeftIcon, ChevronDoubleRightIcon } from '../../components/icons';
 
 const TYPE_OPTIONS = [
   { id: 'projects', label: 'Projects' },
@@ -70,7 +71,6 @@ export default function AdminPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [isMetaExpanded, setIsMetaExpanded] = useState(true);
   const [isEditorFullscreen, setIsEditorFullscreen] = useState(false);
 
   const refreshEntries = useCallback(async (type) => {
@@ -149,10 +149,6 @@ export default function AdminPage() {
 
   const toggleSidebar = useCallback(() => {
     setIsSidebarCollapsed((prev) => !prev);
-  }, []);
-
-  const toggleMeta = useCallback(() => {
-    setIsMetaExpanded((prev) => !prev);
   }, []);
 
   const toggleEditorFullscreen = useCallback(() => {
@@ -282,7 +278,9 @@ export default function AdminPage() {
               onClick={toggleSidebar}
               aria-label={isSidebarCollapsed ? 'Expand entry list' : 'Collapse entry list'}
             >
-              {isSidebarCollapsed ? '⇤' : '⇥'}
+              <span aria-hidden="true" className="admin-icon-button__icon">
+                {isSidebarCollapsed ? <ChevronDoubleRightIcon /> : <ChevronDoubleLeftIcon />}
+              </span>
             </button>
             <button type="button" className="admin-ghost" onClick={handleNew}>
               New Entry
@@ -309,7 +307,31 @@ export default function AdminPage() {
         </aside>
 
         <div className="admin-workspace">
-          <div className="admin-workspace__primary">
+        <div className="admin-workspace__header">
+          <div className="admin-workspace__status" role="status" aria-live="polite">
+            {statusMessage ? <span className="admin-status">{statusMessage}</span> : null}
+          </div>
+          <div className="admin-actions">
+            <div className="admin-actions__buttons">
+              {isEditingExisting && (
+                <button type="button" className="admin-ghost" onClick={handleDuplicate}>
+                  Duplicate
+                </button>
+              )}
+              {isEditingExisting && (
+                <button type="button" className="admin-danger" onClick={handleDelete}>
+                  Delete
+                </button>
+              )}
+              <button type="button" className="admin-primary" onClick={handleSave} disabled={isSaving}>
+                {isSaving ? 'Saving…' : 'Save'}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="admin-workspace__grid">
+          <section className="admin-editor-card">
             <div className="admin-field admin-field--title">
               <label htmlFor="title">Title</label>
               <input
@@ -321,72 +343,23 @@ export default function AdminPage() {
               />
             </div>
 
-            <RichTextEditor
-              value={form.content}
-              initialContent={INITIAL_CONTENT}
-              onChange={(value) => handleFieldChange('content', value)}
-              isFullscreen={isEditorFullscreen}
-              onToggleFullscreen={toggleEditorFullscreen}
-            />
-          </div>
+            <div className="admin-editor-card__body">
+              <RichTextEditor
+                value={form.content}
+                initialContent={INITIAL_CONTENT}
+                onChange={(value) => handleFieldChange('content', value)}
+                isFullscreen={isEditorFullscreen}
+                onToggleFullscreen={toggleEditorFullscreen}
+              />
+            </div>
+          </section>
 
-          <section className={`admin-meta${isMetaExpanded ? ' is-open' : ''}`}>
-            <header className="admin-meta__header">
-              <h2>Meta</h2>
-              <button
-                type="button"
-                className="admin-icon-button"
-                onClick={toggleMeta}
-                aria-expanded={isMetaExpanded}
-                aria-controls="admin-meta-section"
-              >
-                {isMetaExpanded ? 'Collapse' : 'Expand'}
-              </button>
-            </header>
-
-            <div className="admin-meta__content" id="admin-meta-section" hidden={!isMetaExpanded}>
-              <div className="admin-meta__grid">
-                <div className="admin-field">
-                  <label htmlFor="slug">Slug</label>
-                  <input
-                    id="slug"
-                    type="text"
-                    value={form.slug}
-                    onChange={(event) => handleFieldChange('slug', event.target.value)}
-                  />
-                </div>
-                <div className="admin-field">
-                  <label htmlFor="createdAt">Date</label>
-                  <input
-                    id="createdAt"
-                    type="date"
-                    value={form.createdAt}
-                    onChange={(event) => handleFieldChange('createdAt', event.target.value)}
-                  />
-                </div>
-                <div className="admin-field">
-                  <label htmlFor="tags">Tags</label>
-                  <input
-                    id="tags"
-                    type="text"
-                    placeholder="ambient, installation"
-                    value={form.tagsText}
-                    onChange={(event) => handleFieldChange('tagsText', event.target.value)}
-                  />
-                </div>
-              </div>
-
-              <div className="admin-field">
-                <label htmlFor="summary">Summary</label>
-                <textarea
-                  id="summary"
-                  rows={3}
-                  value={form.summary}
-                  onChange={(event) => handleFieldChange('summary', event.target.value)}
-                />
-              </div>
-
-              <div className="admin-meta__split">
+          <aside className="admin-sidebar" aria-label="Entry meta">
+            <section className="admin-panel">
+              <header className="admin-panel__header">
+                <h2>Publishing</h2>
+              </header>
+              <div className="admin-panel__body admin-panel__body--grid">
                 <div className="admin-field admin-field--status">
                   <span>Status</span>
                   <div className="admin-status-group" role="radiogroup" aria-label="Entry status">
@@ -408,7 +381,59 @@ export default function AdminPage() {
                     </button>
                   </div>
                 </div>
+                <div className="admin-field">
+                  <label htmlFor="createdAt">Publish date</label>
+                  <input
+                    id="createdAt"
+                    type="date"
+                    value={form.createdAt}
+                    onChange={(event) => handleFieldChange('createdAt', event.target.value)}
+                  />
+                </div>
+              </div>
+            </section>
 
+            <section className="admin-panel">
+              <header className="admin-panel__header">
+                <h2>Metadata</h2>
+              </header>
+              <div className="admin-panel__body admin-panel__body--grid">
+                <div className="admin-field">
+                  <label htmlFor="slug">Slug</label>
+                  <input
+                    id="slug"
+                    type="text"
+                    value={form.slug}
+                    onChange={(event) => handleFieldChange('slug', event.target.value)}
+                  />
+                </div>
+                <div className="admin-field">
+                  <label htmlFor="tags">Tags</label>
+                  <input
+                    id="tags"
+                    type="text"
+                    placeholder="ambient, installation"
+                    value={form.tagsText}
+                    onChange={(event) => handleFieldChange('tagsText', event.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="admin-field">
+                <label htmlFor="summary">Summary</label>
+                <textarea
+                  id="summary"
+                  rows={4}
+                  value={form.summary}
+                  onChange={(event) => handleFieldChange('summary', event.target.value)}
+                />
+              </div>
+            </section>
+
+            <section className="admin-panel">
+              <header className="admin-panel__header">
+                <h2>Media</h2>
+              </header>
+              <div className="admin-panel__body">
                 <div className="admin-field admin-field--cover">
                   <span>Cover image</span>
                   <CoverImageUploader
@@ -417,39 +442,20 @@ export default function AdminPage() {
                     onChange={handleCoverChange}
                   />
                 </div>
+                <div className="admin-field">
+                  <label htmlFor="coverAlt">Cover alt text</label>
+                  <input
+                    id="coverAlt"
+                    type="text"
+                    value={form.coverImageAlt}
+                    onChange={(event) => handleFieldChange('coverImageAlt', event.target.value)}
+                    placeholder="Describe the cover image for accessibility"
+                  />
+                </div>
               </div>
-
-              <div className="admin-field">
-                <label htmlFor="coverAlt">Cover alt text</label>
-                <input
-                  id="coverAlt"
-                  type="text"
-                  value={form.coverImageAlt}
-                  onChange={(event) => handleFieldChange('coverImageAlt', event.target.value)}
-                  placeholder="Describe the cover image for accessibility"
-                />
-              </div>
-            </div>
-          </section>
-
-          <div className="admin-actions admin-workspace__actions">
-            {statusMessage && <span className="admin-status">{statusMessage}</span>}
-            <div className="admin-actions__buttons">
-              {isEditingExisting && (
-                <button type="button" className="admin-ghost" onClick={handleDuplicate}>
-                  Duplicate
-                </button>
-              )}
-              {isEditingExisting && (
-                <button type="button" className="admin-danger" onClick={handleDelete}>
-                  Delete
-                </button>
-              )}
-              <button type="button" className="admin-primary" onClick={handleSave} disabled={isSaving}>
-                {isSaving ? 'Saving…' : 'Save'}
-              </button>
-            </div>
-          </div>
+            </section>
+          </aside>
+        </div>
         </div>
       </section>
     </div>

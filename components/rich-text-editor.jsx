@@ -15,6 +15,34 @@ import { Table } from '@tiptap/extension-table';
 import TableRow from '@tiptap/extension-table-row';
 import TableCell from '@tiptap/extension-table-cell';
 import TableHeader from '@tiptap/extension-table-header';
+import {
+  AlignCenterIcon,
+  AlignJustifyIcon,
+  AlignLeftIcon,
+  AlignRightIcon,
+  BoldIcon,
+  CodeIcon,
+  CollapseIcon,
+  DividerIcon,
+  ExpandIcon,
+  IndentDecreaseIcon,
+  IndentIncreaseIcon,
+  ItalicIcon,
+  ListIcon,
+  ListOrderedIcon,
+  QuoteIcon,
+  RedoIcon,
+  RestoreIcon,
+  SnapshotIcon,
+  StrikethroughIcon,
+  TableColumnIcon,
+  TableIcon,
+  TableRowIcon,
+  TrashIcon,
+  UnderlineIcon,
+  UndoIcon,
+  UploadIcon
+} from './icons';
 
 // Mirrors the server-side default document so we never render an empty editor root.
 const DEFAULT_EMPTY_DOC = '<p></p>';
@@ -118,7 +146,13 @@ function ToolbarButton({ label, icon, onClick, disabled, active, ariaLabel }) {
       onClick={onClick}
       disabled={disabled}
     >
-      {icon ?? label}
+      {icon ? (
+        <span className="admin-toolbar__icon" aria-hidden="true">
+          {icon}
+        </span>
+      ) : (
+        label
+      )}
     </button>
   );
 }
@@ -584,28 +618,28 @@ export default function RichTextEditor({
         <ToolbarGroup>
           <ToolbarButton
             label="Undo"
-            icon={<span aria-hidden="true">↺</span>}
+            icon={<UndoIcon />}
             onClick={() => applyCommand((chain) => chain.undo().run())}
             disabled={!canUndo}
             ariaLabel="Undo"
           />
           <ToolbarButton
             label="Redo"
-            icon={<span aria-hidden="true">↻</span>}
+            icon={<RedoIcon />}
             onClick={() => applyCommand((chain) => chain.redo().run())}
             disabled={!canRedo}
             ariaLabel="Redo"
           />
           <ToolbarButton
             label="Save snapshot"
-            icon={<span aria-hidden="true">◎</span>}
+            icon={<SnapshotIcon />}
             onClick={captureSnapshot}
             disabled={editor.isEmpty}
             ariaLabel="Save snapshot"
           />
           <ToolbarButton
             label="Restore snapshot"
-            icon={<span aria-hidden="true">⟲</span>}
+            icon={<RestoreIcon />}
             onClick={restoreSnapshot}
             disabled={!snapshot?.html}
             ariaLabel="Restore snapshot"
@@ -633,49 +667,49 @@ export default function RichTextEditor({
         <ToolbarGroup>
           <ToolbarButton
             label="Bold"
-            icon={<span aria-hidden="true">B</span>}
+            icon={<BoldIcon />}
             onClick={() => applyCommand((chain) => chain.toggleBold().run())}
             active={editor.isActive('bold')}
             ariaLabel="Bold"
           />
           <ToolbarButton
             label="Italic"
-            icon={<span aria-hidden="true">I</span>}
+            icon={<ItalicIcon />}
             onClick={() => applyCommand((chain) => chain.toggleItalic().run())}
             active={editor.isActive('italic')}
             ariaLabel="Italic"
           />
           <ToolbarButton
             label="Underline"
-            icon={<span aria-hidden="true">U</span>}
+            icon={<UnderlineIcon />}
             onClick={() => applyCommand((chain) => chain.toggleUnderline().run())}
             active={editor.isActive('underline')}
             ariaLabel="Underline"
           />
           <ToolbarButton
             label="Strike"
-            icon={<span aria-hidden="true">S̶</span>}
+            icon={<StrikethroughIcon />}
             onClick={() => applyCommand((chain) => chain.toggleStrike().run())}
             active={editor.isActive('strike')}
             ariaLabel="Strikethrough"
           />
           <ToolbarButton
             label="Inline code"
-            icon={<span aria-hidden="true">{`</>`}</span>}
+            icon={<CodeIcon />}
             onClick={() => applyCommand((chain) => chain.toggleCode().run())}
             active={editor.isActive('code')}
             ariaLabel="Inline code"
           />
           <ToolbarButton
             label="Quote"
-            icon={<span aria-hidden="true">❝</span>}
+            icon={<QuoteIcon />}
             onClick={toggleQuote}
             active={editor.isActive('blockquote')}
             ariaLabel="Quotation"
           />
           <ToolbarButton
             label="Divider"
-            icon={<span aria-hidden="true">─</span>}
+            icon={<DividerIcon />}
             onClick={insertHorizontalRule}
             ariaLabel="Insert divider"
           />
@@ -701,28 +735,28 @@ export default function RichTextEditor({
         <ToolbarGroup>
           <ToolbarButton
             label="Align left"
-            icon={<span aria-hidden="true">⟸</span>}
+            icon={<AlignLeftIcon />}
             onClick={() => setTextAlignment('left')}
             active={toolbarState.align === 'left'}
             ariaLabel="Align left"
           />
           <ToolbarButton
             label="Align center"
-            icon={<span aria-hidden="true">⇔</span>}
+            icon={<AlignCenterIcon />}
             onClick={() => setTextAlignment('center')}
             active={toolbarState.align === 'center'}
             ariaLabel="Align center"
           />
           <ToolbarButton
             label="Align right"
-            icon={<span aria-hidden="true">⟹</span>}
+            icon={<AlignRightIcon />}
             onClick={() => setTextAlignment('right')}
             active={toolbarState.align === 'right'}
             ariaLabel="Align right"
           />
           <ToolbarButton
             label="Justify"
-            icon={<span aria-hidden="true">≡</span>}
+            icon={<AlignJustifyIcon />}
             onClick={() => setTextAlignment('justify')}
             active={toolbarState.align === 'justify'}
             ariaLabel="Justify"
@@ -732,28 +766,28 @@ export default function RichTextEditor({
         <ToolbarGroup>
           <ToolbarButton
             label="Bullet list"
-            icon={<span aria-hidden="true">•</span>}
+            icon={<ListIcon />}
             onClick={toggleBulletList}
             active={editor.isActive('bulletList')}
             ariaLabel="Toggle bullet list"
           />
           <ToolbarButton
             label="Ordered list"
-            icon={<span aria-hidden="true">1.</span>}
+            icon={<ListOrderedIcon />}
             onClick={() => applyCommand((chain) => chain.toggleOrderedList().run())}
             active={editor.isActive('orderedList')}
             ariaLabel="Toggle ordered list"
           />
           <ToolbarButton
             label="Indent"
-            icon={<span aria-hidden="true">⇥</span>}
+            icon={<IndentIncreaseIcon />}
             onClick={() => applyCommand((chain) => chain.sinkListItem('listItem').run())}
             disabled={!canIndent}
             ariaLabel="Indent list item"
           />
           <ToolbarButton
             label="Outdent"
-            icon={<span aria-hidden="true">⇤</span>}
+            icon={<IndentDecreaseIcon />}
             onClick={() => applyCommand((chain) => chain.liftListItem('listItem').run())}
             disabled={!canOutdent}
             ariaLabel="Outdent list item"
@@ -763,7 +797,7 @@ export default function RichTextEditor({
         <ToolbarGroup>
           <ToolbarButton
             label="Insert table"
-            icon={<span aria-hidden="true">⌗</span>}
+            icon={<TableIcon />}
             onClick={() =>
               applyCommand((chain) => chain.insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run())
             }
@@ -771,21 +805,21 @@ export default function RichTextEditor({
           />
           <ToolbarButton
             label="Add column"
-            icon={<span aria-hidden="true">＋╱</span>}
+            icon={<TableColumnIcon />}
             onClick={() => applyCommand((chain) => chain.addColumnAfter().run())}
             disabled={!canAddColumn}
             ariaLabel="Add column"
           />
           <ToolbarButton
             label="Add row"
-            icon={<span aria-hidden="true">＋╲</span>}
+            icon={<TableRowIcon />}
             onClick={() => applyCommand((chain) => chain.addRowAfter().run())}
             disabled={!canAddRow}
             ariaLabel="Add row"
           />
           <ToolbarButton
             label="Delete table"
-            icon={<span aria-hidden="true">⌫</span>}
+            icon={<TrashIcon />}
             onClick={() => applyCommand((chain) => chain.deleteTable().run())}
             disabled={!canDeleteTable}
             ariaLabel="Delete table"
@@ -795,7 +829,7 @@ export default function RichTextEditor({
         <ToolbarGroup className="admin-toolbar__group--upload">
           <ToolbarButton
             label={isUploading ? 'Uploading…' : 'Upload files'}
-            icon={<span aria-hidden="true">⭳</span>}
+            icon={<UploadIcon />}
             onClick={handleFileButtonClick}
             disabled={isUploading}
             ariaLabel="Upload files"
@@ -814,7 +848,7 @@ export default function RichTextEditor({
           <ToolbarGroup>
             <ToolbarButton
               label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
-              icon={<span aria-hidden="true">{isFullscreen ? '⤡' : '⤢'}</span>}
+              icon={isFullscreen ? <CollapseIcon /> : <ExpandIcon />}
               onClick={onToggleFullscreen}
               ariaLabel={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
             />
