@@ -1,26 +1,29 @@
 'use client';
 
 import Image from 'next/image';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import AdminNav from '../../../components/admin-nav';
 
 const numberFormatter = new Intl.NumberFormat('en-US');
 
 function formatFileSize(bytes) {
-  if (typeof bytes !== 'number' || Number.isNaN(bytes)) {
-    return 'Size unknown';
+  if (typeof bytes !== 'number' || !Number.isFinite(bytes) || bytes <= 0) {
+    return null;
   }
+  const bytesLabel = `${numberFormatter.format(bytes)} bytes`;
   if (bytes < 1024) {
-    return `${bytes} B`;
+    return { primary: bytesLabel };
   }
   const kilobytes = bytes / 1024;
-  const roundedKb = numberFormatter.format(Math.round(kilobytes));
   if (kilobytes < 1024) {
     const precision = kilobytes < 10 ? 2 : kilobytes < 100 ? 1 : 0;
-    return `${kilobytes.toFixed(precision)} KB`;
+    const primary = `${kilobytes.toFixed(precision)} KB`;
+    return { primary, secondary: bytesLabel };
   }
   const megabytes = kilobytes / 1024;
-  return `${megabytes.toFixed(megabytes < 10 ? 2 : 1)} MB (${roundedKb} KB)`;
+  const primary = `${megabytes.toFixed(megabytes < 10 ? 2 : 1)} MB`;
+  const secondary = `${numberFormatter.format(Math.round(kilobytes))} KB • ${bytesLabel}`;
+  return { primary, secondary };
 }
 
 function formatTimestamp(isoValue) {
@@ -48,7 +51,13 @@ function FileCard({ file, onDelete, onSaveMeta }) {
   const isImage = file.type?.startsWith('image/');
   const isVideo = file.type?.startsWith('video/');
   const isAudio = file.type?.startsWith('audio/');
-  const formattedSize = useMemo(() => formatFileSize(file.size), [file.size]);
+  const [resolvedSize, setResolvedSize] = useState(() =>
+    typeof file.size === 'number' && Number.isFinite(file.size) ? file.size : null
+  );
+  const [sizeStatus, setSizeStatus] = useState(() => (resolvedSize ? 'loaded' : 'idle'));
+  const [sizeError, setSizeError] = useState('');
+  const sizePersistedRef = useRef(typeof file.size === 'number' && Number.isFinite(file.size));
+  const formattedSize = useMemo(() => formatFileSize(resolvedSize), [resolvedSize]);
   const uploadedAt = useMemo(() => formatTimestamp(file.createdAt), [file.createdAt]);
   const displayName = useMemo(() => deriveDisplayName({ ...file, title }), [file, title]);
   const tagPills = useMemo(
@@ -59,6 +68,89 @@ function FileCard({ file, onDelete, onSaveMeta }) {
         .filter(Boolean),
     [tags]
   );
+
+  useEffect(() => {
+    if (typeof file.size === 'number' && Number.isFinite(file.size)) {
+      sizePersistedRef.current = true;
+      setResolvedSize(file.size);
+      setSizeStatus('loaded');
+      setSizeError('');
+    } else if (!resolvedSize) {
+      sizePersistedRef.current = false;
+      setSizeStatus('idle');
+    }
+  }, [file.size, resolvedSize]);
+
+  useEffect(() => {
+    if (resolvedSize !== null || !file.url || sizeStatus !== 'idle') {
+      return;
+    }
+
+    let ignore = false;
+    const controller = new AbortController();
+
+    async function detectSize() {
+      setSizeStatus('loading');
+      setSizeError('');
+
+      try {
+        const response = await fetch(file.url, { method: 'HEAD', signal: controller.signal });
+        if (!response.ok) {
+          throw new Error(`Request failed with status ${response.status}`);
+        }
+        const header = response.headers.get('content-length');
+        const parsed = header ? Number(header) : NaN;
+        if (!Number.isFinite(parsed) || parsed <= 0) {
+          throw new Error('Missing content-length header');
+        }
+        if (ignore) return;
+        setResolvedSize(parsed);
+
+        if (!sizePersistedRef.current) {
+          setSizeStatus('saving');
+          try {
+            await onSaveMeta(file.pathname, { size: parsed });
+            sizePersistedRef.current = true;
+            setSizeStatus('loaded');
+          } catch (persistError) {
+            console.warn('[media] failed to persist size', persistError);
+            if (!ignore) {
+              setSizeStatus('loaded');
+              setSizeError('Detected size but could not sync metadata. Try saving manually.');
+            }
+          }
+        } else {
+          setSizeStatus('loaded');
+        }
+      } catch (error) {
+        console.warn('[media] size detection failed', error);
+        if (!ignore) {
+          setSizeStatus('error');
+          setSizeError('Could not determine file size automatically.');
+        }
+      }
+    }
+
+    detectSize();
+
+    return () => {
+      ignore = true;
+      controller.abort();
+    };
+  }, [file.url, file.pathname, onSaveMeta, resolvedSize, sizeStatus]);
+
+  const handleRetrySize = useCallback(() => {
+    setSizeError('');
+    if (typeof file.size === 'number' && Number.isFinite(file.size)) {
+      sizePersistedRef.current = true;
+      setResolvedSize(file.size);
+      setSizeStatus('loaded');
+      return;
+    }
+    sizePersistedRef.current = false;
+    setResolvedSize(null);
+    setSizeStatus('idle');
+  }, [file.size]);
 
   const handleCopy = async () => {
     try {
@@ -119,7 +211,35 @@ function FileCard({ file, onDelete, onSaveMeta }) {
         <dl className="media-card__meta">
           <div>
             <dt>Size</dt>
-            <dd>{formattedSize}</dd>
+            <dd>
+              {sizeStatus === 'loading' ? <span className="media-card__meta-status">Detecting…</span> : null}
+              {sizeStatus === 'saving' ? <span className="media-card__meta-status">Syncing…</span> : null}
+              {sizeStatus === 'error' ? (
+                <>
+                  <span className="media-card__meta-status media-card__meta-status--error">Size unavailable</span>
+                  {sizeError ? <span className="media-card__meta-footnote">{sizeError}</span> : null}
+                  <button type="button" className="media-card__meta-button" onClick={handleRetrySize}>
+                    Retry size lookup
+                  </button>
+                </>
+              ) : null}
+              {sizeStatus !== 'loading' && sizeStatus !== 'saving' && sizeStatus !== 'error' ? (
+                <>
+                  <span>{formattedSize?.primary || 'Size unavailable'}</span>
+                  {formattedSize?.secondary ? (
+                    <span className="media-card__meta-footnote">{formattedSize.secondary}</span>
+                  ) : null}
+                  {!formattedSize && (
+                    <button type="button" className="media-card__meta-button" onClick={handleRetrySize}>
+                      Retry size lookup
+                    </button>
+                  )}
+                  {sizeError ? (
+                    <span className="media-card__meta-footnote media-card__meta-footnote--warning">{sizeError}</span>
+                  ) : null}
+                </>
+              ) : null}
+            </dd>
           </div>
           {file.type ? (
             <div>
