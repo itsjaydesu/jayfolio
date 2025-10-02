@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import ReactCrop, { centerCrop, makeAspectCrop } from "react-image-crop";
@@ -269,7 +270,13 @@ export default function CoverImageUploader({ value, alt, onChange }) {
     <div className="cover-uploader">
       <div className="cover-uploader__preview">
         {hasValue ? (
-          <img src={value} alt={previewAlt || "Cover image"} />
+          <Image
+            src={value}
+            alt={previewAlt || "Cover image"}
+            fill
+            sizes="(max-width: 900px) 100vw, 420px"
+            className="cover-uploader__preview-image"
+          />
         ) : (
           <div className="cover-uploader__placeholder">No cover image</div>
         )}
@@ -370,7 +377,15 @@ export default function CoverImageUploader({ value, alt, onChange }) {
                       className="cover-uploader__media-item"
                       onClick={() => handleSelectExisting(item)}
                     >
-                      <img src={item.url} alt={item.alt || item.title || "Media option"} />
+                      <div className="cover-uploader__media-thumb">
+                        <Image
+                          src={item.url}
+                          alt={item.alt || item.title || "Media option"}
+                          fill
+                          sizes="180px"
+                          className="cover-uploader__media-image"
+                        />
+                      </div>
                       <span>{item.title || item.alt || sanitizeAlt(item.pathname)}</span>
                     </button>
                   ))

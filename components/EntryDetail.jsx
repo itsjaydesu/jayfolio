@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -178,9 +179,11 @@ export default function EntryDetail({ type, entry }) {
 
         {coverImage?.url ? (
           <figure className="detail-view__media">
-            <img
+            <Image
               src={coverImage.url}
               alt={coverImage.alt || `${title} cover image`}
+              fill
+              sizes="(max-width: 900px) 100vw, 960px"
               className="detail-view__media-image"
             />
           </figure>

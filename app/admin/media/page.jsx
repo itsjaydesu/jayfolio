@@ -1,7 +1,45 @@
 'use client';
 
+import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import AdminNav from '../../../components/admin-nav';
+
+const numberFormatter = new Intl.NumberFormat('en-US');
+
+function formatFileSize(bytes) {
+  if (typeof bytes !== 'number' || Number.isNaN(bytes)) {
+    return 'Size unknown';
+  }
+  if (bytes < 1024) {
+    return `${bytes} B`;
+  }
+  const kilobytes = bytes / 1024;
+  const roundedKb = numberFormatter.format(Math.round(kilobytes));
+  if (kilobytes < 1024) {
+    const precision = kilobytes < 10 ? 2 : kilobytes < 100 ? 1 : 0;
+    return `${kilobytes.toFixed(precision)} KB`;
+  }
+  const megabytes = kilobytes / 1024;
+  return `${megabytes.toFixed(megabytes < 10 ? 2 : 1)} MB (${roundedKb} KB)`;
+}
+
+function formatTimestamp(isoValue) {
+  if (!isoValue) return '';
+  const date = new Date(isoValue);
+  if (Number.isNaN(date.getTime())) return '';
+  return new Intl.DateTimeFormat('en', {
+    dateStyle: 'medium',
+    timeStyle: 'short'
+  }).format(date);
+}
+
+function deriveDisplayName(file) {
+  if (file?.title && file.title.trim()) return file.title.trim();
+  const source = file?.pathname || file?.url || '';
+  if (!source) return 'Untitled asset';
+  const clean = source.split('/').pop() || source;
+  return clean.trim() || 'Untitled asset';
+}
 
 function FileCard({ file, onDelete, onSaveMeta }) {
   const [title, setTitle] = useState(file.title || '');
@@ -10,6 +48,17 @@ function FileCard({ file, onDelete, onSaveMeta }) {
   const isImage = file.type?.startsWith('image/');
   const isVideo = file.type?.startsWith('video/');
   const isAudio = file.type?.startsWith('audio/');
+  const formattedSize = useMemo(() => formatFileSize(file.size), [file.size]);
+  const uploadedAt = useMemo(() => formatTimestamp(file.createdAt), [file.createdAt]);
+  const displayName = useMemo(() => deriveDisplayName({ ...file, title }), [file, title]);
+  const tagPills = useMemo(
+    () =>
+      tags
+        .split(',')
+        .map((token) => token.trim())
+        .filter(Boolean),
+    [tags]
+  );
 
   const handleCopy = async () => {
     try {
@@ -30,52 +79,92 @@ function FileCard({ file, onDelete, onSaveMeta }) {
   };
 
   return (
-    <div className="entry-ledger__item">
-      <div className="entry-ledger__icon">
-        <span className="icon" aria-hidden>
-          {isImage ? '🖼️' : isVideo ? '🎞️' : isAudio ? '🎵' : '📄'}
-        </span>
-      </div>
-      <div className="entry-ledger__body">
-        <div className="entry-ledger__meta">
-          <span className="entry-ledger__meta-item">{file.type || 'unknown'}</span>
-          <span className="entry-ledger__meta-item">{(file.size / 1024).toFixed(0)} KB</span>
-          <a href={file.url} target="_blank" rel="noreferrer" className="entry-ledger__meta-item">
-            Open
-          </a>
-        </div>
+    <article className="media-card">
+      <div className="media-card__visual">
         {isImage ? (
-          <img src={file.url} alt="preview" style={{ maxWidth: 220, borderRadius: 8 }} />
+          <div className="media-card__image">
+            <Image
+              src={file.url}
+              alt={alt || file.alt || displayName}
+              fill
+              sizes="(max-width: 900px) 100vw, 320px"
+            />
+          </div>
+        ) : (
+          <div
+            className={`media-card__placeholder${isVideo ? ' media-card__placeholder--video' : ''}${
+              isAudio ? ' media-card__placeholder--audio' : ''
+            }`}
+            role="presentation"
+          >
+            <span aria-hidden>{isVideo ? '🎞️' : isAudio ? '🎵' : '📄'}</span>
+          </div>
+        )}
+      </div>
+      <div className="media-card__body">
+        <header className="media-card__header">
+          <div className="media-card__title">
+            <h2>{displayName}</h2>
+            <p>{file.pathname}</p>
+          </div>
+          <div className="media-card__actions media-card__actions--compact">
+            <button type="button" className="admin-ghost" onClick={handleCopy}>
+              Copy URL
+            </button>
+            <a href={file.url} target="_blank" rel="noreferrer" className="admin-ghost">
+              Open
+            </a>
+          </div>
+        </header>
+        <dl className="media-card__meta">
+          <div>
+            <dt>Size</dt>
+            <dd>{formattedSize}</dd>
+          </div>
+          {file.type ? (
+            <div>
+              <dt>Type</dt>
+              <dd>{file.type}</dd>
+            </div>
+          ) : null}
+          {uploadedAt ? (
+            <div>
+              <dt>Uploaded</dt>
+              <dd>{uploadedAt}</dd>
+            </div>
+          ) : null}
+        </dl>
+        {tagPills.length ? (
+          <ul className="media-card__tags">
+            {tagPills.map((tag, index) => (
+              <li key={`${tag}-${index}`}>{tag}</li>
+            ))}
+          </ul>
         ) : null}
-        <div className="admin-field-row">
+        <div className="media-card__fields">
           <div className="admin-field">
             <label>Title</label>
             <input value={title} onChange={(e) => setTitle(e.target.value)} />
           </div>
           <div className="admin-field">
-            <label>Alt</label>
+            <label>Alt text</label>
             <input value={alt} onChange={(e) => setAlt(e.target.value)} />
           </div>
           <div className="admin-field">
             <label>Tags</label>
-            <input value={tags} onChange={(e) => setTags(e.target.value)} />
+            <input value={tags} onChange={(e) => setTags(e.target.value)} placeholder="comma separated" />
           </div>
         </div>
-        <div className="admin-actions">
-          <div className="admin-actions__buttons">
-            <button type="button" className="admin-ghost" onClick={handleCopy}>
-              Copy URL
-            </button>
-            <button type="button" className="admin-primary" onClick={handleSave}>
-              Save Meta
-            </button>
-            <button type="button" className="admin-danger" onClick={() => onDelete(file.pathname)}>
-              Delete
-            </button>
-          </div>
-        </div>
+        <footer className="media-card__actions">
+          <button type="button" className="admin-primary" onClick={handleSave}>
+            Save Meta
+          </button>
+          <button type="button" className="admin-danger" onClick={() => onDelete(file.pathname)}>
+            Delete
+          </button>
+        </footer>
       </div>
-    </div>
+    </article>
   );
 }
 
@@ -150,14 +239,15 @@ export default function MediaLibraryPage() {
       </header>
       <section className="section-screen">
         {status && <p className="admin-status admin-status--error">{status}</p>}
-        <ul className="entry-ledger">
-          {filtered.map((file) => (
-            <li key={file.pathname}>
-              <FileCard file={file} onDelete={handleDelete} onSaveMeta={handleSaveMeta} />
-            </li>
-          ))}
-          {!filtered.length && <p className="section-empty">No files yet</p>}
-        </ul>
+        {filtered.length ? (
+          <div className="media-library__grid">
+            {filtered.map((file) => (
+              <FileCard key={file.pathname} file={file} onDelete={handleDelete} onSaveMeta={handleSaveMeta} />
+            ))}
+          </div>
+        ) : (
+          <p className="section-empty">No files yet</p>
+        )}
       </section>
     </div>
   );

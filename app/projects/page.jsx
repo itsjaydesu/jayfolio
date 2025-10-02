@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import EntryReturnFocus from '../../components/EntryReturnFocus';
 import { readEntries } from '../../lib/contentStore';
@@ -45,35 +46,37 @@ export default async function ProjectsPage() {
                     className="project-entry__surface"
                     aria-label={`Open dossier for ${entry.title}`}
                   >
-                  <div className="project-entry__content">
-                    {entry.createdAt ? (
-                      <time className="project-entry__date" dateTime={entry.createdAt}>
-                        {formatDisplayDate(entry.createdAt).toUpperCase()}
-                      </time>
-                    ) : null}
-
-                    <div className="project-entry__body">
-                      {entry.tags?.length ? (
-                        <p className="project-entry__tags">{entry.tags.join(' • ')}</p>
+                    <div className="project-entry__content">
+                      {entry.createdAt ? (
+                        <time className="project-entry__date" dateTime={entry.createdAt}>
+                          {formatDisplayDate(entry.createdAt).toUpperCase()}
+                        </time>
                       ) : null}
-                      <h2 className="project-entry__title">{entry.title}</h2>
-                      {entry.summary ? <p className="project-entry__summary">{entry.summary}</p> : null}
+
+                      <div className="project-entry__body">
+                        {entry.tags?.length ? (
+                          <p className="project-entry__tags">{entry.tags.join(' • ')}</p>
+                        ) : null}
+                        <h2 className="project-entry__title">{entry.title}</h2>
+                        {entry.summary ? <p className="project-entry__summary">{entry.summary}</p> : null}
+                      </div>
+
+                      <span className="project-entry__cta">Open dossier ↗</span>
                     </div>
 
-                    <span className="project-entry__cta">Open dossier ↗</span>
-                  </div>
-
-                  <figure className="project-entry__figure">
-                    {entry.coverImage?.url ? (
-                      <img
-                        src={entry.coverImage.url}
-                        alt={entry.coverImage.alt || `${entry.title} cover image`}
-                        className="project-entry__image"
-                      />
-                    ) : (
-                      <div className="project-entry__art" aria-hidden="true" />
-                    )}
-                  </figure>
+                    <figure className="project-entry__figure">
+                      {entry.coverImage?.url ? (
+                        <Image
+                          src={entry.coverImage.url}
+                          alt={entry.coverImage.alt || `${entry.title} cover image`}
+                          fill
+                          sizes="(max-width: 900px) 100vw, 420px"
+                          className="project-entry__image"
+                        />
+                      ) : (
+                        <div className="project-entry__art" aria-hidden="true" />
+                      )}
+                    </figure>
                   </Link>
                 </article>
               );
