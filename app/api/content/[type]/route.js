@@ -43,8 +43,8 @@ function normalizeEntry(payload) {
   };
 }
 
-export async function GET(request, { params }) {
-  const { type } = params;
+export async function GET(request, context) {
+  const { type } = await context.params;
   if (!isValidType(type)) {
     return NextResponse.json({ error: 'Unsupported type' }, { status: 400 });
   }
@@ -68,8 +68,8 @@ export async function GET(request, { params }) {
   }
 }
 
-export async function POST(request, { params }) {
-  const { type } = params;
+export async function POST(request, context) {
+  const { type } = await context.params;
   if (!isValidType(type)) {
     return NextResponse.json({ error: 'Unsupported type' }, { status: 400 });
   }
@@ -93,8 +93,8 @@ export async function POST(request, { params }) {
   }
 }
 
-export async function PUT(request, { params }) {
-  const { type } = params;
+export async function PUT(request, context) {
+  const { type } = await context.params;
   if (!isValidType(type)) {
     return NextResponse.json({ error: 'Unsupported type' }, { status: 400 });
   }
@@ -118,8 +118,8 @@ export async function PUT(request, { params }) {
   }
 }
 
-export async function DELETE(request, { params }) {
-  const { type } = params;
+export async function DELETE(request, context) {
+  const { type } = await context.params;
   if (!isValidType(type)) {
     return NextResponse.json({ error: 'Unsupported type' }, { status: 400 });
   }

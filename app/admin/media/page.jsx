@@ -57,6 +57,7 @@ function FileCard({ file, onDelete, onSaveMeta }) {
   const [sizeStatus, setSizeStatus] = useState(() => (resolvedSize ? 'loaded' : 'idle'));
   const [sizeError, setSizeError] = useState('');
   const sizePersistedRef = useRef(typeof file.size === 'number' && Number.isFinite(file.size));
+  const activeSizeControllerRef = useRef(null);
   const formattedSize = useMemo(() => formatFileSize(resolvedSize), [resolvedSize]);
   const uploadedAt = useMemo(() => formatTimestamp(file.createdAt), [file.createdAt]);
   const displayName = useMemo(() => deriveDisplayName({ ...file, title }), [file, title]);
@@ -87,42 +88,166 @@ function FileCard({ file, onDelete, onSaveMeta }) {
     }
 
     let ignore = false;
-    const controller = new AbortController();
+    const abortActive = () => {
+      if (activeSizeControllerRef.current) {
+        activeSizeControllerRef.current.abort();
+        activeSizeControllerRef.current = null;
+      }
+    };
+
+    const fetchWithController = async (init, timeoutMs = 10000) => {
+      const controller = new AbortController();
+      activeSizeControllerRef.current = controller;
+      const timeoutId = window.setTimeout(() => {
+        controller.abort(new DOMException('Timed out', 'AbortError'));
+      }, timeoutMs);
+
+      try {
+        const response = await fetch(file.url, { ...init, signal: controller.signal });
+        window.clearTimeout(timeoutId);
+        if (activeSizeControllerRef.current === controller) {
+          activeSizeControllerRef.current = null;
+        }
+        return response;
+      } catch (error) {
+        window.clearTimeout(timeoutId);
+        if (activeSizeControllerRef.current === controller) {
+          activeSizeControllerRef.current = null;
+        }
+        throw error;
+      }
+    };
+
+    const parseContentRange = (header) => {
+      if (!header) return null;
+      const match = /\/(\d+)$/i.exec(header);
+      if (!match) return null;
+      const total = Number(match[1]);
+      return Number.isFinite(total) && total > 0 ? total : null;
+    };
+
+    async function persistSizeIfNeeded(size) {
+      if (!sizePersistedRef.current) {
+        if (ignore) return;
+        setSizeStatus('saving');
+        try {
+          await onSaveMeta(file.pathname, { size });
+          if (ignore) return;
+          sizePersistedRef.current = true;
+          setSizeStatus('loaded');
+        } catch (persistError) {
+          console.warn('[media] failed to persist size', persistError);
+          if (!ignore) {
+            setSizeStatus('loaded');
+            setSizeError('Detected size but could not sync metadata. Try saving manually.');
+          }
+        }
+      } else {
+        if (!ignore) {
+          setSizeStatus('loaded');
+        }
+      }
+    }
+
+    async function attemptHead() {
+      const response = await fetchWithController({ method: 'HEAD' });
+      if (!response.ok) {
+        throw new Error(`HEAD failed with status ${response.status}`);
+      }
+      const header = response.headers.get('content-length');
+      const parsed = header ? Number(header) : NaN;
+      return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+    }
+
+    async function attemptRange() {
+      const response = await fetchWithController({ method: 'GET', headers: { Range: 'bytes=0-0' } });
+      if (response.status !== 206 && response.status !== 200) {
+        throw new Error(`Range request failed with status ${response.status}`);
+      }
+      const contentRange = parseContentRange(response.headers.get('content-range'));
+      if (contentRange) return contentRange;
+      const header = response.headers.get('content-length');
+      const parsed = header ? Number(header) : NaN;
+      if (Number.isFinite(parsed) && parsed > 0) return parsed;
+      if (response.status === 206) {
+        return null;
+      }
+      const blob = await response.blob();
+      return blob?.size ?? null;
+    }
+
+    async function attemptFull() {
+      const response = await fetchWithController({ method: 'GET' }, 15000);
+      if (!response.ok) {
+        throw new Error(`GET failed with status ${response.status}`);
+      }
+      const header = response.headers.get('content-length');
+      const parsed = header ? Number(header) : NaN;
+      if (Number.isFinite(parsed) && parsed > 0) return parsed;
+      const blob = await response.blob();
+      return blob?.size ?? null;
+    }
 
     async function detectSize() {
       setSizeStatus('loading');
       setSizeError('');
 
-      try {
-        const response = await fetch(file.url, { method: 'HEAD', signal: controller.signal });
-        if (!response.ok) {
-          throw new Error(`Request failed with status ${response.status}`);
-        }
-        const header = response.headers.get('content-length');
-        const parsed = header ? Number(header) : NaN;
-        if (!Number.isFinite(parsed) || parsed <= 0) {
-          throw new Error('Missing content-length header');
-        }
-        if (ignore) return;
-        setResolvedSize(parsed);
-
-        if (!sizePersistedRef.current) {
-          setSizeStatus('saving');
+      const strategies = [
+        async () => {
           try {
-            await onSaveMeta(file.pathname, { size: parsed });
-            sizePersistedRef.current = true;
-            setSizeStatus('loaded');
-          } catch (persistError) {
-            console.warn('[media] failed to persist size', persistError);
-            if (!ignore) {
-              setSizeStatus('loaded');
-              setSizeError('Detected size but could not sync metadata. Try saving manually.');
-            }
+            return await attemptHead();
+          } catch (error) {
+            if (error?.name === 'AbortError') throw error;
+            console.warn('[media] HEAD size detection fallback', error);
+            return null;
           }
-        } else {
-          setSizeStatus('loaded');
+        },
+        async () => {
+          try {
+            return await attemptRange();
+          } catch (error) {
+            if (error?.name === 'AbortError') throw error;
+            console.warn('[media] RANGE size detection fallback', error);
+            return null;
+          }
+        },
+        async () => {
+          try {
+            return await attemptFull();
+          } catch (error) {
+            if (error?.name === 'AbortError') throw error;
+            console.warn('[media] GET size detection fallback', error);
+            return null;
+          }
         }
+      ];
+
+      try {
+        let detectedSize = null;
+        for (const strategy of strategies) {
+          if (ignore) return;
+          detectedSize = await strategy();
+          if (detectedSize) break;
+        }
+
+        if (ignore) return;
+
+        if (detectedSize) {
+          setResolvedSize(detectedSize);
+          await persistSizeIfNeeded(detectedSize);
+          return;
+        }
+
+        setSizeStatus('error');
+        setSizeError('Could not determine file size automatically.');
       } catch (error) {
+        if (error?.name === 'AbortError') {
+          if (!ignore) {
+            setSizeStatus(resolvedSize ? 'loaded' : 'idle');
+            setSizeError('');
+          }
+          return;
+        }
         console.warn('[media] size detection failed', error);
         if (!ignore) {
           setSizeStatus('error');
@@ -135,7 +260,7 @@ function FileCard({ file, onDelete, onSaveMeta }) {
 
     return () => {
       ignore = true;
-      controller.abort();
+      abortActive();
     };
   }, [file.url, file.pathname, onSaveMeta, resolvedSize, sizeStatus]);
 
