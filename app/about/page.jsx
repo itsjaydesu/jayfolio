@@ -3,11 +3,12 @@ export default function AboutPage() {
     <section className="channel channel--about">
       <header className="channel__intro">
         <p className="channel__eyebrow">Profile Capsule</p>
-        <h1 className="channel__title">Jay Desu</h1>
+        <h1 className="channel__title">Jay Winder</h1>
         <p className="channel__lead">
           Creative technologist guiding teams through ambient operating systems, tactile exhibition tooling, and
           cinematic web soundscapes. This dossier carries the studio ethos, collaborators, and signals shaping each
-          commission.
+          commission. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
+          labore et dolore magna aliqua.
         </p>
       </header>
 
@@ -24,7 +25,8 @@ export default function AboutPage() {
               <p className="project-entry__summary">
                 Jay prototypes responsive worlds where light, audio, and interface gestures share the same pulse. The
                 practice involves building sensing rigs, translating data to lush WebGL canvases, and composing sound to
-                steer spatial storytelling.
+                steer spatial storytelling. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+                tempor incididunt ut labore et dolore magna aliqua.
               </p>
             </div>
 
@@ -51,6 +53,81 @@ export default function AboutPage() {
                   Lead with listening, prototype in the open, and let every surface emit warmth. Projects hinge on
                   calibrating atmosphere as carefully as code so collaborators feel invited into the signal.
                 </p>
+              </section>
+            </div>
+
+            <div className="about-capsule">
+              <section className="about-capsule__panel about-capsule__panel--overview">
+                <h3>General Overview</h3>
+                <p>
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Jay Winder weaves tactile computing, kinetic
+                  lighting, and sonic cartography into experiential systems that feel warmly sentient. Suspendisse
+                  potenti. Vestibulum vitae arcu eget sapien scelerisque aliquet quis sed justo. Maecenas egestas lacus
+                  eu vulputate bibendum, gravida risus euismod.
+                </p>
+                <p>
+                  Phasellus euismod mi a nibh hendrerit, sit amet dapibus ipsum faucibus. Pellentesque in tempor nibh.
+                  Integer malesuada lorem ipsum dolor sit amet technologist auctor, malesuada augue quis, fermentum
+                  magna. Curabitur blandit, metus ac iaculis vulputate, est magna luctus risus, vitae posuere elit
+                  lectus quis augue.
+                </p>
+              </section>
+
+              <section className="about-capsule__panel about-capsule__panel--history">
+                <h3>Signal History</h3>
+                <ul>
+                  <li>
+                    <span className="about-capsule__year">2024</span>
+                    <p>
+                      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Jay Winder launched a resonant lab for
+                      touring installations, experimenting with ambient operating systems that listen as performers move.
+                    </p>
+                  </li>
+                  <li>
+                    <span className="about-capsule__year">2021</span>
+                    <p>
+                      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Crafted WebGL observatories for civic
+                      archives, translating sensor data into luminous sonic gradients for public play.
+                    </p>
+                  </li>
+                  <li>
+                    <span className="about-capsule__year">2017</span>
+                    <p>
+                      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Embedded with research theaters to build
+                      responsive stage controls that blend composer gestures with adaptive lighting.
+                    </p>
+                  </li>
+                  <li>
+                    <span className="about-capsule__year">2012</span>
+                    <p>
+                      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Began as a systems artist translating
+                      modular synthesis workflows into interactive exhibition tooling and haptic audio consoles.
+                    </p>
+                  </li>
+                </ul>
+              </section>
+
+              <section className="about-capsule__panel about-capsule__panel--signals">
+                <h3>Studio Signals</h3>
+                <dl>
+                  <div>
+                    <dt>Primary Mediums</dt>
+                    <dd>Lorem ipsum interfaces, ambient OS prototypes, spatial sound choreography.</dd>
+                  </div>
+                  <div>
+                    <dt>Operating Doctrine</dt>
+                    <dd>
+                      Lorem ipsum dolor sit amet technologist dictum—craft the atmosphere, prototype with hospitality,
+                      and release tools that invite co-authorship.
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Open Invitations</dt>
+                    <dd>
+                      Lorem ipsum residencies, collaborative field recordings, and sensor-driven storytelling research.
+                    </dd>
+                  </div>
+                </dl>
               </section>
             </div>
           </div>

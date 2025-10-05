@@ -1,27 +1,33 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import SceneCanvas from '../../components/SceneCanvas';
 
 export default function QrPage() {
+  const router = useRouter();
   const [isIntroComplete, setIsIntroComplete] = useState(false);
   const [shouldAnimate, setShouldAnimate] = useState(false);
-  const [showSceneContent, setShowSceneContent] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
 
   const handleIntroEnd = useCallback(() => {
     setIsIntroComplete(true);
-    setShowSceneContent(true);
     if (typeof document !== 'undefined') {
       document.body.classList.remove('qr-intro-active');
     }
-  }, []);
+    // Redirect to home after animation completes
+    router.push('/');
+  }, [router]);
+
+  useEffect(() => {
+    // Prefetch the home page for faster navigation
+    router.prefetch('/');
+  }, [router]);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
       setIsIntroComplete(true);
-      setShowSceneContent(true);
+      router.push('/');
       return;
     }
 
@@ -58,7 +64,7 @@ export default function QrPage() {
     return () => {
       body.classList.remove('qr-intro-active');
     };
-  }, [handleIntroEnd, imageLoaded]);
+  }, [handleIntroEnd, imageLoaded, router]);
 
   useEffect(() => {
     if (!shouldAnimate || isIntroComplete || typeof window === 'undefined') {
@@ -75,42 +81,30 @@ export default function QrPage() {
   }, [handleIntroEnd, isIntroComplete, shouldAnimate]);
 
   return (
-    <>
-      {showSceneContent ? (
-        <SceneCanvas activeSection="about" isPaused={false} />
+    <section className="qr-stage">
+      {shouldAnimate && !isIntroComplete ? (
+        <div
+          className="qr-stage__overlay"
+          onAnimationEnd={(event) => {
+            if (event.currentTarget === event.target && event.animationName === 'qrOverlayFade') {
+              handleIntroEnd();
+            }
+          }}
+        >
+          <div className="qr-stage__image-container">
+            <Image
+              src="/images/qr.png"
+              alt="Scan this QR code to unlock navigation"
+              width={408}
+              height={408}
+              className="qr-stage__image"
+              priority
+              quality={95}
+              onLoad={() => setImageLoaded(true)}
+            />
+          </div>
+        </div>
       ) : null}
-      
-      <section className="qr-stage">
-        {shouldAnimate && !isIntroComplete ? (
-          <div
-            className="qr-stage__overlay"
-            onAnimationEnd={(event) => {
-              if (event.currentTarget === event.target && event.animationName === 'qrOverlayFade') {
-                handleIntroEnd();
-              }
-            }}
-          >
-            <div className="qr-stage__image-container">
-              <Image
-                src="/images/qr.png"
-                alt="Scan this QR code to unlock navigation"
-                width={408}
-                height={408}
-                className="qr-stage__image"
-                priority
-                quality={95}
-                onLoad={() => setImageLoaded(true)}
-              />
-            </div>
-          </div>
-        ) : null}
-
-        {showSceneContent ? (
-          <div className={`qr-stage__content${isIntroComplete ? ' is-visible' : ''}`}>
-            {/* Scene content renders behind via SceneCanvas component */}
-          </div>
-        ) : null}
-      </section>
-    </>
+    </section>
   );
 }
