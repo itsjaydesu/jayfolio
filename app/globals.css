@@ -4644,7 +4644,7 @@ body.qr-intro-active .site-shell__social {
   margin: 0;
   padding: 0;
   overflow: hidden;
-  background: radial-gradient(circle at 50% 28%, rgba(52, 132, 168, 0.18), rgba(6, 12, 18, 0.96));
+  background: transparent;
   contain: layout style paint;
 }
 .qr-stage__overlay {
@@ -4652,15 +4652,14 @@ body.qr-intro-active .site-shell__social {
   inset: 0;
   display: grid;
   place-items: center;
-  z-index: 120;
-  background:
-    radial-gradient(circle at 50% 32%, rgba(118, 230, 250, 0.22), rgba(6, 18, 26, 0.92)),
-    linear-gradient(180deg, rgba(2, 12, 20, 0.98), rgba(2, 18, 26, 0.94));
-  animation: qrOverlayFade 5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  z-index: 10;
+  background: rgba(3, 6, 10, 0.4);
+  backdrop-filter: blur(2px);
   will-change: opacity;
   transform: translate3d(0, 0, 0);
   backface-visibility: hidden;
   -webkit-font-smoothing: antialiased;
+  pointer-events: none;
 }
 .qr-stage__image-container {
   position: relative;
@@ -4681,6 +4680,10 @@ body.qr-intro-active .site-shell__social {
   transform: translate3d(0, 0, 0) scale(0.8) rotateZ(0deg);
   backface-visibility: hidden;
   image-rendering: optimizeQuality;
+  /* Enable smooth subpixel rendering and GPU acceleration */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transform-style: preserve-3d;
 }
 /* QR stage transition placeholder */
 
@@ -4721,55 +4724,83 @@ body.qr-intro-active .site-shell__social {
   }
 }
 
-/* Variation 1: Classic Spin (default) */
+/* Variation 1: Classic Spin - Silky Smooth */
 @keyframes qrImageSpin {
   0% {
     opacity: 0;
-    transform: translate3d(0, 0, 0) scale(0.8) rotateZ(0deg);
+    transform: translate3d(0, 0, 0) scale(0.5) rotateZ(0deg);
   }
-  25% {
+  10% {
     opacity: 1;
-    transform: translate3d(0, 0, 0) scale(1) rotateZ(90deg);
+    transform: translate3d(0, 0, 0) scale(1.05) rotateZ(90deg);
+  }
+  30% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1) rotateZ(180deg);
   }
   50% {
-    transform: translate3d(0, 0, 0) scale(1.05) rotateZ(180deg);
-  }
-  75% {
     opacity: 1;
-    transform: translate3d(0, 0, 0) scale(1) rotateZ(270deg);
+    transform: translate3d(0, 0, 0) scale(1.05) rotateZ(270deg);
+  }
+  70% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1) rotateZ(360deg);
+  }
+  90% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(0.5) rotateZ(450deg);
   }
   100% {
     opacity: 0;
-    transform: translate3d(0, 0, 0) scale(0.9) rotateZ(360deg);
+    transform: translate3d(0, 0, 0) scale(0.3) rotateZ(540deg);
   }
 }
 
-/* Variation 2: Bounce & Rotate */
+/* Variation 2: Bounce & Rotate - Silky Smooth */
 @keyframes qrImageBounce {
   0% {
     opacity: 0;
-    transform: translate3d(0, 80px, 0) scale(0.6) rotateZ(-20deg);
+    transform: translate3d(0, 0, 0) scale(0.3) rotateZ(0deg);
   }
-  15% {
+  10% {
     opacity: 1;
-    transform: translate3d(0, -30px, 0) scale(1.1) rotateZ(5deg);
+    transform: translate3d(0, 0, 0) scale(1.08) rotateZ(90deg);
+  }
+  20% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(0.95) rotateZ(180deg);
   }
   30% {
-    transform: translate3d(0, 10px, 0) scale(0.95) rotateZ(-5deg);
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1.03) rotateZ(270deg);
   }
-  45% {
-    transform: translate3d(0, -10px, 0) scale(1.02) rotateZ(180deg);
+  40% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(0.98) rotateZ(360deg);
+  }
+  50% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1.01) rotateZ(450deg);
   }
   60% {
-    transform: translate3d(0, 0, 0) scale(1) rotateZ(360deg);
-  }
-  75% {
     opacity: 1;
-    transform: translate3d(0, 0, 0) scale(1.05) rotateZ(380deg);
+    transform: translate3d(0, 0, 0) scale(1) rotateZ(540deg);
+  }
+  70% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1.2) rotateZ(630deg);
+  }
+  80% {
+    opacity: 0.8;
+    transform: translate3d(0, 0, 0) scale(1.8) rotateZ(720deg);
+  }
+  90% {
+    opacity: 0.4;
+    transform: translate3d(0, 0, 0) scale(2.8) rotateZ(810deg);
   }
   100% {
     opacity: 0;
-    transform: translate3d(0, -60px, 0) scale(0.7) rotateZ(400deg);
+    transform: translate3d(0, 0, 0) scale(4) rotateZ(900deg);
   }
 }
 
@@ -4802,38 +4833,111 @@ body.qr-intro-active .site-shell__social {
   }
 }
 
-/* Variation 4: Pulse & Glow */
+/* Variation 4: Pulse & Glow - Ultra Smooth */
 @keyframes qrImagePulse {
   0% {
     opacity: 0;
     transform: translate3d(0, 0, 0) scale(0.5);
     filter: drop-shadow(0 0 0 rgba(118, 230, 250, 0)) brightness(1);
   }
+  5% {
+    opacity: 0.4;
+    transform: translate3d(0, 0, 0) scale(0.65);
+    filter: drop-shadow(0 0 15px rgba(118, 230, 250, 0.3)) brightness(1.1);
+  }
+  10% {
+    opacity: 0.7;
+    transform: translate3d(0, 0, 0) scale(0.85);
+    filter: drop-shadow(0 0 25px rgba(118, 230, 250, 0.5)) brightness(1.2);
+  }
   15% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1.05);
+    filter: drop-shadow(0 0 35px rgba(118, 230, 250, 0.7)) brightness(1.25);
+  }
+  20% {
     opacity: 1;
     transform: translate3d(0, 0, 0) scale(1.2);
     filter: drop-shadow(0 0 40px rgba(118, 230, 250, 0.8)) brightness(1.3);
   }
-  30% {
-    transform: translate3d(0, 0, 0) scale(0.9);
-    filter: drop-shadow(0 0 20px rgba(118, 230, 250, 0.4)) brightness(1);
-  }
-  45% {
-    transform: translate3d(0, 0, 0) scale(1.15);
-    filter: drop-shadow(0 0 50px rgba(118, 230, 250, 0.9)) brightness(1.4);
-  }
-  60% {
-    transform: translate3d(0, 0, 0) scale(1);
-    filter: drop-shadow(0 0 30px rgba(118, 230, 250, 0.6)) brightness(1.1);
-  }
-  75% {
+  25% {
     opacity: 1;
     transform: translate3d(0, 0, 0) scale(1.1);
     filter: drop-shadow(0 0 35px rgba(118, 230, 250, 0.7)) brightness(1.2);
   }
+  30% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(0.95);
+    filter: drop-shadow(0 0 25px rgba(118, 230, 250, 0.5)) brightness(1.05);
+  }
+  35% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(0.92);
+    filter: drop-shadow(0 0 20px rgba(118, 230, 250, 0.4)) brightness(1);
+  }
+  40% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(0.98);
+    filter: drop-shadow(0 0 30px rgba(118, 230, 250, 0.6)) brightness(1.15);
+  }
+  45% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1.1);
+    filter: drop-shadow(0 0 45px rgba(118, 230, 250, 0.85)) brightness(1.35);
+  }
+  50% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1.15);
+    filter: drop-shadow(0 0 50px rgba(118, 230, 250, 0.9)) brightness(1.4);
+  }
+  55% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1.08);
+    filter: drop-shadow(0 0 40px rgba(118, 230, 250, 0.75)) brightness(1.25);
+  }
+  60% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+    filter: drop-shadow(0 0 30px rgba(118, 230, 250, 0.6)) brightness(1.1);
+  }
+  65% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1.03);
+    filter: drop-shadow(0 0 32px rgba(118, 230, 250, 0.65)) brightness(1.15);
+  }
+  70% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1.08);
+    filter: drop-shadow(0 0 35px rgba(118, 230, 250, 0.7)) brightness(1.2);
+  }
+  75% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1.1);
+    filter: drop-shadow(0 0 38px rgba(118, 230, 250, 0.75)) brightness(1.22);
+  }
+  80% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1.05);
+    filter: drop-shadow(0 0 30px rgba(118, 230, 250, 0.6)) brightness(1.1);
+  }
+  85% {
+    opacity: 0.85;
+    transform: translate3d(0, 0, 0) scale(0.9);
+    filter: drop-shadow(0 0 20px rgba(118, 230, 250, 0.4)) brightness(1);
+  }
+  90% {
+    opacity: 0.6;
+    transform: translate3d(0, 0, 0) scale(0.75);
+    filter: drop-shadow(0 0 10px rgba(118, 230, 250, 0.2)) brightness(0.95);
+  }
+  95% {
+    opacity: 0.3;
+    transform: translate3d(0, 0, 0) scale(0.65);
+    filter: drop-shadow(0 0 5px rgba(118, 230, 250, 0.1)) brightness(0.9);
+  }
   100% {
     opacity: 0;
-    transform: translate3d(0, 0, 0) scale(0.6);
+    transform: translate3d(0, 0, 0) scale(0.55);
     filter: drop-shadow(0 0 0 rgba(118, 230, 250, 0)) brightness(0.8);
   }
 }
@@ -5017,39 +5121,51 @@ body.qr-intro-active .site-shell__social {
   }
 }
 
-/* Variation 9: Fade & Spin (User Requested) */
+/* Variation 9: Fade & Spin - Silky Smooth */
 @keyframes qrImageFadeSpin {
   0% {
     opacity: 0;
     transform: translate3d(0, 0, 0) scale(0.1) rotate(0deg);
   }
-  15% {
+  10% {
     opacity: 0.3;
     transform: translate3d(0, 0, 0) scale(0.4) rotate(180deg);
   }
+  20% {
+    opacity: 0.6;
+    transform: translate3d(0, 0, 0) scale(0.7) rotate(360deg);
+  }
   30% {
-    opacity: 0.7;
-    transform: translate3d(0, 0, 0) scale(0.8) rotate(360deg);
+    opacity: 0.85;
+    transform: translate3d(0, 0, 0) scale(0.9) rotate(540deg);
   }
-  45% {
-    opacity: 1;
-    transform: translate3d(0, 0, 0) scale(1) rotate(540deg);
-  }
-  55% {
+  40% {
     opacity: 1;
     transform: translate3d(0, 0, 0) scale(1) rotate(720deg);
   }
-  70% {
-    opacity: 0.7;
-    transform: translate3d(0, 0, 0) scale(0.8) rotate(900deg);
+  50% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1) rotate(900deg);
   }
-  85% {
+  60% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(0.9) rotate(1080deg);
+  }
+  70% {
+    opacity: 0.85;
+    transform: translate3d(0, 0, 0) scale(0.7) rotate(1260deg);
+  }
+  80% {
+    opacity: 0.6;
+    transform: translate3d(0, 0, 0) scale(0.4) rotate(1440deg);
+  }
+  90% {
     opacity: 0.3;
-    transform: translate3d(0, 0, 0) scale(0.4) rotate(1080deg);
+    transform: translate3d(0, 0, 0) scale(0.2) rotate(1620deg);
   }
   100% {
     opacity: 0;
-    transform: translate3d(0, 0, 0) scale(0.1) rotate(1260deg);
+    transform: translate3d(0, 0, 0) scale(0.1) rotate(1800deg);
   }
 }
 
