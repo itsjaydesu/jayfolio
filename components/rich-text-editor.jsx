@@ -6,7 +6,7 @@ import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
-import TextStyle from '@tiptap/extension-text-style';
+import { TextStyle } from '@tiptap/extension-text-style';
 import Color from '@tiptap/extension-color';
 import Highlight from '@tiptap/extension-highlight';
 import FileHandler from '@tiptap/extension-file-handler';
@@ -15,6 +15,34 @@ import { Table } from '@tiptap/extension-table';
 import TableRow from '@tiptap/extension-table-row';
 import TableCell from '@tiptap/extension-table-cell';
 import TableHeader from '@tiptap/extension-table-header';
+import {
+  AlignCenterIcon,
+  AlignJustifyIcon,
+  AlignLeftIcon,
+  AlignRightIcon,
+  BoldIcon,
+  CodeIcon,
+  CollapseIcon,
+  DividerIcon,
+  ExpandIcon,
+  IndentDecreaseIcon,
+  IndentIncreaseIcon,
+  ItalicIcon,
+  ListIcon,
+  ListOrderedIcon,
+  QuoteIcon,
+  RedoIcon,
+  RestoreIcon,
+  SnapshotIcon,
+  StrikethroughIcon,
+  TableColumnIcon,
+  TableIcon,
+  TableRowIcon,
+  TrashIcon,
+  UnderlineIcon,
+  UndoIcon,
+  UploadIcon
+} from './icons';
 
 // Mirrors the server-side default document so we never render an empty editor root.
 const DEFAULT_EMPTY_DOC = '<p></p>';
@@ -118,7 +146,13 @@ function ToolbarButton({ label, icon, onClick, disabled, active, ariaLabel }) {
       onClick={onClick}
       disabled={disabled}
     >
-      {icon ?? label}
+      {icon ? (
+        <span className="admin-toolbar__icon" aria-hidden="true">
+          {icon}
+        </span>
+      ) : (
+        label
+      )}
     </button>
   );
 }
@@ -155,7 +189,14 @@ function ColorControl({ id, label, value, onChange, onClear, disabled }) {
   );
 }
 
-export default function RichTextEditor({ value, onChange, placeholder = 'Start editing…', initialContent }) {
+export default function RichTextEditor({
+  value,
+  onChange,
+  placeholder = 'Start editing…',
+  initialContent,
+  isFullscreen = false,
+  onToggleFullscreen
+}) {
   const fileInputRef = useRef(null);
   const uploadFilesRef = useRef(null);
   const abortControllersRef = useRef(new Set());
@@ -543,8 +584,19 @@ export default function RichTextEditor({ value, onChange, placeholder = 'Start e
     onChange?.(lastSyncedHtmlRef.current);
   }, [editor, onChange, snapshot]);
 
+  useEffect(() => {
+    if (!isFullscreen) {
+      return undefined;
+    }
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isFullscreen]);
+
   if (!editor) {
-    return <div className="admin-editor">Loading editor…</div>;
+    return <div className={`admin-editor${isFullscreen ? ' admin-editor--fullscreen' : ''}`}>Loading editor…</div>;
   }
 
   const canUndo = editor.can().undo?.() ?? false;
@@ -558,49 +610,50 @@ export default function RichTextEditor({ value, onChange, placeholder = 'Start e
     ? new Date(snapshot.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     : null;
 
+  const editorClassName = `admin-editor${isFullscreen ? ' admin-editor--fullscreen' : ''}`;
+
   return (
-    <div className="admin-editor">
+    <div className={editorClassName}>
       <div className="admin-toolbar" role="toolbar" aria-label="Rich text controls">
         <ToolbarGroup>
           <ToolbarButton
             label="Undo"
-            icon={<span aria-hidden="true">↺</span>}
+            icon={<UndoIcon />}
             onClick={() => applyCommand((chain) => chain.undo().run())}
             disabled={!canUndo}
             ariaLabel="Undo"
           />
           <ToolbarButton
             label="Redo"
-            icon={<span aria-hidden="true">↻</span>}
+            icon={<RedoIcon />}
             onClick={() => applyCommand((chain) => chain.redo().run())}
             disabled={!canRedo}
             ariaLabel="Redo"
           />
           <ToolbarButton
             label="Save snapshot"
-            icon={<span aria-hidden="true">◎</span>}
+            icon={<SnapshotIcon />}
             onClick={captureSnapshot}
             disabled={editor.isEmpty}
             ariaLabel="Save snapshot"
           />
           <ToolbarButton
             label="Restore snapshot"
-            icon={<span aria-hidden="true">⟲</span>}
+            icon={<RestoreIcon />}
             onClick={restoreSnapshot}
             disabled={!snapshot?.html}
             ariaLabel="Restore snapshot"
           />
         </ToolbarGroup>
 
-        <ToolbarGroup className="admin-toolbar__group--stacked">
-          <label htmlFor="admin-editor-block" className="admin-toolbar__select-label">
-            Block
-          </label>
+        <ToolbarGroup className="admin-toolbar__group--select">
           <select
             id="admin-editor-block"
-            className="admin-toolbar__select"
+            className="admin-toolbar__select admin-toolbar__select--compact"
             value={toolbarState.block}
             onChange={(event) => setBlockStyle(event.target.value)}
+            aria-label="Block style"
+            title="Block style"
           >
             {BLOCK_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
@@ -613,49 +666,49 @@ export default function RichTextEditor({ value, onChange, placeholder = 'Start e
         <ToolbarGroup>
           <ToolbarButton
             label="Bold"
-            icon={<span aria-hidden="true">B</span>}
+            icon={<BoldIcon />}
             onClick={() => applyCommand((chain) => chain.toggleBold().run())}
             active={editor.isActive('bold')}
             ariaLabel="Bold"
           />
           <ToolbarButton
             label="Italic"
-            icon={<span aria-hidden="true">I</span>}
+            icon={<ItalicIcon />}
             onClick={() => applyCommand((chain) => chain.toggleItalic().run())}
             active={editor.isActive('italic')}
             ariaLabel="Italic"
           />
           <ToolbarButton
             label="Underline"
-            icon={<span aria-hidden="true">U</span>}
+            icon={<UnderlineIcon />}
             onClick={() => applyCommand((chain) => chain.toggleUnderline().run())}
             active={editor.isActive('underline')}
             ariaLabel="Underline"
           />
           <ToolbarButton
             label="Strike"
-            icon={<span aria-hidden="true">S̶</span>}
+            icon={<StrikethroughIcon />}
             onClick={() => applyCommand((chain) => chain.toggleStrike().run())}
             active={editor.isActive('strike')}
             ariaLabel="Strikethrough"
           />
           <ToolbarButton
             label="Inline code"
-            icon={<span aria-hidden="true">{`</>`}</span>}
+            icon={<CodeIcon />}
             onClick={() => applyCommand((chain) => chain.toggleCode().run())}
             active={editor.isActive('code')}
             ariaLabel="Inline code"
           />
           <ToolbarButton
             label="Quote"
-            icon={<span aria-hidden="true">❝</span>}
+            icon={<QuoteIcon />}
             onClick={toggleQuote}
             active={editor.isActive('blockquote')}
             ariaLabel="Quotation"
           />
           <ToolbarButton
             label="Divider"
-            icon={<span aria-hidden="true">─</span>}
+            icon={<DividerIcon />}
             onClick={insertHorizontalRule}
             ariaLabel="Insert divider"
           />
@@ -681,28 +734,28 @@ export default function RichTextEditor({ value, onChange, placeholder = 'Start e
         <ToolbarGroup>
           <ToolbarButton
             label="Align left"
-            icon={<span aria-hidden="true">⟸</span>}
+            icon={<AlignLeftIcon />}
             onClick={() => setTextAlignment('left')}
             active={toolbarState.align === 'left'}
             ariaLabel="Align left"
           />
           <ToolbarButton
             label="Align center"
-            icon={<span aria-hidden="true">⇔</span>}
+            icon={<AlignCenterIcon />}
             onClick={() => setTextAlignment('center')}
             active={toolbarState.align === 'center'}
             ariaLabel="Align center"
           />
           <ToolbarButton
             label="Align right"
-            icon={<span aria-hidden="true">⟹</span>}
+            icon={<AlignRightIcon />}
             onClick={() => setTextAlignment('right')}
             active={toolbarState.align === 'right'}
             ariaLabel="Align right"
           />
           <ToolbarButton
             label="Justify"
-            icon={<span aria-hidden="true">≡</span>}
+            icon={<AlignJustifyIcon />}
             onClick={() => setTextAlignment('justify')}
             active={toolbarState.align === 'justify'}
             ariaLabel="Justify"
@@ -712,28 +765,28 @@ export default function RichTextEditor({ value, onChange, placeholder = 'Start e
         <ToolbarGroup>
           <ToolbarButton
             label="Bullet list"
-            icon={<span aria-hidden="true">•</span>}
+            icon={<ListIcon />}
             onClick={toggleBulletList}
             active={editor.isActive('bulletList')}
             ariaLabel="Toggle bullet list"
           />
           <ToolbarButton
             label="Ordered list"
-            icon={<span aria-hidden="true">1.</span>}
+            icon={<ListOrderedIcon />}
             onClick={() => applyCommand((chain) => chain.toggleOrderedList().run())}
             active={editor.isActive('orderedList')}
             ariaLabel="Toggle ordered list"
           />
           <ToolbarButton
             label="Indent"
-            icon={<span aria-hidden="true">⇥</span>}
+            icon={<IndentIncreaseIcon />}
             onClick={() => applyCommand((chain) => chain.sinkListItem('listItem').run())}
             disabled={!canIndent}
             ariaLabel="Indent list item"
           />
           <ToolbarButton
             label="Outdent"
-            icon={<span aria-hidden="true">⇤</span>}
+            icon={<IndentDecreaseIcon />}
             onClick={() => applyCommand((chain) => chain.liftListItem('listItem').run())}
             disabled={!canOutdent}
             ariaLabel="Outdent list item"
@@ -743,7 +796,7 @@ export default function RichTextEditor({ value, onChange, placeholder = 'Start e
         <ToolbarGroup>
           <ToolbarButton
             label="Insert table"
-            icon={<span aria-hidden="true">⌗</span>}
+            icon={<TableIcon />}
             onClick={() =>
               applyCommand((chain) => chain.insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run())
             }
@@ -751,21 +804,21 @@ export default function RichTextEditor({ value, onChange, placeholder = 'Start e
           />
           <ToolbarButton
             label="Add column"
-            icon={<span aria-hidden="true">＋╱</span>}
+            icon={<TableColumnIcon />}
             onClick={() => applyCommand((chain) => chain.addColumnAfter().run())}
             disabled={!canAddColumn}
             ariaLabel="Add column"
           />
           <ToolbarButton
             label="Add row"
-            icon={<span aria-hidden="true">＋╲</span>}
+            icon={<TableRowIcon />}
             onClick={() => applyCommand((chain) => chain.addRowAfter().run())}
             disabled={!canAddRow}
             ariaLabel="Add row"
           />
           <ToolbarButton
             label="Delete table"
-            icon={<span aria-hidden="true">⌫</span>}
+            icon={<TrashIcon />}
             onClick={() => applyCommand((chain) => chain.deleteTable().run())}
             disabled={!canDeleteTable}
             ariaLabel="Delete table"
@@ -775,7 +828,7 @@ export default function RichTextEditor({ value, onChange, placeholder = 'Start e
         <ToolbarGroup className="admin-toolbar__group--upload">
           <ToolbarButton
             label={isUploading ? 'Uploading…' : 'Upload files'}
-            icon={<span aria-hidden="true">⭳</span>}
+            icon={<UploadIcon />}
             onClick={handleFileButtonClick}
             disabled={isUploading}
             ariaLabel="Upload files"
@@ -789,6 +842,17 @@ export default function RichTextEditor({ value, onChange, placeholder = 'Start e
             accept={ACCEPTED_FILE_TYPES}
           />
         </ToolbarGroup>
+
+        {onToggleFullscreen ? (
+          <ToolbarGroup>
+            <ToolbarButton
+              label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+              icon={isFullscreen ? <CollapseIcon /> : <ExpandIcon />}
+              onClick={onToggleFullscreen}
+              ariaLabel={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+            />
+          </ToolbarGroup>
+        ) : null}
       </div>
       {snapshotTimestamp ? (
         <p className="admin-status admin-status--hint" aria-live="polite">

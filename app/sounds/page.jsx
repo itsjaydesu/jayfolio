@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import EntryReturnFocus from '../../components/EntryReturnFocus';
 import { readEntries } from '../../lib/contentStore';
 import { formatDisplayDate } from '../../lib/formatters';
 
@@ -27,35 +28,51 @@ export default async function SoundsPage() {
       {entries.length === 0 ? (
         <p className="channel__empty">No sound entries yet. Upload one via the admin console.</p>
       ) : (
-        <div className="channel__grid">
-          {entries.map((entry, index) => {
-            const tone = SOUND_TONES[entry.slug] ?? 'neutral';
-            return (
-              <article key={entry.slug} className="channel-card channel-card--sound" data-tone={tone}>
-                <div className="channel-card__meta">
-                  <span className="channel-card__index">{String(index + 1).padStart(2, '0')}</span>
-                  {entry.createdAt ? (
-                    <time className="channel-card__date" dateTime={entry.createdAt}>
-                      {formatDisplayDate(entry.createdAt)}
-                    </time>
-                  ) : null}
-                  {entry.tags?.length ? <p className="channel-card__tags">{entry.tags.join(' • ')}</p> : null}
-                </div>
+        <EntryReturnFocus type="sounds">
+          <div className="channel__grid">
+            {entries.map((entry) => {
+              const tone = SOUND_TONES[entry.slug] ?? 'neutral';
+              return (
+                <article
+                  key={entry.slug}
+                  className="project-entry project-entry--sounds"
+                  data-tone={tone}
+                  data-entry-slug={entry.slug}
+                >
+                  <Link
+                    href={`/sounds/${entry.slug}`}
+                    className="project-entry__surface"
+                    aria-label={`Open sound archive ${entry.title}`}
+                  >
+                    <div className="project-entry__content">
+                      {entry.createdAt ? (
+                        <time className="project-entry__date" dateTime={entry.createdAt}>
+                          {formatDisplayDate(entry.createdAt).toUpperCase()}
+                        </time>
+                      ) : null}
 
-                <div className="channel-card__body">
-                  <figure className="channel-card__figure" aria-hidden="true">
-                    <div className="channel-card__wave" />
-                  </figure>
-                  <h2 className="channel-card__title">{entry.title}</h2>
-                  {entry.summary ? <p className="channel-card__summary">{entry.summary}</p> : null}
-                  <Link href={`/sounds/${entry.slug}`} className="channel-card__link">
-                    Listen in
+                      <div className="project-entry__body">
+                        {entry.tags?.length ? (
+                          <p className="project-entry__tags">{entry.tags.join(' • ')}</p>
+                        ) : null}
+                        <h2 className="project-entry__title">{entry.title}</h2>
+                        {entry.summary ? <p className="project-entry__summary">{entry.summary}</p> : null}
+                      </div>
+
+                      <span className="project-entry__cta">Open archive ↗</span>
+                    </div>
+
+                    <figure className="project-entry__figure project-entry__figure--sounds" aria-hidden="true">
+                      <div className="project-entry__art">
+                        <span className="project-entry__signal" />
+                      </div>
+                    </figure>
                   </Link>
-                </div>
-              </article>
-            );
-          })}
-        </div>
+                </article>
+              );
+            })}
+          </div>
+        </EntryReturnFocus>
       )}
     </section>
   );

@@ -1,4 +1,6 @@
+import Image from 'next/image';
 import Link from 'next/link';
+import EntryReturnFocus from '../../components/EntryReturnFocus';
 import { readEntries } from '../../lib/contentStore';
 import { formatDisplayDate } from '../../lib/formatters';
 
@@ -27,41 +29,60 @@ export default async function ProjectsPage() {
       {entries.length === 0 ? (
         <p className="channel__empty">No project entries yet. Add one from the admin console.</p>
       ) : (
-        <div className="channel__grid">
-          {entries.map((entry, index) => {
-            const tone = PROJECT_TONES[entry.slug] ?? 'neutral';
-            return (
-              <article key={entry.slug} className="project-entry" data-tone={tone}>
-                <header className="project-entry__header">
-                  <span className="project-entry__index">{String(index + 1).padStart(2, '0')}</span>
-                  {entry.createdAt ? (
-                    <time className="project-entry__date" dateTime={entry.createdAt}>
-                      {formatDisplayDate(entry.createdAt)}
-                    </time>
-                  ) : null}
-                </header>
+        <EntryReturnFocus type="projects">
+          <div className="channel__grid">
+            {entries.map((entry) => {
+              const tone = PROJECT_TONES[entry.slug] ?? 'neutral';
+              const href = `/projects/${entry.slug}`;
+              return (
+                <article
+                  key={entry.slug}
+                  className="project-entry"
+                  data-tone={tone}
+                  data-entry-slug={entry.slug}
+                >
+                  <Link
+                    href={href}
+                    className="project-entry__surface"
+                    aria-label={`Open dossier for ${entry.title}`}
+                  >
+                    <div className="project-entry__content">
+                      {entry.createdAt ? (
+                        <time className="project-entry__date" dateTime={entry.createdAt}>
+                          {formatDisplayDate(entry.createdAt).toUpperCase()}
+                        </time>
+                      ) : null}
 
-                <figure className="project-entry__figure" aria-hidden="true">
-                  <div className="project-entry__art" />
-                </figure>
+                      <div className="project-entry__body">
+                        {entry.tags?.length ? (
+                          <p className="project-entry__tags">{entry.tags.join(' • ')}</p>
+                        ) : null}
+                        <h2 className="project-entry__title">{entry.title}</h2>
+                        {entry.summary ? <p className="project-entry__summary">{entry.summary}</p> : null}
+                      </div>
 
-                <div className="project-entry__body">
-                  {entry.tags?.length ? (
-                    <p className="project-entry__tags">{entry.tags.join(' • ')}</p>
-                  ) : null}
-                  <h2 className="project-entry__title">{entry.title}</h2>
-                  {entry.summary ? <p className="project-entry__summary">{entry.summary}</p> : null}
-                </div>
+                      <span className="project-entry__cta">Open dossier ↗</span>
+                    </div>
 
-                <footer className="project-entry__footer">
-                  <Link href={`/projects/${entry.slug}`} className="project-entry__link">
-                    Open dossier
+                    <figure className="project-entry__figure">
+                      {entry.coverImage?.url ? (
+                        <Image
+                          src={entry.coverImage.url}
+                          alt={entry.coverImage.alt || `${entry.title} cover image`}
+                          fill
+                          sizes="(max-width: 900px) 100vw, 420px"
+                          className="project-entry__image"
+                        />
+                      ) : (
+                        <div className="project-entry__art" aria-hidden="true" />
+                      )}
+                    </figure>
                   </Link>
-                </footer>
-              </article>
-            );
-          })}
-        </div>
+                </article>
+              );
+            })}
+          </div>
+        </EntryReturnFocus>
       )}
     </section>
   );

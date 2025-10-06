@@ -17,7 +17,16 @@ function normalizeEntry(payload) {
   if (!payload || typeof payload !== 'object') {
     return null;
   }
-  const { slug, title, summary = '', content = '', tags = [], createdAt = new Date().toISOString() } = payload;
+  const {
+    slug,
+    title,
+    summary = '',
+    content = '',
+    tags = [],
+    coverImage = null,
+    status = 'draft',
+    createdAt = new Date().toISOString()
+  } = payload;
   if (!slug || !title) {
     return null;
   }
@@ -27,12 +36,15 @@ function normalizeEntry(payload) {
     summary,
     content,
     tags,
-    createdAt
+    coverImage,
+    status: status === 'published' ? 'published' : 'draft',
+    createdAt,
+    updatedAt: new Date().toISOString()
   };
 }
 
-export async function GET(request, { params }) {
-  const { type } = params;
+export async function GET(request, context) {
+  const { type } = await context.params;
   if (!isValidType(type)) {
     return NextResponse.json({ error: 'Unsupported type' }, { status: 400 });
   }
@@ -56,8 +68,8 @@ export async function GET(request, { params }) {
   }
 }
 
-export async function POST(request, { params }) {
-  const { type } = params;
+export async function POST(request, context) {
+  const { type } = await context.params;
   if (!isValidType(type)) {
     return NextResponse.json({ error: 'Unsupported type' }, { status: 400 });
   }
@@ -81,8 +93,8 @@ export async function POST(request, { params }) {
   }
 }
 
-export async function PUT(request, { params }) {
-  const { type } = params;
+export async function PUT(request, context) {
+  const { type } = await context.params;
   if (!isValidType(type)) {
     return NextResponse.json({ error: 'Unsupported type' }, { status: 400 });
   }
@@ -106,8 +118,8 @@ export async function PUT(request, { params }) {
   }
 }
 
-export async function DELETE(request, { params }) {
-  const { type } = params;
+export async function DELETE(request, context) {
+  const { type } = await context.params;
   if (!isValidType(type)) {
     return NextResponse.json({ error: 'Unsupported type' }, { status: 400 });
   }

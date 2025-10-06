@@ -1,53 +1,18 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
-import { usePathname } from 'next/navigation';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import RetroMenu from './RetroMenu';
+import { SITE_TEXT_DEFAULTS } from '../lib/siteTextDefaults';
 import SceneCanvas from './SceneCanvas';
 
-const MENU_ITEMS = [
-  {
-    id: 'about',
-    label: 'About',
-    href: '/about',
-    status: {
-      title: 'About',
-      description:
-        'Jay Winder curates lucid audiovisual experiments, shaping hypnotic interfaces that oscillate between nostalgia and the hyperreal.'
-    }
-  },
-  {
-    id: 'projects',
-    label: 'Projects',
-    href: '/projects',
-    status: {
-      title: 'Projects',
-      description:
-        'Highlights include kinetic WebGL fields, performance-driven installations, and tactile controls for curious collaborators.'
-    }
-  },
-  {
-    id: 'words',
-    label: 'Words',
-    href: '/words',
-    status: {
-      title: 'Words',
-      description:
-        'Dispatches chart process notes, essays on spatial computing, and glossaries for future signal-bearers.'
-    }
-  },
-  {
-    id: 'sounds',
-    label: 'Sounds',
-    href: '/sounds',
-    status: {
-      title: 'Sounds',
-      description:
-        'A rotating archive of ambient loops, chromatic drones, and responsive audio sketches tuned for late-night wanderers.'
-    }
-  }
-];
+const DEFAULT_MENU_ITEMS = SITE_TEXT_DEFAULTS.primaryMenu.map((i) => ({
+  id: i.id,
+  label: i.label,
+  href: i.route,
+  status: { title: i.label, description: i.description }
+}));
 
 const DEFAULT_STATUS = {
   title: 'Signal Router',
@@ -57,12 +22,43 @@ const DEFAULT_STATUS = {
 
 export default function SiteShell({ children }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const [brand, setBrand] = useState(SITE_TEXT_DEFAULTS.brand);
+  const [menuItems, setMenuItems] = useState(DEFAULT_MENU_ITEMS);
+  const [isReturningHome, setIsReturningHome] = useState(false);
+  const returnTimerRef = useRef(null);
+  const [menuVisible, setMenuVisible] = useState(false);
+
+  useEffect(() => {
+    let ignore = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/site-text', { cache: 'no-store' });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data?.error || 'Failed to load site text');
+        if (ignore) return;
+        const items = (data.primaryMenu || []).map((i) => ({
+          id: i.id,
+          label: i.label,
+          href: i.route,
+          status: { title: i.label, description: i.description }
+        }));
+        setBrand(data.brand || SITE_TEXT_DEFAULTS.brand);
+        setMenuItems(items.length ? items : DEFAULT_MENU_ITEMS);
+      } catch (e) {
+        void e; // fallback silently
+      }
+    })();
+    return () => {
+      ignore = true;
+    };
+  }, []);
 
   const pathSegments = useMemo(() => pathname?.split('/').filter(Boolean) ?? [], [pathname]);
   const primarySegment = pathSegments[0] ?? null;
   const activeItem = useMemo(
-    () => MENU_ITEMS.find((item) => item.id === primarySegment) ?? null,
-    [primarySegment]
+    () => menuItems.find((item) => item.id === primarySegment) ?? null,
+    [primarySegment, menuItems]
   );
   const activeSection = activeItem?.id ?? null;
   const isDetailView = pathSegments.length > 1 && Boolean(activeItem);
@@ -74,10 +70,95 @@ export default function SiteShell({ children }) {
     [activeItem]
   );
   const [status, setStatus] = useState(activeStatus);
+  const [navReady, setNavReady] = useState(false);
+  const [hasScrolled, setHasScrolled] = useState(false);
+
+  useEffect(() => {
+    router.prefetch('/');
+    return () => {
+      if (returnTimerRef.current) {
+        window.clearTimeout(returnTimerRef.current);
+        returnTimerRef.current = null;
+      }
+    };
+  }, [router]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    if (motionQuery.matches) {
+      setNavReady(true);
+      return;
+    }
+
+    let frameId = requestAnimationFrame(() => {
+      setNavReady(true);
+    });
+
+    return () => {
+      cancelAnimationFrame(frameId);
+    };
+  }, []);
 
   useEffect(() => {
     setStatus(activeStatus);
   }, [activeStatus]);
+
+  useEffect(() => {
+    if (!isHome) {
+      setMenuVisible(false);
+      return;
+    }
+
+    if (typeof window === 'undefined') {
+      setMenuVisible(true);
+      return;
+    }
+
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (motionQuery.matches) {
+      setMenuVisible(true);
+      return;
+    }
+
+    let frameId = requestAnimationFrame(() => {
+      setMenuVisible(true);
+    });
+
+    return () => {
+      cancelAnimationFrame(frameId);
+    };
+  }, [isHome]);
+
+  useEffect(() => {
+    if (isDetailView || typeof window === 'undefined') {
+      setHasScrolled(false);
+      return;
+    }
+
+    const SCROLL_TRIGGER_PX = 12;
+    const handleScroll = () => {
+      const next = window.scrollY > SCROLL_TRIGGER_PX;
+      setHasScrolled((prev) => (prev === next ? prev : next));
+    };
+
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [isDetailView, pathname]);
+
+  useEffect(() => {
+    if (!isHome) return;
+    if (returnTimerRef.current) {
+      window.clearTimeout(returnTimerRef.current);
+      returnTimerRef.current = null;
+    }
+    setIsReturningHome(false);
+  }, [isHome]);
 
   const handleStatusChange = (next) => {
     if (!next) return;
@@ -97,6 +178,39 @@ export default function SiteShell({ children }) {
     setStatus(activeStatus);
   };
 
+  const handleNavigateHome = (event) => {
+    if (isHome || isReturningHome) return;
+    if (event) {
+      if (
+        event.metaKey ||
+        event.ctrlKey ||
+        event.shiftKey ||
+        event.altKey ||
+        ('button' in event && event.button !== 0)
+      ) {
+        return;
+      }
+      event.preventDefault();
+    }
+
+    const reduceMotion =
+      typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (reduceMotion) {
+      router.push('/');
+      return;
+    }
+
+    setIsReturningHome(true);
+    if (returnTimerRef.current) {
+      window.clearTimeout(returnTimerRef.current);
+    }
+
+    returnTimerRef.current = window.setTimeout(() => {
+      router.push('/');
+    }, 520);
+  };
+
   if (isAdminView) {
     return (
       <div className="site-shell site-shell--plain">
@@ -112,10 +226,10 @@ export default function SiteShell({ children }) {
     return (
       <>
         <SceneCanvas activeSection={activeSectionForCanvas} isPaused={false} />
-        <div className="menu-overlay is-visible">
+        <div className={`menu-overlay${menuVisible ? ' is-visible' : ''}`}>
           <RetroMenu
             id="retro-menu"
-            items={MENU_ITEMS}
+            items={menuItems}
             activeSection={activeSection}
             status={status}
             activeStatus={activeStatus}
@@ -135,12 +249,36 @@ export default function SiteShell({ children }) {
       <div className={`site-shell${isDetailView ? ' site-shell--detail' : ''}`}>
         <div className="site-shell__container">
           {!isDetailView ? (
-            <header className="site-shell__header">
-              <Link href="/" className="site-shell__brand">
-                Jay Winder
+            <header
+              className={`site-shell__header${hasScrolled ? ' site-shell__header--shaded' : ''}`}
+              data-nav-ready={navReady ? 'true' : 'false'}
+              data-returning-home={isReturningHome ? 'true' : 'false'}
+              style={
+                navReady
+                  ? undefined
+                  : {
+                      opacity: 'var(--nav-initial-opacity, 0)',
+                      transform: 'translate(-50%, var(--nav-initial-offset, -18px))'
+                    }
+              }
+            >
+              <Link
+                href="/"
+                className="site-shell__brand"
+                onClick={handleNavigateHome}
+                style={
+                  navReady
+                    ? undefined
+                    : {
+                        opacity: 'var(--nav-item-initial-opacity, 0)',
+                        transform: 'translateY(var(--nav-item-initial-offset, 8px))'
+                      }
+                }
+              >
+                {brand}
               </Link>
               <nav className="site-shell__nav" aria-label="Primary navigation">
-                {MENU_ITEMS.map((item) => {
+                {menuItems.map((item, index) => {
                   const isActive = item.id === activeSection;
                   return (
                     <Link
@@ -153,6 +291,16 @@ export default function SiteShell({ children }) {
                       onMouseLeave={handleReset}
                       onFocus={() => handlePreview(item, isActive)}
                       onBlur={handleReset}
+                      style={
+                        navReady
+                          ? {
+                              transitionDelay: `${index * 60}ms`
+                            }
+                          : {
+                              opacity: 'var(--nav-item-initial-opacity, 0)',
+                              transform: 'translateY(var(--nav-item-initial-offset, 12px))'
+                            }
+                      }
                     >
                       {item.label}
                     </Link>
@@ -164,6 +312,14 @@ export default function SiteShell({ children }) {
                 className="site-shell__social"
                 target="_blank"
                 rel="noreferrer noopener"
+                style={
+                  navReady
+                    ? undefined
+                    : {
+                        opacity: 'var(--nav-item-initial-opacity, 0)',
+                        transform: 'translateY(var(--nav-item-initial-offset, 8px))'
+                      }
+                }
               >
                 @itsjaydesu
               </Link>
@@ -174,7 +330,9 @@ export default function SiteShell({ children }) {
           </p>
           <main
             key={pathname}
-            className={`site-shell__main${isDetailView ? ' is-detail' : ' site-shell__transition'}`}
+            className={`site-shell__main${isDetailView ? ' is-detail' : ' site-shell__transition'}${
+              isReturningHome ? ' is-fading-out' : ''
+            }`}
           >
             {children}
           </main>
