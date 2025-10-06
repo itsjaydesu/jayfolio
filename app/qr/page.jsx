@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import SceneCanvas from '@/components/SceneCanvas';
+import SceneCanvas from '../../components/SceneCanvas';
 
 export default function QrPage() {
   const router = useRouter();
