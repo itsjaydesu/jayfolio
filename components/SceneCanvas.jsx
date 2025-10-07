@@ -28,6 +28,7 @@ export default function SceneCanvas({ activeSection, isPaused = false }) {
     let isCancelled = false;
 
     async function bootstrap() {
+      console.log('[SceneCanvas] 🚀 bootstrap() called at', performance.now().toFixed(2), 'ms');
       const container = containerRef.current;
       if (!container) {
         return () => {};
@@ -59,7 +60,9 @@ export default function SceneCanvas({ activeSection, isPaused = false }) {
       let influences = { ...DEFAULT_INFLUENCES };
 
       try {
+        console.log('[SceneCanvas] 📡 Fetching field-settings at', performance.now().toFixed(2), 'ms');
         const response = await fetch('/api/field-settings', { cache: 'no-store' });
+        console.log('[SceneCanvas] 📥 Field-settings response at', performance.now().toFixed(2), 'ms');
         if (response.ok) {
           const payload = await response.json();
           if (payload?.base) {
@@ -249,6 +252,7 @@ export default function SceneCanvas({ activeSection, isPaused = false }) {
       }
 
       function init() {
+        console.log('[SceneCanvas] 🎬 init() started at', performance.now().toFixed(2), 'ms');
         camera = new THREE.PerspectiveCamera(58, window.innerWidth / window.innerHeight, 1, 5000);
         camera.position.set(0, 380, 1500);
 
@@ -329,7 +333,9 @@ export default function SceneCanvas({ activeSection, isPaused = false }) {
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.outputColorSpace = THREE.SRGBColorSpace;
         renderer.toneMapping = THREE.ReinhardToneMapping;
+        console.log('[SceneCanvas] 🎨 Appending renderer.domElement at', performance.now().toFixed(2), 'ms');
         container.appendChild(renderer.domElement);
+        console.log('[SceneCanvas] ✅ renderer.domElement appended at', performance.now().toFixed(2), 'ms');
 
         stats = new Stats();
         stats.dom.style.display = settings.showStats ? 'block' : 'none';
@@ -346,10 +352,13 @@ export default function SceneCanvas({ activeSection, isPaused = false }) {
       init();
       animate();
 
+      console.log('[SceneCanvas] 🔄 Removing is-ready class at', performance.now().toFixed(2), 'ms');
       container.classList.remove('is-ready');
 
       const markReady = () => {
+        console.log('[SceneCanvas] 🎯 Adding is-ready class at', performance.now().toFixed(2), 'ms');
         container.classList.add('is-ready');
+        console.log('[SceneCanvas] ✨ is-ready class added at', performance.now().toFixed(2), 'ms');
         readinessFrame = null;
       };
 
