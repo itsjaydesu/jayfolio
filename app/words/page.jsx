@@ -2,6 +2,7 @@ import Link from 'next/link';
 import EntryReturnFocus from '../../components/EntryReturnFocus';
 import { readEntries } from '../../lib/contentStore';
 import { formatDisplayDate } from '../../lib/formatters';
+import { readChannelContent } from '../../lib/channelContent';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,17 +13,17 @@ const WORD_TONES = {
 };
 
 export default async function WordsPage() {
-  const entries = await readEntries('words');
+  const [entries, channelContent] = await Promise.all([
+    readEntries('words'),
+    readChannelContent()
+  ]);
+  const hero = channelContent.words;
 
   return (
     <section className="channel channel--words">
       <header className="channel__intro">
-        <p className="channel__eyebrow">Editorial Log</p>
-        <h1 className="channel__title">Words &amp; Essays</h1>
-        <p className="channel__lead">
-          Essays, dispatches, and glossaries documenting the studio process. Open any log to read the full rich-text
-          entry with embedded media and references.
-        </p>
+        <h1 className="channel__title">{hero.title}</h1>
+        <p className="channel__lead">{hero.lead}</p>
       </header>
 
       {entries.length === 0 ? (

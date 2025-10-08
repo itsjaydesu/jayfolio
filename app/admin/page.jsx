@@ -5,6 +5,7 @@ import AdminNav from '../../components/admin-nav';
 import CoverImageUploader from '../../components/cover-image-uploader';
 import RichTextEditor from '../../components/rich-text-editor';
 import { ChevronDoubleDownIcon, ChevronDoubleUpIcon } from '../../components/icons';
+import ChannelContentEditor from '../../components/channel-content-editor';
 
 const TYPE_OPTIONS = [
   { id: 'projects', label: 'Projects' },
@@ -464,6 +465,8 @@ export default function AdminPage() {
         </div>
         </div>
       </section>
+
+      <ChannelContentEditor />
     </div>
   );
 }

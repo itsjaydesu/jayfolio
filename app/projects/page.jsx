@@ -3,6 +3,7 @@ import Link from 'next/link';
 import EntryReturnFocus from '../../components/EntryReturnFocus';
 import { readEntries } from '../../lib/contentStore';
 import { formatDisplayDate } from '../../lib/formatters';
+import { readChannelContent } from '../../lib/channelContent';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,17 +14,17 @@ const PROJECT_TONES = {
 };
 
 export default async function ProjectsPage() {
-  const entries = await readEntries('projects');
+  const [entries, channelContent] = await Promise.all([
+    readEntries('projects'),
+    readChannelContent()
+  ]);
+  const hero = channelContent.projects;
 
   return (
     <section className="channel channel--projects">
       <header className="channel__intro">
-        <p className="channel__eyebrow">Project Feed</p>
-        <h1 className="channel__title">Selected Builds</h1>
-        <p className="channel__lead">
-          Explore interactive commissions, touring installations, and responsive tooling. Choose any dossier to open a
-          full breakdown with media, credits, and embedded documentation.
-        </p>
+        <h1 className="channel__title">{hero.title}</h1>
+        <p className="channel__lead">{hero.lead}</p>
       </header>
 
       {entries.length === 0 ? (

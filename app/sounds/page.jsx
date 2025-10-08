@@ -2,6 +2,7 @@ import Link from 'next/link';
 import EntryReturnFocus from '../../components/EntryReturnFocus';
 import { readEntries } from '../../lib/contentStore';
 import { formatDisplayDate } from '../../lib/formatters';
+import { readChannelContent } from '../../lib/channelContent';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,17 +13,17 @@ const SOUND_TONES = {
 };
 
 export default async function SoundsPage() {
-  const entries = await readEntries('sounds');
+  const [entries, channelContent] = await Promise.all([
+    readEntries('sounds'),
+    readChannelContent()
+  ]);
+  const hero = channelContent.sounds;
 
   return (
     <section className="channel channel--sounds">
       <header className="channel__intro">
-        <p className="channel__eyebrow">Audio Vault</p>
-        <h1 className="channel__title">Sound Experiments</h1>
-        <p className="channel__lead">
-          Loops, drone suites, and live performance sketches. Dive into each archive entry to access liner notes and
-          embedded media players.
-        </p>
+        <h1 className="channel__title">{hero.title}</h1>
+        <p className="channel__lead">{hero.lead}</p>
       </header>
 
       {entries.length === 0 ? (
