@@ -11,6 +11,11 @@ const SETTINGS_LINKS = [
     href: '/admin/settings/field',
     title: 'Field Settings',
     description: 'Control the dotfield baseline mood and channel overrides.'
+  },
+  {
+    href: '/admin/settings/channel',
+    title: 'Channel Copy',
+    description: 'Edit per-channel hero context and about capsule copy.'
   }
 ];
 
