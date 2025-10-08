@@ -5,25 +5,25 @@
       "id": "about",
       "label": "About",
       "route": "/about",
-      "description": "Jay Winder curates lucid audiovisual experiments, shaping hypnotic interfaces that oscillate between nostalgia and the hyperreal."
+      "description": "How about that?"
     },
     {
       "id": "projects",
       "label": "Projects",
       "route": "/projects",
-      "description": "Highlights include kinetic WebGL fields, performance-driven installations, and tactile controls for curious collaborators."
+      "description": "Stuff I ① made ② am making ③ did"
     },
     {
       "id": "words",
       "label": "Words",
       "route": "/words",
-      "description": "Dispatches chart process notes, essays on spatial computing, and glossaries for future signal-bearers."
+      "description": "Some of my words for you"
     },
     {
       "id": "sounds",
       "label": "Sounds",
       "route": "/sounds",
-      "description": "A rotating archive of ambient loops, chromatic drones, and responsive audio sketches tuned for late-night wanderers."
+      "description": "\"Art is how we decorate space; \nmusic is how we decorate time\""
     }
   ]
 }

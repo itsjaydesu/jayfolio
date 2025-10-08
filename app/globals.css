@@ -870,6 +870,33 @@ a {
   gap: 0.6rem;
 }
 .cover-uploader__preview {
+
+@media (max-width: 640px) {
+  .menu-overlay {
+    padding: clamp(1.2rem, 6vw, 2rem);
+    align-items: center;
+    justify-content: center;
+  }
+
+  .retro-menu--centerpiece {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: min(320px, 90vw);
+  }
+
+  .menu-overlay .retro-menu--centerpiece {
+    transform: translate(-50%, calc(-50% + 26px)) scale(0.94);
+  }
+
+  .menu-overlay.is-visible .retro-menu--centerpiece {
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  .retro-menu__list {
+    gap: 0.75rem;
+  }
+}
   border-radius: 20px;
   border: 1px solid rgba(118, 202, 210, 0.22);
   min-height: 160px;
@@ -2764,9 +2791,9 @@ a {
   color: inherit;
   font: inherit;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
-  font-size: 0.74rem;
-  padding: 0.7rem 1rem 0.7rem 1.4rem;
+  letter-spacing: 0.18em;
+  font-size: clamp(1.05rem, 2.8vw, 1.35rem);
+  padding: 1rem 1.35rem 1rem 1.9rem;
   cursor: pointer;
   display: block;
   text-decoration: none;
@@ -2843,6 +2870,7 @@ a {
   line-height: 1.5;
   letter-spacing: 0.06em;
   opacity: 0.86;
+  white-space: pre-line;
 }
 
 .retro-menu__status span {

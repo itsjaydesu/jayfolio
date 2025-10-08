@@ -1,23 +1,23 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
-import RetroMenu from './RetroMenu';
-import { SITE_TEXT_DEFAULTS } from '../lib/siteTextDefaults';
-import SceneCanvas from './SceneCanvas';
+import Link from "next/link";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import RetroMenu from "./RetroMenu";
+import { SITE_TEXT_DEFAULTS } from "../lib/siteTextDefaults";
+import SceneCanvas from "./SceneCanvas";
 
 const DEFAULT_MENU_ITEMS = SITE_TEXT_DEFAULTS.primaryMenu.map((i) => ({
   id: i.id,
   label: i.label,
   href: i.route,
-  status: { title: i.label, description: i.description }
+  status: { title: i.label, description: i.description },
 }));
 
 const DEFAULT_STATUS = {
-  title: 'Signal Router',
-  description: 'Choose a channel to dive into its dossier. Hover to preview, click to enter.',
-  mode: 'idle'
+  title: "Hello",
+  description: "Please select a channel that interests you",
+  mode: "waiting for your selection",
 };
 
 export default function SiteShell({ children }) {
@@ -33,15 +33,15 @@ export default function SiteShell({ children }) {
     let ignore = false;
     (async () => {
       try {
-        const res = await fetch('/api/site-text', { cache: 'no-store' });
+        const res = await fetch("/api/site-text", { cache: "no-store" });
         const data = await res.json();
-        if (!res.ok) throw new Error(data?.error || 'Failed to load site text');
+        if (!res.ok) throw new Error(data?.error || "Failed to load site text");
         if (ignore) return;
         const items = (data.primaryMenu || []).map((i) => ({
           id: i.id,
           label: i.label,
           href: i.route,
-          status: { title: i.label, description: i.description }
+          status: { title: i.label, description: i.description },
         }));
         setBrand(data.brand || SITE_TEXT_DEFAULTS.brand);
         setMenuItems(items.length ? items : DEFAULT_MENU_ITEMS);
@@ -54,7 +54,10 @@ export default function SiteShell({ children }) {
     };
   }, []);
 
-  const pathSegments = useMemo(() => pathname?.split('/').filter(Boolean) ?? [], [pathname]);
+  const pathSegments = useMemo(
+    () => pathname?.split("/").filter(Boolean) ?? [],
+    [pathname]
+  );
   const primarySegment = pathSegments[0] ?? null;
   const activeItem = useMemo(
     () => menuItems.find((item) => item.id === primarySegment) ?? null,
@@ -62,11 +65,12 @@ export default function SiteShell({ children }) {
   );
   const activeSection = activeItem?.id ?? null;
   const isDetailView = pathSegments.length > 1 && Boolean(activeItem);
-  const isAdminView = primarySegment === 'admin';
+  const isAdminView = primarySegment === "admin";
   const isHome = pathSegments.length === 0;
 
   const activeStatus = useMemo(
-    () => (activeItem ? { ...activeItem.status, mode: 'active' } : DEFAULT_STATUS),
+    () =>
+      activeItem ? { ...activeItem.status, mode: "active" } : DEFAULT_STATUS,
     [activeItem]
   );
   const [status, setStatus] = useState(activeStatus);
@@ -74,7 +78,7 @@ export default function SiteShell({ children }) {
   const [hasScrolled, setHasScrolled] = useState(false);
 
   useEffect(() => {
-    router.prefetch('/');
+    router.prefetch("/");
     return () => {
       if (returnTimerRef.current) {
         window.clearTimeout(returnTimerRef.current);
@@ -84,9 +88,9 @@ export default function SiteShell({ children }) {
   }, [router]);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
 
-    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 
     if (motionQuery.matches) {
       setNavReady(true);
@@ -112,12 +116,12 @@ export default function SiteShell({ children }) {
       return;
     }
 
-    if (typeof window === 'undefined') {
+    if (typeof window === "undefined") {
       setMenuVisible(true);
       return;
     }
 
-    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
     if (motionQuery.matches) {
       setMenuVisible(true);
       return;
@@ -133,7 +137,7 @@ export default function SiteShell({ children }) {
   }, [isHome]);
 
   useEffect(() => {
-    if (isDetailView || typeof window === 'undefined') {
+    if (isDetailView || typeof window === "undefined") {
       setHasScrolled(false);
       return;
     }
@@ -145,9 +149,9 @@ export default function SiteShell({ children }) {
     };
 
     handleScroll();
-    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => {
-      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener("scroll", handleScroll);
     };
   }, [isDetailView, pathname]);
 
@@ -171,7 +175,7 @@ export default function SiteShell({ children }) {
 
   const handlePreview = (item, isActive) => {
     if (!item) return;
-    setStatus({ ...item.status, mode: isActive ? 'active' : 'preview' });
+    setStatus({ ...item.status, mode: isActive ? "active" : "preview" });
   };
 
   const handleReset = () => {
@@ -186,7 +190,7 @@ export default function SiteShell({ children }) {
         event.ctrlKey ||
         event.shiftKey ||
         event.altKey ||
-        ('button' in event && event.button !== 0)
+        ("button" in event && event.button !== 0)
       ) {
         return;
       }
@@ -194,10 +198,11 @@ export default function SiteShell({ children }) {
     }
 
     const reduceMotion =
-      typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     if (reduceMotion) {
-      router.push('/');
+      router.push("/");
       return;
     }
 
@@ -207,7 +212,7 @@ export default function SiteShell({ children }) {
     }
 
     returnTimerRef.current = window.setTimeout(() => {
-      router.push('/');
+      router.push("/");
     }, 520);
   };
 
@@ -219,14 +224,14 @@ export default function SiteShell({ children }) {
     );
   }
 
-  const activeSectionForCanvas = activeSection ?? 'about';
+  const activeSectionForCanvas = activeSection ?? "about";
   const showCanvas = !isDetailView;
 
   if (isHome) {
     return (
       <>
         <SceneCanvas activeSection={activeSectionForCanvas} isPaused={false} />
-        <div className={`menu-overlay${menuVisible ? ' is-visible' : ''}`}>
+        <div className={`menu-overlay${menuVisible ? " is-visible" : ""}`}>
           <RetroMenu
             id="retro-menu"
             items={menuItems}
@@ -245,20 +250,25 @@ export default function SiteShell({ children }) {
 
   return (
     <>
-      {showCanvas ? <SceneCanvas activeSection={activeSectionForCanvas} isPaused={false} /> : null}
-      <div className={`site-shell${isDetailView ? ' site-shell--detail' : ''}`}>
+      {showCanvas ? (
+        <SceneCanvas activeSection={activeSectionForCanvas} isPaused={false} />
+      ) : null}
+      <div className={`site-shell${isDetailView ? " site-shell--detail" : ""}`}>
         <div className="site-shell__container">
           {!isDetailView ? (
             <header
-              className={`site-shell__header${hasScrolled ? ' site-shell__header--shaded' : ''}`}
-              data-nav-ready={navReady ? 'true' : 'false'}
-              data-returning-home={isReturningHome ? 'true' : 'false'}
+              className={`site-shell__header${
+                hasScrolled ? " site-shell__header--shaded" : ""
+              }`}
+              data-nav-ready={navReady ? "true" : "false"}
+              data-returning-home={isReturningHome ? "true" : "false"}
               style={
                 navReady
                   ? undefined
                   : {
-                      opacity: 'var(--nav-initial-opacity, 0)',
-                      transform: 'translate(-50%, var(--nav-initial-offset, -18px))'
+                      opacity: "var(--nav-initial-opacity, 0)",
+                      transform:
+                        "translate(-50%, var(--nav-initial-offset, -18px))",
                     }
               }
             >
@@ -270,8 +280,9 @@ export default function SiteShell({ children }) {
                   navReady
                     ? undefined
                     : {
-                        opacity: 'var(--nav-item-initial-opacity, 0)',
-                        transform: 'translateY(var(--nav-item-initial-offset, 8px))'
+                        opacity: "var(--nav-item-initial-opacity, 0)",
+                        transform:
+                          "translateY(var(--nav-item-initial-offset, 8px))",
                       }
                 }
               >
@@ -285,8 +296,10 @@ export default function SiteShell({ children }) {
                       key={item.id}
                       href={item.href}
                       prefetch
-                      className={`site-shell__nav-link${isActive ? ' is-active' : ''}`}
-                      aria-current={isActive ? 'page' : undefined}
+                      className={`site-shell__nav-link${
+                        isActive ? " is-active" : ""
+                      }`}
+                      aria-current={isActive ? "page" : undefined}
                       onMouseEnter={() => handlePreview(item, isActive)}
                       onMouseLeave={handleReset}
                       onFocus={() => handlePreview(item, isActive)}
@@ -294,11 +307,12 @@ export default function SiteShell({ children }) {
                       style={
                         navReady
                           ? {
-                              transitionDelay: `${index * 60}ms`
+                              transitionDelay: `${index * 60}ms`,
                             }
                           : {
-                              opacity: 'var(--nav-item-initial-opacity, 0)',
-                              transform: 'translateY(var(--nav-item-initial-offset, 12px))'
+                              opacity: "var(--nav-item-initial-opacity, 0)",
+                              transform:
+                                "translateY(var(--nav-item-initial-offset, 12px))",
                             }
                       }
                     >
@@ -316,8 +330,9 @@ export default function SiteShell({ children }) {
                   navReady
                     ? undefined
                     : {
-                        opacity: 'var(--nav-item-initial-opacity, 0)',
-                        transform: 'translateY(var(--nav-item-initial-offset, 8px))'
+                        opacity: "var(--nav-item-initial-opacity, 0)",
+                        transform:
+                          "translateY(var(--nav-item-initial-offset, 8px))",
                       }
                 }
               >
@@ -330,9 +345,9 @@ export default function SiteShell({ children }) {
           </p>
           <main
             key={pathname}
-            className={`site-shell__main${isDetailView ? ' is-detail' : ' site-shell__transition'}${
-              isReturningHome ? ' is-fading-out' : ''
-            }`}
+            className={`site-shell__main${
+              isDetailView ? " is-detail" : " site-shell__transition"
+            }${isReturningHome ? " is-fading-out" : ""}`}
           >
             {children}
           </main>
