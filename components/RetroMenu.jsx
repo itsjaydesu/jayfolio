@@ -36,18 +36,34 @@ export default function RetroMenu({
       const menuElement = toggleRef.current.closest('.retro-menu');
       if (menuElement) {
         const menuRect = menuElement.getBoundingClientRect();
+        const panelWidth = Math.min(menuRect.width, 400); // Max width 400px
+        const viewportWidth = window.innerWidth;
+        
+        // Calculate left position, ensuring panel stays within viewport
+        let leftPos = menuRect.left;
+        const rightEdge = leftPos + panelWidth;
+        
+        // If panel would go off right edge, adjust left position
+        if (rightEdge > viewportWidth - 20) { // 20px margin from edge
+          leftPos = viewportWidth - panelWidth - 20;
+        }
+        
+        // If panel would go off left edge, adjust
+        if (leftPos < 20) {
+          leftPos = 20;
+        }
+        
         const newPosition = {
           top: menuRect.bottom + 8,
-          left: menuRect.left,
-          width: menuRect.width
+          left: leftPos,
+          width: panelWidth
         };
+        
         console.log('📍 Menu rect:', menuRect);
-        console.log('📍 New panel position:', newPosition);
-        console.log('📍 Window dimensions:', { 
-          width: window.innerWidth, 
-          height: window.innerHeight,
-          scrollY: window.scrollY 
-        });
+        console.log('📍 Calculated panel position:', newPosition);
+        console.log('📍 Viewport width:', viewportWidth);
+        console.log('📍 Panel right edge would be:', rightEdge);
+        
         setPanelPosition(newPosition);
       } else {
         console.warn('⚠️ Could not find .retro-menu element!');
@@ -191,8 +207,13 @@ export default function RetroMenu({
             ref={(el) => {
               if (el) {
                 console.log('📦 Panel DOM element mounted!', el);
-                console.log('📦 Panel computed style:', window.getComputedStyle(el));
-                console.log('📦 Panel rect:', el.getBoundingClientRect());
+                const rect = el.getBoundingClientRect();
+                console.log('📦 Panel rect:', rect);
+                console.log('📦 Is panel visible?', {
+                  inViewportHorizontally: rect.left >= 0 && rect.right <= window.innerWidth,
+                  inViewportVertically: rect.top >= 0 && rect.bottom <= window.innerHeight,
+                  hasSize: rect.width > 0 && rect.height > 0
+                });
               }
             }}
             className="retro-menu__settings-panel" 
@@ -202,29 +223,43 @@ export default function RetroMenu({
               top: `${panelPosition.top}px`,
               left: `${panelPosition.left}px`,
               width: `${panelPosition.width}px`,
-              zIndex: 9999,
-              background: 'linear-gradient(180deg, rgba(0, 58, 99, 0.98), rgba(0, 139, 178, 0.95))',
-              border: '2px solid rgba(0, 200, 208, 0.6)',
+              zIndex: 99999,  // Even higher z-index
+              background: 'rgba(0, 58, 99, 0.98)',  // Solid color for visibility
+              backgroundColor: 'rgba(0, 139, 178, 0.98)', // Fallback
+              border: '3px solid #00c8d0',  // More visible border
               borderRadius: '8px',
-              padding: '0.8rem',
-              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.6)'
+              padding: '1rem',
+              boxShadow: '0 0 50px rgba(0, 200, 208, 0.8), 0 8px 24px rgba(0, 0, 0, 0.9)'  // Glowing shadow
             }}
           >
-          <div className="retro-menu__settings-header">
+          <div className="retro-menu__settings-header" style={{ color: '#fff', marginBottom: '0.5rem' }}>
             <span>Field Effects</span>
           </div>
-          <div className="retro-menu__settings-content">
+          <div className="retro-menu__settings-content" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
             <button
               type="button"
               className="retro-menu__effect-btn"
               onClick={() => {
+                console.log('🎯 Drop Ball clicked!');
                 onFieldEffect('dropBall');
                 setSettingsOpen(false);
               }}
               title="Create a ripple from the center"
+              style={{
+                padding: '0.75rem',
+                background: 'rgba(0, 116, 128, 0.6)',
+                border: '2px solid #00c8d0',
+                borderRadius: '6px',
+                color: '#fff',
+                cursor: 'pointer',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '0.25rem'
+              }}
             >
-              <span className="retro-menu__effect-icon">⚫</span>
-              <span>Drop Ball</span>
+              <span className="retro-menu__effect-icon" style={{ fontSize: '1.5rem' }}>⚫</span>
+              <span style={{ fontSize: '0.75rem', textTransform: 'uppercase' }}>Drop Ball</span>
             </button>
             <button
               type="button"
