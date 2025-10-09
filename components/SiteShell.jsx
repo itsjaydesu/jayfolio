@@ -28,6 +28,7 @@ export default function SiteShell({ children }) {
   const [isReturningHome, setIsReturningHome] = useState(false);
   const returnTimerRef = useRef(null);
   const [menuVisible, setMenuVisible] = useState(false);
+  const sceneRef = useRef(null);
 
   useEffect(() => {
     let ignore = false;
@@ -182,6 +183,52 @@ export default function SiteShell({ children }) {
     setStatus(activeStatus);
   };
 
+  const handleFieldEffect = (effectType) => {
+    if (!sceneRef.current) return;
+    
+    switch (effectType) {
+      case 'dropBall':
+        // Create a single ripple at the center
+        sceneRef.current.addRipple(0, 0);
+        break;
+      case 'shockwave': {
+        // Create multiple ripples in a pattern
+        const positions = [
+          [0, 0],
+          [-0.5, -0.5],
+          [0.5, -0.5],
+          [-0.5, 0.5],
+          [0.5, 0.5]
+        ];
+        positions.forEach(([x, z], i) => {
+          setTimeout(() => {
+            sceneRef.current.addRipple(x * 1500, z * 1500);
+          }, i * 100);
+        });
+        break;
+      }
+      case 'swirlPulse':
+        // Temporarily enhance swirl effect
+        sceneRef.current.applySettings({
+          swirlStrength: 3.0,
+          swirlFrequency: 0.008,
+          animationSpeed: 2.0
+        });
+        setTimeout(() => {
+          sceneRef.current.applySettings({
+            swirlStrength: 1.0,
+            swirlFrequency: 0.004,
+            animationSpeed: 1.0
+          });
+        }, 3000);
+        break;
+      case 'calmReset':
+        // Reset to default calm state
+        sceneRef.current.resetToDefaults();
+        break;
+    }
+  };
+
   const handleNavigateHome = (event) => {
     if (isHome || isReturningHome) return;
     if (event) {
@@ -230,7 +277,11 @@ export default function SiteShell({ children }) {
   if (isHome) {
     return (
       <>
-        <SceneCanvas activeSection={activeSectionForCanvas} isPaused={false} />
+        <SceneCanvas 
+          activeSection={activeSectionForCanvas} 
+          isPaused={false}
+          ref={sceneRef}
+        />
         <div className={`menu-overlay${menuVisible ? " is-visible" : ""}`}>
           <RetroMenu
             id="retro-menu"
@@ -240,6 +291,7 @@ export default function SiteShell({ children }) {
             activeStatus={activeStatus}
             onStatusChange={handleStatusChange}
             onNavigate={handleMenuReset}
+            onFieldEffect={handleFieldEffect}
             isOpen
             variant="centerpiece"
           />

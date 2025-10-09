@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useState } from 'react';
 
 export default function RetroMenu({
   id,
@@ -11,8 +12,10 @@ export default function RetroMenu({
   activeStatus,
   isOpen = false,
   onNavigate,
-  variant = 'sidebar'
+  variant = 'sidebar',
+  onFieldEffect
 }) {
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const handleRestore = () => {
     if (onStatusChange) {
       onStatusChange(activeStatus);
@@ -40,6 +43,20 @@ export default function RetroMenu({
           <span className="indicator" aria-hidden="true" /> Jay Winder
         </span>
         <div className="retro-menu__title-actions">
+          <button
+            type="button"
+            className={`retro-menu__settings-toggle${settingsOpen ? ' is-active' : ''}`}
+            onClick={() => setSettingsOpen(!settingsOpen)}
+            aria-expanded={settingsOpen}
+            aria-label="Toggle field effects settings"
+            title="Field Effects"
+          >
+            <svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <circle cx="10" cy="10" r="3" />
+              <path d="M10 3.5v-1m0 15v-1m6.5-6.5h1m-15 0h1" />
+              <path d="M14.5 5.5l.7-.7m-10.4 10.4l.7-.7m0-9.4l-.7-.7m10.4 10.4l-.7-.7" />
+            </svg>
+          </button>
           <Link
             href="https://x.com/itsjaydesu"
             target="_blank"
@@ -92,6 +109,51 @@ export default function RetroMenu({
           })}
         </ul>
       </div>
+      {settingsOpen && onFieldEffect && (
+        <div className="retro-menu__settings-panel">
+          <div className="retro-menu__settings-header">
+            <span>Field Effects</span>
+          </div>
+          <div className="retro-menu__settings-content">
+            <button
+              type="button"
+              className="retro-menu__effect-btn"
+              onClick={() => onFieldEffect('dropBall')}
+              title="Create a ripple from the center"
+            >
+              <span className="retro-menu__effect-icon">⚫</span>
+              <span>Drop Ball</span>
+            </button>
+            <button
+              type="button"
+              className="retro-menu__effect-btn"
+              onClick={() => onFieldEffect('shockwave')}
+              title="Create multiple ripples"
+            >
+              <span className="retro-menu__effect-icon">💫</span>
+              <span>Shockwave</span>
+            </button>
+            <button
+              type="button"
+              className="retro-menu__effect-btn"
+              onClick={() => onFieldEffect('swirlPulse')}
+              title="Enhance swirl motion"
+            >
+              <span className="retro-menu__effect-icon">🌀</span>
+              <span>Swirl Pulse</span>
+            </button>
+            <button
+              type="button"
+              className="retro-menu__effect-btn"
+              onClick={() => onFieldEffect('calmReset')}
+              title="Reset to default state"
+            >
+              <span className="retro-menu__effect-icon">☯️</span>
+              <span>Calm Reset</span>
+            </button>
+          </div>
+        </div>
+      )}
       <p className="retro-menu__status" aria-live="polite">
         <strong>{status.title}</strong>
         <em>{status.description}</em>

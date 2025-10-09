@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import * as THREE from 'three';
 import Stats from 'three/examples/jsm/libs/stats.module.js';
 import { FIELD_DEFAULT_BASE, FIELD_DEFAULT_INFLUENCES } from '../lib/fieldDefaults';
@@ -13,7 +13,7 @@ const HALF_GRID_Y = ((AMOUNTY - 1) * SEPARATION) / 2;
 
 const DEFAULT_INFLUENCES = FIELD_DEFAULT_INFLUENCES;
 
-export default function SceneCanvas({ activeSection, isPaused = false }) {
+const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = false }, ref) {
   const containerRef = useRef(null);
   const stateRef = useRef(null);
   const initialSectionRef = useRef(null);
@@ -379,6 +379,22 @@ export default function SceneCanvas({ activeSection, isPaused = false }) {
         },
         setPaused: (value) => {
           paused = value;
+        },
+        addRipple: (x, z) => {
+          ripples.push({ x, z, start: elapsedTime });
+          if (ripples.length > 8) {
+            ripples.shift();
+          }
+        },
+        applySettings: (newSettings) => {
+          Object.entries(newSettings).forEach(([key, value]) => {
+            applyMenuValue(key, value);
+          });
+        },
+        resetToDefaults: () => {
+          Object.entries(FIELD_DEFAULT_BASE).forEach(([key, value]) => {
+            applyMenuValue(key, value);
+          });
         }
       };
 
@@ -441,5 +457,26 @@ export default function SceneCanvas({ activeSection, isPaused = false }) {
     stateRef.current?.setPaused?.(isPaused);
   }, [isPaused]);
 
+  // Expose methods to parent component
+  useImperativeHandle(ref, () => ({
+    addRipple: (x, z) => {
+      const state = stateRef.current;
+      if (!state?.addRipple) return;
+      state.addRipple(x, z);
+    },
+    applySettings: (settings) => {
+      const state = stateRef.current;
+      if (!state?.applySettings) return;
+      state.applySettings(settings);
+    },
+    resetToDefaults: () => {
+      const state = stateRef.current;
+      if (!state?.resetToDefaults) return;
+      state.resetToDefaults();
+    }
+  }));
+
   return <div ref={containerRef} className="scene-container" />;
-}
+});
+
+export default SceneCanvas;

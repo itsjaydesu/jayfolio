@@ -2884,6 +2884,123 @@ a {
   opacity: 0.6;
 }
 
+.retro-menu__settings-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  margin: 0 0.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.retro-menu__settings-toggle svg {
+  width: 14px;
+  height: 14px;
+}
+
+.retro-menu__settings-toggle:hover,
+.retro-menu__settings-toggle:focus-visible {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.9);
+  transform: rotate(45deg);
+}
+
+.retro-menu__settings-toggle.is-active {
+  background: rgba(0, 200, 208, 0.3);
+  border-color: rgba(0, 200, 208, 0.5);
+  color: #00c8d0;
+  transform: rotate(90deg);
+}
+
+.retro-menu__settings-panel {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 0.5rem;
+  padding: 0.8rem;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 58, 99, 0.98),
+    rgba(0, 139, 178, 0.95)
+  );
+  border: 1px solid rgba(0, 200, 208, 0.4);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.retro-menu__settings-header {
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(244, 250, 255, 0.8);
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.retro-menu__settings-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.retro-menu__effect-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.6rem 0.4rem;
+  background: rgba(0, 116, 128, 0.3);
+  border: 1px solid rgba(0, 200, 208, 0.3);
+  border-radius: 6px;
+  color: rgba(244, 250, 255, 0.9);
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.retro-menu__effect-btn:hover,
+.retro-menu__effect-btn:focus-visible {
+  background: rgba(0, 200, 208, 0.4);
+  border-color: rgba(0, 200, 208, 0.6);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 200, 208, 0.3);
+}
+
+.retro-menu__effect-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(0, 200, 208, 0.2);
+}
+
+.retro-menu__effect-icon {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
 .indicator {
   width: 10px;
   height: 10px;
