@@ -184,7 +184,13 @@ export default function SiteShell({ children }) {
   };
 
   const handleFieldEffect = (effectType) => {
-    if (!sceneRef.current) return;
+    console.log('🎯 handleFieldEffect called with:', effectType);
+    console.log('🎯 sceneRef.current:', sceneRef.current);
+    
+    if (!sceneRef.current) {
+      console.warn('⚠️ sceneRef.current is null!');
+      return;
+    }
     
     switch (effectType) {
       case 'dropBall':
@@ -275,6 +281,9 @@ export default function SiteShell({ children }) {
   const showCanvas = !isDetailView;
 
   if (isHome) {
+    console.log('🏠 Rendering home page with RetroMenu');
+    console.log('🏠 handleFieldEffect function:', typeof handleFieldEffect, handleFieldEffect);
+    
     return (
       <>
         <SceneCanvas 

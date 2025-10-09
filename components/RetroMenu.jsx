@@ -19,16 +19,38 @@ export default function RetroMenu({
   const [panelPosition, setPanelPosition] = useState({ top: 0, left: 0 });
   const toggleRef = useRef(null);
   
+  // Debug: Log props on mount and updates
+  useEffect(() => {
+    console.log('🔍 RetroMenu mounted/updated with props:', {
+      variant,
+      hasOnFieldEffect: !!onFieldEffect,
+      onFieldEffectType: typeof onFieldEffect,
+      isOpen,
+      id
+    });
+  }, [variant, onFieldEffect, isOpen, id]);
+  
   useEffect(() => {
     if (settingsOpen && toggleRef.current) {
+      console.log('📍 Calculating panel position...');
       const menuElement = toggleRef.current.closest('.retro-menu');
       if (menuElement) {
         const menuRect = menuElement.getBoundingClientRect();
-        setPanelPosition({
+        const newPosition = {
           top: menuRect.bottom + 8,
           left: menuRect.left,
           width: menuRect.width
+        };
+        console.log('📍 Menu rect:', menuRect);
+        console.log('📍 New panel position:', newPosition);
+        console.log('📍 Window dimensions:', { 
+          width: window.innerWidth, 
+          height: window.innerHeight,
+          scrollY: window.scrollY 
         });
+        setPanelPosition(newPosition);
+      } else {
+        console.warn('⚠️ Could not find .retro-menu element!');
       }
     }
   }, [settingsOpen]);
@@ -78,7 +100,11 @@ export default function RetroMenu({
             ref={toggleRef}
             type="button"
             className={`retro-menu__settings-toggle${settingsOpen ? ' is-active' : ''}`}
-            onClick={() => setSettingsOpen(!settingsOpen)}
+            onClick={() => {
+              console.log('🔘 Settings toggle clicked!');
+              console.log('🔘 Current state:', { settingsOpen, hasOnFieldEffect: !!onFieldEffect });
+              setSettingsOpen(!settingsOpen);
+            }}
             aria-expanded={settingsOpen}
             aria-label="Toggle field effects settings"
             title="Field Effects"
@@ -141,23 +167,49 @@ export default function RetroMenu({
           })}
         </ul>
       </div>
-      {settingsOpen && onFieldEffect && (
-        <div 
-          className="retro-menu__settings-panel" 
-          style={{ 
-            display: 'block',
-            position: 'fixed',
-            top: `${panelPosition.top}px`,
-            left: `${panelPosition.left}px`,
-            width: `${panelPosition.width}px`,
-            zIndex: 9999,
-            background: 'linear-gradient(180deg, rgba(0, 58, 99, 0.98), rgba(0, 139, 178, 0.95))',
-            border: '2px solid rgba(0, 200, 208, 0.6)',
-            borderRadius: '8px',
-            padding: '0.8rem',
-            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.6)'
-          }}
-        >
+      {(() => {
+        const shouldRenderPanel = settingsOpen && onFieldEffect;
+        console.log('🎨 Panel render check:', { 
+          settingsOpen, 
+          hasOnFieldEffect: !!onFieldEffect,
+          shouldRenderPanel,
+          panelPosition 
+        });
+        
+        if (!shouldRenderPanel) {
+          console.log('❌ Not rendering panel because:', {
+            settingsOpenIs: settingsOpen,
+            onFieldEffectIs: onFieldEffect
+          });
+          return null;
+        }
+        
+        console.log('✅ Rendering panel at position:', panelPosition);
+        
+        return (
+          <div 
+            ref={(el) => {
+              if (el) {
+                console.log('📦 Panel DOM element mounted!', el);
+                console.log('📦 Panel computed style:', window.getComputedStyle(el));
+                console.log('📦 Panel rect:', el.getBoundingClientRect());
+              }
+            }}
+            className="retro-menu__settings-panel" 
+            style={{ 
+              display: 'block',
+              position: 'fixed',
+              top: `${panelPosition.top}px`,
+              left: `${panelPosition.left}px`,
+              width: `${panelPosition.width}px`,
+              zIndex: 9999,
+              background: 'linear-gradient(180deg, rgba(0, 58, 99, 0.98), rgba(0, 139, 178, 0.95))',
+              border: '2px solid rgba(0, 200, 208, 0.6)',
+              borderRadius: '8px',
+              padding: '0.8rem',
+              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.6)'
+            }}
+          >
           <div className="retro-menu__settings-header">
             <span>Field Effects</span>
           </div>
@@ -212,7 +264,8 @@ export default function RetroMenu({
             </button>
           </div>
         </div>
-      )}
+        );
+      })()}
       <p className="retro-menu__status" aria-live="polite">
         <strong>{status.title}</strong>
         <em>{status.description}</em>
