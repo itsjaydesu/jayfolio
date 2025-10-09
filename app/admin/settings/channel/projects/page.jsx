@@ -1,5 +1,5 @@
-import AdminNav from '../../../../../../components/admin-nav';
-import ChannelContentEditor from '../../../../../../components/channel-content-editor';
+import AdminNav from '../../../../../components/admin-nav';
+import ChannelContentEditor from '../../../../../components/channel-content-editor';
 
 export default function ChannelProjectsSettingsPage() {
   return (
