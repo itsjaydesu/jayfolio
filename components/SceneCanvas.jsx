@@ -57,6 +57,8 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
       };
 
       const settings = { ...FIELD_DEFAULT_BASE };
+      const targetSettings = { ...FIELD_DEFAULT_BASE };
+      const transitionSpeed = 0.05; // Smooth transition speed
       let influences = { ...DEFAULT_INFLUENCES };
 
       try {
@@ -86,16 +88,22 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
         return () => {};
       }
 
-      function applyMenuValue(key, value) {
-        settings[key] = value;
+      function applyMenuValue(key, value, immediate = false) {
+        if (immediate) {
+          settings[key] = value;
+          targetSettings[key] = value;
+        } else {
+          targetSettings[key] = value;
+        }
+        
         if (key === 'opacity') {
-          uniforms.opacity.value = value;
+          uniforms.opacity.value = settings.opacity;
         }
         if (key === 'pointSize') {
-          uniforms.pointMultiplier.value = value;
+          uniforms.pointMultiplier.value = settings.pointSize;
         }
         if (key === 'fogDensity' && scene?.fog) {
-          scene.fog.density = value;
+          scene.fog.density = settings.fogDensity;
         }
         if (key === 'showStats' && stats?.dom) {
           stats.dom.style.display = value ? 'block' : 'none';
@@ -135,7 +143,7 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
         const rippleX = normX * HALF_GRID_X;
         const rippleZ = normY * HALF_GRID_Y;
 
-        ripples.push({ x: rippleX, z: rippleZ, start: elapsedTime });
+        ripples.push({ x: rippleX, z: rippleZ, start: elapsedTime, strength: 1 });
         if (ripples.length > 8) {
           ripples.shift();
         }
@@ -155,6 +163,22 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
 
         const delta = clock.getDelta();
         elapsedTime += delta;
+        
+        // Smoothly interpolate settings towards target values
+        for (const key in targetSettings) {
+          if (settings[key] !== targetSettings[key]) {
+            settings[key] += (targetSettings[key] - settings[key]) * transitionSpeed;
+            
+            // Update uniforms if needed
+            if (key === 'opacity') {
+              uniforms.opacity.value = settings.opacity;
+            }
+            if (key === 'pointSize') {
+              uniforms.pointMultiplier.value = settings.pointSize;
+            }
+          }
+        }
+        
         animationTime += delta * settings.animationSpeed;
 
         if (settings.autoRotate) {
@@ -197,7 +221,8 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
             const dist = Math.sqrt((px - ripple.x) * (px - ripple.x) + (pz - ripple.z) * (pz - ripple.z)) + 0.0001;
             const wavefront = age * settings.rippleSpeed;
             const envelope = Math.exp(-dist * settings.rippleDecay) * Math.exp(-age * 0.55);
-            height += Math.sin((dist - wavefront) / settings.rippleWidth) * settings.rippleStrength * 0.65 * envelope;
+            const rippleStrength = ripple.strength || 1;
+            height += Math.sin((dist - wavefront) / settings.rippleWidth) * settings.rippleStrength * 0.65 * envelope * rippleStrength;
           }
 
           positions[i + 1] = height;
@@ -380,20 +405,20 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
         setPaused: (value) => {
           paused = value;
         },
-        addRipple: (x, z) => {
-          ripples.push({ x, z, start: elapsedTime });
+        addRipple: (x, z, strength = 1) => {
+          ripples.push({ x, z, start: elapsedTime, strength });
           if (ripples.length > 8) {
             ripples.shift();
           }
         },
-        applySettings: (newSettings) => {
+        applySettings: (newSettings, immediate = false) => {
           Object.entries(newSettings).forEach(([key, value]) => {
-            applyMenuValue(key, value);
+            applyMenuValue(key, value, immediate);
           });
         },
         resetToDefaults: () => {
           Object.entries(FIELD_DEFAULT_BASE).forEach(([key, value]) => {
-            applyMenuValue(key, value);
+            applyMenuValue(key, value, false);
           });
         }
       };
@@ -459,15 +484,15 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
 
   // Expose methods to parent component
   useImperativeHandle(ref, () => ({
-    addRipple: (x, z) => {
+    addRipple: (x, z, strength = 1) => {
       const state = stateRef.current;
       if (!state?.addRipple) return;
-      state.addRipple(x, z);
+      state.addRipple(x, z, strength);
     },
-    applySettings: (settings) => {
+    applySettings: (settings, immediate = false) => {
       const state = stateRef.current;
       if (!state?.applySettings) return;
-      state.applySettings(settings);
+      state.applySettings(settings, immediate);
     },
     resetToDefaults: () => {
       const state = stateRef.current;

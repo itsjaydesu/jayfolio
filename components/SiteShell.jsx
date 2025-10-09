@@ -188,39 +188,38 @@ export default function SiteShell({ children }) {
     
     switch (effectType) {
       case 'dropBall':
-        // Create a single ripple at the center
-        sceneRef.current.addRipple(0, 0);
+        // Create a single strong ripple at the center
+        sceneRef.current.addRipple(0, 0, 2);  // Double strength
         break;
       case 'shockwave': {
-        // Create multiple ripples in a pattern
+        // Create multiple dramatic ripples in a pattern
         const positions = [
-          [0, 0],
-          [-0.5, -0.5],
-          [0.5, -0.5],
-          [-0.5, 0.5],
-          [0.5, 0.5]
+          [0, 0, 3],  // center with strength 3
+          [-0.7, -0.7, 2],
+          [0.7, -0.7, 2],
+          [-0.7, 0.7, 2],
+          [0.7, 0.7, 2],
+          [-1, 0, 1.5],
+          [1, 0, 1.5],
+          [0, -1, 1.5],
+          [0, 1, 1.5]
         ];
-        positions.forEach(([x, z], i) => {
+        positions.forEach(([x, z, strength], i) => {
           setTimeout(() => {
-            sceneRef.current.addRipple(x * 1500, z * 1500);
-          }, i * 100);
+            sceneRef.current.addRipple(x * 2000, z * 2000, strength);
+          }, i * 50);  // Faster sequence
         });
         break;
       }
       case 'swirlPulse':
-        // Temporarily enhance swirl effect
+        // Enhance swirl effect with smooth transitions
         sceneRef.current.applySettings({
-          swirlStrength: 3.0,
+          swirlStrength: 2.5,
           swirlFrequency: 0.008,
-          animationSpeed: 2.0
+          animationSpeed: 1.8,
+          amplitude: 60
         });
-        setTimeout(() => {
-          sceneRef.current.applySettings({
-            swirlStrength: 1.0,
-            swirlFrequency: 0.004,
-            animationSpeed: 1.0
-          });
-        }, 3000);
+        // Don't reset - let it continue until user chooses another effect
         break;
       case 'calmReset':
         // Reset to default calm state
