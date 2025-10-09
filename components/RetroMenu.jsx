@@ -35,6 +35,29 @@ export default function RetroMenu({
       console.log('📍 Calculating panel position...');
       const menuElement = toggleRef.current.closest('.retro-menu');
       if (menuElement) {
+        // Check for overflow and transform issues
+        console.log('🔍 Checking parent hierarchy for issues...');
+        let element = menuElement;
+        while (element && element !== document.body) {
+          const styles = window.getComputedStyle(element);
+          const overflow = styles.overflow;
+          const overflowX = styles.overflowX;
+          const overflowY = styles.overflowY;
+          const transform = styles.transform;
+          const position = styles.position;
+          
+          if (overflow === 'hidden' || overflowX === 'hidden' || overflowY === 'hidden') {
+            console.warn('⚠️ Found overflow:hidden on:', element.className, { overflow, overflowX, overflowY });
+          }
+          if (transform && transform !== 'none') {
+            console.warn('⚠️ Found transform on:', element.className, transform);
+          }
+          if (position === 'fixed' || position === 'absolute') {
+            console.log('📌 Found positioned parent:', element.className, position);
+          }
+          
+          element = element.parentElement;
+        }
         const menuRect = menuElement.getBoundingClientRect();
         const panelWidth = Math.min(menuRect.width, 400); // Max width 400px
         const viewportWidth = window.innerWidth;
@@ -100,7 +123,29 @@ export default function RetroMenu({
     }
   };
 
+  // Test: Create a simple visible element to verify rendering
+  const testElement = settingsOpen ? (
+    <div
+      style={{
+        position: 'fixed',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        background: 'red',
+        color: 'white',
+        padding: '2rem',
+        zIndex: 999999,
+        fontSize: '2rem',
+        border: '5px solid yellow'
+      }}
+    >
+      TEST: Settings Panel Should Be Here
+    </div>
+  ) : null;
+
   return (
+    <>
+    {testElement}
     <nav
       id={id}
       className={`retro-menu retro-menu--${variant}${isOpen ? ' is-open' : ''}`}
@@ -202,6 +247,27 @@ export default function RetroMenu({
         
         console.log('✅ Rendering panel at position:', panelPosition);
         
+        // First, test with a super simple element
+        if (true) {  // Force render for testing
+          return (
+            <div
+              style={{
+                position: 'absolute',
+                top: '100%',
+                left: 0,
+                right: 0,
+                height: '200px',
+                background: 'lime',
+                border: '10px solid red',
+                zIndex: 999999,
+                marginTop: '10px'
+              }}
+            >
+              SIMPLE TEST PANEL - CAN YOU SEE THIS?
+            </div>
+          );
+        }
+        
         return (
           <div 
             ref={(el) => {
@@ -209,11 +275,44 @@ export default function RetroMenu({
                 console.log('📦 Panel DOM element mounted!', el);
                 const rect = el.getBoundingClientRect();
                 console.log('📦 Panel rect:', rect);
-                console.log('📦 Is panel visible?', {
+                console.log('📦 Panel parent:', el.parentElement);
+                console.log('📦 Panel offsetParent:', el.offsetParent);
+                
+                // Check actual visibility
+                const computedStyle = window.getComputedStyle(el);
+                console.log('📦 Panel visibility check:', {
+                  display: computedStyle.display,
+                  visibility: computedStyle.visibility,
+                  opacity: computedStyle.opacity,
+                  position: computedStyle.position,
+                  zIndex: computedStyle.zIndex,
+                  overflow: computedStyle.overflow
+                });
+                
+                // Check if it's in viewport
+                console.log('📦 Is panel in viewport?', {
                   inViewportHorizontally: rect.left >= 0 && rect.right <= window.innerWidth,
                   inViewportVertically: rect.top >= 0 && rect.bottom <= window.innerHeight,
-                  hasSize: rect.width > 0 && rect.height > 0
+                  hasSize: rect.width > 0 && rect.height > 0,
+                  leftEdge: rect.left,
+                  rightEdge: rect.right,
+                  topEdge: rect.top,
+                  bottomEdge: rect.bottom,
+                  viewportWidth: window.innerWidth,
+                  viewportHeight: window.innerHeight
                 });
+                
+                // Check parent menu boundaries
+                const menuEl = el.closest('.retro-menu');
+                if (menuEl) {
+                  const menuRect = menuEl.getBoundingClientRect();
+                  console.log('📦 Panel vs Menu comparison:', {
+                    menuRect,
+                    panelRect: rect,
+                    panelExtendsOutside: rect.bottom > menuRect.bottom || rect.right > menuRect.right,
+                    menuHasOverflowHidden: window.getComputedStyle(menuEl).overflow
+                  });
+                }
               }
             }}
             className="retro-menu__settings-panel" 
@@ -307,5 +406,6 @@ export default function RetroMenu({
         <span>{status.mode}</span>
       </p>
     </nav>
+    </>
   );
 }
