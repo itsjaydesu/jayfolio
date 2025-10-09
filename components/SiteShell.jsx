@@ -188,27 +188,80 @@ export default function SiteShell({ children }) {
     
     switch (effectType) {
       case 'dropBall':
-        // Create a single strong ripple at the center
-        sceneRef.current.addRipple(0, 0, 2);  // Double strength
+        // Create a bouncing ball effect with splash
+        // Main drop
+        sceneRef.current.addRipple(0, 0, 3);
+        
+        // First bounce - smaller ripples in a circle
+        setTimeout(() => {
+          const angleStep = (Math.PI * 2) / 6;
+          for (let i = 0; i < 6; i++) {
+            const angle = i * angleStep;
+            const x = Math.cos(angle) * 800;
+            const z = Math.sin(angle) * 800;
+            sceneRef.current.addRipple(x, z, 1.5);
+          }
+        }, 200);
+        
+        // Second bounce - even smaller, wider circle
+        setTimeout(() => {
+          const angleStep = (Math.PI * 2) / 8;
+          for (let i = 0; i < 8; i++) {
+            const angle = i * angleStep + Math.PI / 8; // Offset for variety
+            const x = Math.cos(angle) * 1400;
+            const z = Math.sin(angle) * 1400;
+            sceneRef.current.addRipple(x, z, 0.8);
+          }
+        }, 400);
+        
+        // Final splash - random drops
+        setTimeout(() => {
+          for (let i = 0; i < 5; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const distance = 600 + Math.random() * 1000;
+            const x = Math.cos(angle) * distance;
+            const z = Math.sin(angle) * distance;
+            sceneRef.current.addRipple(x, z, 0.5 + Math.random() * 0.5);
+          }
+        }, 600);
         break;
       case 'shockwave': {
-        // Create multiple dramatic ripples in a pattern
-        const positions = [
-          [0, 0, 3],  // center with strength 3
-          [-0.7, -0.7, 2],
-          [0.7, -0.7, 2],
-          [-0.7, 0.7, 2],
-          [0.7, 0.7, 2],
-          [-1, 0, 1.5],
-          [1, 0, 1.5],
-          [0, -1, 1.5],
-          [0, 1, 1.5]
-        ];
-        positions.forEach(([x, z, strength], i) => {
+        // Create an expanding spiral shockwave
+        const spiralPoints = 3; // Number of spiral arms
+        const loops = 2; // Number of loops in the spiral
+        let delay = 0;
+        
+        // Center explosion
+        sceneRef.current.addRipple(0, 0, 4);
+        
+        // Spiral arms expanding outward
+        for (let loop = 0; loop < loops; loop++) {
+          for (let arm = 0; arm < spiralPoints; arm++) {
+            for (let step = 0; step < 5; step++) {
+              delay += 30;
+              setTimeout(() => {
+                const progress = (loop * 5 + step) / (loops * 5);
+                const angle = (arm * (Math.PI * 2) / spiralPoints) + (progress * Math.PI * 2);
+                const distance = 500 + progress * 2000;
+                const x = Math.cos(angle) * distance;
+                const z = Math.sin(angle) * distance;
+                const strength = 3 - (progress * 2); // Decreasing strength
+                sceneRef.current.addRipple(x, z, Math.max(strength, 0.5));
+              }, delay);
+            }
+          }
+        }
+        
+        // Random aftershocks
+        for (let i = 0; i < 8; i++) {
           setTimeout(() => {
-            sceneRef.current.addRipple(x * 2000, z * 2000, strength);
-          }, i * 50);  // Faster sequence
-        });
+            const angle = Math.random() * Math.PI * 2;
+            const distance = 1000 + Math.random() * 1500;
+            const x = Math.cos(angle) * distance;
+            const z = Math.sin(angle) * distance;
+            sceneRef.current.addRipple(x, z, Math.random() * 1.5 + 0.5);
+          }, 600 + i * 100);
+        }
         break;
       }
       case 'swirlPulse':

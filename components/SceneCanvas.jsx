@@ -144,7 +144,7 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
         const rippleZ = normY * HALF_GRID_Y;
 
         ripples.push({ x: rippleX, z: rippleZ, start: elapsedTime, strength: 1 });
-        if (ripples.length > 8) {
+        if (ripples.length > 20) {  // Allow more ripples for complex effects
           ripples.shift();
         }
 
@@ -214,15 +214,20 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
           for (let r = ripples.length - 1; r >= 0; r--) {
             const ripple = ripples[r];
             const age = elapsedTime - ripple.start;
-            if (age > 6) {
+            if (age > 8) {  // Longer lifetime for more complex effects
               ripples.splice(r, 1);
               continue;
             }
             const dist = Math.sqrt((px - ripple.x) * (px - ripple.x) + (pz - ripple.z) * (pz - ripple.z)) + 0.0001;
             const wavefront = age * settings.rippleSpeed;
-            const envelope = Math.exp(-dist * settings.rippleDecay) * Math.exp(-age * 0.55);
+            const envelope = Math.exp(-dist * settings.rippleDecay) * Math.exp(-age * 0.45);  // Slower decay
             const rippleStrength = ripple.strength || 1;
-            height += Math.sin((dist - wavefront) / settings.rippleWidth) * settings.rippleStrength * 0.65 * envelope * rippleStrength;
+            
+            // Add some variation to the wave pattern for more interesting visuals
+            const wavePattern = Math.sin((dist - wavefront) / settings.rippleWidth) * 0.7 +
+                              Math.sin((dist - wavefront * 1.3) / (settings.rippleWidth * 0.7)) * 0.3;
+            
+            height += wavePattern * settings.rippleStrength * 0.65 * envelope * rippleStrength;
           }
 
           positions[i + 1] = height;
@@ -407,7 +412,7 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
         },
         addRipple: (x, z, strength = 1) => {
           ripples.push({ x, z, start: elapsedTime, strength });
-          if (ripples.length > 8) {
+          if (ripples.length > 20) {  // Allow more ripples for complex effects
             ripples.shift();
           }
         },
