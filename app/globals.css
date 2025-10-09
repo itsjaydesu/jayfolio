@@ -2654,6 +2654,7 @@ a {
   color: rgba(218, 246, 248, 0.8);
 }
 .retro-menu {
+  position: relative;
   width: min(320px, 100%);
   border: 2px solid #05344c;
   background: linear-gradient(
@@ -2922,19 +2923,19 @@ a {
 
 .retro-menu__settings-panel {
   position: absolute;
-  top: 100%;
+  top: calc(100% + 8px);
   left: 0;
   right: 0;
-  margin-top: 0.5rem;
   padding: 0.8rem;
   background: linear-gradient(
     180deg,
     rgba(0, 58, 99, 0.98),
     rgba(0, 139, 178, 0.95)
   );
-  border: 1px solid rgba(0, 200, 208, 0.4);
+  border: 2px solid rgba(0, 200, 208, 0.4);
   border-radius: 8px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 
+    0 0 0 1px rgba(0, 200, 208, 0.2);
   z-index: 1000;
   animation: slideDown 0.2s ease-out;
 }

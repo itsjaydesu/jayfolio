@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 export default function RetroMenu({
   id,
@@ -16,6 +16,37 @@ export default function RetroMenu({
   onFieldEffect
 }) {
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [panelPosition, setPanelPosition] = useState({ top: 0, left: 0 });
+  const toggleRef = useRef(null);
+  
+  useEffect(() => {
+    if (settingsOpen && toggleRef.current) {
+      const menuElement = toggleRef.current.closest('.retro-menu');
+      if (menuElement) {
+        const menuRect = menuElement.getBoundingClientRect();
+        setPanelPosition({
+          top: menuRect.bottom + 8,
+          left: menuRect.left,
+          width: menuRect.width
+        });
+      }
+    }
+  }, [settingsOpen]);
+  
+  useEffect(() => {
+    if (settingsOpen) {
+      const handleClickOutside = (e) => {
+        if (!e.target.closest('.retro-menu__settings-panel') && 
+            !e.target.closest('.retro-menu__settings-toggle')) {
+          setSettingsOpen(false);
+        }
+      };
+      
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [settingsOpen]);
+
   const handleRestore = () => {
     if (onStatusChange) {
       onStatusChange(activeStatus);
@@ -44,6 +75,7 @@ export default function RetroMenu({
         </span>
         <div className="retro-menu__title-actions">
           <button
+            ref={toggleRef}
             type="button"
             className={`retro-menu__settings-toggle${settingsOpen ? ' is-active' : ''}`}
             onClick={() => setSettingsOpen(!settingsOpen)}
@@ -110,7 +142,22 @@ export default function RetroMenu({
         </ul>
       </div>
       {settingsOpen && onFieldEffect && (
-        <div className="retro-menu__settings-panel">
+        <div 
+          className="retro-menu__settings-panel" 
+          style={{ 
+            display: 'block',
+            position: 'fixed',
+            top: `${panelPosition.top}px`,
+            left: `${panelPosition.left}px`,
+            width: `${panelPosition.width}px`,
+            zIndex: 9999,
+            background: 'linear-gradient(180deg, rgba(0, 58, 99, 0.98), rgba(0, 139, 178, 0.95))',
+            border: '2px solid rgba(0, 200, 208, 0.6)',
+            borderRadius: '8px',
+            padding: '0.8rem',
+            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.6)'
+          }}
+        >
           <div className="retro-menu__settings-header">
             <span>Field Effects</span>
           </div>
@@ -118,7 +165,10 @@ export default function RetroMenu({
             <button
               type="button"
               className="retro-menu__effect-btn"
-              onClick={() => onFieldEffect('dropBall')}
+              onClick={() => {
+                onFieldEffect('dropBall');
+                setSettingsOpen(false);
+              }}
               title="Create a ripple from the center"
             >
               <span className="retro-menu__effect-icon">⚫</span>
@@ -127,7 +177,10 @@ export default function RetroMenu({
             <button
               type="button"
               className="retro-menu__effect-btn"
-              onClick={() => onFieldEffect('shockwave')}
+              onClick={() => {
+                onFieldEffect('shockwave');
+                setSettingsOpen(false);
+              }}
               title="Create multiple ripples"
             >
               <span className="retro-menu__effect-icon">💫</span>
@@ -136,7 +189,10 @@ export default function RetroMenu({
             <button
               type="button"
               className="retro-menu__effect-btn"
-              onClick={() => onFieldEffect('swirlPulse')}
+              onClick={() => {
+                onFieldEffect('swirlPulse');
+                setSettingsOpen(false);
+              }}
               title="Enhance swirl motion"
             >
               <span className="retro-menu__effect-icon">🌀</span>
@@ -145,7 +201,10 @@ export default function RetroMenu({
             <button
               type="button"
               className="retro-menu__effect-btn"
-              onClick={() => onFieldEffect('calmReset')}
+              onClick={() => {
+                onFieldEffect('calmReset');
+                setSettingsOpen(false);
+              }}
               title="Reset to default state"
             >
               <span className="retro-menu__effect-icon">☯️</span>
