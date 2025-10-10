@@ -240,6 +240,11 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
 
         const toIndex = (x, y) => x * AMOUNTY + y;
 
+        const smoothStep = (t) => {
+          const clamped = THREE.MathUtils.clamp(t, 0, 1);
+          return clamped * clamped * (3 - 2 * clamped);
+        };
+
         const createReactionDiffusion = () => {
           const u = new Float32Array(totalPoints);
           const v = new Float32Array(totalPoints);
@@ -332,9 +337,10 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
               const noise = fractalNoise(px * baseFreq, pz * baseFreq, effectTime * 0.18, 4, 0.55);
               const flow = fractalNoise((px + effectTime * 260) * baseFreq * 0.7, (pz - effectTime * 210) * baseFreq * 0.7, effectTime * 0.1, 3, 0.6);
               const combined = noise * 0.65 + flow * 0.35;
-              const height = combined * currentSettings.amplitude * 0.82;
-              const scale = Math.abs(combined) * 1.6;
-              const brightness = 0.35 * combined + 0.18 * Math.abs(noise);
+              const fade = smoothStep(effectTime / 2.2);
+              const height = combined * currentSettings.amplitude * 0.82 * fade;
+              const scale = Math.abs(combined) * 1.6 * fade;
+              const brightness = (0.35 * combined + 0.18 * Math.abs(noise)) * fade;
               return { height, scale, light: brightness };
             },
             cleanup: () => {
@@ -479,7 +485,7 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
                 system.theta2 += system.omega2 * delta * 0.9;
               }
             },
-            perPoint: ({ px, pz, data }) => {
+            perPoint: ({ px, pz, effectTime, data }) => {
               let sum = 0;
               for (const system of data.systems) {
                 const scale = 340;
@@ -492,9 +498,11 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
                 const dist = Math.sqrt(dx * dx + dz * dz) + 12;
                 sum += Math.cos(dist * 0.016) / dist * 480;
               }
-              const height = sum;
-              const scale = Math.min(2.2, Math.abs(sum) * 1.9);
-              const light = Math.min(0.85, Math.abs(sum) * 0.35);
+              const fade = smoothStep(effectTime / 2.4);
+              const amplified = sum * 1.5;
+              const height = amplified * fade;
+              const scale = Math.min(2.5, Math.abs(amplified) * 2.2) * fade;
+              const light = Math.min(0.95, Math.abs(amplified) * 0.42) * fade;
               return { height, scale, light };
             },
             cleanup: () => {
@@ -512,14 +520,18 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
               setValue('mouseInfluence', 0.0018);
             },
             perPoint: ({ index, baseHeight, effectTime, data }) => {
-              const fade = Math.min(effectTime / 3, 1);
+              const fade = smoothStep(effectTime / 3.5);
+              const eased = 1 - Math.pow(1 - fade, 3);
               const starDepth = data.depth[index] ?? 0;
               const twinklePhase = data.twinkle[index] ?? 0;
               const intensity = data.intensity[index] ?? 0.5;
               const twinkle = Math.sin(effectTime * 1.6 + twinklePhase) * 0.35;
-              const height = (-baseHeight + starDepth) * fade;
-              const scale = fade * (1.1 + intensity * 1.4);
-              const light = fade * (0.55 + intensity * 0.8) + twinkle * fade;
+              const starLift = (starDepth + 60) * eased;
+              const cancelWaves = -baseHeight * fade;
+              const height = cancelWaves + starLift;
+              const scale = THREE.MathUtils.clamp(eased * (1.15 + intensity * 1.5), 0.1, 3.2);
+              const lightRaw = eased * (0.58 + intensity * 0.85) + twinkle * fade;
+              const light = THREE.MathUtils.clamp(lightRaw, -0.1, 1.2);
               return { height, scale, light };
             },
             cleanup: () => {
