@@ -82,6 +82,12 @@ a {
   transition: opacity 1.5s cubic-bezier(0.4, 0, 0.6, 1);
 }
 
+/* Ensure smooth fade-in when returning to home */
+.scene-wrapper:not(.scene-wrapper--faded) .scene-container.is-ready {
+  transition: opacity 1.5s cubic-bezier(0.4, 0, 0.6, 1);
+  opacity: 1;
+}
+
 /* Ensure immediate fade when starting on sub-pages */
 .scene-wrapper--black.scene-wrapper--faded {
   background-color: #000000 !important;
