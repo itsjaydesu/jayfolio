@@ -23,35 +23,72 @@ const DEFAULT_STATUS = {
 export default function SiteShell({ children }) {
   const pathname = usePathname();
   const router = useRouter();
+  const sceneRef = useRef(null);
+  const returnTimerRef = useRef(null);
+  
+  // ===== ROUTE ANALYSIS =====
+  const pathSegments = useMemo(
+    () => pathname?.split("/").filter(Boolean) ?? [],
+    [pathname]
+  );
+  const primarySegment = pathSegments[0] ?? null;
+  const isHome = pathSegments.length === 0;
+  const isAdminView = primarySegment === "admin";
+  
+  // Check if current route should stop animation
+  const shouldStopAnimation = primarySegment === 'about' || 
+                              primarySegment === 'projects' || 
+                              primarySegment === 'words' || 
+                              primarySegment === 'sounds';
+  
+  // ===== INITIAL STATE SETUP =====
+  // Track if this is the initial mount (for instant black on subpages)
+  const [isInitialMount, setIsInitialMount] = useState(true);
+  
+  // Animation state management
+  const [animationState, setAnimationState] = useState(() => 
+    shouldStopAnimation ? 'stopped' : 'normal'
+  );
+  
+  // Animation speed refs
+  const animationSpeedRef = useRef(shouldStopAnimation ? 0 : 1.1);
+  const targetSpeedRef = useRef(shouldStopAnimation ? 0 : 1.1);
+  
+  // Visual state
+  const [dotsFaded, setDotsFaded] = useState(shouldStopAnimation);
+  const fadeTimeoutRef = useRef(null);
+  
+  // Navigation and UI state
   const [brand, setBrand] = useState(SITE_TEXT_DEFAULTS.brand);
   const [menuItems, setMenuItems] = useState(DEFAULT_MENU_ITEMS);
   const [isReturningHome, setIsReturningHome] = useState(false);
-  const returnTimerRef = useRef(null);
   const [menuVisible, setMenuVisible] = useState(false);
-  const sceneRef = useRef(null);
-  // Initialize animation state based on initial route
-  const [animationState, setAnimationState] = useState(() => {
-    const segments = pathname?.split("/").filter(Boolean) ?? [];
-    const segment = segments[0] ?? null;
-    const shouldStop = segment === 'about' || segment === 'projects' || 
-                       segment === 'words' || segment === 'sounds';
-    return shouldStop ? 'stopped' : 'normal';
-  });
-  const animationSpeedRef = useRef((() => {
-    const segments = pathname?.split("/").filter(Boolean) ?? [];
-    const segment = segments[0] ?? null;
-    const shouldStop = segment === 'about' || segment === 'projects' || 
-                       segment === 'words' || segment === 'sounds';
-    return shouldStop ? 0 : 1.1;
-  })());
-  const targetSpeedRef = useRef((() => {
-    const segments = pathname?.split("/").filter(Boolean) ?? [];
-    const segment = segments[0] ?? null;
-    const shouldStop = segment === 'about' || segment === 'projects' || 
-                       segment === 'words' || segment === 'sounds';
-    return shouldStop ? 0 : 1.1;
-  })());
+  const [status, setStatus] = useState(DEFAULT_STATUS);
+  const [navReady, setNavReady] = useState(false);
+  const [hasScrolled, setHasScrolled] = useState(false);
+  const [hasActiveEffect, setHasActiveEffect] = useState(false);
 
+  // Active menu item computation
+  const activeItem = useMemo(
+    () => menuItems.find((item) => item.id === primarySegment) ?? null,
+    [primarySegment, menuItems]
+  );
+  const activeSection = activeItem?.id ?? null;
+  const isDetailView = pathSegments.length > 1 && Boolean(activeItem);
+
+  const activeStatus = useMemo(
+    () =>
+      activeItem ? { ...activeItem.status, mode: "active" } : DEFAULT_STATUS,
+    [activeItem]
+  );
+  
+  // Update status when active item changes
+  useEffect(() => {
+    setStatus(activeStatus);
+  }, [activeStatus]);
+
+  // ===== DATA FETCHING =====
+  // Load site text and menu items
   useEffect(() => {
     let ignore = false;
     (async () => {
@@ -76,37 +113,9 @@ export default function SiteShell({ children }) {
       ignore = true;
     };
   }, []);
-
-  const pathSegments = useMemo(
-    () => pathname?.split("/").filter(Boolean) ?? [],
-    [pathname]
-  );
-  const primarySegment = pathSegments[0] ?? null;
-  const activeItem = useMemo(
-    () => menuItems.find((item) => item.id === primarySegment) ?? null,
-    [primarySegment, menuItems]
-  );
-  const activeSection = activeItem?.id ?? null;
-  const isDetailView = pathSegments.length > 1 && Boolean(activeItem);
-  const isAdminView = primarySegment === "admin";
-  const isHome = pathSegments.length === 0;
   
-  // Check if we're on a route that should stop animation
-  const shouldStopAnimation = primarySegment === 'about' || 
-                              primarySegment === 'projects' || 
-                              primarySegment === 'words' || 
-                              primarySegment === 'sounds';
-
-  const activeStatus = useMemo(
-    () =>
-      activeItem ? { ...activeItem.status, mode: "active" } : DEFAULT_STATUS,
-    [activeItem]
-  );
-  const [status, setStatus] = useState(activeStatus);
-  const [navReady, setNavReady] = useState(false);
-  const [hasScrolled, setHasScrolled] = useState(false);
-  const [hasActiveEffect, setHasActiveEffect] = useState(false);
-
+  // ===== ROUTER SETUP =====
+  // Prefetch home route and cleanup
   useEffect(() => {
     router.prefetch("/");
     return () => {
@@ -135,10 +144,6 @@ export default function SiteShell({ children }) {
       cancelAnimationFrame(frameId);
     };
   }, []);
-
-  useEffect(() => {
-    setStatus(activeStatus);
-  }, [activeStatus]);
 
   useEffect(() => {
     if (!isHome) {
@@ -185,63 +190,53 @@ export default function SiteShell({ children }) {
     };
   }, [isDetailView, pathname]);
   
-  // Track fade state for dots
-  const [dotsFaded, setDotsFaded] = useState(shouldStopAnimation);
-  const fadeTimeoutRef = useRef(null);
-  // Track if this is initial mount to distinguish from navigation
-  const [isInitialMount, setIsInitialMount] = useState(true);
-  
-
-  
-  // Initialize animation settings on mount if on a stopped route
+  // ===== MOUNT INITIALIZATION =====
+  // Initialize scene on mount for stopped routes (instant black on subpages)
   useEffect(() => {
-
-    // Use multiple retry attempts to ensure SceneCanvas is fully initialized
-    let retryCount = 0;
-    const maxRetries = 5;
-    const retryDelay = 50; // 50ms between retries
+    if (!shouldStopAnimation || !isInitialMount) return;
     
-    const applyInitialSettings = () => {
-
+    const initializeStoppedScene = () => {
       if (!sceneRef.current) {
-        // Retry if SceneCanvas isn't ready yet
-        if (retryCount < maxRetries) {
-          retryCount++;
-          setTimeout(applyInitialSettings, retryDelay);
+        // Retry if scene isn't ready (max 5 attempts)
+        if (initializeStoppedScene.retryCount < 5) {
+          initializeStoppedScene.retryCount++;
+          setTimeout(initializeStoppedScene, 50);
         }
         return;
       }
       
-      if (shouldStopAnimation && isInitialMount) {
-
-        // Immediately set all animation values to 0 and fade dots on mount (no transition)
-        sceneRef.current.applySettings({
-          animationSpeed: 0,      // Fully stopped on mount
-          amplitude: 0,           // No movement
-          swirlStrength: 0,       // No swirl
-          waveXFrequency: 0,      // No waves
-          waveYFrequency: 0,      // No waves  
-          swirlFrequency: 0,      // No swirl
-          mouseInfluence: 0,      // No mouse influence
-          rippleStrength: 0,      // No ripples
-          brightness: 0,          // Black dots
-          opacity: 0              // Fully transparent
-        }, true);
-        setDotsFaded(true);
-        setAnimationState('stopped');
-        animationSpeedRef.current = 0;
-        targetSpeedRef.current = 0;
-      }
-      // Mark initial mount as complete after first run
+      // Apply stopped state immediately (no animations)
+      sceneRef.current.applySettings({
+        animationSpeed: 0,
+        amplitude: 0,
+        swirlStrength: 0,
+        waveXFrequency: 0,
+        waveYFrequency: 0,
+        swirlFrequency: 0,
+        mouseInfluence: 0,
+        rippleStrength: 0,
+        brightness: 0,
+        opacity: 0
+      }, true);
+      
+      // Set visual states
+      setDotsFaded(true);
+      setAnimationState('stopped');
+      animationSpeedRef.current = 0;
+      targetSpeedRef.current = 0;
       setIsInitialMount(false);
     };
     
-    // Start applying settings with a small initial delay
-    const initTimer = setTimeout(applyInitialSettings, 20);
-    
-    return () => clearTimeout(initTimer);
+    initializeStoppedScene.retryCount = 0;
+    const timer = setTimeout(initializeStoppedScene, 20);
+    return () => clearTimeout(timer);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Run once on mount
+  }, []); // Only run on mount
+  
+  // Mark initial mount complete after first render
+  useEffect(() => {
+    setIsInitialMount(false);
+  }, []);
   
   // Handle animation state changes based on route
   useEffect(() => {
