@@ -264,6 +264,18 @@ export default function SiteShell({ children }) {
         }
         break;
       }
+      case 'goldenSpiralFlow':
+      case 'lissajousDance':
+      case 'voronoiCrystallize':
+      case 'perlinRiver':
+      case 'waveInterferenceSymphony':
+      case 'lorenzButterfly':
+      case 'mandelbrotZoom':
+      case 'reactionDiffusionBloom':
+      case 'harmonicPendulum':
+      case 'apollonianFractalPack':
+        sceneRef.current.triggerEffect(effectType);
+        break;
       case 'swirlPulse':
         // Enhance swirl effect with smooth transitions
         sceneRef.current.applySettings({

@@ -231,6 +231,126 @@ export default function RetroMenu({
               <span className="retro-menu__effect-icon">☯️</span>
               <span>Calm Reset</span>
             </button>
+            <button
+              type="button"
+              className="retro-menu__effect-btn"
+              onClick={() => {
+                onFieldEffect('goldenSpiralFlow');
+                setSettingsOpen(false);
+              }}
+              title="Unfurl logarithmic spiral currents"
+            >
+              <span className="retro-menu__effect-icon">🌌</span>
+              <span>Golden Spiral Flow</span>
+            </button>
+            <button
+              type="button"
+              className="retro-menu__effect-btn"
+              onClick={() => {
+                onFieldEffect('lissajousDance');
+                setSettingsOpen(false);
+              }}
+              title="Sweep graceful Lissajous harmonies"
+            >
+              <span className="retro-menu__effect-icon">🎼</span>
+              <span>Lissajous Dance</span>
+            </button>
+            <button
+              type="button"
+              className="retro-menu__effect-btn"
+              onClick={() => {
+                onFieldEffect('voronoiCrystallize');
+                setSettingsOpen(false);
+              }}
+              title="Crystallize the field with Voronoi cells"
+            >
+              <span className="retro-menu__effect-icon">🧊</span>
+              <span>Voronoi Crystallize</span>
+            </button>
+            <button
+              type="button"
+              className="retro-menu__effect-btn"
+              onClick={() => {
+                onFieldEffect('perlinRiver');
+                setSettingsOpen(false);
+              }}
+              title="Flow along layered Perlin currents"
+            >
+              <span className="retro-menu__effect-icon">🌊</span>
+              <span>Perlin River</span>
+            </button>
+            <button
+              type="button"
+              className="retro-menu__effect-btn"
+              onClick={() => {
+                onFieldEffect('waveInterferenceSymphony');
+                setSettingsOpen(false);
+              }}
+              title="Compose ripples with wave interference"
+            >
+              <span className="retro-menu__effect-icon">🌐</span>
+              <span>Wave Interference Symphony</span>
+            </button>
+            <button
+              type="button"
+              className="retro-menu__effect-btn"
+              onClick={() => {
+                onFieldEffect('lorenzButterfly');
+                setSettingsOpen(false);
+              }}
+              title="Release the Lorenz butterfly attractor"
+            >
+              <span className="retro-menu__effect-icon">🦋</span>
+              <span>Lorenz Butterfly</span>
+            </button>
+            <button
+              type="button"
+              className="retro-menu__effect-btn"
+              onClick={() => {
+                onFieldEffect('mandelbrotZoom');
+                setSettingsOpen(false);
+              }}
+              title="Dive through a Julia set zoom"
+            >
+              <span className="retro-menu__effect-icon">🔍</span>
+              <span>Mandelbrot Zoom</span>
+            </button>
+            <button
+              type="button"
+              className="retro-menu__effect-btn"
+              onClick={() => {
+                onFieldEffect('reactionDiffusionBloom');
+                setSettingsOpen(false);
+              }}
+              title="Grow Gray-Scott bloom patterns"
+            >
+              <span className="retro-menu__effect-icon">🌺</span>
+              <span>Reaction-Diffusion Bloom</span>
+            </button>
+            <button
+              type="button"
+              className="retro-menu__effect-btn"
+              onClick={() => {
+                onFieldEffect('harmonicPendulum');
+                setSettingsOpen(false);
+              }}
+              title="Trace chaotic harmonic pendulums"
+            >
+              <span className="retro-menu__effect-icon">🕰️</span>
+              <span>Harmonic Pendulum</span>
+            </button>
+            <button
+              type="button"
+              className="retro-menu__effect-btn"
+              onClick={() => {
+                onFieldEffect('apollonianFractalPack');
+                setSettingsOpen(false);
+              }}
+              title="Nest circles in an Apollonian pack"
+            >
+              <span className="retro-menu__effect-icon">🔮</span>
+              <span>Apollonian Fractal Pack</span>
+            </button>
           </div>
         </div>,
         document.body
