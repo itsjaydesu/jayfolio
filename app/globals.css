@@ -100,17 +100,18 @@ a {
   filter: blur(0px);
 }
 
-/* Ensure immediate fade when starting on sub-pages */
-.scene-wrapper--black.scene-wrapper--faded {
-  background-color: #000000 !important;
+/* Apply black background when animation is stopped */
+.scene-wrapper--black {
+  background-color: #000000;
 }
 
-.scene-wrapper--black.scene-wrapper--faded .scene-container,
-.scene-wrapper--black.scene-wrapper--faded canvas {
+/* Only disable transitions on initial mount (when data-initial-mount is present) */
+.scene-wrapper[data-initial-mount="true"].scene-wrapper--black.scene-wrapper--faded .scene-container,
+.scene-wrapper[data-initial-mount="true"].scene-wrapper--black.scene-wrapper--faded canvas {
   opacity: 0 !important;
   transform: scale(0.98) !important;
   filter: blur(2px) !important;
-  /* No transition when starting on sub-pages */
+  /* No transition only on initial mount */
   transition: none !important;
 }
 

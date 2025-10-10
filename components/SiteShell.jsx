@@ -188,15 +188,21 @@ export default function SiteShell({ children }) {
   // Track fade state for dots
   const [dotsFaded, setDotsFaded] = useState(shouldStopAnimation);
   const fadeTimeoutRef = useRef(null);
+  // Track if this is initial mount to distinguish from navigation
+  const [isInitialMount, setIsInitialMount] = useState(true);
+  
+
   
   // Initialize animation settings on mount if on a stopped route
   useEffect(() => {
+
     // Use multiple retry attempts to ensure SceneCanvas is fully initialized
     let retryCount = 0;
     const maxRetries = 5;
     const retryDelay = 50; // 50ms between retries
     
     const applyInitialSettings = () => {
+
       if (!sceneRef.current) {
         // Retry if SceneCanvas isn't ready yet
         if (retryCount < maxRetries) {
@@ -206,7 +212,8 @@ export default function SiteShell({ children }) {
         return;
       }
       
-      if (shouldStopAnimation) {
+      if (shouldStopAnimation && isInitialMount) {
+
         // Immediately set all animation values to 0 and fade dots on mount (no transition)
         sceneRef.current.applySettings({
           animationSpeed: 0,      // Fully stopped on mount
@@ -225,6 +232,8 @@ export default function SiteShell({ children }) {
         animationSpeedRef.current = 0;
         targetSpeedRef.current = 0;
       }
+      // Mark initial mount as complete after first run
+      setIsInitialMount(false);
     };
     
     // Start applying settings with a small initial delay
@@ -342,12 +351,13 @@ export default function SiteShell({ children }) {
     const currentFadeTimeout = fadeTimeoutRef.current;
     
     if (shouldStopAnimation && animationState === 'normal') {
+
       // Start slowing down to stop and fade to black
       setAnimationState('slowing');
       targetSpeedRef.current = 0;
       animationFrame = requestAnimationFrame(updateAnimationState);
       
-      // Start fade to black immediately (CSS handles the 1.5s transition)
+      // Start fade to black immediately (CSS handles the transition)
       if (currentFadeTimeout) clearTimeout(currentFadeTimeout);
       setDotsFaded(true);
     } else if (!shouldStopAnimation && animationState === 'stopped') {
@@ -603,10 +613,23 @@ export default function SiteShell({ children }) {
     );
   }
 
+  // Log CSS class application
+  // Key insight: The scene-wrapper--black class should be applied:
+  // 1. Immediately on initial mount if on a sub-page
+  // 2. With the dots fade during navigation (both together)
+  // The issue is that both classes together trigger transition: none
+  // Solution: Only add scene-wrapper--black if we're in the 'stopped' state or initial mount
+  const shouldApplyBlackBg = (shouldStopAnimation && animationState === 'stopped') || 
+                              (isInitialMount && shouldStopAnimation);
+  const sceneWrapperClasses = `scene-wrapper${dotsFaded ? " scene-wrapper--faded" : ""}${shouldApplyBlackBg ? " scene-wrapper--black" : ""}`;
+
   return (
     <>
       {showCanvas ? (
-        <div className={`scene-wrapper${dotsFaded ? " scene-wrapper--faded" : ""}${shouldStopAnimation ? " scene-wrapper--black" : ""}`}>
+        <div 
+          className={sceneWrapperClasses}
+          data-initial-mount={isInitialMount}
+        >
           <SceneCanvas 
             activeSection={activeSectionForCanvas} 
             isPaused={shouldStopAnimation}
