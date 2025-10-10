@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import RetroMenu from "./RetroMenu";
 import { SITE_TEXT_DEFAULTS } from "../lib/siteTextDefaults";
@@ -184,9 +184,9 @@ export default function SiteShell({ children }) {
     setStatus(activeStatus);
   };
 
-  const handleEffectChange = (isActive, effectType) => {
+  const handleEffectChange = useCallback((isActive) => {
     setHasActiveEffect(isActive);
-  };
+  }, []);
 
   const handleFieldEffect = (effectType) => {
     if (!sceneRef.current) return;

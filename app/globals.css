@@ -2644,7 +2644,7 @@ a {
   z-index: 12;
   overflow: hidden;
   backdrop-filter: blur(5px);
-  transition: background 0.8s ease, backdrop-filter 0.8s ease;
+  transition: background 2.5s cubic-bezier(0.4, 0, 0.2, 1), backdrop-filter 2.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .retro-menu--sidebar {
@@ -2683,7 +2683,7 @@ a {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  transition: background 0.8s ease, border-bottom-color 0.8s ease;
+  transition: background 2.5s cubic-bezier(0.4, 0, 0.2, 1), border-bottom-color 2.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .retro-menu__titlebar span {
@@ -2775,7 +2775,7 @@ a {
   display: block;
   text-decoration: none;
   position: relative;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.8s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 2.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .retro-menu__item .retro-menu__button::before {
@@ -2834,7 +2834,7 @@ a {
   min-height: 96px;
   display: grid;
   gap: 0.3rem;
-  transition: background 0.8s ease;
+  transition: background 2.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .retro-menu__status strong {

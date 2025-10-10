@@ -192,7 +192,7 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
 
       const pointer = { x: 0, y: 0, worldX: 0, worldZ: 0, energy: 0 };
       const ripples = [];
-      const effectRef = { type: null, startTime: 0, data: null };
+      const effectRef = { type: null, startTime: 0, data: null, fadingOut: false, fadeStartTime: 0 };
 
       const enqueueRipple = (x, z, strength = 1) => {
         ripples.push({ x, z, start: elapsedTime, strength });
@@ -624,7 +624,7 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
         };
       }
 
-      function clearEffect(force = false) {
+      function clearEffect(force = false, skipCallback = false) {
         if (!effectRef.type) {
           return true;
         }
@@ -644,9 +644,12 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
         effectRef.type = null;
         effectRef.data = null;
         effectRef.startTime = elapsedTime;
+        effectRef.fadingOut = false;
         
-        // Notify that effect ended
-        onEffectChange?.(false, null);
+        // Notify that effect ended (unless callback already called)
+        if (!skipCallback) {
+          onEffectChange?.(false, null);
+        }
         
         return true;
       }
@@ -703,17 +706,25 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
           return false;
         }
 
+        // If another effect is running, clear it immediately (no fade)
+        // This handles edge case of starting new effect during fadeout
         if (effectRef.type) {
           clearEffect(true);
         }
 
+        // Sync target settings with current settings before starting new effect
         for (const key of Object.keys(targetSettings)) {
           targetSettings[key] = settings[key];
         }
 
+        // Initialize new effect state
         effectRef.type = type;
         effectRef.data = null;
         effectRef.startTime = elapsedTime;
+        effectRef.fadingOut = false;
+        effectRef.fadeStartTime = 0;
+        
+        // Initialize effect-specific data
         const initContext = {
           pointer,
           settings,
@@ -723,6 +734,8 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
         };
         const initResult = definition.init?.(initContext);
         effectRef.data = initResult ?? {};
+        
+        // Call effect's start function to configure settings
         definition.start?.({
           data: effectRef.data,
           pointer,
@@ -731,7 +744,7 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
           addRipple: enqueueRipple
         });
         
-        // Notify that effect started
+        // Notify UI that effect started (menu becomes transparent)
         onEffectChange?.(true, type);
         
         return true;
@@ -778,9 +791,26 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
           const candidate = effectDefinitions[activeType];
           if (candidate) {
             effectTime = elapsedTime - effectRef.startTime;
-            if (candidate.duration && effectTime > candidate.duration) {
-              clearEffect(true);
-            } else {
+            // Check if effect duration has been exceeded
+            if (candidate.duration && effectTime > candidate.duration && !effectRef.fadingOut) {
+              // Begin graceful fadeout process
+              effectRef.fadingOut = true;
+              effectRef.fadeStartTime = elapsedTime;
+              
+              // Notify UI immediately to start CSS transition (menu background fade)
+              onEffectChange?.(false, null);
+              
+              // Wait for fade duration (2.5s) before completely clearing the effect
+              // This allows both CSS transitions and particle fade to complete smoothly
+              setTimeout(() => {
+                clearEffect(true, true); // skipCallback = true since callback already called
+              }, 2500);
+            }
+            
+            // Continue updating and rendering the effect (even during fadeout)
+            // This ensures particles don't snap back to default state
+            if (!effectRef.fadingOut || (effectRef.fadingOut && effectRef.type === activeType)) {
+              // Call effect's update function to maintain state
               candidate.update?.({
                 delta,
                 effectTime,
@@ -789,10 +819,14 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
                 pointer,
                 addRipple: (x, z, strength = 1) => enqueueRipple(x, z, strength)
               });
+              
+              // Handle starfield's special exit mode
               if (activeType === 'starfield' && effectRef.data?.mode === 'done') {
                 clearEffect(true);
               }
-              if (effectRef.type === activeType) {
+              
+              // Set activeEffect so perPoint function will be called
+              if (effectRef.type === activeType || effectRef.fadingOut) {
                 activeEffect = candidate;
               }
             }
@@ -843,6 +877,15 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
             let lightDelta = 0;
 
             if (activeEffect?.perPoint) {
+              // Calculate fade factor if effect is fading out
+              // This gradually reduces effect intensity over 2.5 seconds
+              let fadeFactor = 1.0;
+              if (effectRef.fadingOut && effectRef.fadeStartTime > 0) {
+                const fadeProgress = (elapsedTime - effectRef.fadeStartTime) / 2.5; // 2.5s fade duration
+                fadeFactor = Math.max(0, 1.0 - fadeProgress); // Linear fade from 1.0 to 0.0
+                fadeFactor = fadeFactor * fadeFactor; // Square for smoother easing (fade faster at end)
+              }
+              
               const result = activeEffect.perPoint({
                 ix,
                 iy,
@@ -858,15 +901,17 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
                 settings,
                 pointer
               });
+              
+              // Apply effect contributions with fade factor for smooth transition
               if (result) {
                 if (typeof result.height === 'number') {
-                  height += result.height;
+                  height += result.height * fadeFactor;
                 }
                 if (typeof result.scale === 'number') {
-                  scaleDelta += result.scale;
+                  scaleDelta += result.scale * fadeFactor;
                 }
                 if (typeof result.light === 'number') {
-                  lightDelta += result.light;
+                  lightDelta += result.light * fadeFactor;
                 }
               }
             }
