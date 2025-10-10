@@ -193,8 +193,7 @@ export default function RetroMenu({
               }}
               title="Reset to default state"
             >
-              <span className="retro-menu__effect-icon">☯️</span>
-              <span>Calm Reset</span>
+              <span>Zen</span>
             </button>
             <button
               type="button"
@@ -205,7 +204,6 @@ export default function RetroMenu({
               }}
               title="Trigger rapid ripple bursts"
             >
-              <span className="retro-menu__effect-icon">⚡</span>
               <span>Jitter</span>
             </button>
             <button
@@ -217,8 +215,7 @@ export default function RetroMenu({
               }}
               title="Enhance swirl motion"
             >
-              <span className="retro-menu__effect-icon">🌀</span>
-              <span>Swirl Pulse</span>
+              <span>Swirl</span>
             </button>
             <button
               type="button"
@@ -229,8 +226,7 @@ export default function RetroMenu({
               }}
               title="Unfurl logarithmic spiral currents"
             >
-              <span className="retro-menu__effect-icon">🌌</span>
-              <span>Spiral Flow</span>
+              <span>Spiral</span>
             </button>
             <button
               type="button"
@@ -241,7 +237,6 @@ export default function RetroMenu({
               }}
               title="Flow along layered currents"
             >
-              <span className="retro-menu__effect-icon">🌊</span>
               <span>River Flow</span>
             </button>
             <button
@@ -253,8 +248,7 @@ export default function RetroMenu({
               }}
               title="Dive through a Julia set zoom"
             >
-              <span className="retro-menu__effect-icon">🔍</span>
-              <span>Mandelbrot Zoom</span>
+              <span>Hop</span>
             </button>
             <button
               type="button"
@@ -265,8 +259,7 @@ export default function RetroMenu({
               }}
               title="Grow Gray-Scott bloom patterns"
             >
-              <span className="retro-menu__effect-icon">🌺</span>
-              <span>Reaction-Diffusion Bloom</span>
+              <span>Bloom</span>
             </button>
             <button
               type="button"
@@ -277,8 +270,7 @@ export default function RetroMenu({
               }}
               title="Trace chaotic harmonic pendulums"
             >
-              <span className="retro-menu__effect-icon">🕰️</span>
-              <span>Harmonic Pendulum</span>
+              <span>Blink</span>
             </button>
             <button
               type="button"
@@ -289,8 +281,7 @@ export default function RetroMenu({
               }}
               title="Bloom into a drifting starfield"
             >
-              <span className="retro-menu__effect-icon">✨</span>
-              <span>Starfield</span>
+              <span>Stars</span>
             </button>
           </div>
         </div>,
