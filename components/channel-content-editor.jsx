@@ -99,6 +99,48 @@ export default function ChannelContentEditor({ sections = ['about', 'projects', 
     }));
   }, []);
 
+  const handleAboutDetailCard = useCallback((index, field, value) => {
+    setContent((prev) => {
+      const cards = [...(prev.about.aboutDetailCards || [])];
+      if (cards[index]) {
+        cards[index] = { ...cards[index], [field]: value };
+      }
+      return {
+        ...prev,
+        about: {
+          ...prev.about,
+          aboutDetailCards: cards
+        }
+      };
+    });
+  }, []);
+
+  const addDetailCard = useCallback(() => {
+    setContent((prev) => ({
+      ...prev,
+      about: {
+        ...prev.about,
+        aboutDetailCards: [
+          ...(prev.about.aboutDetailCards || []),
+          { title: 'New Section', text: '' }
+        ]
+      }
+    }));
+  }, []);
+
+  const removeDetailCard = useCallback((index) => {
+    setContent((prev) => {
+      const cards = (prev.about.aboutDetailCards || []).filter((_, i) => i !== index);
+      return {
+        ...prev,
+        about: {
+          ...prev.about,
+          aboutDetailCards: cards.length ? cards : prev.about.aboutDetailCards
+        }
+      };
+    });
+  }, []);
+
   const handleChannelHero = useCallback((channel, field, value) => {
     setContent((prev) => ({
       ...prev,
@@ -229,7 +271,7 @@ export default function ChannelContentEditor({ sections = ['about', 'projects', 
         <>
           <div className="admin-panel">
             <header className="admin-panel__header">
-              <h2>About — Simplified Page</h2>
+              <h2>About — Glassmorphic Page</h2>
             </header>
             <div className="admin-panel__body admin-panel__body--grid">
               <div className="admin-field">
@@ -242,13 +284,83 @@ export default function ChannelContentEditor({ sections = ['about', 'projects', 
                 />
               </div>
               <div className="admin-field">
-                <label htmlFor="about-page-content">Page Content</label>
+                <label htmlFor="about-page-subtitle">Subtitle</label>
+                <input
+                  id="about-page-subtitle"
+                  type="text"
+                  value={about.aboutSubtitle || 'Creative Technologist'}
+                  onChange={(event) => handleAboutField('aboutSubtitle', event.target.value)}
+                />
+              </div>
+              <div className="admin-field">
+                <label htmlFor="about-page-content">Lead Content</label>
                 <textarea
                   id="about-page-content"
                   rows={6}
                   value={about.aboutContent || about.lead}
                   onChange={(event) => handleAboutField('aboutContent', event.target.value)}
                 />
+              </div>
+              <div className="admin-field">
+                <label htmlFor="about-page-tags">Tags (comma-separated)</label>
+                <input
+                  id="about-page-tags"
+                  type="text"
+                  value={(about.aboutTags || []).join(', ')}
+                  onChange={(event) => 
+                    handleAboutField('aboutTags', 
+                      event.target.value.split(',').map(tag => tag.trim()).filter(Boolean)
+                    )
+                  }
+                  placeholder="Designer, Composer, Systems Artist"
+                />
+                <small>Separate tags with commas</small>
+              </div>
+            </div>
+          </div>
+
+          <div className="admin-panel">
+            <header className="admin-panel__header">
+              <h2>About — Detail Cards</h2>
+            </header>
+            <div className="admin-panel__body">
+              {(about.aboutDetailCards || []).map((card, index) => (
+                <div key={`detail-card-${index}`} className="admin-field">
+                  <div className="admin-field-row">
+                    <div className="admin-field">
+                      <label htmlFor={`detail-card-title-${index}`}>Card Title</label>
+                      <input
+                        id={`detail-card-title-${index}`}
+                        type="text"
+                        value={card.title || ''}
+                        onChange={(event) => handleAboutDetailCard(index, 'title', event.target.value)}
+                      />
+                    </div>
+                    <div className="admin-field">
+                      <label htmlFor={`detail-card-text-${index}`}>Card Text</label>
+                      <textarea
+                        id={`detail-card-text-${index}`}
+                        rows={3}
+                        value={card.text || ''}
+                        onChange={(event) => handleAboutDetailCard(index, 'text', event.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <div className="admin-actions">
+                    <div className="admin-actions__buttons">
+                      <button type="button" className="admin-ghost" onClick={() => removeDetailCard(index)}>
+                        Remove Card
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              <div className="admin-actions">
+                <div className="admin-actions__buttons">
+                  <button type="button" className="admin-ghost" onClick={addDetailCard}>
+                    Add Detail Card
+                  </button>
+                </div>
               </div>
             </div>
           </div>
