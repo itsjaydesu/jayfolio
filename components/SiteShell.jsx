@@ -187,8 +187,8 @@ export default function SiteShell({ children }) {
     if (!sceneRef.current) return;
     
     switch (effectType) {
-      case 'dropBall':
-        // Create a bouncing ball effect with splash
+      case 'jitter':
+        // Create a jittery ripple cascade with layered splashes
         // Main drop
         sceneRef.current.addRipple(0, 0, 3);
         
@@ -225,56 +225,15 @@ export default function SiteShell({ children }) {
           }
         }, 600);
         break;
-      case 'shockwave': {
-        // Create an expanding spiral shockwave
-        const spiralPoints = 3; // Number of spiral arms
-        const loops = 2; // Number of loops in the spiral
-        let delay = 0;
-        
-        // Center explosion
-        sceneRef.current.addRipple(0, 0, 4);
-        
-        // Spiral arms expanding outward
-        for (let loop = 0; loop < loops; loop++) {
-          for (let arm = 0; arm < spiralPoints; arm++) {
-            for (let step = 0; step < 5; step++) {
-              delay += 30;
-              setTimeout(() => {
-                const progress = (loop * 5 + step) / (loops * 5);
-                const angle = (arm * (Math.PI * 2) / spiralPoints) + (progress * Math.PI * 2);
-                const distance = 500 + progress * 2000;
-                const x = Math.cos(angle) * distance;
-                const z = Math.sin(angle) * distance;
-                const strength = 3 - (progress * 2); // Decreasing strength
-                sceneRef.current.addRipple(x, z, Math.max(strength, 0.5));
-              }, delay);
-            }
-          }
-        }
-        
-        // Random aftershocks
-        for (let i = 0; i < 8; i++) {
-          setTimeout(() => {
-            const angle = Math.random() * Math.PI * 2;
-            const distance = 1000 + Math.random() * 1500;
-            const x = Math.cos(angle) * distance;
-            const z = Math.sin(angle) * distance;
-            sceneRef.current.addRipple(x, z, Math.random() * 1.5 + 0.5);
-          }, 600 + i * 100);
-        }
-        break;
-      }
-      case 'goldenSpiralFlow':
-      case 'lissajousDance':
-      case 'voronoiCrystallize':
-      case 'perlinRiver':
-      case 'waveInterferenceSymphony':
-      case 'lorenzButterfly':
+      case 'spiralFlow':
+      case 'riverFlow':
       case 'mandelbrotZoom':
       case 'reactionDiffusionBloom':
       case 'harmonicPendulum':
-      case 'apollonianFractalPack':
-        sceneRef.current.triggerEffect(effectType);
+      case 'starfield':
+        if (!sceneRef.current.triggerEffect(effectType)) {
+          console.warn(`[SiteShell] Failed to trigger effect "${effectType}"`);
+        }
         break;
       case 'swirlPulse':
         // Enhance swirl effect with smooth transitions

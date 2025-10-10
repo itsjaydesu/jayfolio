@@ -240,51 +240,6 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
 
         const toIndex = (x, y) => x * AMOUNTY + y;
 
-        const makeVoronoiSeeds = (count) => {
-          const seeds = [];
-          for (let i = 0; i < count; i++) {
-            const angle = Math.random() * Math.PI * 2;
-            const radius = Math.random() * 0.7;
-            seeds.push({
-              x: Math.cos(angle) * HALF_GRID_X * radius,
-              z: Math.sin(angle) * HALF_GRID_Y * radius,
-              vx: (Math.random() * 2 - 1) * 120,
-              vz: (Math.random() * 2 - 1) * 120,
-              phase: Math.random() * Math.PI * 2
-            });
-          }
-          return seeds;
-        };
-
-        const createLorenzPoints = (count) => {
-          const points = [];
-          for (let i = 0; i < count; i++) {
-            points.push({
-              x: 1 + Math.random(),
-              y: Math.random() * 2 - 1,
-              z: 20 + Math.random() * 5
-            });
-          }
-          return points;
-        };
-
-        const createWaveSources = (count) => {
-          const sources = [];
-          for (let i = 0; i < count; i++) {
-            const angle = (Math.PI * 2 * i) / count;
-            const distance = 600 + Math.random() * 700;
-            sources.push({
-              x: Math.cos(angle) * distance,
-              z: Math.sin(angle) * distance,
-              amplitude: 0.8 + Math.random() * 0.4,
-              k: 0.004 + Math.random() * 0.0015,
-              omega: 1.4 + Math.random() * 0.6,
-              phase: Math.random() * Math.PI * 2
-            });
-          }
-          return sources;
-        };
-
         const createReactionDiffusion = () => {
           const u = new Float32Array(totalPoints);
           const v = new Float32Array(totalPoints);
@@ -332,60 +287,20 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
           return systems;
         };
 
-        const createApollonianCircles = () => {
-          const circles = [];
-
-          const pushCircle = (x, z, r, curvature) => {
-            circles.push({ x, z, r, curvature });
-          };
-
-          pushCircle(0, 0, Math.min(HALF_GRID_X, HALF_GRID_Y) * 0.92, -1 / (Math.min(HALF_GRID_X, HALF_GRID_Y) * 0.92));
-          const innerRadius = Math.min(HALF_GRID_X, HALF_GRID_Y) * 0.42;
-          for (let i = 0; i < 3; i++) {
-            const angle = (Math.PI * 2 * i) / 3;
-            const dist = Math.min(HALF_GRID_X, HALF_GRID_Y) * 0.46;
-            const x = Math.cos(angle) * dist;
-            const z = Math.sin(angle) * dist;
-            pushCircle(x, z, innerRadius, 1 / innerRadius);
+        const createStarfieldData = () => {
+          const depth = new Float32Array(totalPoints);
+          const twinkle = new Float32Array(totalPoints);
+          const intensity = new Float32Array(totalPoints);
+          for (let i = 0; i < totalPoints; i++) {
+            depth[i] = (Math.random() * 2 - 1) * 420;
+            twinkle[i] = Math.random() * Math.PI * 2;
+            intensity[i] = 0.35 + Math.random() * 0.65;
           }
-
-          const descartesRadius = (k1, k2, k3) => {
-            const sum = k1 + k2 + k3;
-            const prod = Math.sqrt(Math.abs(k1 * k2 + k2 * k3 + k3 * k1));
-            const k4 = sum + 2 * prod;
-            return k4 === 0 ? 0 : 1 / k4;
-          };
-
-          const spawnDescartes = (c1, c2, c3, depth) => {
-            if (depth <= 0) return;
-            const r4 = descartesRadius(c1.curvature, c2.curvature, c3.curvature);
-            if (!Number.isFinite(r4) || r4 <= 6) return;
-            const weight = Math.abs(c1.curvature) + Math.abs(c2.curvature) + Math.abs(c3.curvature);
-            const x = (c1.x * Math.abs(c1.curvature) + c2.x * Math.abs(c2.curvature) + c3.x * Math.abs(c3.curvature)) / weight;
-            const z = (c1.z * Math.abs(c1.curvature) + c2.z * Math.abs(c2.curvature) + c3.z * Math.abs(c3.curvature)) / weight;
-            const jitter = r4 * 0.15;
-            const cx = x + (Math.random() * 2 - 1) * jitter;
-            const cz = z + (Math.random() * 2 - 1) * jitter;
-            const curvature = 1 / r4;
-            pushCircle(cx, cz, r4, curvature);
-            spawnDescartes({ x: cx, z: cz, r: r4, curvature }, c1, c2, depth - 1);
-            spawnDescartes({ x: cx, z: cz, r: r4, curvature }, c2, c3, depth - 1);
-            spawnDescartes({ x: cx, z: cz, r: r4, curvature }, c1, c3, depth - 1);
-          };
-
-          for (let i = 1; i < circles.length; i++) {
-            for (let j = i + 1; j < circles.length; j++) {
-              for (let k = j + 1; k < circles.length; k++) {
-                spawnDescartes(circles[i], circles[j], circles[k], 2);
-              }
-            }
-          }
-
-          return circles;
+          return { depth, twinkle, intensity };
         };
 
         return {
-          goldenSpiralFlow: {
+          spiralFlow: {
             duration: 18,
             init: () => ({}),
             start: () => {
@@ -405,79 +320,7 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
               resetSettings();
             }
           },
-          lissajousDance: {
-            duration: 20,
-            init: () => ({}),
-            start: () => {
-              setValue('animationSpeed', 0.9);
-              setValue('swirlStrength', 0.6);
-            },
-            perPoint: ({ ix, iy, effectTime }) => {
-              const a = 3;
-              const b = 4;
-              const delta = effectTime * 1.6;
-              const phase = ix * 0.07 + iy * 0.09;
-              const value = Math.sin(a * delta + phase) * Math.cos(b * delta + phase * 0.75 + Math.PI / 4);
-              const height = value * currentSettings.amplitude * 0.52;
-              const scale = Math.abs(value) * 0.9;
-              const light = value * 0.28;
-              return { height, scale, light };
-            },
-            cleanup: () => {
-              resetSettings();
-            }
-          },
-          voronoiCrystallize: {
-            duration: 22,
-            init: () => ({ seeds: makeVoronoiSeeds(16) }),
-            update: ({ delta, data, effectTime }) => {
-              for (const seed of data.seeds) {
-                seed.x += seed.vx * delta * 0.85;
-                seed.z += seed.vz * delta * 0.85;
-                if (seed.x < -HALF_GRID_X || seed.x > HALF_GRID_X) {
-                  seed.vx *= -1;
-                  seed.x = THREE.MathUtils.clamp(seed.x, -HALF_GRID_X, HALF_GRID_X);
-                }
-                if (seed.z < -HALF_GRID_Y || seed.z > HALF_GRID_Y) {
-                  seed.vz *= -1;
-                  seed.z = THREE.MathUtils.clamp(seed.z, -HALF_GRID_Y, HALF_GRID_Y);
-                }
-                seed.phase += delta * 1.3;
-              }
-              const drift = Math.sin(effectTime * 0.35) * 0.4 + 0.6;
-              setValue('contrast', 2 + drift);
-            },
-            perPoint: ({ px, pz, effectTime, data }) => {
-              let nearest = Infinity;
-              let second = Infinity;
-              let cellPhase = 0;
-              for (const seed of data.seeds) {
-                const dx = px - seed.x;
-                const dz = pz - seed.z;
-                const distSq = dx * dx + dz * dz;
-                if (distSq < nearest) {
-                  second = nearest;
-                  nearest = distSq;
-                  cellPhase = seed.phase;
-                } else if (distSq < second) {
-                  second = distSq;
-                }
-              }
-              const primary = Math.sqrt(nearest);
-              const secondary = Math.sqrt(second);
-              const border = secondary - primary;
-              const envelope = Math.exp(-primary / 1400);
-              const shimmer = 0.5 + 0.5 * Math.sin(effectTime * 2.1 + cellPhase * 3.7);
-              const height = (1 - Math.min(primary / 1800, 1)) * currentSettings.amplitude * 0.9 * envelope * shimmer;
-              const scale = Math.max(0, 1 - border / 900) * 1.4 * envelope;
-              const light = Math.max(0, border / 240) * 0.6 + shimmer * 0.15;
-              return { height, scale, light };
-            },
-            cleanup: () => {
-              resetSettings();
-            }
-          },
-          perlinRiver: {
+          riverFlow: {
             duration: 24,
             init: () => ({}),
             start: () => {
@@ -493,76 +336,6 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
               const scale = Math.abs(combined) * 1.6;
               const brightness = 0.35 * combined + 0.18 * Math.abs(noise);
               return { height, scale, light: brightness };
-            },
-            cleanup: () => {
-              resetSettings();
-            }
-          },
-          waveInterferenceSymphony: {
-            duration: 20,
-            init: () => ({ sources: createWaveSources(5) }),
-            update: ({ delta, data }) => {
-              for (const source of data.sources) {
-                const angle = Math.atan2(source.z, source.x) + delta * 0.18;
-                const radius = Math.sqrt(source.x * source.x + source.z * source.z);
-                source.x = Math.cos(angle) * radius;
-                source.z = Math.sin(angle) * radius;
-                source.phase += delta * 1.4;
-              }
-            },
-            perPoint: ({ px, pz, effectTime, data }) => {
-              let sum = 0;
-              for (const source of data.sources) {
-                const dx = px - source.x;
-                const dz = pz - source.z;
-                const dist = Math.sqrt(dx * dx + dz * dz) + 1;
-                const contribution = source.amplitude * Math.sin(dist * source.k - effectTime * source.omega + source.phase) / (1 + dist * 0.0018);
-                sum += contribution;
-              }
-              const height = sum * currentSettings.amplitude * 0.95;
-              const scale = Math.abs(sum) * 1.5;
-              const light = Math.abs(sum) * 0.45;
-              return { height, scale, light };
-            },
-            cleanup: () => {
-              resetSettings();
-            }
-          },
-          lorenzButterfly: {
-            duration: 26,
-            init: () => ({ points: createLorenzPoints(24) }),
-            update: ({ delta, data }) => {
-              const sigma = 10;
-              const rho = 28;
-              const beta = 8 / 3;
-              const dt = delta * 6;
-              for (const point of data.points) {
-                const dx = sigma * (point.y - point.x);
-                const dy = point.x * (rho - point.z) - point.y;
-                const dz = point.x * point.y - beta * point.z;
-                point.x += dx * dt;
-                point.y += dy * dt;
-                point.z += dz * dt;
-                if (!Number.isFinite(point.x) || !Number.isFinite(point.y) || !Number.isFinite(point.z)) {
-                  point.x = 1 + Math.random();
-                  point.y = Math.random() * 2 - 1;
-                  point.z = 20 + Math.random() * 5;
-                }
-              }
-            },
-            perPoint: ({ px, pz, data }) => {
-              let sum = 0;
-              for (const point of data.points) {
-                const scale = 34;
-                const dx = px - point.x * scale;
-                const dz = pz - point.y * scale;
-                const dist = Math.sqrt(dx * dx + dz * dz) + 8;
-                sum += Math.sin(dist * 0.015 + point.z * 0.08) / dist;
-              }
-              const height = sum * currentSettings.amplitude * 24;
-              const scale = Math.min(1.8, Math.abs(sum) * 2.2);
-              const light = Math.tanh(Math.abs(sum) * 8) * 0.55;
-              return { height, scale, light };
             },
             cleanup: () => {
               resetSettings();
@@ -700,10 +473,10 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
                     omega2 * omega2 * l2 * m2 * cos12
                   )
                 ) / (l2 * denom);
-                system.omega1 += domega1 * delta * 1.8;
-                system.omega2 += domega2 * delta * 1.8;
-                system.theta1 += system.omega1 * delta * 1.8;
-                system.theta2 += system.omega2 * delta * 1.8;
+                system.omega1 += domega1 * delta * 0.9;
+                system.omega2 += domega2 * delta * 0.9;
+                system.theta1 += system.omega1 * delta * 0.9;
+                system.theta2 += system.omega2 * delta * 0.9;
               }
             },
             perPoint: ({ px, pz, data }) => {
@@ -728,25 +501,25 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
               resetSettings();
             }
           },
-          apollonianFractalPack: {
-            duration: 24,
-            init: () => ({ circles: createApollonianCircles() }),
+          starfield: {
+            init: () => createStarfieldData(),
             start: () => {
+              setValue('animationSpeed', 0.42);
+              setValue('swirlStrength', 0.2);
+              setValue('amplitude', 18);
               setValue('contrast', 2.9);
-              setValue('brightness', 0.52);
+              setValue('brightness', 0.62);
+              setValue('mouseInfluence', 0.0018);
             },
-            perPoint: ({ px, pz, data }) => {
-              let accum = 0;
-              for (const circle of data.circles) {
-                const dx = px - circle.x;
-                const dz = pz - circle.z;
-                const radiusDist = Math.abs(Math.sqrt(dx * dx + dz * dz) - circle.r);
-                const contribution = Math.exp(-radiusDist / (circle.r * 0.22 + 18));
-                accum += contribution * Math.sign(circle.curvature);
-              }
-              const height = accum * currentSettings.amplitude * 0.75;
-              const scale = Math.min(2, Math.abs(accum) * 1.8);
-              const light = THREE.MathUtils.clamp(accum * 0.4, -0.3, 0.6);
+            perPoint: ({ index, baseHeight, effectTime, data }) => {
+              const fade = Math.min(effectTime / 3, 1);
+              const starDepth = data.depth[index] ?? 0;
+              const twinklePhase = data.twinkle[index] ?? 0;
+              const intensity = data.intensity[index] ?? 0.5;
+              const twinkle = Math.sin(effectTime * 1.6 + twinklePhase) * 0.35;
+              const height = (-baseHeight + starDepth) * fade;
+              const scale = fade * (1.1 + intensity * 1.4);
+              const light = fade * (0.55 + intensity * 0.8) + twinkle * fade;
               return { height, scale, light };
             },
             cleanup: () => {
@@ -803,6 +576,7 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
       function activateEffect(type) {
         const definition = effectDefinitions[type];
         if (!definition) {
+          console.warn(`[SceneCanvas] Unknown effect "${type}" requested`);
           return false;
         }
 
@@ -1164,7 +938,7 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
           });
         },
         triggerEffect: (type) => {
-          activateEffect(type);
+          return activateEffect(type);
         }
       };
 
@@ -1246,8 +1020,8 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
     },
     triggerEffect: (type) => {
       const state = stateRef.current;
-      if (!state?.triggerEffect) return;
-      state.triggerEffect(type);
+      if (!state?.triggerEffect) return false;
+      return state.triggerEffect(type);
     }
   }));
 
