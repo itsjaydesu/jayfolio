@@ -2644,7 +2644,10 @@ a {
   z-index: 12;
   overflow: hidden;
   backdrop-filter: blur(5px);
-  transition: background 2.5s cubic-bezier(0.4, 0, 0.2, 1), backdrop-filter 2.5s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Add opacity transition to the menu container itself */
+  transition: background 2.5s cubic-bezier(0.4, 0, 0.2, 1), 
+              backdrop-filter 2.5s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.5s cubic-bezier(0.33, 1, 0.68, 1);
 }
 
 .retro-menu--sidebar {
@@ -2704,6 +2707,10 @@ a {
   gap: 10px;
 }
 
+.retro-menu__title-actions > * {
+  transition: opacity 0.5s cubic-bezier(0.33, 1, 0.68, 1);
+}
+
 .retro-menu__social {
   display: inline-flex;
   align-items: center;
@@ -2750,6 +2757,7 @@ a {
 
 .retro-menu__body {
   padding: 0.8rem 0.85rem 0.95rem;
+  transition: opacity 0.5s cubic-bezier(0.33, 1, 0.68, 1);
 }
 
 .retro-menu__list {
@@ -2759,6 +2767,15 @@ a {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  /* Keep list height stable - prevent layout shift during fade */
+  min-height: fit-content;
+  transition: opacity 0.5s cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+/* Preserve list space even when faded out */
+.retro-menu[data-panel-active="true"] .retro-menu__list {
+  /* Still takes up space to prevent height collapse */
+  min-height: inherit;
 }
 
 .retro-menu__item .retro-menu__button {
@@ -2834,7 +2851,16 @@ a {
   min-height: 96px;
   display: grid;
   gap: 0.3rem;
-  transition: background 2.5s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Ensure height is maintained even during opacity transition */
+  height: auto;
+  transition: background 2.5s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.5s cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+/* Keep status height stable when faded - prevents layout shift */
+.retro-menu[data-panel-active="true"] .retro-menu__status {
+  /* Maintain the minimum height to prevent vertical collapse */
+  min-height: 96px;
 }
 
 .retro-menu__status strong {
@@ -2899,22 +2925,67 @@ a {
 }
 
 .retro-menu__settings-panel {
-  position: absolute;
-  top: calc(100% + 8px);
-  left: 0;
-  right: 0;
+  /* Panel overlays menu body - positioned via Portal */
+  position: fixed;
   padding: 0.8rem;
   background: linear-gradient(
     180deg,
-    rgba(0, 58, 99, 0.98),
-    rgba(0, 139, 178, 0.95)
+    rgba(0, 58, 99, 1),
+    rgba(0, 139, 178, 0.98)
   );
   border: 2px solid rgba(0, 200, 208, 0.4);
   border-radius: 8px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 
     0 0 0 1px rgba(0, 200, 208, 0.2);
-  z-index: 1000;
-  animation: slideDown 0.2s ease-out;
+  /* Higher z-index to overlay menu body */
+  z-index: 10000;
+  /* Ensure panel completely hides menu behind it */
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
+  /* Smooth fade in/out transition - matches main menu style */
+  opacity: 0;
+  transform: translateY(20px) scale(0.92);
+  filter: blur(12px);
+  pointer-events: none;
+  transition: opacity 0.64s cubic-bezier(0.33, 1, 0.68, 1),
+              transform 0.64s cubic-bezier(0.33, 1, 0.68, 1),
+              filter 0.64s cubic-bezier(0.33, 1, 0.68, 1);
+  will-change: opacity, transform, filter;
+}
+
+.retro-menu__settings-panel.is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  filter: blur(0);
+  pointer-events: auto;
+  transition-delay: 0.08s;
+}
+
+.retro-menu__settings-panel.is-closing {
+  opacity: 0;
+  transform: translateY(12px) scale(0.96);
+  filter: blur(8px);
+  pointer-events: none;
+  transition-delay: 0s;
+}
+
+/* Reduce motion support */
+@media (prefers-reduced-motion: reduce) {
+  .retro-menu__settings-panel {
+    transition: none;
+    transform: none;
+    filter: none;
+  }
+  
+  .retro-menu__settings-panel.is-visible {
+    transform: none;
+    filter: none;
+  }
+  
+  .retro-menu__settings-panel.is-closing {
+    transform: none;
+    filter: none;
+  }
 }
 
 @media (max-width: 640px) {
@@ -2926,13 +2997,13 @@ a {
     gap: 0;
     min-height: 100vh;
     padding: clamp(1.6rem, 8vh, 3.2rem) clamp(1.1rem, 6vw, 1.8rem) clamp(2.6rem, 14vh, 4rem);
-    --mobile-menu-shift: 0;
   }
 
+  /* REMOVED: No longer shift menu vertically when panel is active */
+  /* Menu stays centered - only content fades in/out */
   .menu-overlay:has(.retro-menu--centerpiece[data-panel-active="true"]) {
-    --mobile-menu-shift: calc(-1 * max(0px, min(50vh - 4rem, 18rem)));
-    justify-content: flex-start;
-    padding-top: clamp(1rem, 5vh, 2.2rem);
+    /* Keep centered layout */
+    justify-content: center;
   }
 
   .menu-overlay .retro-menu--centerpiece {
@@ -2941,17 +3012,21 @@ a {
     left: auto;
     right: auto;
     top: auto;
-    transform: translateY(var(--mobile-menu-shift));
+    /* REMOVED: transform: translateY(var(--mobile-menu-shift)); */
+    /* Menu stays in place - no vertical movement */
+    transform: translateY(0);
     width: 100%;
     max-width: min(50vw, 200px);
     margin: 0 auto;
     border-radius: 22px;
     box-shadow: 0 22px 38px rgba(0, 0, 0, 0.5);
-    transition: transform 0.36s cubic-bezier(0.33, 1, 0.68, 1);
+    /* Only opacity transitions, no transform changes */
+    transition: opacity 0.36s cubic-bezier(0.33, 1, 0.68, 1);
   }
 
   .menu-overlay.is-visible .retro-menu--centerpiece {
-    transform: translateY(var(--mobile-menu-shift));
+    /* Keep in place - no shift */
+    transform: translateY(0);
     filter: none;
   }
 
@@ -2977,6 +3052,29 @@ a {
 .retro-menu[data-panel-active="true"] .retro-menu__settings-toggle {
   opacity: 1;
   filter: none;
+}
+
+/* SOLUTION: Fade the ENTIRE menu container when panel is active */
+.retro-menu[data-panel-active="true"] {
+  opacity: 0 !important;
+  pointer-events: none;
+  transition: opacity 0.5s cubic-bezier(0.33, 1, 0.68, 1) !important;
+}
+
+/* Keep these for backwards compatibility but they're now redundant */
+.retro-menu[data-panel-active="true"] .retro-menu__body {
+  opacity: 0 !important;
+  pointer-events: none;
+}
+
+.retro-menu[data-panel-active="true"] .retro-menu__list {
+  opacity: 0 !important;
+  pointer-events: none;
+}
+
+.retro-menu[data-panel-active="true"] .retro-menu__status {
+  opacity: 0 !important;
+  pointer-events: none;
 }
 
 .retro-menu[data-effect-active="true"] {
