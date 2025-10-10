@@ -207,18 +207,18 @@ export default function SiteShell({ children }) {
       }
       
       if (shouldStopAnimation) {
-        // Immediately set all animation values to 0 and fade dots on mount
+        // Immediately set all animation values to 0 and fade dots on mount (no transition)
         sceneRef.current.applySettings({
-          animationSpeed: 0,
-          amplitude: 0,
-          swirlStrength: 0,
-          waveXFrequency: 0,
-          waveYFrequency: 0,
-          swirlFrequency: 0,
-          mouseInfluence: 0,
-          rippleStrength: 0,
-          brightness: 0,  // Fade dots to black
-          opacity: 0      // Make dots transparent
+          animationSpeed: 0,      // Fully stopped on mount
+          amplitude: 0,           // No movement
+          swirlStrength: 0,       // No swirl
+          waveXFrequency: 0,      // No waves
+          waveYFrequency: 0,      // No waves  
+          swirlFrequency: 0,      // No swirl
+          mouseInfluence: 0,      // No mouse influence
+          rippleStrength: 0,      // No ripples
+          brightness: 0,          // Black dots
+          opacity: 0              // Fully transparent
         }, true);
         setDotsFaded(true);
         setAnimationState('stopped');
@@ -240,8 +240,17 @@ export default function SiteShell({ children }) {
     
     let animationFrame;
     let startTime;
-    const TRANSITION_DURATION = 2000; // 2 seconds for smooth transition
+    // Different durations for fade-out vs fade-in for more interesting transitions
+    const FADE_OUT_DURATION = 3000; // 3 seconds for slow, interesting fade-out
+    const FADE_IN_DURATION = 2000; // 2 seconds for fade-in
+    const TRANSITION_DURATION = shouldStopAnimation ? FADE_OUT_DURATION : FADE_IN_DURATION;
     
+    // Custom easing for fade-out - more gradual at the beginning, then accelerates
+    const easeOutQuint = (t) => {
+      return 1 - Math.pow(1 - t, 5);
+    };
+    
+    // Standard easing for fade-in
     const easeInOutCubic = (t) => {
       return t < 0.5
         ? 4 * t * t * t
@@ -250,17 +259,17 @@ export default function SiteShell({ children }) {
     
     // Store original animation values for restoration
     const animationSettings = shouldStopAnimation ? {
-      // When stopping, set all animation-related values to 0/minimal
-      animationSpeed: 0,
-      amplitude: 0,
-      swirlStrength: 0,
-      waveXFrequency: 0,
-      waveYFrequency: 0,
-      swirlFrequency: 0,
-      mouseInfluence: 0,
-      rippleStrength: 0,
-      brightness: 0,     // Fade dots to black
-      opacity: 0         // Make dots transparent
+      // When stopping, gradually reduce values for more organic fade
+      animationSpeed: 0.1,    // Slow down but don't completely stop initially
+      amplitude: 2,           // Keep subtle movement during fade
+      swirlStrength: 0.1,     // Minimal swirl
+      waveXFrequency: 0.005,  // Very slow waves
+      waveYFrequency: 0.003,  // Very slow waves
+      swirlFrequency: 0.0005, // Minimal swirl frequency
+      mouseInfluence: 0.001,  // Almost no mouse influence
+      rippleStrength: 2,      // Minimal ripples
+      brightness: 0,          // Fade dots to black
+      opacity: 0              // Make dots transparent
     } : {
       // Default animation values when resuming
       animationSpeed: 1.1,
@@ -297,7 +306,10 @@ export default function SiteShell({ children }) {
       if (!startTime) startTime = timestamp;
       const elapsed = timestamp - startTime;
       const progress = Math.min(elapsed / TRANSITION_DURATION, 1);
-      const easedProgress = easeInOutCubic(progress);
+      // Use different easing for fade-out vs fade-in
+      const easedProgress = shouldStopAnimation ? 
+        easeOutQuint(progress) : 
+        easeInOutCubic(progress);
       
       // Apply all animation settings with easing
       const currentSettings = {};
@@ -375,19 +387,19 @@ export default function SiteShell({ children }) {
       startTime = null; // Reset start time for new animation
       animationFrame = requestAnimationFrame(updateAnimationState);
     } else if (shouldStopAnimation && animationState === 'stopped') {
-      // Already stopped, ensure animation values are at 0 and dots are faded
+      // Already stopped, ensure animation values are fully at 0 and dots are faded
       if (sceneRef.current) {
         sceneRef.current.applySettings({
-          animationSpeed: 0,
-          amplitude: 0,
-          swirlStrength: 0,
-          waveXFrequency: 0,
-          waveYFrequency: 0,
-          swirlFrequency: 0,
-          mouseInfluence: 0,
-          rippleStrength: 0,
-          brightness: 0,
-          opacity: 0
+          animationSpeed: 0,      // Fully stopped
+          amplitude: 0,           // No movement
+          swirlStrength: 0,       // No swirl
+          waveXFrequency: 0,      // No waves
+          waveYFrequency: 0,      // No waves
+          swirlFrequency: 0,      // No swirl
+          mouseInfluence: 0,      // No mouse influence
+          rippleStrength: 0,      // No ripples
+          brightness: 0,          // Black dots
+          opacity: 0              // Fully transparent
         }, true);
       }
       setDotsFaded(true);

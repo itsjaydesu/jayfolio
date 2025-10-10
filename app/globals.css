@@ -75,17 +75,29 @@ a {
 
 .scene-wrapper--faded .scene-container {
   opacity: 0 !important;
+  /* Add subtle scale and blur for more interesting fade-out */
+  transform: scale(0.98) !important;
+  filter: blur(2px) !important;
 }
 
 /* Smooth transition for both fade in and fade out */
 .scene-wrapper .scene-container {
-  transition: opacity 1.5s cubic-bezier(0.4, 0, 0.6, 1);
+  /* Slower, more cinematic fade-out with custom easing */
+  transition: opacity 2.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              transform 3s cubic-bezier(0.23, 1, 0.32, 1),
+              filter 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transform-origin: center center;
 }
 
 /* Ensure smooth fade-in when returning to home */
 .scene-wrapper:not(.scene-wrapper--faded) .scene-container.is-ready {
-  transition: opacity 1.5s cubic-bezier(0.4, 0, 0.6, 1);
+  /* Faster fade-in when returning home */
+  transition: opacity 1.5s cubic-bezier(0.4, 0, 0.6, 1),
+              transform 1.5s cubic-bezier(0.4, 0, 0.6, 1),
+              filter 1.5s cubic-bezier(0.4, 0, 0.6, 1);
   opacity: 1;
+  transform: scale(1);
+  filter: blur(0px);
 }
 
 /* Ensure immediate fade when starting on sub-pages */
@@ -96,6 +108,10 @@ a {
 .scene-wrapper--black.scene-wrapper--faded .scene-container,
 .scene-wrapper--black.scene-wrapper--faded canvas {
   opacity: 0 !important;
+  transform: scale(0.98) !important;
+  filter: blur(2px) !important;
+  /* No transition when starting on sub-pages */
+  transition: none !important;
 }
 
 /* Scene container for three.js canvas */
