@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { useState, useRef, useEffect } from 'react';
-import { createPortal } from 'react-dom';
+import Link from "next/link";
+import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 
 export default function RetroMenu({
   id,
@@ -13,58 +13,61 @@ export default function RetroMenu({
   activeStatus,
   isOpen = false,
   onNavigate,
-  variant = 'sidebar',
+  variant = "sidebar",
   onFieldEffect,
-  hasActiveEffect = false
+  hasActiveEffect = false,
 }) {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [panelPosition, setPanelPosition] = useState({ top: 0, left: 0 });
   const toggleRef = useRef(null);
-  
+
   useEffect(() => {
     if (settingsOpen && toggleRef.current) {
-      const menuElement = toggleRef.current.closest('.retro-menu');
+      const menuElement = toggleRef.current.closest(".retro-menu");
       if (menuElement) {
         const menuRect = menuElement.getBoundingClientRect();
         const panelWidth = Math.min(menuRect.width, 400); // Max width 400px
         const viewportWidth = window.innerWidth;
-        
+
         // Calculate left position, ensuring panel stays within viewport
         let leftPos = menuRect.left;
         const rightEdge = leftPos + panelWidth;
-        
+
         // If panel would go off right edge, adjust left position
-        if (rightEdge > viewportWidth - 20) { // 20px margin from edge
+        if (rightEdge > viewportWidth - 20) {
+          // 20px margin from edge
           leftPos = viewportWidth - panelWidth - 20;
         }
-        
+
         // If panel would go off left edge, adjust
         if (leftPos < 20) {
           leftPos = 20;
         }
-        
+
         const newPosition = {
           top: menuRect.bottom + 8,
           left: leftPos,
-          width: panelWidth
+          width: panelWidth,
         };
-        
+
         setPanelPosition(newPosition);
       }
     }
   }, [settingsOpen]);
-  
+
   useEffect(() => {
     if (settingsOpen) {
       const handleClickOutside = (e) => {
-        if (!e.target.closest('.retro-menu__settings-panel') && 
-            !e.target.closest('.retro-menu__settings-toggle')) {
+        if (
+          !e.target.closest(".retro-menu__settings-panel") &&
+          !e.target.closest(".retro-menu__settings-toggle")
+        ) {
           setSettingsOpen(false);
         }
       };
-      
-      document.addEventListener('click', handleClickOutside);
-      return () => document.removeEventListener('click', handleClickOutside);
+
+      document.addEventListener("click", handleClickOutside);
+      return () => document.removeEventListener("click", handleClickOutside);
     }
   }, [settingsOpen]);
 
@@ -86,10 +89,10 @@ export default function RetroMenu({
   return (
     <nav
       id={id}
-      className={`retro-menu retro-menu--${variant}${isOpen ? ' is-open' : ''}`}
+      className={`retro-menu retro-menu--${variant}${isOpen ? " is-open" : ""}`}
       data-open={isOpen}
-      data-panel-active={settingsOpen ? 'true' : 'false'}
-      data-effect-active={hasActiveEffect ? 'true' : 'false'}
+      data-panel-active={settingsOpen ? "true" : "false"}
+      data-effect-active={hasActiveEffect ? "true" : "false"}
       aria-label="Main navigation"
     >
       <div className="retro-menu__titlebar">
@@ -100,13 +103,21 @@ export default function RetroMenu({
           <button
             ref={toggleRef}
             type="button"
-            className={`retro-menu__settings-toggle${settingsOpen ? ' is-active' : ''}`}
+            className={`retro-menu__settings-toggle${
+              settingsOpen ? " is-active" : ""
+            }`}
             onClick={() => setSettingsOpen(!settingsOpen)}
             aria-expanded={settingsOpen}
             aria-label="Toggle field effects settings"
             title="Field Effects"
           >
-            <svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <svg
+              viewBox="0 0 20 20"
+              aria-hidden="true"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+            >
               <circle cx="10" cy="10" r="3" />
               <path d="M10 3.5v-1m0 15v-1m6.5-6.5h1m-15 0h1" />
               <path d="M14.5 5.5l.7-.7m-10.4 10.4l.7-.7m0-9.4l-.7-.7m10.4 10.4l-.7-.7" />
@@ -124,7 +135,11 @@ export default function RetroMenu({
             </svg>
           </Link>
           <small>v4.1</small>
-          <button type="button" className="retro-menu__dismiss" onClick={handleDismiss}>
+          <button
+            type="button"
+            className="retro-menu__dismiss"
+            onClick={handleDismiss}
+          >
             Close
           </button>
         </div>
@@ -135,7 +150,10 @@ export default function RetroMenu({
             const isActive = item.id === activeSection;
             const handlePreview = () => {
               if (!onStatusChange) return;
-              onStatusChange({ ...item.status, mode: isActive ? 'active' : 'preview' });
+              onStatusChange({
+                ...item.status,
+                mode: isActive ? "active" : "preview",
+              });
             };
 
             const handleClick = () => {
@@ -146,11 +164,15 @@ export default function RetroMenu({
             };
 
             return (
-              <li key={item.id} className={`retro-menu__item${isActive ? ' is-active' : ''}`} data-section={item.id}>
+              <li
+                key={item.id}
+                className={`retro-menu__item${isActive ? " is-active" : ""}`}
+                data-section={item.id}
+              >
                 <Link
                   href={item.href}
                   className="retro-menu__button"
-                  aria-current={isActive ? 'page' : undefined}
+                  aria-current={isActive ? "page" : undefined}
                   onClick={handleClick}
                   onMouseEnter={handlePreview}
                   onMouseLeave={handleRestore}
@@ -165,131 +187,135 @@ export default function RetroMenu({
         </ul>
       </div>
       {/* Render settings panel via Portal to avoid overflow clipping */}
-      {settingsOpen && onFieldEffect && typeof window !== 'undefined' && createPortal(
-        <div 
-          className="retro-menu__settings-panel" 
-          style={{ 
-            display: 'block',
-            position: 'fixed',
-            top: `${panelPosition.top}px`,
-            left: `${panelPosition.left}px`,
-            width: `${panelPosition.width}px`,
-            zIndex: 99999,
-            background: 'linear-gradient(180deg, rgba(0, 58, 99, 0.98), rgba(0, 139, 178, 0.95))',
-            border: '2px solid rgba(0, 200, 208, 0.6)',
-            borderRadius: '8px',
-            padding: '0.8rem',
-            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.6)'
-          }}
-        >
-          <div className="retro-menu__settings-header">
-            <span>Field Effects</span>
-          </div>
-          <div className="retro-menu__settings-content">
-            <button
-              type="button"
-              className="retro-menu__effect-btn"
-              style={{ gridColumn: 'span 2', width: '100%' }}
-              onClick={() => {
-                onFieldEffect('calmReset');
-                setSettingsOpen(false);
-              }}
-              title="Reset to default state"
-            >
-              <span>Zen</span>
-            </button>
-            <button
-              type="button"
-              className="retro-menu__effect-btn"
-              onClick={() => {
-                onFieldEffect('jitter');
-                setSettingsOpen(false);
-              }}
-              title="Trigger rapid ripple bursts"
-            >
-              <span>Jitter</span>
-            </button>
-            <button
-              type="button"
-              className="retro-menu__effect-btn"
-              onClick={() => {
-                onFieldEffect('swirlPulse');
-                setSettingsOpen(false);
-              }}
-              title="Enhance swirl motion"
-            >
-              <span>Swirl</span>
-            </button>
-            <button
-              type="button"
-              className="retro-menu__effect-btn"
-              onClick={() => {
-                onFieldEffect('spiralFlow');
-                setSettingsOpen(false);
-              }}
-              title="Unfurl logarithmic spiral currents"
-            >
-              <span>Spiral</span>
-            </button>
-            <button
-              type="button"
-              className="retro-menu__effect-btn"
-              onClick={() => {
-                onFieldEffect('riverFlow');
-                setSettingsOpen(false);
-              }}
-              title="Flow along layered currents"
-            >
-              <span>River Flow</span>
-            </button>
-            <button
-              type="button"
-              className="retro-menu__effect-btn"
-              onClick={() => {
-                onFieldEffect('mandelbrotZoom');
-                setSettingsOpen(false);
-              }}
-              title="Dive through a Julia set zoom"
-            >
-              <span>Hop</span>
-            </button>
-            <button
-              type="button"
-              className="retro-menu__effect-btn"
-              onClick={() => {
-                onFieldEffect('reactionDiffusionBloom');
-                setSettingsOpen(false);
-              }}
-              title="Grow Gray-Scott bloom patterns"
-            >
-              <span>Bloom</span>
-            </button>
-            <button
-              type="button"
-              className="retro-menu__effect-btn"
-              onClick={() => {
-                onFieldEffect('harmonicPendulum');
-                setSettingsOpen(false);
-              }}
-              title="Trace chaotic harmonic pendulums"
-            >
-              <span>Blink</span>
-            </button>
-            <button
-              type="button"
-              className="retro-menu__effect-btn"
-              onClick={() => {
-                onFieldEffect('starfield');
-                setSettingsOpen(false);
-              }}
-              title="Bloom into a drifting starfield"
-            >
-              <span>Stars</span>
-            </button>
-          </div>
-        </div>,
-        document.body
-      )}
+      {settingsOpen &&
+        onFieldEffect &&
+        typeof window !== "undefined" &&
+        createPortal(
+          <div
+            className="retro-menu__settings-panel"
+            style={{
+              display: "block",
+              position: "fixed",
+              top: `${panelPosition.top}px`,
+              left: `${panelPosition.left}px`,
+              width: `${panelPosition.width}px`,
+              zIndex: 99999,
+              background:
+                "linear-gradient(180deg, rgba(0, 58, 99, 0.98), rgba(0, 139, 178, 0.95))",
+              border: "2px solid rgba(0, 200, 208, 0.6)",
+              borderRadius: "8px",
+              padding: "0.8rem",
+              boxShadow: "0 8px 24px rgba(0, 0, 0, 0.6)",
+            }}
+          >
+            <div className="retro-menu__settings-header">
+              <span>Field Effects</span>
+            </div>
+            <div className="retro-menu__settings-content">
+              <button
+                type="button"
+                className="retro-menu__effect-btn"
+                style={{ gridColumn: "span 2", width: "100%" }}
+                onClick={() => {
+                  onFieldEffect("calmReset");
+                  setSettingsOpen(false);
+                }}
+                title="Reset to default state"
+              >
+                <span>Zen</span>
+              </button>
+              <button
+                type="button"
+                className="retro-menu__effect-btn"
+                onClick={() => {
+                  onFieldEffect("jitter");
+                  setSettingsOpen(false);
+                }}
+                title="Trigger rapid ripple bursts"
+              >
+                <span>Jitter</span>
+              </button>
+              <button
+                type="button"
+                className="retro-menu__effect-btn"
+                onClick={() => {
+                  onFieldEffect("swirlPulse");
+                  setSettingsOpen(false);
+                }}
+                title="Enhance swirl motion"
+              >
+                <span>Swirl</span>
+              </button>
+              <button
+                type="button"
+                className="retro-menu__effect-btn"
+                onClick={() => {
+                  onFieldEffect("spiralFlow");
+                  setSettingsOpen(false);
+                }}
+                title="Unfurl logarithmic spiral currents"
+              >
+                <span>Spiral</span>
+              </button>
+              <button
+                type="button"
+                className="retro-menu__effect-btn"
+                onClick={() => {
+                  onFieldEffect("riverFlow");
+                  setSettingsOpen(false);
+                }}
+                title="Flow along layered currents"
+              >
+                <span>River</span>
+              </button>
+              <button
+                type="button"
+                className="retro-menu__effect-btn"
+                onClick={() => {
+                  onFieldEffect("mandelbrotZoom");
+                  setSettingsOpen(false);
+                }}
+                title="Dive through a Julia set zoom"
+              >
+                <span>Hop</span>
+              </button>
+              <button
+                type="button"
+                className="retro-menu__effect-btn"
+                onClick={() => {
+                  onFieldEffect("reactionDiffusionBloom");
+                  setSettingsOpen(false);
+                }}
+                title="Grow Gray-Scott bloom patterns"
+              >
+                <span>Bloom</span>
+              </button>
+              <button
+                type="button"
+                className="retro-menu__effect-btn"
+                onClick={() => {
+                  onFieldEffect("harmonicPendulum");
+                  setSettingsOpen(false);
+                }}
+                title="Trace chaotic harmonic pendulums"
+              >
+                <span>Blink</span>
+              </button>
+              <button
+                type="button"
+                className="retro-menu__effect-btn"
+                onClick={() => {
+                  onFieldEffect("starfield");
+                  setSettingsOpen(false);
+                }}
+                title="Bloom into a drifting starfield"
+              >
+                <span>Stars</span>
+              </button>
+            </div>
+          </div>,
+          document.body
+        )}
       <p className="retro-menu__status" aria-live="polite">
         <strong>{status.title}</strong>
         <em>{status.description}</em>
