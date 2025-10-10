@@ -2645,9 +2645,12 @@ a {
   overflow: hidden;
   backdrop-filter: blur(5px);
   /* Add opacity transition to the menu container itself */
+  /* Match Field Effects panel animation (0.64s with transform and blur) */
   transition: background 2.5s cubic-bezier(0.4, 0, 0.2, 1), 
               backdrop-filter 2.5s cubic-bezier(0.4, 0, 0.2, 1),
-              opacity 0.5s cubic-bezier(0.33, 1, 0.68, 1);
+              opacity 0.64s cubic-bezier(0.33, 1, 0.68, 1),
+              transform 0.64s cubic-bezier(0.33, 1, 0.68, 1),
+              filter 0.64s cubic-bezier(0.33, 1, 0.68, 1);
 }
 
 .retro-menu--sidebar {
@@ -2927,7 +2930,7 @@ a {
 .retro-menu__settings-panel {
   /* Panel overlays menu body - positioned via Portal */
   position: fixed;
-  padding: 0.8rem;
+  padding: 1.2rem 0.8rem 0.8rem;
   background: linear-gradient(
     180deg,
     rgba(0, 58, 99, 1),
@@ -3055,10 +3058,16 @@ a {
 }
 
 /* SOLUTION: Fade the ENTIRE menu container when panel is active */
+/* Match Field Effects panel animation - fade out with blur and scale */
 .retro-menu[data-panel-active="true"] {
   opacity: 0 !important;
+  transform: translateY(20px) scale(0.92) !important;
+  filter: blur(12px) !important;
   pointer-events: none;
-  transition: opacity 0.5s cubic-bezier(0.33, 1, 0.68, 1) !important;
+  /* Consistent animation (0.64s) matching panel transitions */
+  transition: opacity 0.64s cubic-bezier(0.33, 1, 0.68, 1) !important,
+              transform 0.64s cubic-bezier(0.33, 1, 0.68, 1) !important,
+              filter 0.64s cubic-bezier(0.33, 1, 0.68, 1) !important;
 }
 
 /* Keep these for backwards compatibility but they're now redundant */

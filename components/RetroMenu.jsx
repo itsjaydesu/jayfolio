@@ -19,36 +19,36 @@ export default function RetroMenu({
 }) {
   // Panel transition states: 'closed' | 'fading' | 'opening' | 'open' | 'closing'
   // 'fading' = menu is fading out, panel not visible yet
-  const [panelState, setPanelState] = useState('closed');
+  const [panelState, setPanelState] = useState("closed");
   const [panelPosition, setPanelPosition] = useState({ top: 0, left: 0 });
   const toggleRef = useRef(null);
   const panelTimerRef = useRef(null);
   const panelAnimFrameRef = useRef(null);
-  
+
   // Check for reduced motion preference
   const prefersReducedMotion = useRef(
-    typeof window !== 'undefined' && 
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
   );
 
   // Calculate panel position and start opening transition
   useEffect(() => {
-    if (panelState === 'opening' && toggleRef.current) {
+    if (panelState === "opening" && toggleRef.current) {
       const menuElement = toggleRef.current.closest(".retro-menu");
       if (menuElement) {
         const menuRect = menuElement.getBoundingClientRect();
         const panelWidth = Math.min(menuRect.width, 400); // Max width 400px
         const viewportWidth = window.innerWidth;
-        
+
         // Find the titlebar to calculate overlay position
         const titlebar = menuElement.querySelector(".retro-menu__titlebar");
         const menuBody = menuElement.querySelector(".retro-menu__body");
         const menuList = menuElement.querySelector(".retro-menu__list");
-        
+
         // DIAGNOSTIC: Log menu state and positioning
         console.log("🔍 [RetroMenu Debug] Panel Opening:", {
           panelState,
-          dataPanelActive: menuElement.getAttribute('data-panel-active'),
+          dataPanelActive: menuElement.getAttribute("data-panel-active"),
           menuRect: {
             top: menuRect.top,
             left: menuRect.left,
@@ -56,19 +56,28 @@ export default function RetroMenu({
             height: menuRect.height,
           },
           menuContainerOpacity: window.getComputedStyle(menuElement).opacity,
-          menuContainerBackground: window.getComputedStyle(menuElement).background.substring(0, 100) + '...',
-          menuBodyOpacity: menuBody ? window.getComputedStyle(menuBody).opacity : 'N/A',
-          menuListOpacity: menuList ? window.getComputedStyle(menuList).opacity : 'N/A',
-          menuBodyDisplay: menuBody ? window.getComputedStyle(menuBody).display : 'N/A',
+          menuContainerBackground:
+            window.getComputedStyle(menuElement).background.substring(0, 100) +
+            "...",
+          menuBodyOpacity: menuBody
+            ? window.getComputedStyle(menuBody).opacity
+            : "N/A",
+          menuListOpacity: menuList
+            ? window.getComputedStyle(menuList).opacity
+            : "N/A",
+          menuBodyDisplay: menuBody
+            ? window.getComputedStyle(menuBody).display
+            : "N/A",
         });
-        
+
         // Calculate top position to overlay the menu body area
-        // Position panel right after titlebar, overlaying the body content
+        // Position panel to replace the menu navbar area
         let topPos = menuRect.top;
         if (titlebar) {
           const titlebarRect = titlebar.getBoundingClientRect();
-          topPos = titlebarRect.bottom - 2; // Overlap slightly for seamless look
-          
+          // Move panel higher to better replace the menu navbar
+          topPos = titlebarRect.bottom - 58; // Higher position to replace menu content area
+
           console.log("🔍 [RetroMenu Debug] Titlebar:", {
             titlebarBottom: titlebarRect.bottom,
             calculatedTopPos: topPos,
@@ -95,18 +104,18 @@ export default function RetroMenu({
           left: leftPos,
           width: panelWidth,
         };
-        
+
         console.log("🔍 [RetroMenu Debug] Final Panel Position:", newPosition);
 
         setPanelPosition(newPosition);
-        
+
         // Trigger transition to 'open' state after position is set
         // Skip delay if reduced motion is preferred
         if (prefersReducedMotion.current) {
-          setPanelState('open');
+          setPanelState("open");
         } else {
           panelAnimFrameRef.current = requestAnimationFrame(() => {
-            setPanelState('open');
+            setPanelState("open");
           });
         }
       }
@@ -115,8 +124,8 @@ export default function RetroMenu({
 
   // Handle click outside to close panel
   useEffect(() => {
-    const isOpen = panelState === 'opening' || panelState === 'open';
-    
+    const isOpen = panelState === "opening" || panelState === "open";
+
     if (isOpen) {
       const handleClickOutside = (e) => {
         if (
@@ -135,7 +144,7 @@ export default function RetroMenu({
   // Open panel with transition
   const openPanel = () => {
     console.log("🔍 [RetroMenu Debug] openPanel called");
-    
+
     // Clear any pending timers
     if (panelTimerRef.current) {
       clearTimeout(panelTimerRef.current);
@@ -145,26 +154,30 @@ export default function RetroMenu({
       cancelAnimationFrame(panelAnimFrameRef.current);
       panelAnimFrameRef.current = null;
     }
-    
+
     // SOLUTION: Two-phase transition
     // Phase 1: 'fading' state triggers menu fade-out via data-panel-active
     // Phase 2: After menu starts fading, show panel with 'opening' state
-    setPanelState('fading');
-    console.log("🔍 [RetroMenu Debug] Panel state set to 'fading' - menu starts fade");
-    
+    setPanelState("fading");
+    console.log(
+      "🔍 [RetroMenu Debug] Panel state set to 'fading' - menu starts fade"
+    );
+
     if (prefersReducedMotion.current) {
       // No delay for reduced motion
-      setPanelState('opening');
+      setPanelState("opening");
     } else {
       // Delay panel appearance to allow menu opacity to decrease
       panelTimerRef.current = setTimeout(() => {
-        setPanelState('opening');
-        console.log("🔍 [RetroMenu Debug] Panel state set to 'opening' (menu has faded)");
+        setPanelState("opening");
+        console.log(
+          "🔍 [RetroMenu Debug] Panel state set to 'opening' (menu has faded)"
+        );
         panelTimerRef.current = null;
       }, 150); // 150ms allows menu to visibly start fading
     }
   };
-  
+
   // Close panel with transition
   const closePanel = () => {
     // Clear any pending timers
@@ -176,32 +189,33 @@ export default function RetroMenu({
       cancelAnimationFrame(panelAnimFrameRef.current);
       panelAnimFrameRef.current = null;
     }
-    
+
     // If reduced motion, close immediately
     if (prefersReducedMotion.current) {
-      setPanelState('closed');
+      setPanelState("closed");
       return;
     }
-    
-    setPanelState('closing');
-    
-    // Wait for transition to complete before unmounting
+
+    setPanelState("closing");
+
+    // Wait for panel to fade out before menu starts fading in
     panelTimerRef.current = setTimeout(() => {
-      setPanelState('closed');
+      setPanelState("closed");
       panelTimerRef.current = null;
-    }, 680); // Slightly longer than CSS transition (640ms)
+      // Menu will now slowly fade back in over 0.8s
+    }, 680); // Panel fade-out duration
   };
-  
+
   // Toggle panel
   const togglePanel = () => {
-    const isOpen = panelState === 'opening' || panelState === 'open';
+    const isOpen = panelState === "opening" || panelState === "open";
     if (isOpen) {
       closePanel();
     } else {
       openPanel();
     }
   };
-  
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -234,35 +248,50 @@ export default function RetroMenu({
       id={id}
       className={`retro-menu retro-menu--${variant}${isOpen ? " is-open" : ""}`}
       data-open={isOpen}
-      data-panel-active={(panelState === 'fading' || panelState === 'opening' || panelState === 'open') ? "true" : "false"}
+      data-panel-active={
+        panelState === "fading" ||
+        panelState === "opening" ||
+        panelState === "open"
+          ? "true"
+          : "false"
+      }
       ref={(node) => {
         if (node) {
-          const isPanelActive = panelState === 'fading' || panelState === 'opening' || panelState === 'open';
+          const isPanelActive =
+            panelState === "fading" ||
+            panelState === "opening" ||
+            panelState === "open";
           console.log("🔍 [RetroMenu Debug] Nav render:", {
             panelState,
             dataPanelActive: isPanelActive,
-            actualAttribute: node.getAttribute('data-panel-active'),
+            actualAttribute: node.getAttribute("data-panel-active"),
           });
-          
+
           // Check if CSS is actually applying opacity
           if (isPanelActive) {
             setTimeout(() => {
-              const menuBody = node.querySelector('.retro-menu__body');
-              const menuList = node.querySelector('.retro-menu__list');
-              const menuStatus = node.querySelector('.retro-menu__status');
-              
+              const menuBody = node.querySelector(".retro-menu__body");
+              const menuList = node.querySelector(".retro-menu__list");
+              const menuStatus = node.querySelector(".retro-menu__status");
+
               // Check ALL elements including the container itself
               console.log("🔍 [RetroMenu Debug] FULL opacity check:", {
                 panelState,
                 containerOpacity: window.getComputedStyle(node).opacity,
                 containerBackground: window.getComputedStyle(node).background,
                 containerDisplay: window.getComputedStyle(node).display,
-                bodyOpacity: menuBody ? window.getComputedStyle(menuBody).opacity : 'N/A',
-                listOpacity: menuList ? window.getComputedStyle(menuList).opacity : 'N/A',
-                statusOpacity: menuStatus ? window.getComputedStyle(menuStatus).opacity : 'N/A',
+                bodyOpacity: menuBody
+                  ? window.getComputedStyle(menuBody).opacity
+                  : "N/A",
+                listOpacity: menuList
+                  ? window.getComputedStyle(menuList).opacity
+                  : "N/A",
+                statusOpacity: menuStatus
+                  ? window.getComputedStyle(menuStatus).opacity
+                  : "N/A",
                 containerRect: node.getBoundingClientRect(),
               });
-              
+
               // Check what's actually visible
               const rect = node.getBoundingClientRect();
               console.log("🔍 [RetroMenu Debug] Container visibility:", {
@@ -286,10 +315,12 @@ export default function RetroMenu({
             ref={toggleRef}
             type="button"
             className={`retro-menu__settings-toggle${
-              (panelState === 'opening' || panelState === 'open') ? " is-active" : ""
+              panelState === "opening" || panelState === "open"
+                ? " is-active"
+                : ""
             }`}
             onClick={togglePanel}
-            aria-expanded={panelState === 'opening' || panelState === 'open'}
+            aria-expanded={panelState === "opening" || panelState === "open"}
             aria-label="Toggle field effects settings"
             title="Field Effects"
           >
@@ -370,16 +401,16 @@ export default function RetroMenu({
       </div>
       {/* Render settings panel via Portal to avoid overflow clipping */}
       {/* Only render when actually opening/open, not during 'fading' state */}
-      {(panelState === 'opening' || panelState === 'open' || panelState === 'closing') &&
+      {(panelState === "opening" ||
+        panelState === "open" ||
+        panelState === "closing") &&
         onFieldEffect &&
         typeof window !== "undefined" &&
         createPortal(
           <div
             className={`retro-menu__settings-panel${
-              panelState === 'open' ? ' is-visible' : ''
-            }${
-              panelState === 'closing' ? ' is-closing' : ''
-            }`}
+              panelState === "open" ? " is-visible" : ""
+            }${panelState === "closing" ? " is-closing" : ""}`}
             style={{
               display: "block",
               position: "fixed",
