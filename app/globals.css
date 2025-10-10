@@ -2629,15 +2629,15 @@ a {
 }
 .retro-menu {
   position: relative;
-  width: min(320px, 100%);
-  border: 2px solid #05344c;
+  width: min(340px, 100%);
+  border: 1.5px solid rgba(5, 52, 76, 0.65);
+  border-radius: 22px;
   background: linear-gradient(
     180deg,
     rgba(0, 133, 134, 0.92) 0%,
     rgba(1, 60, 70, 0.86) 100%
   );
-  box-shadow: 0 0 0 1px rgba(1, 92, 112, 0.55),
-    16px 18px 40px rgba(0, 0, 0, 0.55);
+  box-shadow: 0 18px 32px rgba(0, 0, 0, 0.48);
   color: #daf3f4;
   font-family: "IBM Plex Mono", "Lucida Console", "Courier New", monospace;
   letter-spacing: 0.04em;
@@ -2680,15 +2680,16 @@ a {
 .retro-menu__titlebar {
   background: linear-gradient(90deg, #003a63 0%, #008bb2 55%, #00c8d0 100%);
   color: #f4faff;
-  padding: 12px 16px 11px;
-  font-size: 0.84rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.72rem;
   text-transform: uppercase;
   font-weight: 600;
-  border-bottom: 2px solid rgba(6, 6, 6, 0.65);
-  display: flex;
+  letter-spacing: 0.14em;
+  border-bottom: 1px solid rgba(6, 6, 6, 0.35);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  gap: 0.75rem;
   transition: background 2.5s cubic-bezier(0.4, 0, 0.2, 1), border-bottom-color 2.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -2696,6 +2697,8 @@ a {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
 }
 
 .retro-menu__titlebar small {
@@ -2759,7 +2762,7 @@ a {
 }
 
 .retro-menu__body {
-  padding: 0.8rem 0.85rem 0.95rem;
+  padding: 0.65rem 0.75rem 0.85rem;
   transition: opacity 0.5s cubic-bezier(0.33, 1, 0.68, 1);
 }
 
@@ -2783,19 +2786,20 @@ a {
 
 .retro-menu__item .retro-menu__button {
   width: 100%;
-  border: 1px solid rgba(5, 52, 76, 0.65);
-  background: rgba(4, 74, 90, 0.85);
+  border: 1px solid rgba(5, 52, 76, 0.5);
+  background: rgba(4, 74, 90, 0.75);
   color: inherit;
   font: inherit;
   text-transform: uppercase;
-  letter-spacing: 0.18em;
-  font-size: clamp(1.05rem, 2.8vw, 1.35rem);
-  padding: 1rem 1.35rem 1rem 1.9rem;
+  letter-spacing: 0.16em;
+  font-size: 0.85rem;
+  padding: 0.65rem 0.95rem;
   cursor: pointer;
   display: block;
   text-decoration: none;
   position: relative;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 2.5s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 14px;
+  transition: box-shadow 0.2s ease, background 0.25s ease, border-color 0.25s ease;
 }
 
 .retro-menu__item .retro-menu__button::before {
@@ -2824,8 +2828,9 @@ a {
 
 .retro-menu__item .retro-menu__button:hover,
 .retro-menu__item .retro-menu__button:focus-visible {
-  transform: translateX(6px);
-  box-shadow: 0 0 0 1px rgba(212, 244, 255, 0.4);
+  background: rgba(4, 94, 110, 0.85);
+  border-color: rgba(5, 72, 96, 0.65);
+  box-shadow: 0 0 0 1px rgba(212, 244, 255, 0.25);
   outline: none;
 }
 
@@ -2837,23 +2842,22 @@ a {
 }
 
 .retro-menu__item.is-active .retro-menu__button {
-  transform: translateX(6px);
   background: rgba(0, 116, 128, 0.92);
-  box-shadow: 0 0 0 1px rgba(212, 244, 255, 0.25),
-    0 10px 18px rgba(0, 0, 0, 0.45);
+  border-color: rgba(0, 200, 208, 0.4);
+  box-shadow: 0 0 0 1px rgba(212, 244, 255, 0.25);
 }
 
 .retro-menu__status {
   margin: 0;
-  padding: 0.85rem 1rem 1rem;
-  font-size: 0.68rem;
+  padding: 0.75rem 0.9rem 0.9rem;
+  font-size: 0.64rem;
   text-transform: uppercase;
-  letter-spacing: 0.18em;
-  background: rgba(0, 48, 60, 0.8);
-  border-top: 1px solid rgba(5, 52, 76, 0.75);
-  min-height: 96px;
+  letter-spacing: 0.16em;
+  background: rgba(0, 48, 60, 0.7);
+  border-top: 1px solid rgba(5, 52, 76, 0.35);
+  min-height: 86px;
   display: grid;
-  gap: 0.3rem;
+  gap: 0.35rem;
   /* Ensure height is maintained even during opacity transition */
   height: auto;
   transition: background 2.5s cubic-bezier(0.4, 0, 0.2, 1),
@@ -3108,6 +3112,7 @@ a {
   background: rgba(0, 48, 60, 0.1);
 }
 
+@media (max-width: 640px) {
   .retro-menu {
     width: 100%;
     border-radius: 22px;
