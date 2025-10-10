@@ -29,6 +29,9 @@ export default function SiteShell({ children }) {
   const returnTimerRef = useRef(null);
   const [menuVisible, setMenuVisible] = useState(false);
   const sceneRef = useRef(null);
+  const [animationState, setAnimationState] = useState('normal'); // 'normal', 'slowing', 'stopped', 'resuming'
+  const animationSpeedRef = useRef(1.1);
+  const targetSpeedRef = useRef(1.1);
 
   useEffect(() => {
     let ignore = false;
@@ -68,6 +71,12 @@ export default function SiteShell({ children }) {
   const isDetailView = pathSegments.length > 1 && Boolean(activeItem);
   const isAdminView = primarySegment === "admin";
   const isHome = pathSegments.length === 0;
+  
+  // Check if we're on a route that should stop animation
+  const shouldStopAnimation = primarySegment === 'about' || 
+                              primarySegment === 'projects' || 
+                              primarySegment === 'words' || 
+                              primarySegment === 'sounds';
 
   const activeStatus = useMemo(
     () =>
@@ -156,6 +165,71 @@ export default function SiteShell({ children }) {
       window.removeEventListener("scroll", handleScroll);
     };
   }, [isDetailView, pathname]);
+  
+  // Handle animation state changes based on route
+  useEffect(() => {
+    if (!sceneRef.current) return;
+    
+    let animationFrame;
+    let startTime;
+    const TRANSITION_DURATION = 2000; // 2 seconds for smooth transition
+    
+    const easeInOutCubic = (t) => {
+      return t < 0.5
+        ? 4 * t * t * t
+        : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    };
+    
+    const updateAnimationSpeed = (timestamp) => {
+      if (!startTime) startTime = timestamp;
+      const elapsed = timestamp - startTime;
+      const progress = Math.min(elapsed / TRANSITION_DURATION, 1);
+      const easedProgress = easeInOutCubic(progress);
+      
+      const currentSpeed = animationSpeedRef.current;
+      const targetSpeed = targetSpeedRef.current;
+      const newSpeed = currentSpeed + (targetSpeed - currentSpeed) * easedProgress;
+      
+      // Apply the new speed to the scene
+      sceneRef.current.applySettings({ animationSpeed: newSpeed }, true);
+      animationSpeedRef.current = newSpeed;
+      
+      if (progress < 1) {
+        animationFrame = requestAnimationFrame(updateAnimationSpeed);
+      } else {
+        // Transition complete
+        if (animationState === 'slowing') {
+          setAnimationState('stopped');
+        } else if (animationState === 'resuming') {
+          setAnimationState('normal');
+        }
+      }
+    };
+    
+    if (shouldStopAnimation && animationState === 'normal') {
+      // Start slowing down to stop
+      setAnimationState('slowing');
+      targetSpeedRef.current = 0;
+      animationFrame = requestAnimationFrame(updateAnimationSpeed);
+    } else if (!shouldStopAnimation && animationState === 'stopped') {
+      // Start resuming to normal speed
+      setAnimationState('resuming');
+      targetSpeedRef.current = 1.1;
+      animationFrame = requestAnimationFrame(updateAnimationSpeed);
+    } else if (!shouldStopAnimation && animationState === 'slowing') {
+      // Interrupted while slowing, resume immediately
+      setAnimationState('resuming');
+      targetSpeedRef.current = 1.1;
+      if (animationFrame) cancelAnimationFrame(animationFrame);
+      animationFrame = requestAnimationFrame(updateAnimationSpeed);
+    }
+    
+    return () => {
+      if (animationFrame) {
+        cancelAnimationFrame(animationFrame);
+      }
+    };
+  }, [shouldStopAnimation, animationState]);
 
   useEffect(() => {
     if (!isHome) return;

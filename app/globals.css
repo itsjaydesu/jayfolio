@@ -3853,6 +3853,41 @@ a {
   color: rgba(218, 232, 238, 0.86);
 }
 
+/* Simplified channel layout for about page */
+.channel--simplified {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 2rem;
+}
+
+.channel--simplified .channel__container {
+  max-width: 680px;
+  width: 100%;
+  text-align: center;
+}
+
+.channel--simplified .channel__title {
+  margin-bottom: 2.5rem;
+  font-size: clamp(2.2rem, 5vw, 3rem);
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.channel--simplified .channel__content {
+  margin: 0 auto;
+}
+
+.channel--simplified .channel__text {
+  margin: 0;
+  line-height: 1.75;
+  font-size: 1.125rem;
+  color: rgba(218, 232, 238, 0.9);
+  font-weight: 400;
+}
+
 .channel__grid {
   display: grid;
   gap: clamp(2rem, 5vw, 3.5rem);

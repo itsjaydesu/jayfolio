@@ -229,7 +229,33 @@ export default function ChannelContentEditor({ sections = ['about', 'projects', 
         <>
           <div className="admin-panel">
             <header className="admin-panel__header">
-              <h2>About — Overview</h2>
+              <h2>About — Simplified Page</h2>
+            </header>
+            <div className="admin-panel__body admin-panel__body--grid">
+              <div className="admin-field">
+                <label htmlFor="about-page-title">Page Title</label>
+                <input
+                  id="about-page-title"
+                  type="text"
+                  value={about.aboutTitle || 'About'}
+                  onChange={(event) => handleAboutField('aboutTitle', event.target.value)}
+                />
+              </div>
+              <div className="admin-field">
+                <label htmlFor="about-page-content">Page Content</label>
+                <textarea
+                  id="about-page-content"
+                  rows={6}
+                  value={about.aboutContent || about.lead}
+                  onChange={(event) => handleAboutField('aboutContent', event.target.value)}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="admin-panel">
+            <header className="admin-panel__header">
+              <h2>About — Legacy Fields (Not Displayed)</h2>
             </header>
             <div className="admin-panel__body admin-panel__body--grid">
               <div className="admin-field">
