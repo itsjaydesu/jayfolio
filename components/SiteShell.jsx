@@ -191,9 +191,21 @@ export default function SiteShell({ children }) {
   
   // Initialize animation settings on mount if on a stopped route
   useEffect(() => {
-    // Add a small delay to ensure SceneCanvas is fully initialized
-    const initTimer = setTimeout(() => {
-      if (!sceneRef.current) return;
+    // Use multiple retry attempts to ensure SceneCanvas is fully initialized
+    let retryCount = 0;
+    const maxRetries = 5;
+    const retryDelay = 50; // 50ms between retries
+    
+    const applyInitialSettings = () => {
+      if (!sceneRef.current) {
+        // Retry if SceneCanvas isn't ready yet
+        if (retryCount < maxRetries) {
+          retryCount++;
+          setTimeout(applyInitialSettings, retryDelay);
+        }
+        return;
+      }
+      
       if (shouldStopAnimation) {
         // Immediately set all animation values to 0 and fade dots on mount
         sceneRef.current.applySettings({
@@ -209,8 +221,14 @@ export default function SiteShell({ children }) {
           opacity: 0      // Make dots transparent
         }, true);
         setDotsFaded(true);
+        setAnimationState('stopped');
+        animationSpeedRef.current = 0;
+        targetSpeedRef.current = 0;
       }
-    }, 100); // Small delay to ensure canvas is ready
+    };
+    
+    // Start applying settings with a small initial delay
+    const initTimer = setTimeout(applyInitialSettings, 20);
     
     return () => clearTimeout(initTimer);
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -257,6 +275,24 @@ export default function SiteShell({ children }) {
       opacity: 0.85      // Default opacity
     };
     
+    // Store initial values for smoother interpolation
+    const getInitialValues = () => {
+      const current = {};
+      for (const key of Object.keys(animationSettings)) {
+        if (key === 'animationSpeed') {
+          current[key] = animationSpeedRef.current;
+        } else {
+          // For other values, use the opposite of target as initial
+          current[key] = shouldStopAnimation ? 
+            (animationSettings[key] === 0 ? (key === 'opacity' ? 0.85 : key === 'brightness' ? 0.35 : 1) : 0) :
+            animationSettings[key];
+        }
+      }
+      return current;
+    };
+    
+    const initialValues = getInitialValues();
+    
     const updateAnimationState = (timestamp) => {
       if (!startTime) startTime = timestamp;
       const elapsed = timestamp - startTime;
@@ -266,20 +302,17 @@ export default function SiteShell({ children }) {
       // Apply all animation settings with easing
       const currentSettings = {};
       for (const [key, targetValue] of Object.entries(animationSettings)) {
-        const currentValue = key === 'animationSpeed' ? animationSpeedRef.current : undefined;
-        if (currentValue !== undefined) {
-          currentSettings[key] = currentValue + (targetValue - currentValue) * easedProgress;
-          if (key === 'animationSpeed') {
-            animationSpeedRef.current = currentSettings[key];
-          }
-        } else {
-          // For other settings, interpolate from current to target
-          currentSettings[key] = targetValue;
+        const initialValue = initialValues[key];
+        currentSettings[key] = initialValue + (targetValue - initialValue) * easedProgress;
+        if (key === 'animationSpeed') {
+          animationSpeedRef.current = currentSettings[key];
         }
       }
       
       // Apply the interpolated settings
-      sceneRef.current.applySettings(currentSettings, true);
+      if (sceneRef.current) {
+        sceneRef.current.applySettings(currentSettings, true);
+      }
       
       if (progress < 1) {
         animationFrame = requestAnimationFrame(updateAnimationState);
@@ -293,26 +326,27 @@ export default function SiteShell({ children }) {
       }
     };
     
+    // Store fadeTimeout in a variable for cleanup
+    const currentFadeTimeout = fadeTimeoutRef.current;
+    
     if (shouldStopAnimation && animationState === 'normal') {
       // Start slowing down to stop and fade to black
       setAnimationState('slowing');
       targetSpeedRef.current = 0;
       animationFrame = requestAnimationFrame(updateAnimationState);
       
-      // Start fade to black immediately
-      if (fadeTimeoutRef.current) clearTimeout(fadeTimeoutRef.current);
-      fadeTimeoutRef.current = setTimeout(() => {
-        setDotsFaded(true);
-      }, 100); // Quick fade to black
+      // Start fade to black immediately (CSS handles the 1.5s transition)
+      if (currentFadeTimeout) clearTimeout(currentFadeTimeout);
+      setDotsFaded(true);
     } else if (!shouldStopAnimation && animationState === 'stopped') {
       // Start resuming to normal speed and fade in
       setAnimationState('resuming');
       targetSpeedRef.current = 1.1;
       animationSpeedRef.current = 0; // Start from 0 when resuming
       
-      // Fade dots back in with a slight delay for smooth transition
+      // Fade dots back in immediately for smooth transition
       setDotsFaded(false);
-      if (fadeTimeoutRef.current) clearTimeout(fadeTimeoutRef.current);
+      if (currentFadeTimeout) clearTimeout(currentFadeTimeout);
       
       // Start the animation immediately
       animationFrame = requestAnimationFrame(updateAnimationState);
@@ -323,25 +357,39 @@ export default function SiteShell({ children }) {
       
       // Clear fade state immediately since we're interrupting
       setDotsFaded(false);
-      if (fadeTimeoutRef.current) clearTimeout(fadeTimeoutRef.current);
+      if (currentFadeTimeout) clearTimeout(currentFadeTimeout);
       
-      // Restart animation
-      if (animationFrame) cancelAnimationFrame(animationFrame);
+      // Restart animation with current values
+      startTime = null; // Reset start time for new animation
+      animationFrame = requestAnimationFrame(updateAnimationState);
+    } else if (shouldStopAnimation && animationState === 'resuming') {
+      // Interrupted while resuming, start slowing again
+      setAnimationState('slowing');
+      targetSpeedRef.current = 0;
+      
+      // Start fade to black
+      setDotsFaded(true);
+      if (currentFadeTimeout) clearTimeout(currentFadeTimeout);
+      
+      // Restart animation with current values
+      startTime = null; // Reset start time for new animation
       animationFrame = requestAnimationFrame(updateAnimationState);
     } else if (shouldStopAnimation && animationState === 'stopped') {
       // Already stopped, ensure animation values are at 0 and dots are faded
-      sceneRef.current.applySettings({
-        animationSpeed: 0,
-        amplitude: 0,
-        swirlStrength: 0,
-        waveXFrequency: 0,
-        waveYFrequency: 0,
-        swirlFrequency: 0,
-        mouseInfluence: 0,
-        rippleStrength: 0,
-        brightness: 0,
-        opacity: 0
-      }, true);
+      if (sceneRef.current) {
+        sceneRef.current.applySettings({
+          animationSpeed: 0,
+          amplitude: 0,
+          swirlStrength: 0,
+          waveXFrequency: 0,
+          waveYFrequency: 0,
+          swirlFrequency: 0,
+          mouseInfluence: 0,
+          rippleStrength: 0,
+          brightness: 0,
+          opacity: 0
+        }, true);
+      }
       setDotsFaded(true);
     } else if (!shouldStopAnimation && animationState === 'normal') {
       // On home page with normal animation - ensure dots are visible
@@ -359,8 +407,8 @@ export default function SiteShell({ children }) {
       if (animationFrame) {
         cancelAnimationFrame(animationFrame);
       }
-      if (fadeTimeoutRef.current) {
-        clearTimeout(fadeTimeoutRef.current);
+      if (currentFadeTimeout) {
+        clearTimeout(currentFadeTimeout);
       }
     };
   }, [shouldStopAnimation, animationState, dotsFaded]);
