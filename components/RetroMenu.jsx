@@ -87,6 +87,7 @@ export default function RetroMenu({
       id={id}
       className={`retro-menu retro-menu--${variant}${isOpen ? ' is-open' : ''}`}
       data-open={isOpen}
+      data-panel-active={settingsOpen ? 'true' : 'false'}
       aria-label="Main navigation"
     >
       <div className="retro-menu__titlebar">
