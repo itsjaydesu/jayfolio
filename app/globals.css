@@ -73,10 +73,13 @@ a {
   background-color: #000000;
 }
 
-.scene-wrapper--faded .scene-container,
-.scene-wrapper--faded canvas {
-  transition: opacity 1.5s cubic-bezier(0.4, 0, 0.6, 1);
+.scene-wrapper--faded .scene-container {
   opacity: 0 !important;
+}
+
+/* Smooth transition for both fade in and fade out */
+.scene-wrapper .scene-container {
+  transition: opacity 1.5s cubic-bezier(0.4, 0, 0.6, 1);
 }
 
 /* Ensure immediate fade when starting on sub-pages */
@@ -97,6 +100,7 @@ a {
   height: 100vh;
   overflow: hidden;
   opacity: 0;
+  /* Default quick fade for initial load */
   transition: opacity 0.64s cubic-bezier(0.33, 1, 0.68, 1);
   will-change: opacity;
 }

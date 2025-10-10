@@ -309,21 +309,25 @@ export default function SiteShell({ children }) {
       setAnimationState('resuming');
       targetSpeedRef.current = 1.1;
       animationSpeedRef.current = 0; // Start from 0 when resuming
-      animationFrame = requestAnimationFrame(updateAnimationState);
       
-      // Clear fade state immediately when resuming
+      // Fade dots back in with a slight delay for smooth transition
       setDotsFaded(false);
       if (fadeTimeoutRef.current) clearTimeout(fadeTimeoutRef.current);
+      
+      // Start the animation immediately
+      animationFrame = requestAnimationFrame(updateAnimationState);
     } else if (!shouldStopAnimation && animationState === 'slowing') {
       // Interrupted while slowing, resume immediately
       setAnimationState('resuming');
       targetSpeedRef.current = 1.1;
-      if (animationFrame) cancelAnimationFrame(animationFrame);
-      animationFrame = requestAnimationFrame(updateAnimationState);
       
-      // Clear fade state
+      // Clear fade state immediately since we're interrupting
       setDotsFaded(false);
       if (fadeTimeoutRef.current) clearTimeout(fadeTimeoutRef.current);
+      
+      // Restart animation
+      if (animationFrame) cancelAnimationFrame(animationFrame);
+      animationFrame = requestAnimationFrame(updateAnimationState);
     } else if (shouldStopAnimation && animationState === 'stopped') {
       // Already stopped, ensure animation values are at 0 and dots are faded
       sceneRef.current.applySettings({
@@ -339,6 +343,16 @@ export default function SiteShell({ children }) {
         opacity: 0
       }, true);
       setDotsFaded(true);
+    } else if (!shouldStopAnimation && animationState === 'normal') {
+      // On home page with normal animation - ensure dots are visible
+      if (dotsFaded) {
+        setDotsFaded(false);
+      }
+    } else if (!shouldStopAnimation && animationState === 'resuming') {
+      // Currently resuming - ensure fade is cleared
+      if (dotsFaded) {
+        setDotsFaded(false);
+      }
     }
     
     return () => {
@@ -349,7 +363,7 @@ export default function SiteShell({ children }) {
         clearTimeout(fadeTimeoutRef.current);
       }
     };
-  }, [shouldStopAnimation, animationState]);
+  }, [shouldStopAnimation, animationState, dotsFaded]);
 
   useEffect(() => {
     if (!isHome) return;
