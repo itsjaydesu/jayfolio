@@ -2729,11 +2729,7 @@ a {
   transition: transform 0.45s ease, opacity 0.3s ease;
 }
 
-/* Ensure sidebar variant also fades out completely when panel is active */
-.retro-menu--sidebar[data-panel-active="true"] {
-  opacity: 0 !important;
-  visibility: hidden !important;
-}
+/* Sidebar variant handled by the new rules above */
 
 .retro-menu--centerpiece {
   position: absolute;
@@ -3024,20 +3020,21 @@ a {
   /* Ensure panel completely hides menu behind it */
   backdrop-filter: blur(0px);
   -webkit-backdrop-filter: blur(0px);
-  /* Smooth fade in/out transition - matches main menu style */
+  /* Initial state - starts small and far away (behind the menu) */
   opacity: 0;
-  transform: translateY(16px) scale(0.96);
-  filter: blur(6px);
+  transform: scale(0.8);  /* Start smaller for forward-coming effect */
+  filter: blur(10px);     /* More blur for depth */
   pointer-events: none;
   transition: opacity 0.48s cubic-bezier(0.33, 1, 0.68, 1),
               transform 0.48s cubic-bezier(0.33, 1, 0.68, 1),
               filter 0.48s cubic-bezier(0.33, 1, 0.68, 1);
   will-change: opacity, transform, filter;
+  transform-origin: center center;
 }
 
 .retro-menu__settings-panel.is-visible {
   opacity: 1;
-  transform: translateY(0) scale(1);
+  transform: scale(1);    /* Full size - appears to come forward */
   filter: blur(0);
   pointer-events: auto;
   transition-delay: 0.08s;
@@ -3045,8 +3042,8 @@ a {
 
 .retro-menu__settings-panel.is-closing {
   opacity: 0;
-  transform: translateY(12px) scale(0.96);
-  filter: blur(8px);
+  transform: scale(0.8);  /* Recede back */
+  filter: blur(10px);
   pointer-events: none;
   transition-delay: 0s;
 }
@@ -3111,6 +3108,11 @@ a {
     transform: translateY(0);
     filter: none;
   }
+  
+  /* Mobile: centerpiece doesn't need translateX when panel is active */
+  .retro-menu--centerpiece[data-panel-active="true"] {
+    transform: scale(0.85) !important; /* No translateX needed on mobile */
+  }
 }
 
 .retro-menu[data-panel-active="true"] .retro-menu__titlebar {
@@ -3138,16 +3140,28 @@ a {
 }
 
 /* SOLUTION: Fade the ENTIRE menu container when panel is active */
-/* Match Field Effects panel animation - fade out with blur and scale */
+/* Create a forward/backward depth effect - menu recedes into background */
 .retro-menu[data-panel-active="true"] {
   opacity: 0 !important;
-  transform: translateY(12px) scale(0.96) !important;
-  filter: blur(8px) !important;
+  filter: blur(12px) !important; /* Increased blur for depth-of-field effect */
   pointer-events: none;
   /* Consistent animation (0.64s) matching panel transitions */
   transition: opacity 0.48s cubic-bezier(0.33, 1, 0.68, 1) !important,
               transform 0.48s cubic-bezier(0.33, 1, 0.68, 1) !important,
               filter 0.48s cubic-bezier(0.33, 1, 0.68, 1) !important;
+}
+
+/* Specific rule for centerpiece variant to preserve horizontal centering */
+.retro-menu--centerpiece[data-panel-active="true"] {
+  /* Preserve translateX(-50%) for centering, add scale for depth effect */
+  transform: translateX(-50%) scale(0.85) !important;
+  transform-origin: center center;
+}
+
+/* Sidebar variant uses simple scale without translation */
+.retro-menu--sidebar[data-panel-active="true"] {
+  transform: scale(0.85) !important;
+  transform-origin: center center;
 }
 
 /* Keep these for backwards compatibility but they're now redundant */

@@ -162,6 +162,26 @@ export default function RetroMenu({
     console.log(
       "🔍 [RetroMenu Debug] Panel state set to 'fading' - menu starts fade"
     );
+    
+    // Monitor transform changes during transition
+    if (toggleRef.current) {
+      const menuElement = toggleRef.current.closest(".retro-menu");
+      if (menuElement) {
+        let frameCount = 0;
+        const monitorTransform = () => {
+          if (frameCount < 20) { // Monitor for ~300ms
+            const styles = window.getComputedStyle(menuElement);
+            console.log(`🎯 [Transform Monitor] Frame ${frameCount}:`, {
+              transform: styles.transform,
+              opacity: styles.opacity,
+            });
+            frameCount++;
+            requestAnimationFrame(monitorTransform);
+          }
+        };
+        requestAnimationFrame(monitorTransform);
+      }
+    }
 
     if (prefersReducedMotion.current) {
       // No delay for reduced motion
@@ -209,6 +229,41 @@ export default function RetroMenu({
   // Toggle panel
   const togglePanel = () => {
     const isOpen = panelState === "opening" || panelState === "open";
+    
+    // DEBUG: Log computed styles when toggling
+    if (toggleRef.current) {
+      const menuElement = toggleRef.current.closest(".retro-menu");
+      if (menuElement) {
+        const computedStyles = window.getComputedStyle(menuElement);
+        console.log("🎯 [Menu Toggle] Current styles:", {
+          transform: computedStyles.transform,
+          transformOrigin: computedStyles.transformOrigin,
+          opacity: computedStyles.opacity,
+          filter: computedStyles.filter,
+          transition: computedStyles.transition,
+          classList: menuElement.className,
+          dataPanelActive: menuElement.getAttribute("data-panel-active"),
+        });
+        
+        // Check for any inline styles
+        console.log("🎯 [Menu Toggle] Inline styles:", {
+          style: menuElement.style.cssText || "none",
+        });
+        
+        // Check parent container
+        const overlay = menuElement.closest(".menu-overlay");
+        if (overlay) {
+          const overlayStyles = window.getComputedStyle(overlay);
+          console.log("🎯 [Menu Toggle] Parent overlay styles:", {
+            transform: overlayStyles.transform,
+            display: overlayStyles.display,
+            justifyContent: overlayStyles.justifyContent,
+            alignItems: overlayStyles.alignItems,
+          });
+        }
+      }
+    }
+    
     if (isOpen) {
       closePanel();
     } else {
