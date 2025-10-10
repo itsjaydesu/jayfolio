@@ -77,6 +77,7 @@ export default function SiteShell({ children }) {
   const [status, setStatus] = useState(activeStatus);
   const [navReady, setNavReady] = useState(false);
   const [hasScrolled, setHasScrolled] = useState(false);
+  const [hasActiveEffect, setHasActiveEffect] = useState(false);
 
   useEffect(() => {
     router.prefetch("/");
@@ -183,6 +184,10 @@ export default function SiteShell({ children }) {
     setStatus(activeStatus);
   };
 
+  const handleEffectChange = (isActive, effectType) => {
+    setHasActiveEffect(isActive);
+  };
+
   const handleFieldEffect = (effectType) => {
     if (!sceneRef.current) return;
     
@@ -224,6 +229,7 @@ export default function SiteShell({ children }) {
             sceneRef.current.addRipple(x, z, 0.5 + Math.random() * 0.5);
           }
         }, 600);
+        // Jitter doesn't need transparent menu
         break;
       case 'spiralFlow':
       case 'riverFlow':
@@ -243,11 +249,13 @@ export default function SiteShell({ children }) {
           animationSpeed: 1.8,
           amplitude: 60
         });
-        // Don't reset - let it continue until user chooses another effect
+        // Swirl pulse is an active effect
+        setHasActiveEffect(true);
         break;
       case 'calmReset':
         // Reset to default calm state
         sceneRef.current.resetToDefaults();
+        setHasActiveEffect(false);
         break;
     }
   };
@@ -303,6 +311,7 @@ export default function SiteShell({ children }) {
         <SceneCanvas 
           activeSection={activeSectionForCanvas} 
           isPaused={false}
+          onEffectChange={handleEffectChange}
           ref={sceneRef}
         />
         <div className={`menu-overlay${menuVisible ? " is-visible" : ""}`}>
@@ -315,6 +324,7 @@ export default function SiteShell({ children }) {
             onStatusChange={handleStatusChange}
             onNavigate={handleMenuReset}
             onFieldEffect={handleFieldEffect}
+            hasActiveEffect={hasActiveEffect}
             isOpen
             variant="centerpiece"
           />
@@ -326,7 +336,11 @@ export default function SiteShell({ children }) {
   return (
     <>
       {showCanvas ? (
-        <SceneCanvas activeSection={activeSectionForCanvas} isPaused={false} />
+        <SceneCanvas 
+          activeSection={activeSectionForCanvas} 
+          isPaused={false}
+          onEffectChange={handleEffectChange}
+        />
       ) : null}
       <div className={`site-shell${isDetailView ? " site-shell--detail" : ""}`}>
         <div className="site-shell__container">

@@ -14,7 +14,8 @@ export default function RetroMenu({
   isOpen = false,
   onNavigate,
   variant = 'sidebar',
-  onFieldEffect
+  onFieldEffect,
+  hasActiveEffect = false
 }) {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [panelPosition, setPanelPosition] = useState({ top: 0, left: 0 });
@@ -88,6 +89,7 @@ export default function RetroMenu({
       className={`retro-menu retro-menu--${variant}${isOpen ? ' is-open' : ''}`}
       data-open={isOpen}
       data-panel-active={settingsOpen ? 'true' : 'false'}
+      data-effect-active={hasActiveEffect ? 'true' : 'false'}
       aria-label="Main navigation"
     >
       <div className="retro-menu__titlebar">

@@ -105,7 +105,7 @@ function fractalNoise(x, y, z, octaves = 3, persistence = 0.5) {
   return total / max;
 }
 
-const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = false }, ref) {
+const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = false, onEffectChange }, ref) {
   const containerRef = useRef(null);
   const stateRef = useRef(null);
   const initialSectionRef = useRef(null);
@@ -134,6 +134,56 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
       let animationFrame;
       let readinessFrame = null;
       let paused = false;
+
+      const DESKTOP_PROFILE = {
+        orbitRadius: 1180,
+        orbitZScale: 0.72,
+        baseZ: 1350,
+        baseY: 340,
+        pointerX: 240,
+        pointerY: 190,
+        pointerZ: -90,
+        initialY: 380,
+        initialZ: 1500
+      };
+
+      const MOBILE_PROFILE = {
+        orbitRadius: 1770,
+        orbitZScale: 0.72,
+        baseZ: 2040,
+        baseY: 360,
+        pointerX: 200,
+        pointerY: 150,
+        pointerZ: -140,
+        initialY: 460,
+        initialZ: 2250
+      };
+
+      const viewportQuery = window.matchMedia('(max-width: 640px)');
+      let cameraProfile = viewportQuery.matches ? MOBILE_PROFILE : DESKTOP_PROFILE;
+
+      const syncCameraProfile = (instant = false) => {
+        cameraProfile = viewportQuery.matches ? MOBILE_PROFILE : DESKTOP_PROFILE;
+        if (instant && camera) {
+          camera.position.set(0, cameraProfile.initialY, cameraProfile.initialZ);
+        }
+      };
+
+      const handleViewportChange = () => {
+        syncCameraProfile(true);
+      };
+
+      const detachViewportListener = (() => {
+        if (typeof viewportQuery.addEventListener === 'function') {
+          viewportQuery.addEventListener('change', handleViewportChange);
+          return () => viewportQuery.removeEventListener('change', handleViewportChange);
+        }
+        if (typeof viewportQuery.addListener === 'function') {
+          viewportQuery.addListener(handleViewportChange);
+          return () => viewportQuery.removeListener(handleViewportChange);
+        }
+        return () => {};
+      })();
 
       const clock = new THREE.Clock();
       let elapsedTime = 0;
@@ -594,6 +644,10 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
         effectRef.type = null;
         effectRef.data = null;
         effectRef.startTime = elapsedTime;
+        
+        // Notify that effect ended
+        onEffectChange?.(false, null);
+        
         return true;
       }
 
@@ -602,6 +656,7 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
+        syncCameraProfile(false);
       }
 
       function onPointerMove(event) {
@@ -675,6 +730,10 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
           targetSettings,
           addRipple: enqueueRipple
         });
+        
+        // Notify that effect started
+        onEffectChange?.(true, type);
+        
         return true;
       }
 
@@ -837,12 +896,13 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
         uniforms.pointMultiplier.value = settings.pointSize;
         uniforms.opacity.value = settings.opacity;
 
-        const orbitRadius = 1180;
+        const profile = cameraProfile;
+        const orbitRadius = profile.orbitRadius;
         const baseX = Math.cos(autoAngle) * orbitRadius;
-        const baseZ = Math.sin(autoAngle) * orbitRadius * 0.72 + 1350;
-        const targetX = baseX + pointer.x * 240;
-        const targetY = 340 + pointer.y * 190;
-        const targetZ = baseZ + pointer.y * -90;
+        const baseZ = Math.sin(autoAngle) * orbitRadius * profile.orbitZScale + profile.baseZ;
+        const targetX = baseX + pointer.x * profile.pointerX;
+        const targetY = profile.baseY + pointer.y * profile.pointerY;
+        const targetZ = baseZ + pointer.y * profile.pointerZ;
 
         camera.position.x += (targetX - camera.position.x) * 0.04;
         camera.position.y += (targetY - camera.position.y) * 0.045;
@@ -868,7 +928,7 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
       function init() {
         console.log('[SceneCanvas] 🎬 init() started at', performance.now().toFixed(2), 'ms');
         camera = new THREE.PerspectiveCamera(58, window.innerWidth / window.innerHeight, 1, 5000);
-        camera.position.set(0, 380, 1500);
+        camera.position.set(0, cameraProfile.initialY, cameraProfile.initialZ);
 
         scene = new THREE.Scene();
         const backgroundColor = new THREE.Color(0x050505);
@@ -1025,6 +1085,7 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
         container.removeEventListener('pointermove', onPointerMove);
         container.removeEventListener('pointerdown', onPointerDown);
         container.removeEventListener('pointerleave', onPointerLeave);
+        detachViewportListener();
 
         if (stats?.dom?.parentNode) {
           stats.dom.parentNode.removeChild(stats.dom);
