@@ -29,9 +29,28 @@ export default function SiteShell({ children }) {
   const returnTimerRef = useRef(null);
   const [menuVisible, setMenuVisible] = useState(false);
   const sceneRef = useRef(null);
-  const [animationState, setAnimationState] = useState('normal'); // 'normal', 'slowing', 'stopped', 'resuming'
-  const animationSpeedRef = useRef(1.1);
-  const targetSpeedRef = useRef(1.1);
+  // Initialize animation state based on initial route
+  const [animationState, setAnimationState] = useState(() => {
+    const segments = pathname?.split("/").filter(Boolean) ?? [];
+    const segment = segments[0] ?? null;
+    const shouldStop = segment === 'about' || segment === 'projects' || 
+                       segment === 'words' || segment === 'sounds';
+    return shouldStop ? 'stopped' : 'normal';
+  });
+  const animationSpeedRef = useRef((() => {
+    const segments = pathname?.split("/").filter(Boolean) ?? [];
+    const segment = segments[0] ?? null;
+    const shouldStop = segment === 'about' || segment === 'projects' || 
+                       segment === 'words' || segment === 'sounds';
+    return shouldStop ? 0 : 1.1;
+  })());
+  const targetSpeedRef = useRef((() => {
+    const segments = pathname?.split("/").filter(Boolean) ?? [];
+    const segment = segments[0] ?? null;
+    const shouldStop = segment === 'about' || segment === 'projects' || 
+                       segment === 'words' || segment === 'sounds';
+    return shouldStop ? 0 : 1.1;
+  })());
 
   useEffect(() => {
     let ignore = false;
@@ -166,6 +185,37 @@ export default function SiteShell({ children }) {
     };
   }, [isDetailView, pathname]);
   
+  // Track fade state for dots
+  const [dotsFaded, setDotsFaded] = useState(shouldStopAnimation);
+  const fadeTimeoutRef = useRef(null);
+  
+  // Initialize animation settings on mount if on a stopped route
+  useEffect(() => {
+    // Add a small delay to ensure SceneCanvas is fully initialized
+    const initTimer = setTimeout(() => {
+      if (!sceneRef.current) return;
+      if (shouldStopAnimation) {
+        // Immediately set all animation values to 0 and fade dots on mount
+        sceneRef.current.applySettings({
+          animationSpeed: 0,
+          amplitude: 0,
+          swirlStrength: 0,
+          waveXFrequency: 0,
+          waveYFrequency: 0,
+          swirlFrequency: 0,
+          mouseInfluence: 0,
+          rippleStrength: 0,
+          brightness: 0,  // Fade dots to black
+          opacity: 0      // Make dots transparent
+        }, true);
+        setDotsFaded(true);
+      }
+    }, 100); // Small delay to ensure canvas is ready
+    
+    return () => clearTimeout(initTimer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run once on mount
+  
   // Handle animation state changes based on route
   useEffect(() => {
     if (!sceneRef.current) return;
@@ -180,22 +230,59 @@ export default function SiteShell({ children }) {
         : 1 - Math.pow(-2 * t + 2, 3) / 2;
     };
     
-    const updateAnimationSpeed = (timestamp) => {
+    // Store original animation values for restoration
+    const animationSettings = shouldStopAnimation ? {
+      // When stopping, set all animation-related values to 0/minimal
+      animationSpeed: 0,
+      amplitude: 0,
+      swirlStrength: 0,
+      waveXFrequency: 0,
+      waveYFrequency: 0,
+      swirlFrequency: 0,
+      mouseInfluence: 0,
+      rippleStrength: 0,
+      brightness: 0,     // Fade dots to black
+      opacity: 0         // Make dots transparent
+    } : {
+      // Default animation values when resuming
+      animationSpeed: 1.1,
+      amplitude: 32,
+      swirlStrength: 0.8,
+      waveXFrequency: 0.025,
+      waveYFrequency: 0.018,
+      swirlFrequency: 0.0035,
+      mouseInfluence: 0.012,
+      rippleStrength: 24,
+      brightness: 0.35,  // Default brightness
+      opacity: 0.85      // Default opacity
+    };
+    
+    const updateAnimationState = (timestamp) => {
       if (!startTime) startTime = timestamp;
       const elapsed = timestamp - startTime;
       const progress = Math.min(elapsed / TRANSITION_DURATION, 1);
       const easedProgress = easeInOutCubic(progress);
       
-      const currentSpeed = animationSpeedRef.current;
-      const targetSpeed = targetSpeedRef.current;
-      const newSpeed = currentSpeed + (targetSpeed - currentSpeed) * easedProgress;
+      // Apply all animation settings with easing
+      const currentSettings = {};
+      for (const [key, targetValue] of Object.entries(animationSettings)) {
+        const currentValue = key === 'animationSpeed' ? animationSpeedRef.current : undefined;
+        if (currentValue !== undefined) {
+          currentSettings[key] = currentValue + (targetValue - currentValue) * easedProgress;
+          if (key === 'animationSpeed') {
+            animationSpeedRef.current = currentSettings[key];
+          }
+        } else {
+          // For other settings, interpolate from current to target
+          currentSettings[key] = targetValue;
+        }
+      }
       
-      // Apply the new speed to the scene
-      sceneRef.current.applySettings({ animationSpeed: newSpeed }, true);
-      animationSpeedRef.current = newSpeed;
+      // Apply the interpolated settings
+      sceneRef.current.applySettings(currentSettings, true);
       
       if (progress < 1) {
-        animationFrame = requestAnimationFrame(updateAnimationSpeed);
+        animationFrame = requestAnimationFrame(updateAnimationState);
       } else {
         // Transition complete
         if (animationState === 'slowing') {
@@ -207,26 +294,59 @@ export default function SiteShell({ children }) {
     };
     
     if (shouldStopAnimation && animationState === 'normal') {
-      // Start slowing down to stop
+      // Start slowing down to stop and fade to black
       setAnimationState('slowing');
       targetSpeedRef.current = 0;
-      animationFrame = requestAnimationFrame(updateAnimationSpeed);
+      animationFrame = requestAnimationFrame(updateAnimationState);
+      
+      // Start fade to black immediately
+      if (fadeTimeoutRef.current) clearTimeout(fadeTimeoutRef.current);
+      fadeTimeoutRef.current = setTimeout(() => {
+        setDotsFaded(true);
+      }, 100); // Quick fade to black
     } else if (!shouldStopAnimation && animationState === 'stopped') {
-      // Start resuming to normal speed
+      // Start resuming to normal speed and fade in
       setAnimationState('resuming');
       targetSpeedRef.current = 1.1;
-      animationFrame = requestAnimationFrame(updateAnimationSpeed);
+      animationSpeedRef.current = 0; // Start from 0 when resuming
+      animationFrame = requestAnimationFrame(updateAnimationState);
+      
+      // Clear fade state immediately when resuming
+      setDotsFaded(false);
+      if (fadeTimeoutRef.current) clearTimeout(fadeTimeoutRef.current);
     } else if (!shouldStopAnimation && animationState === 'slowing') {
       // Interrupted while slowing, resume immediately
       setAnimationState('resuming');
       targetSpeedRef.current = 1.1;
       if (animationFrame) cancelAnimationFrame(animationFrame);
-      animationFrame = requestAnimationFrame(updateAnimationSpeed);
+      animationFrame = requestAnimationFrame(updateAnimationState);
+      
+      // Clear fade state
+      setDotsFaded(false);
+      if (fadeTimeoutRef.current) clearTimeout(fadeTimeoutRef.current);
+    } else if (shouldStopAnimation && animationState === 'stopped') {
+      // Already stopped, ensure animation values are at 0 and dots are faded
+      sceneRef.current.applySettings({
+        animationSpeed: 0,
+        amplitude: 0,
+        swirlStrength: 0,
+        waveXFrequency: 0,
+        waveYFrequency: 0,
+        swirlFrequency: 0,
+        mouseInfluence: 0,
+        rippleStrength: 0,
+        brightness: 0,
+        opacity: 0
+      }, true);
+      setDotsFaded(true);
     }
     
     return () => {
       if (animationFrame) {
         cancelAnimationFrame(animationFrame);
+      }
+      if (fadeTimeoutRef.current) {
+        clearTimeout(fadeTimeoutRef.current);
       }
     };
   }, [shouldStopAnimation, animationState]);
@@ -382,12 +502,14 @@ export default function SiteShell({ children }) {
   if (isHome) {
     return (
       <>
-        <SceneCanvas 
-          activeSection={activeSectionForCanvas} 
-          isPaused={false}
-          onEffectChange={handleEffectChange}
-          ref={sceneRef}
-        />
+        <div className="scene-wrapper">
+          <SceneCanvas 
+            activeSection={activeSectionForCanvas} 
+            isPaused={false}
+            onEffectChange={handleEffectChange}
+            ref={sceneRef}
+          />
+        </div>
         <div className={`menu-overlay${menuVisible ? " is-visible" : ""}`}>
           <RetroMenu
             id="retro-menu"
@@ -410,11 +532,14 @@ export default function SiteShell({ children }) {
   return (
     <>
       {showCanvas ? (
-        <SceneCanvas 
-          activeSection={activeSectionForCanvas} 
-          isPaused={false}
-          onEffectChange={handleEffectChange}
-        />
+        <div className={`scene-wrapper${dotsFaded ? " scene-wrapper--faded" : ""}${shouldStopAnimation ? " scene-wrapper--black" : ""}`}>
+          <SceneCanvas 
+            activeSection={activeSectionForCanvas} 
+            isPaused={shouldStopAnimation}
+            onEffectChange={handleEffectChange}
+            ref={sceneRef}
+          />
+        </div>
       ) : null}
       <div className={`site-shell${isDetailView ? " site-shell--detail" : ""}`}>
         <div className="site-shell__container">

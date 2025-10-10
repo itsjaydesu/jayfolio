@@ -53,7 +53,8 @@ a {
   height: 100%;
 }
 
-.scene-container {
+/* Scene wrapper for background control */
+.scene-wrapper {
   position: fixed;
   inset: 0;
   width: 100vw;
@@ -61,6 +62,40 @@ a {
   overflow: hidden;
   z-index: 0;
   background: #050607;
+  transition: background-color 2s cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+.scene-wrapper--black {
+  background-color: #000000;
+}
+
+.scene-wrapper--faded {
+  background-color: #000000;
+}
+
+.scene-wrapper--faded .scene-container,
+.scene-wrapper--faded canvas {
+  transition: opacity 1.5s cubic-bezier(0.4, 0, 0.6, 1);
+  opacity: 0 !important;
+}
+
+/* Ensure immediate fade when starting on sub-pages */
+.scene-wrapper--black.scene-wrapper--faded {
+  background-color: #000000 !important;
+}
+
+.scene-wrapper--black.scene-wrapper--faded .scene-container,
+.scene-wrapper--black.scene-wrapper--faded canvas {
+  opacity: 0 !important;
+}
+
+/* Scene container for three.js canvas */
+.scene-container {
+  position: absolute;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
   opacity: 0;
   transition: opacity 0.64s cubic-bezier(0.33, 1, 0.68, 1);
   will-change: opacity;
@@ -71,6 +106,14 @@ a {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .scene-wrapper {
+    transition: none;
+  }
+  
+  .scene-wrapper--faded .scene-container {
+    transition: none;
+  }
+  
   .scene-container {
     transition: none;
     opacity: 1;
@@ -3884,14 +3927,55 @@ a {
 
 .channel--simplified .channel__content {
   margin: 0 auto;
+  padding: 2.5rem 3rem;
+  background: rgba(12, 16, 22, 0.45);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.channel--simplified .channel__content:hover {
+  background: rgba(12, 16, 22, 0.52);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 
+    0 24px 48px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3);
 }
 
 .channel--simplified .channel__text {
   margin: 0;
   line-height: 1.75;
   font-size: 1.125rem;
-  color: rgba(218, 232, 238, 0.9);
+  color: rgba(235, 242, 248, 0.95);
   font-weight: 400;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+/* Mobile adjustments for simplified channel */
+@media (max-width: 640px) {
+  .channel--simplified {
+    padding: 1.5rem;
+  }
+  
+  .channel--simplified .channel__content {
+    padding: 2rem 1.5rem;
+    border-radius: 20px;
+  }
+  
+  .channel--simplified .channel__title {
+    margin-bottom: 2rem;
+  }
+  
+  .channel--simplified .channel__text {
+    font-size: 1.0625rem;
+  }
 }
 
 .channel__grid {
