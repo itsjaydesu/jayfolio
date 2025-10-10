@@ -3035,6 +3035,7 @@ a {
     transform: translateY(0);
     filter: none;
   }
+}
 
 .retro-menu[data-panel-active="true"] .retro-menu__titlebar {
   background: linear-gradient(90deg, rgba(0, 58, 99, 0.44) 0%, rgba(0, 139, 178, 0.36) 55%, rgba(0, 200, 208, 0.28) 100%);
