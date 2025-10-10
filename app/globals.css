@@ -878,11 +878,18 @@ a {
     justify-content: center;
   }
 
+  .retro-menu {
+    width: fit-content;
+    max-width: min(90vw, 320px);
+    margin: 0 auto;
+  }
+
   .retro-menu--centerpiece {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: min(320px, 90vw);
+    width: fit-content;
+    max-width: min(90vw, 320px);
   }
 
   .menu-overlay .retro-menu--centerpiece {
@@ -893,8 +900,20 @@ a {
     transform: translate(-50%, -50%) scale(1);
   }
 
+  .retro-menu__body {
+    padding: 0.7rem 0.75rem 0.85rem;
+  }
+
   .retro-menu__list {
     gap: 0.75rem;
+  }
+
+  .retro-menu__item .retro-menu__button {
+    padding: 0.85rem 1.15rem 0.85rem 1.5rem;
+  }
+
+  .retro-menu__status {
+    display: none;
   }
 }
   border-radius: 20px;
