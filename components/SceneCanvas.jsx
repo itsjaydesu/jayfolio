@@ -301,7 +301,14 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
             twinkle[i] = Math.random() * Math.PI * 2;
             intensity[i] = 0.35 + Math.random() * 0.65;
           }
-          return { depth, twinkle, intensity };
+          return {
+            depth,
+            twinkle,
+            intensity,
+            mode: 'in',
+            exitStart: null,
+            fadeOut: 1
+          };
         };
 
         return {
@@ -376,9 +383,10 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
                 ratio /= maxIter;
               }
               ratio = THREE.MathUtils.clamp(ratio, 0, 1);
-              const height = (1 - ratio) * currentSettings.amplitude * 0.95;
-              const scaleValue = Math.max(0, 0.6 - ratio) * 1.6;
-              const light = Math.pow(1 - ratio, 2) * 0.85;
+              const fade = smoothStep(effectTime / 2.4);
+              const height = (1 - ratio) * currentSettings.amplitude * 0.95 * fade;
+              const scaleValue = Math.max(0, 0.6 - ratio) * 1.6 * fade;
+              const light = Math.pow(1 - ratio, 2) * 0.85 * fade;
               return { height, scale: scaleValue, light };
             },
             cleanup: () => {
@@ -444,13 +452,14 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
               setValue('contrast', 2.6);
               setValue('brightness', 0.48);
             },
-            perPoint: ({ index, data }) => {
+            perPoint: ({ index, data, effectTime }) => {
               const u = data.u[index];
               const v = data.v[index];
               const pattern = u - v;
-              const height = pattern * currentSettings.amplitude * 1.1;
-              const scale = Math.max(0, pattern) * 1.8 + Math.max(0, v - u) * 1.1;
-              const light = Math.max(0, v - u * 0.6) * 0.8;
+              const fade = smoothStep(effectTime / 3.2);
+              const height = pattern * currentSettings.amplitude * 1.1 * fade;
+              const scale = (Math.max(0, pattern) * 1.8 + Math.max(0, v - u) * 1.1) * fade;
+              const light = Math.max(0, v - u * 0.6) * 0.8 * fade;
               return { height, scale, light };
             },
             cleanup: () => {
@@ -511,7 +520,12 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
           },
           starfield: {
             init: () => createStarfieldData(),
-            start: () => {
+            start: ({ data }) => {
+              if (data) {
+                data.mode = 'in';
+                data.exitStart = null;
+                data.fadeOut = 1;
+              }
               setValue('animationSpeed', 0.42);
               setValue('swirlStrength', 0.2);
               setValue('amplitude', 18);
@@ -519,18 +533,37 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
               setValue('brightness', 0.62);
               setValue('mouseInfluence', 0.0018);
             },
+            update: ({ elapsedTime, data }) => {
+              if (!data) return;
+              if (data.mode === 'out') {
+                if (data.exitStart === null) {
+                  data.exitStart = elapsedTime;
+                }
+                const progress = Math.max(0, elapsedTime - (data.exitStart ?? elapsedTime));
+                const normalized = progress / 3.5;
+                const eased = 1 - smoothStep(normalized);
+                data.fadeOut = THREE.MathUtils.clamp(eased, 0, 1);
+                if (data.fadeOut <= 0.001) {
+                  data.fadeOut = 0;
+                  data.mode = 'done';
+                }
+              } else {
+                data.fadeOut = 1;
+              }
+            },
             perPoint: ({ index, baseHeight, effectTime, data }) => {
-              const fade = smoothStep(effectTime / 3.5);
-              const eased = 1 - Math.pow(1 - fade, 3);
+              const fadeIn = smoothStep(effectTime / 3.5);
+              const easedIn = 1 - Math.pow(1 - fadeIn, 3);
+              const fade = data?.mode === 'out' ? data.fadeOut ?? 0 : data?.mode === 'done' ? 0 : easedIn;
               const starDepth = data.depth[index] ?? 0;
               const twinklePhase = data.twinkle[index] ?? 0;
               const intensity = data.intensity[index] ?? 0.5;
-              const twinkle = Math.sin(effectTime * 1.6 + twinklePhase) * 0.35;
-              const starLift = (starDepth + 60) * eased;
+              const twinkle = Math.sin(effectTime * 1.6 + twinklePhase) * 0.35 * fade;
+              const starLift = (starDepth + 60) * fade;
               const cancelWaves = -baseHeight * fade;
               const height = cancelWaves + starLift;
-              const scale = THREE.MathUtils.clamp(eased * (1.15 + intensity * 1.5), 0.1, 3.2);
-              const lightRaw = eased * (0.58 + intensity * 0.85) + twinkle * fade;
+              const scale = THREE.MathUtils.clamp(fade * (1.15 + intensity * 1.5), 0.1, 3.2);
+              const lightRaw = fade * (0.58 + intensity * 0.85) + twinkle;
               const light = THREE.MathUtils.clamp(lightRaw, -0.1, 1.2);
               return { height, scale, light };
             },
@@ -539,6 +572,29 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
             }
           }
         };
+      }
+
+      function clearEffect(force = false) {
+        if (!effectRef.type) {
+          return true;
+        }
+
+        if (!force && effectRef.type === 'starfield') {
+          const data = effectRef.data;
+          if (data && data.mode !== 'out' && data.mode !== 'done') {
+            data.mode = 'out';
+            data.exitStart = elapsedTime;
+            data.fadeOut = 1;
+            return false;
+          }
+        }
+
+        const current = effectDefinitions[effectRef.type];
+        current?.cleanup?.();
+        effectRef.type = null;
+        effectRef.data = null;
+        effectRef.startTime = elapsedTime;
+        return true;
       }
 
       function onWindowResize() {
@@ -593,8 +649,7 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
         }
 
         if (effectRef.type) {
-          const current = effectDefinitions[effectRef.type];
-          current?.cleanup?.();
+          clearEffect(true);
         }
 
         for (const key of Object.keys(targetSettings)) {
@@ -660,13 +715,12 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
         let effectTime = 0;
 
         if (effectRef.type) {
-          const candidate = effectDefinitions[effectRef.type];
+          const activeType = effectRef.type;
+          const candidate = effectDefinitions[activeType];
           if (candidate) {
             effectTime = elapsedTime - effectRef.startTime;
             if (candidate.duration && effectTime > candidate.duration) {
-              candidate.cleanup?.();
-              effectRef.type = null;
-              effectRef.data = null;
+              clearEffect(true);
             } else {
               candidate.update?.({
                 delta,
@@ -676,11 +730,15 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
                 pointer,
                 addRipple: (x, z, strength = 1) => enqueueRipple(x, z, strength)
               });
-              activeEffect = candidate;
+              if (activeType === 'starfield' && effectRef.data?.mode === 'done') {
+                clearEffect(true);
+              }
+              if (effectRef.type === activeType) {
+                activeEffect = candidate;
+              }
             }
           } else {
-            effectRef.type = null;
-            effectRef.data = null;
+            clearEffect(true);
           }
         }
 
@@ -945,6 +1003,7 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
           });
         },
         resetToDefaults: () => {
+          clearEffect();
           Object.entries(FIELD_DEFAULT_BASE).forEach(([key, value]) => {
             applyMenuValue(key, value, false);
           });

@@ -186,6 +186,19 @@ export default function RetroMenu({
             <button
               type="button"
               className="retro-menu__effect-btn"
+              style={{ gridColumn: 'span 2', width: '100%' }}
+              onClick={() => {
+                onFieldEffect('calmReset');
+                setSettingsOpen(false);
+              }}
+              title="Reset to default state"
+            >
+              <span className="retro-menu__effect-icon">☯️</span>
+              <span>Calm Reset</span>
+            </button>
+            <button
+              type="button"
+              className="retro-menu__effect-btn"
               onClick={() => {
                 onFieldEffect('jitter');
                 setSettingsOpen(false);
@@ -206,18 +219,6 @@ export default function RetroMenu({
             >
               <span className="retro-menu__effect-icon">🌀</span>
               <span>Swirl Pulse</span>
-            </button>
-            <button
-              type="button"
-              className="retro-menu__effect-btn"
-              onClick={() => {
-                onFieldEffect('calmReset');
-                setSettingsOpen(false);
-              }}
-              title="Reset to default state"
-            >
-              <span className="retro-menu__effect-icon">☯️</span>
-              <span>Calm Reset</span>
             </button>
             <button
               type="button"
