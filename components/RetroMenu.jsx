@@ -37,7 +37,7 @@ export default function RetroMenu({
       const menuElement = toggleRef.current.closest(".retro-menu");
       if (menuElement) {
         const menuRect = menuElement.getBoundingClientRect();
-        const panelWidth = Math.min(menuRect.width, 400); // Max width 400px
+        const panelWidth = Math.min(menuRect.width - 4, 380); // Slightly smaller than menu
         const viewportWidth = window.innerWidth;
 
         // Find the titlebar to calculate overlay position
@@ -75,8 +75,8 @@ export default function RetroMenu({
         let topPos = menuRect.top;
         if (titlebar) {
           const titlebarRect = titlebar.getBoundingClientRect();
-          // Move panel higher to better replace the menu navbar
-          topPos = titlebarRect.bottom - 58; // Higher position to replace menu content area
+          // Align panel with the menu top for cleaner overlay
+          topPos = menuRect.top; // Align with menu top
 
           console.log("🔍 [RetroMenu Debug] Titlebar:", {
             titlebarBottom: titlebarRect.bottom,
@@ -419,11 +419,11 @@ export default function RetroMenu({
               width: `${panelPosition.width}px`,
               zIndex: 99999,
               background:
-                "linear-gradient(180deg, rgba(0, 58, 99, 0.98), rgba(0, 139, 178, 0.95))",
-              border: "2px solid rgba(0, 200, 208, 0.6)",
-              borderRadius: "8px",
-              padding: "0.8rem",
-              boxShadow: "0 8px 24px rgba(0, 0, 0, 0.6)",
+                "linear-gradient(180deg, rgba(0, 58, 99, 0.96), rgba(0, 139, 178, 0.92))",
+              border: "1.5px solid rgba(0, 200, 208, 0.5)",
+              borderRadius: "20px",
+              padding: "1rem",
+              boxShadow: "0 12px 32px rgba(0, 0, 0, 0.5)",
             }}
           >
             <div className="retro-menu__settings-header">

@@ -2934,16 +2934,15 @@ a {
 .retro-menu__settings-panel {
   /* Panel overlays menu body - positioned via Portal */
   position: fixed;
-  padding: 1.2rem 0.8rem 0.8rem;
+  padding: 1rem;
   background: linear-gradient(
     180deg,
-    rgba(0, 58, 99, 1),
-    rgba(0, 139, 178, 0.98)
+    rgba(0, 58, 99, 0.96),
+    rgba(0, 139, 178, 0.92)
   );
-  border: 2px solid rgba(0, 200, 208, 0.4);
-  border-radius: 8px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 
-    0 0 0 1px rgba(0, 200, 208, 0.2);
+  border: 1.5px solid rgba(0, 200, 208, 0.5);
+  border-radius: 20px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
   /* Higher z-index to overlay menu body */
   z-index: 10000;
   /* Ensure panel completely hides menu behind it */
@@ -2951,12 +2950,12 @@ a {
   -webkit-backdrop-filter: blur(0px);
   /* Smooth fade in/out transition - matches main menu style */
   opacity: 0;
-  transform: translateY(20px) scale(0.92);
-  filter: blur(12px);
+  transform: translateY(16px) scale(0.96);
+  filter: blur(6px);
   pointer-events: none;
-  transition: opacity 0.64s cubic-bezier(0.33, 1, 0.68, 1),
-              transform 0.64s cubic-bezier(0.33, 1, 0.68, 1),
-              filter 0.64s cubic-bezier(0.33, 1, 0.68, 1);
+  transition: opacity 0.48s cubic-bezier(0.33, 1, 0.68, 1),
+              transform 0.48s cubic-bezier(0.33, 1, 0.68, 1),
+              filter 0.48s cubic-bezier(0.33, 1, 0.68, 1);
   will-change: opacity, transform, filter;
 }
 
@@ -3064,14 +3063,14 @@ a {
 /* SOLUTION: Fade the ENTIRE menu container when panel is active */
 /* Match Field Effects panel animation - fade out with blur and scale */
 .retro-menu[data-panel-active="true"] {
-  opacity: 0 !important;
-  transform: translateY(20px) scale(0.92) !important;
-  filter: blur(12px) !important;
+  opacity: 0.15 !important;
+  transform: translateY(8px) scale(0.98) !important;
+  filter: blur(4px) !important;
   pointer-events: none;
   /* Consistent animation (0.64s) matching panel transitions */
-  transition: opacity 0.64s cubic-bezier(0.33, 1, 0.68, 1) !important,
-              transform 0.64s cubic-bezier(0.33, 1, 0.68, 1) !important,
-              filter 0.64s cubic-bezier(0.33, 1, 0.68, 1) !important;
+  transition: opacity 0.48s cubic-bezier(0.33, 1, 0.68, 1) !important,
+              transform 0.48s cubic-bezier(0.33, 1, 0.68, 1) !important,
+              filter 0.48s cubic-bezier(0.33, 1, 0.68, 1) !important;
 }
 
 /* Keep these for backwards compatibility but they're now redundant */
