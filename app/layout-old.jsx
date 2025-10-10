@@ -1,25 +1,14 @@
 import './globals.css';
 import SiteShell from '../components/SiteShell';
-import { generateMetadata as getMetadata, generateStructuredData } from '../lib/metadata';
 
-export async function generateMetadata() {
-  return await getMetadata('home');
-}
+export const metadata = {
+  title: 'Hypnotic Monochrome Field',
+  description: 'A retro-futuristic interface exploring Jay Winder’s audiovisual experiments.'
+};
 
-export default async function RootLayout({ children }) {
-  const structuredData = await generateStructuredData('home');
-  
+export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <head>
-        {structuredData.map((data, index) => (
-          <script
-            key={index}
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
-          />
-        ))}
-      </head>
       <body>
         <SiteShell>{children}</SiteShell>
         <noscript>

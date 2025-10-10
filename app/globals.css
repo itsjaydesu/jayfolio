@@ -5341,7 +5341,7 @@ body.qr-intro-active .site-shell__social {
 /* ===== GLASSMORPHIC ABOUT PAGE ===== */
 .glass-about-page {
   min-height: 100vh;
-  padding: 2rem 2rem 3rem;
+  padding: 0.5rem 2rem 3rem;
   position: relative;
   overflow: hidden;
   opacity: 0;
@@ -5414,7 +5414,7 @@ body.qr-intro-active .site-shell__social {
   max-width: 1000px;
   width: 100%;
   margin: 0 auto;
-  padding-top: 2rem;
+  padding-top: 0;
   position: relative;
   z-index: 1;
 }
@@ -5424,8 +5424,8 @@ body.qr-intro-active .site-shell__social {
 /* Header section */
 .glass-about-page__header {
   text-align: center;
-  margin-bottom: 3rem;
-  padding-top: 1rem;
+  margin-bottom: 2.5rem;
+  padding-top: 0;
 }
 
 .glass-about-page__title {
@@ -5663,12 +5663,12 @@ body.qr-intro-active .site-shell__social {
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .glass-about-page {
-    padding: 1.5rem 1rem 2rem;
+    padding: 0.5rem 1rem 2rem;
     min-height: 100vh;
   }
   
   .glass-about-page__container {
-    padding-top: 1rem;
+    padding-top: 0;
   }
   
   .glass-about-page__title-main {
@@ -5701,4 +5701,128 @@ body.qr-intro-active .site-shell__social {
     padding: 0.625rem 1.25rem;
     font-size: 0.8125rem;
   }
+}
+
+/* SEO Admin UI Styles */
+.admin-tabs {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0 1.5rem;
+  margin: 0.5rem 0 1.5rem;
+  border-bottom: 1px solid rgba(138, 248, 255, 0.12);
+}
+
+.admin-tab {
+  padding: 0.75rem 1rem;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: rgba(198, 236, 240, 0.65);
+  font-size: 0.875rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.admin-tab:hover {
+  color: rgba(198, 236, 240, 0.9);
+}
+
+.admin-tab.is-active {
+  color: rgba(138, 248, 255, 1);
+  border-bottom-color: rgba(138, 248, 255, 0.8);
+}
+
+.admin-submenu {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem 0;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid rgba(138, 248, 255, 0.08);
+}
+
+.admin-submenu-item {
+  padding: 0.5rem 0.875rem;
+  background: rgba(2, 28, 36, 0.4);
+  border: 1px solid rgba(138, 248, 255, 0.15);
+  border-radius: 0.25rem;
+  color: rgba(198, 236, 240, 0.65);
+  font-size: 0.8125rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-submenu-item:hover {
+  background: rgba(2, 28, 36, 0.6);
+  color: rgba(198, 236, 240, 0.9);
+  border-color: rgba(138, 248, 255, 0.25);
+}
+
+.admin-submenu-item.is-active {
+  background: rgba(138, 248, 255, 0.1);
+  color: rgba(138, 248, 255, 1);
+  border-color: rgba(138, 248, 255, 0.4);
+}
+
+.admin-section {
+  margin-bottom: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid rgba(138, 248, 255, 0.08);
+}
+
+.admin-section:last-child {
+  border-bottom: none;
+}
+
+.admin-section h3 {
+  color: rgba(138, 248, 255, 0.9);
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.admin-field--full {
+  grid-column: 1 / -1;
+}
+
+.admin-field input[type="color"] {
+  width: 100%;
+  height: 2.5rem;
+  padding: 0.25rem;
+  border: 1px solid rgba(138, 248, 255, 0.2);
+  border-radius: 0.25rem;
+  background: rgba(2, 28, 36, 0.6);
+  cursor: pointer;
+}
+
+.admin-field input[type="checkbox"] {
+  width: 1.25rem;
+  height: 1.25rem;
+  accent-color: rgba(138, 248, 255, 0.8);
+  cursor: pointer;
+}
+
+.admin-field label:has(input[type="checkbox"]) {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.admin-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  color: rgba(138, 248, 255, 0.6);
+  font-size: 1rem;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
 }

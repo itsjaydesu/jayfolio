@@ -4,8 +4,13 @@ import EntryReturnFocus from '../../components/EntryReturnFocus';
 import { readEntries } from '../../lib/contentStore';
 import { formatDisplayDate } from '../../lib/formatters';
 import { readChannelContent } from '../../lib/channelContent';
+import { generateMetadata as getMetadata } from '../../lib/metadata';
 
 export const dynamic = 'force-dynamic';
+
+export async function generateMetadata() {
+  return await getMetadata('projects');
+}
 
 const PROJECT_TONES = {
   'signal-grid': 'cyan',

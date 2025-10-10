@@ -8,6 +8,11 @@ const SETTINGS_LINKS = [
     description: 'Manage brand copy and primary navigation labels.'
   },
   {
+    href: '/admin/settings/seo',
+    title: 'SEO Settings',
+    description: 'Manage search engine optimization, social sharing, and metadata for all pages.'
+  },
+  {
     href: '/admin/settings/field',
     title: 'Field Settings',
     description: 'Control the dotfield baseline mood and channel overrides.'
