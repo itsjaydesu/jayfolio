@@ -1,5 +1,17 @@
-import { loadChannelContent } from '../lib/channelContent';
+import { promises as fs } from 'fs';
+import path from 'path';
 import { loadSeoConfig } from '../lib/seoConfig';
+
+async function loadContentEntries(type) {
+  try {
+    const filePath = path.join(process.cwd(), 'content', `${type}.json`);
+    const raw = await fs.readFile(filePath, 'utf8');
+    return JSON.parse(raw);
+  } catch (error) {
+    console.error(`Error loading ${type} content:`, error);
+    return { entries: [] };
+  }
+}
 
 export default async function sitemap() {
   const config = await loadSeoConfig();
@@ -47,7 +59,7 @@ export default async function sitemap() {
     const contentTypes = ['projects', 'words', 'sounds'];
     
     for (const type of contentTypes) {
-      const content = await loadChannelContent(type);
+      const content = await loadContentEntries(type);
       const entries = content.entries || [];
       
       for (const entry of entries) {
