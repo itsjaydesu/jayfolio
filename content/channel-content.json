@@ -1,5 +1,27 @@
 {
   "about": {
+    "aboutTitle": "the jayFolio",
+    "aboutSubtitle": "thanks for coming",
+    "aboutContent": "Here's a website designed to explain some things, in an attempt to <a href=\"https://x.com/theJayAlto/status/1974598773776187798\">die empty</a>.\n\nOk so",
+    "aboutDetailCards": [
+      {
+        "title": "Help me improve something",
+        "text": "Cinematic UI systems, immersive spatial audio, sensor-driven choreography, and collaborative design research."
+      },
+      {
+        "title": "Work with me",
+        "text": "I have literally hundreds of ideas waiting to be burned through. Most of them are terrible. Some, I assume, are good ideas."
+      },
+      {
+        "title": "Stay in Touch",
+        "text": "Building responsive worlds where light, audio, and interface gestures share the same pulse through WebGL and realtime systems."
+      }
+    ],
+    "aboutTags": [
+      "these",
+      "are",
+      "tags"
+    ],
     "title": "",
     "lead": "Creative technologist guiding teams through ambient operating systems, tactile exhibition tooling, and cinematic web soundscapes. This dossier carries the studio ethos, collaborators, and signals shaping each commission. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
     "statusDate": "2024-11-01",

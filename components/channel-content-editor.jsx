@@ -25,6 +25,17 @@ function splitList(value) {
   return value.join('\n');
 }
 
+function parseCommaSeparatedInput(value) {
+  if (typeof value !== 'string') return [];
+  const parts = value.split(',').map((item) => item.trim());
+  const endsWithSeparator = /,\s*$/.test(value);
+  const filtered = parts.filter(Boolean);
+  if (endsWithSeparator) {
+    filtered.push('');
+  }
+  return filtered;
+}
+
 function formatHeading(sections) {
   if (sections.length === 1) {
     const label = SECTION_LABELS[sections[0]] ?? sections[0];
@@ -309,10 +320,8 @@ export default function ChannelContentEditor({ sections = ['about', 'projects', 
                   id="about-page-tags"
                   type="text"
                   value={(about.aboutTags || []).join(', ')}
-                  onChange={(event) => 
-                    handleAboutField('aboutTags', 
-                      event.target.value.split(',').map(tag => tag.trim()).filter(Boolean)
-                    )
+                  onChange={(event) =>
+                    handleAboutField('aboutTags', parseCommaSeparatedInput(event.target.value))
                   }
                   placeholder="Designer, Composer, Systems Artist"
                 />

@@ -6,6 +6,17 @@ import { useAdminFetch } from '@/components/admin-session-context';
 
 const DEFAULT_PAGE_NAMES = ['home', 'about', 'projects', 'words', 'sounds'];
 
+function parseKeywordInput(value) {
+  if (typeof value !== 'string') return [];
+  const parts = value.split(',').map((item) => item.trim());
+  const endsWithSeparator = /,\s*$/.test(value);
+  const filtered = parts.filter(Boolean);
+  if (endsWithSeparator) {
+    filtered.push('');
+  }
+  return filtered;
+}
+
 export default function SeoSettingsPage() {
   const adminFetch = useAdminFetch();
   const [config, setConfig] = useState(null);
@@ -109,7 +120,7 @@ export default function SeoSettingsPage() {
   }, []);
 
   const handleArrayChange = useCallback((field, value) => {
-    const arrayValue = value.split(',').map(item => item.trim()).filter(Boolean);
+    const arrayValue = parseKeywordInput(value);
     setConfig(prev => ({
       ...prev,
       global: {
@@ -120,7 +131,7 @@ export default function SeoSettingsPage() {
   }, []);
 
   const handlePageArrayChange = useCallback((page, field, value) => {
-    const arrayValue = value.split(',').map(item => item.trim()).filter(Boolean);
+    const arrayValue = parseKeywordInput(value);
     handlePageChange(page, field, arrayValue);
   }, [handlePageChange]);
 

@@ -1,0 +1,134 @@
+{
+  "global": {
+    "siteName": "jay winder portfolio",
+    "titleTemplate": "%s | jFolio",
+    "defaultTitle": "JayFolio",
+    "defaultDescription": "A place to talk about stuff I'm making ",
+    "keywords": [
+      "portfolio"
+    ],
+    "author": "jay winder",
+    "locale": "en_US",
+    "siteUrl": "https://jay.winder.io",
+    "twitterHandle": "@jaywinder",
+    "defaultImage": "/og-default.jpg",
+    "favicon": "/favicon.ico",
+    "themeColor": "#000000",
+    "backgroundColor": "#000000"
+  },
+  "openGraph": {
+    "type": "website",
+    "locale": "en_US",
+    "siteName": "jay winder"
+  },
+  "twitter": {
+    "cardType": "summary_large_image",
+    "handle": "@itsjaydesu",
+    "site": "@itsjaydesu",
+    "creator": "@itsjaydesu"
+  },
+  "robots": {
+    "index": true,
+    "follow": true,
+    "googleBot": {
+      "index": true,
+      "follow": true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1
+    }
+  },
+  "verification": {
+    "google": "",
+    "bing": "",
+    "yandex": "",
+    "pinterest": ""
+  },
+  "pages": {
+    "home": {
+      "title": "jayfolio",
+      "description": "A place to talk about stuff I'm making ",
+      "keywords": [
+        "portfolio",
+        "creative technology",
+        "audiovisual a"
+      ],
+      "image": "/og-home.jpg"
+    },
+    "about": {
+      "title": "About",
+      "description": "Jay Winder curates lucid audiovisual experiments, shaping hypnotic interfaces that oscillate between nostalgia and the hyperreal.",
+      "keywords": [
+        "about",
+        "biography",
+        "creative practice"
+      ],
+      "image": "/og-about.jpg"
+    },
+    "projects": {
+      "title": "Projects",
+      "description": "Kinetic WebGL fields, performance-driven installations, and tactile controls for curious collaborators.",
+      "keywords": [
+        "projects",
+        "portfolio",
+        "WebGL",
+        "installations"
+      ],
+      "image": "/og-projects.jpg"
+    },
+    "words": {
+      "title": "Words",
+      "description": "Process notes, essays on spatial computing, and glossaries for future signal-bearers.",
+      "keywords": [
+        "writing",
+        "essays",
+        "process",
+        "spatial computing"
+      ],
+      "image": "/og-words.jpg"
+    },
+    "sounds": {
+      "title": "Sounds",
+      "description": "A rotating archive of ambient loops, chromatic drones, and responsive audio sketches.",
+      "keywords": [
+        "music",
+        "ambient",
+        "sound design",
+        "audio"
+      ],
+      "image": "/og-sounds.jpg"
+    }
+  },
+  "structuredData": {
+    "organization": {
+      "@type": "Person",
+      "name": "Jay Winder",
+      "url": "https://jaywinder.com",
+      "description": "Creative technologist and audiovisual artist",
+      "sameAs": []
+    },
+    "website": {
+      "@type": "WebSite",
+      "name": "Jay Winder",
+      "url": "https://jaywinder.com",
+      "description": "A retro-futuristic interface exploring audiovisual experiments"
+    }
+  },
+  "contentTemplates": {
+    "projects": {
+      "titleTemplate": "%s - Project | jay winder",
+      "descriptionTemplate": "Project: %s",
+      "type": "article"
+    },
+    "words": {
+      "titleTemplate": "%s - Words | jay winder",
+      "descriptionTemplate": "%s",
+      "type": "article"
+    },
+    "sounds": {
+      "titleTemplate": "%s - Sound | Jay Winder",
+      "descriptionTemplate": "Sound piece: %s",
+      "type": "music"
+    }
+  }
+}
