@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import AdminNav from '@/components/admin-nav';
 import { useAdminFetch } from '@/components/admin-session-context';
-import { FIELD_DEFAULT_BASE, FIELD_DEFAULT_INFLUENCES } from '../../../../lib/fieldDefaults';
+import { FIELD_DEFAULT_BASE, FIELD_DEFAULT_INFLUENCES } from '@/lib/fieldDefaults';
 
 const FIELD_BASE_CONTROLS = [
   { id: 'amplitude', label: 'Amplitude', min: 30, max: 140, step: 1 },
