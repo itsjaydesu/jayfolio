@@ -2702,11 +2702,8 @@ a {
   width: min(340px, 100%);
   border: 1.5px solid rgba(5, 52, 76, 0.65);
   border-radius: 22px;
-  background: linear-gradient(
-    180deg,
-    rgba(0, 133, 134, 0.92) 0%,
-    rgba(1, 60, 70, 0.86) 100%
-  );
+  /* Remove gradient from here - it's now on the ::before pseudo-element */
+  background: transparent;
   box-shadow: 0 18px 32px rgba(0, 0, 0, 0.48);
   color: #daf3f4;
   font-family: "IBM Plex Mono", "Lucida Console", "Courier New", monospace;
@@ -2714,13 +2711,34 @@ a {
   letter-spacing: 0.04em;
   overflow: hidden;
   backdrop-filter: blur(5px);
-  /* Add opacity transition to the menu container itself */
-  /* Match Field Effects panel animation (0.64s with transform and blur) */
-  transition: background 2.5s cubic-bezier(0.4, 0, 0.2, 1), 
-              backdrop-filter 2.5s cubic-bezier(0.4, 0, 0.2, 1),
+  /* Transitions for properties that CAN animate */
+  transition: backdrop-filter 1.2s cubic-bezier(0.4, 0, 0.6, 1),
               opacity 0.64s cubic-bezier(0.33, 1, 0.68, 1),
               transform 0.64s cubic-bezier(0.33, 1, 0.68, 1),
               filter 0.64s cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+/* Create a duplicate background layer that can fade independently */
+.retro-menu::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  /* Same gradient as the main menu */
+  background: linear-gradient(
+    180deg,
+    rgba(0, 133, 134, 0.92) 0%,
+    rgba(1, 60, 70, 0.86) 100%
+  );
+  opacity: 1;
+  transition: opacity 1.2s cubic-bezier(0.4, 0, 0.6, 1);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* When effect is active, fade out the background to create true transparency */
+.retro-menu[data-effect-active="true"]::before {
+  opacity: 0.08; /* Nearly transparent, letting the animation show through */
 }
 
 .retro-menu--sidebar {
@@ -2750,7 +2768,9 @@ a {
 }
 
 .retro-menu__titlebar {
-  background: linear-gradient(90deg, #003a63 0%, #008bb2 55%, #00c8d0 100%);
+  position: relative;
+  /* Remove gradient - it's now on the ::before pseudo-element */
+  background: transparent;
   color: #f4faff;
   padding: 0.75rem 1rem;
   font-size: 0.72rem;
@@ -2762,15 +2782,20 @@ a {
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 0.75rem;
-  transition: background 2.5s cubic-bezier(0.4, 0, 0.2, 1), border-bottom-color 2.5s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Content stays above the pseudo-element */
+  /* Smooth transition for transparent/normal mode */
+  transition: border-color 1.2s cubic-bezier(0.4, 0, 0.6, 1),
+              color 1.2s cubic-bezier(0.4, 0, 0.6, 1);
 }
 
 .retro-menu__titlebar span {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 8px;
   font-size: 0.65rem;
   letter-spacing: 0.12em;
+  z-index: 2; /* Above the pseudo-element */
 }
 
 .retro-menu__titlebar small {
@@ -2834,7 +2859,9 @@ a {
 }
 
 .retro-menu__body {
+  position: relative;
   padding: 0.65rem 0.75rem 0.85rem;
+  z-index: 2; /* Above the pseudo-element */
   transition: opacity 0.5s cubic-bezier(0.33, 1, 0.68, 1);
 }
 
@@ -2871,7 +2898,10 @@ a {
   text-decoration: none;
   position: relative;
   border-radius: 14px;
-  transition: box-shadow 0.2s ease, background 0.25s ease, border-color 0.25s ease;
+  /* Synchronized transition timing with menu for smooth effect changes */
+  transition: box-shadow 0.2s ease, 
+              background 1.2s cubic-bezier(0.4, 0, 0.6, 1), 
+              border-color 0.25s ease;
 }
 
 .retro-menu__item .retro-menu__button::before {
@@ -2920,6 +2950,7 @@ a {
 }
 
 .retro-menu__status {
+  position: relative;
   margin: 0;
   padding: 0.75rem 0.9rem 0.9rem;
   font-size: 0.64rem;
@@ -2932,7 +2963,9 @@ a {
   gap: 0.35rem;
   /* Ensure height is maintained even during opacity transition */
   height: auto;
-  transition: background 2.5s cubic-bezier(0.4, 0, 0.2, 1),
+  z-index: 2; /* Above the pseudo-element */
+  /* Synchronized transition timing for smooth effect changes */
+  transition: background 1.2s cubic-bezier(0.4, 0, 0.6, 1),
               opacity 0.5s cubic-bezier(0.33, 1, 0.68, 1);
 }
 
@@ -2980,7 +3013,13 @@ a {
   border-radius: 4px;
   color: rgba(255, 255, 255, 0.7);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transform-origin: center;
+  /* Smooth transition for effect active/inactive states */
+  transition: transform 0.2s ease,
+              background 0.8s cubic-bezier(0.4, 0, 0.6, 1),
+              border-color 0.8s cubic-bezier(0.4, 0, 0.6, 1),
+              box-shadow 0.8s cubic-bezier(0.4, 0, 0.6, 1),
+              color 0.8s cubic-bezier(0.4, 0, 0.6, 1);
 }
 
 .retro-menu__settings-toggle svg {
@@ -3256,26 +3295,42 @@ a {
   pointer-events: none;
 }
 
+/* Remove gradient change - now handled by pseudo-element fade */
 .retro-menu[data-effect-active="true"] {
-  background: linear-gradient(
-    180deg,
-    rgba(0, 133, 134, 0.08) 0%,
-    rgba(1, 60, 70, 0.05) 100%
-  );
   backdrop-filter: blur(2px);
 }
 
+/* Titlebar gets its own pseudo-element for smooth fade */
+.retro-menu__titlebar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, #003a63 0%, #008bb2 55%, #00c8d0 100%);
+  opacity: 1;
+  transition: opacity 1.2s cubic-bezier(0.4, 0, 0.6, 1);
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Fade out titlebar background when effect is active */
+.retro-menu[data-effect-active="true"] .retro-menu__titlebar::before {
+  opacity: 0.08;
+}
+
 .retro-menu[data-effect-active="true"] .retro-menu__titlebar {
-  background: linear-gradient(90deg, rgba(0, 58, 99, 0.08) 0%, rgba(0, 139, 178, 0.06) 55%, rgba(0, 200, 208, 0.05) 100%);
   border-bottom-color: rgba(6, 6, 6, 0.1);
 }
 
-.retro-menu[data-effect-active="true"] .retro-menu__item .retro-menu__button {
-  background: rgba(4, 74, 90, 0.1);
+/* When effect is active, make status bar transparent too */
+.retro-menu[data-effect-active="true"] .retro-menu__status {
+  background: rgba(0, 48, 60, 0.08);
+  transition: background 1.2s cubic-bezier(0.4, 0, 0.6, 1);
 }
 
-.retro-menu[data-effect-active="true"] .retro-menu__status {
-  background: rgba(0, 48, 60, 0.1);
+/* Buttons also become more transparent when effect is active */
+.retro-menu[data-effect-active="true"] .retro-menu__item .retro-menu__button {
+  background: rgba(4, 74, 90, 0.08);
+  transition: background 1.2s cubic-bezier(0.4, 0, 0.6, 1);
 }
 
 /* Glowing settings icon when effect is active - static glow */
@@ -3397,26 +3452,25 @@ a {
     filter: none;
   }
 
+  /* Effect active styles for mobile - transparent backgrounds */
   .retro-menu[data-effect-active="true"] {
-    background: linear-gradient(
-      180deg,
-      rgba(0, 133, 134, 0.08) 0%,
-      rgba(1, 60, 70, 0.05) 100%
-    );
     backdrop-filter: blur(2px);
   }
 
   .retro-menu[data-effect-active="true"] .retro-menu__titlebar {
-    background: linear-gradient(90deg, rgba(0, 58, 99, 0.08) 0%, rgba(0, 139, 178, 0.06) 55%, rgba(0, 200, 208, 0.05) 100%);
     border-bottom-color: rgba(6, 6, 6, 0.1);
+  }
+  
+  .retro-menu[data-effect-active="true"] .retro-menu__titlebar::before {
+    opacity: 0.08;
+  }
+  
+  .retro-menu[data-effect-active="true"] .retro-menu__status {
+    background: rgba(0, 48, 60, 0.08);
   }
 
   .retro-menu[data-effect-active="true"] .retro-menu__item .retro-menu__button {
-    background: rgba(4, 74, 90, 0.1);
-  }
-
-  .retro-menu[data-effect-active="true"] .retro-menu__status {
-    background: rgba(0, 48, 60, 0.1);
+    background: rgba(4, 74, 90, 0.08);
   }
 
   /* Glowing settings icon when effect is active - mobile version */
