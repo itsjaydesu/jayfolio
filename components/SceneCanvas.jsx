@@ -295,6 +295,17 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
           return clamped * clamped * (3 - 2 * clamped);
         };
 
+        const computeEffectEase = (time, duration = null, easeIn = 2.5, easeOut = 2.5) => {
+          const easedIn = easeIn > 0 ? smoothStep(THREE.MathUtils.clamp(time / easeIn, 0, 1)) : 1;
+          if (!duration || easeOut <= 0) {
+            return easedIn;
+          }
+          const timeRemaining = duration - time;
+          const normalized = THREE.MathUtils.clamp(timeRemaining / easeOut, 0, 1);
+          const easedOut = smoothStep(normalized);
+          return easedIn * easedOut;
+        };
+
         const createReactionDiffusion = () => {
           const u = new Float32Array(totalPoints);
           const v = new Float32Array(totalPoints);
@@ -433,23 +444,28 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
                 data.intensity = 1;
               }
               
+              const envelope = computeEffectEase(effectTime, 3, data.easeInDuration, data.easeOutDuration);
+              const effectiveIntensity = data.intensity * envelope;
+              data.effectiveIntensity = effectiveIntensity;
+
               // Process ripple queue
               while (data.rippleQueue.length > 0 && data.rippleQueue[0].time <= effectTime) {
                 const ripple = data.rippleQueue.shift();
-                addRipple(ripple.x, ripple.z, ripple.strength * data.intensity);
+                addRipple(ripple.x, ripple.z, ripple.strength * effectiveIntensity);
               }
               
               // Add random jitter ripples during main phase
-              if (data.intensity > 0.5 && Math.random() < 0.15) {
+              if (effectiveIntensity > 0.5 && Math.random() < 0.15) {
                 const angle = Math.random() * Math.PI * 2;
                 const radius = Math.random() * 1200;
                 const x = Math.cos(angle) * radius;
                 const z = Math.sin(angle) * radius;
-                addRipple(x, z, (0.3 + Math.random() * 0.7) * data.intensity);
+                addRipple(x, z, (0.3 + Math.random() * 0.7) * effectiveIntensity);
               }
             },
             perPoint: ({ px, pz, effectTime, data, baseHeight }) => {
-              if (data.intensity === 0) return { height: 0, scale: 0, light: 0 };
+              const intensity = data.effectiveIntensity ?? 0;
+              if (intensity <= 0) return { height: 0, scale: 0, light: 0 };
               
               // Jittery motion with easing
               const jitterX = Math.sin(px * 0.008 + effectTime * 8) * Math.cos(pz * 0.007 - effectTime * 6);
@@ -460,9 +476,9 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
               const flicker = Math.sin(effectTime * 25 + px * 0.1 + pz * 0.1) > 0.7 ? 1 : 0.3;
               
               // Apply easing to all effects
-              const height = jitter * currentSettings.amplitude * 0.3 * data.intensity;
-              const scale = Math.abs(jitter) * 1.5 * flicker * data.intensity;
-              const light = Math.max(0, jitter) * 0.5 * flicker * data.intensity;
+              const height = jitter * currentSettings.amplitude * 0.3 * intensity;
+              const scale = Math.abs(jitter) * 1.5 * flicker * intensity;
+              const light = Math.max(0, jitter) * 0.5 * flicker * intensity;
               
               return { height, scale, light };
             },
@@ -501,10 +517,11 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
               const breathing = Math.sin(effectTime * 0.4 + dist * 0.0002) * data.breathPhase;
               const gentleWave = Math.sin(px * 0.001 + effectTime * 0.3) * 
                                 Math.cos(pz * 0.001 - effectTime * 0.2) * 0.5;
+              const envelope = computeEffectEase(effectTime, 15, 2.2, 3.5);
               
-              const height = (breathing * 0.3 + gentleWave * 0.2) * currentSettings.amplitude;
-              const scale = 0.8 + breathing * 0.1;  // Subtle scale variation
-              const light = 0.3 + breathing * 0.05;  // Very subtle brightness variation
+              const height = (breathing * 0.3 + gentleWave * 0.2) * currentSettings.amplitude * envelope;
+              const scale = (0.8 + breathing * 0.1) * envelope;  // Subtle scale variation
+              const light = (0.3 + breathing * 0.05) * envelope;  // Very subtle brightness variation
               
               return { height, scale, light };
             },
@@ -523,9 +540,10 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
               const decay = Math.exp(-radial / 1800);
               const spiral = Math.sin(theta * GOLDEN_RATIO * 1.85 + effectTime * 1.4 - Math.log(radial + 1) * 0.3);
               const radialPulse = Math.cos(effectTime * 0.8 + Math.sqrt(radial) * 0.015);
-              const height = (spiral * 0.55 + radialPulse * 0.2) * currentSettings.amplitude * decay;
-              const scale = Math.abs(spiral) * 1.1 * decay;
-              const light = Math.max(0, spiral) * 0.4 * decay + radialPulse * 0.1 * decay;
+              const envelope = computeEffectEase(effectTime, 15, 2, 3.5);
+              const height = (spiral * 0.55 + radialPulse * 0.2) * currentSettings.amplitude * decay * envelope;
+              const scale = Math.abs(spiral) * 1.1 * decay * envelope;
+              const light = (Math.max(0, spiral) * 0.4 * decay + radialPulse * 0.1 * decay) * envelope;
               return { height, scale, light };
             },
             cleanup: () => {
@@ -578,12 +596,11 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
               // Combine all elements with stronger emphasis on flow
               const combined = primaryFlow * 1.2 + noise * 0.5 + ripples * 0.4;
               
-              // Stronger fade-in for dramatic entrance
-              const fade = smoothStep(effectTime / 1.5);
+              const envelope = computeEffectEase(effectTime, 15, 1.5, 3);
               
-              const height = combined * currentSettings.amplitude * fade;
-              const scale = Math.abs(combined) * 2.2 * fade;  // Increased from 1.6
-              const brightness = (0.5 + 0.4 * Math.abs(combined) + 0.2 * Math.abs(primaryFlow)) * fade;
+              const height = combined * currentSettings.amplitude * envelope;
+              const scale = Math.abs(combined) * 2.2 * envelope;  // Increased from 1.6
+              const brightness = (0.5 + 0.4 * Math.abs(combined) + 0.2 * Math.abs(primaryFlow)) * envelope;
               
               return { height, scale, light: brightness };
             },
@@ -620,7 +637,7 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
                 ratio /= maxIter;
               }
               ratio = THREE.MathUtils.clamp(ratio, 0, 1);
-              const fade = smoothStep(effectTime / 2.4);
+              const fade = computeEffectEase(effectTime, 15, 2.4, 3);
               const height = (1 - ratio) * currentSettings.amplitude * 0.95 * fade;
               const scaleValue = Math.max(0, 0.6 - ratio) * 1.6 * fade;
               const light = Math.pow(1 - ratio, 2) * 0.85 * fade;
@@ -695,7 +712,7 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
               const v = data.v[index];
               const pattern = (u - v) * 1.5;  // Amplify pattern difference
               const bloom = Math.pow(Math.max(0, v - u * 0.5), 1.2);  // Exaggerate bloom areas
-              const fade = smoothStep(effectTime / 2.8);  // Faster fade-in
+              const fade = computeEffectEase(effectTime, 15, 2.6, 3.2);  // Smooth ease in/out
               
               // Much more exaggerated height variations
               const height = pattern * currentSettings.amplitude * 1.8 * fade;
@@ -753,7 +770,7 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
                 const dist = Math.sqrt(dx * dx + dz * dz) + 12;
                 sum += Math.cos(dist * 0.016) / dist * 480;
               }
-              const fade = smoothStep(effectTime / 2.4);
+              const fade = computeEffectEase(effectTime, 15, 2.4, 3);
               const amplified = sum * 1.5;
               const height = amplified * fade;
               const scale = Math.min(2.5, Math.abs(amplified) * 2.2) * fade;
@@ -801,7 +818,9 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
             perPoint: ({ index, baseHeight, effectTime, data }) => {
               const fadeIn = smoothStep(effectTime / 3.5);
               const easedIn = 1 - Math.pow(1 - fadeIn, 3);
-              const fade = data?.mode === 'out' ? data.fadeOut ?? 0 : data?.mode === 'done' ? 0 : easedIn;
+              const envelope = computeEffectEase(effectTime, 15, 3.5, 3.5);
+              const stateFade = data?.mode === 'out' ? data.fadeOut ?? 0 : data?.mode === 'done' ? 0 : easedIn;
+              const fade = envelope * stateFade;
               const starDepth = data.depth[index] ?? 0;
               const twinklePhase = data.twinkle[index] ?? 0;
               const intensity = data.intensity[index] ?? 0.5;
