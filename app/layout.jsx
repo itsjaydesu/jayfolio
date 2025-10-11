@@ -1,9 +1,13 @@
 import './globals.css';
 import SiteShell from '../components/SiteShell';
-import { generateMetadata as getMetadata, generateStructuredData } from '../lib/metadata';
+import { generateMetadata as getMetadata, generateStructuredData, generateViewportData } from '../lib/metadata';
 
 export async function generateMetadata() {
   return await getMetadata('home');
+}
+
+export async function generateViewport() {
+  return await generateViewportData('home');
 }
 
 export default async function RootLayout({ children }) {

@@ -3,12 +3,16 @@ import EntryReturnFocus from '../../components/EntryReturnFocus';
 import { readEntries } from '../../lib/contentStore';
 import { formatDisplayDate } from '../../lib/formatters';
 import { readChannelContent } from '../../lib/channelContent';
-import { generateMetadata as getMetadata } from '../../lib/metadata';
+import { generateMetadata as getMetadata, generateViewportData } from '../../lib/metadata';
 
 export const dynamic = 'force-dynamic';
 
 export async function generateMetadata() {
   return await getMetadata('sounds');
+}
+
+export async function generateViewport() {
+  return await generateViewportData('sounds');
 }
 
 const SOUND_TONES = {
