@@ -537,9 +537,9 @@ export default function RetroMenu({
                   onFieldEffect("riverFlow");
                   closePanel();
                 }}
-                title="Flow along layered currents"
+                title="Seismic waves ripple through the field"
               >
-                <span>River</span>
+                <span>Quake</span>
               </button>
               <button
                 type="button"

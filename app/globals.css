@@ -3202,6 +3202,24 @@ a {
   background: rgba(0, 48, 60, 0.1);
 }
 
+/* Glowing settings icon when effect is active - static glow */
+.retro-menu[data-effect-active="true"] .retro-menu__settings-toggle {
+  background: rgba(0, 200, 208, 0.35);
+  border-color: rgba(0, 200, 208, 0.6);
+  color: #00f0f8;
+  box-shadow: 0 0 25px rgba(0, 200, 208, 0.6),
+              0 0 50px rgba(0, 200, 208, 0.4),
+              inset 0 0 12px rgba(0, 240, 248, 0.25);
+  transform: scale(1.05);
+}
+
+.retro-menu[data-effect-active="true"] .retro-menu__settings-toggle:hover {
+  transform: rotate(45deg) scale(1.1);
+  box-shadow: 0 0 35px rgba(0, 240, 248, 0.8),
+              0 0 70px rgba(0, 200, 208, 0.5),
+              inset 0 0 20px rgba(0, 240, 248, 0.4);
+}
+
 @media (max-width: 640px) {
   .retro-menu {
     width: 100%;
@@ -3321,6 +3339,24 @@ a {
 
   .retro-menu[data-effect-active="true"] .retro-menu__status {
     background: rgba(0, 48, 60, 0.1);
+  }
+
+  /* Glowing settings icon when effect is active - mobile version */
+  .retro-menu[data-effect-active="true"] .retro-menu__settings-toggle {
+    background: rgba(0, 200, 208, 0.35);
+    border-color: rgba(0, 200, 208, 0.6);
+    color: #00f0f8;
+    box-shadow: 0 0 25px rgba(0, 200, 208, 0.6),
+                0 0 50px rgba(0, 200, 208, 0.4),
+                inset 0 0 12px rgba(0, 240, 248, 0.25);
+    transform: scale(1.05);
+  }
+
+  .retro-menu[data-effect-active="true"] .retro-menu__settings-toggle:hover {
+    transform: rotate(45deg) scale(1.1);
+    box-shadow: 0 0 35px rgba(0, 240, 248, 0.8),
+                0 0 70px rgba(0, 200, 208, 0.5),
+                inset 0 0 20px rgba(0, 240, 248, 0.4);
   }
 }
 

@@ -362,6 +362,48 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
         };
 
         return {
+          zenMode: {
+            duration: null,  // Zen mode stays active until another effect is triggered
+            init: () => ({ 
+              time: 0,
+              breathPhase: 0
+            }),
+            start: () => {
+              // Create a very calm, flat sea of dots
+              setValue('animationSpeed', 0.15);  // Very slow animation
+              setValue('amplitude', 8);  // Minimal wave height
+              setValue('swirlStrength', 0.1);  // Barely any swirl
+              setValue('waveXFrequency', 0.002);  // Very low frequency waves
+              setValue('waveYFrequency', 0.002);
+              setValue('brightness', 0.45);  // Subtle brightness
+              setValue('contrast', 1.2);  // Low contrast for uniformity
+              setValue('mouseInfluence', 0.0005);  // Minimal mouse response
+              setValue('rippleStrength', 15);  // Gentle ripples
+              setValue('rippleSpeed', 120);  // Slow ripple propagation
+              setValue('rippleDecay', 0.004);  // Ripples fade quickly
+            },
+            update: ({ delta, data }) => {
+              // Gentle breathing animation
+              data.time += delta;
+              data.breathPhase = Math.sin(data.time * 0.3) * 0.5 + 0.5;
+            },
+            perPoint: ({ px, pz, effectTime, data }) => {
+              // Very subtle, slow undulation like a calm sea
+              const dist = Math.sqrt(px * px + pz * pz);
+              const breathing = Math.sin(effectTime * 0.4 + dist * 0.0002) * data.breathPhase;
+              const gentleWave = Math.sin(px * 0.001 + effectTime * 0.3) * 
+                                Math.cos(pz * 0.001 - effectTime * 0.2) * 0.5;
+              
+              const height = (breathing * 0.3 + gentleWave * 0.2) * currentSettings.amplitude;
+              const scale = 0.8 + breathing * 0.1;  // Subtle scale variation
+              const light = 0.3 + breathing * 0.05;  // Very subtle brightness variation
+              
+              return { height, scale, light };
+            },
+            cleanup: () => {
+              resetSettings();
+            }
+          },
           spiralFlow: {
             duration: 18,
             init: () => ({}),
@@ -382,22 +424,59 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
               resetSettings();
             }
           },
-          riverFlow: {
+          riverFlow: {  // "Quake" effect - seismic waves through the field
             duration: 24,
-            init: () => ({}),
+            init: () => ({ 
+              riverPhase: 0,
+              waveOffset: Math.random() * Math.PI * 2 
+            }),
             start: () => {
-              setValue('animationSpeed', 0.7);
-              setValue('swirlStrength', 0.4);
+              setValue('animationSpeed', 1.2);  // Increased from 0.7 for more obvious flow
+              setValue('swirlStrength', 0.8);   // Increased from 0.4 for more movement
+              setValue('amplitude', 85);        // Higher amplitude for more dramatic waves
+              setValue('brightness', 0.65);     // Slightly brighter
             },
-            perPoint: ({ px, pz, effectTime }) => {
-              const baseFreq = 0.00075;
-              const noise = fractalNoise(px * baseFreq, pz * baseFreq, effectTime * 0.18, 4, 0.55);
-              const flow = fractalNoise((px + effectTime * 260) * baseFreq * 0.7, (pz - effectTime * 210) * baseFreq * 0.7, effectTime * 0.1, 3, 0.6);
-              const combined = noise * 0.65 + flow * 0.35;
-              const fade = smoothStep(effectTime / 2.2);
-              const height = combined * currentSettings.amplitude * 0.82 * fade;
-              const scale = Math.abs(combined) * 1.6 * fade;
-              const brightness = (0.35 * combined + 0.18 * Math.abs(noise)) * fade;
+            update: ({ delta, data }) => {
+              // Add continuous phase for flowing animation
+              data.riverPhase += delta * 0.8;
+            },
+            perPoint: ({ px, pz, effectTime, data }) => {
+              // Create seismic wave patterns that flow through the field
+              const baseFreq = 0.001;  // Increased frequency for more detail
+              
+              // Main river channel - diagonal flow from top-left to bottom-right
+              const riverX = (px + pz) * 0.7071;  // 45-degree rotation
+              const riverZ = (-px + pz) * 0.7071;
+              
+              // Create flowing waves along the river direction
+              const flowSpeed = 380;  // Speed of flow
+              const primaryFlow = Math.sin(riverX * baseFreq * 2 - effectTime * 2.5 + data.riverPhase * 2) * 
+                                 Math.cos(riverZ * baseFreq * 0.5) * 
+                                 Math.exp(-Math.abs(riverZ) * 0.0008);  // Concentrate near center
+              
+              // Add secondary currents and eddies
+              const noise = fractalNoise(
+                px * baseFreq + effectTime * flowSpeed * 0.5, 
+                pz * baseFreq - effectTime * flowSpeed * 0.3, 
+                effectTime * 0.15 + data.waveOffset, 
+                5,  // More octaves for detail
+                0.65
+              );
+              
+              // Flowing ripples that move downstream
+              const ripples = Math.sin((riverX - effectTime * flowSpeed) * baseFreq * 3) * 0.3 +
+                             Math.sin((riverX - effectTime * flowSpeed * 1.3) * baseFreq * 5) * 0.2;
+              
+              // Combine all elements with stronger emphasis on flow
+              const combined = primaryFlow * 1.2 + noise * 0.5 + ripples * 0.4;
+              
+              // Stronger fade-in for dramatic entrance
+              const fade = smoothStep(effectTime / 1.5);
+              
+              const height = combined * currentSettings.amplitude * fade;
+              const scale = Math.abs(combined) * 2.2 * fade;  // Increased from 1.6
+              const brightness = (0.5 + 0.4 * Math.abs(combined) + 0.2 * Math.abs(primaryFlow)) * fade;
+              
               return { height, scale, light: brightness };
             },
             cleanup: () => {
@@ -453,9 +532,9 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
               const v = data.v;
               const uNext = data.uNext;
               const vNext = data.vNext;
-              const rate = 1 + delta * 28;
-              const feed = 0.036 + 0.004 * Math.sin(effectTime * 0.33);
-              const kill = 0.064 + 0.002 * Math.cos(effectTime * 0.27);
+              const rate = 1 + delta * 32;  // Increased from 28 for faster reaction
+              const feed = 0.038 + 0.008 * Math.sin(effectTime * 0.33);  // Increased variation
+              const kill = 0.062 + 0.004 * Math.cos(effectTime * 0.27);  // More dynamic
 
               for (let x = 0; x < AMOUNTX; x++) {
                 const xl = wrapIndex(x - 1, AMOUNTX);
@@ -499,17 +578,26 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
               data.v = vNext;
               data.vNext = v;
 
-              setValue('contrast', 2.6);
-              setValue('brightness', 0.48);
+              setValue('contrast', 3.2);  // Increased for more dramatic effect
+              setValue('brightness', 0.55);  // Slightly brighter for visibility
+              setValue('amplitude', 95);  // Higher amplitude for more dramatic bloom
             },
             perPoint: ({ index, data, effectTime }) => {
               const u = data.u[index];
               const v = data.v[index];
-              const pattern = u - v;
-              const fade = smoothStep(effectTime / 3.2);
-              const height = pattern * currentSettings.amplitude * 1.1 * fade;
-              const scale = (Math.max(0, pattern) * 1.8 + Math.max(0, v - u) * 1.1) * fade;
-              const light = Math.max(0, v - u * 0.6) * 0.8 * fade;
+              const pattern = (u - v) * 1.5;  // Amplify pattern difference
+              const bloom = Math.pow(Math.max(0, v - u * 0.5), 1.2);  // Exaggerate bloom areas
+              const fade = smoothStep(effectTime / 2.8);  // Faster fade-in
+              
+              // Much more exaggerated height variations
+              const height = pattern * currentSettings.amplitude * 1.8 * fade;
+              
+              // Dramatically larger scale for bloom areas
+              const scale = (Math.max(0, pattern) * 3.5 + bloom * 4.5) * fade;  // Much larger scales
+              
+              // Brighter, more vibrant bloom lighting
+              const light = Math.min(1.2, bloom * 1.5 + Math.max(0, v - u * 0.4) * 0.9) * fade;
+              
               return { height, scale, light };
             },
             cleanup: () => {

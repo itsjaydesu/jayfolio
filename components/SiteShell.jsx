@@ -526,9 +526,17 @@ export default function SiteShell({ children }) {
         setHasActiveEffect(true);
         break;
       case 'calmReset':
-        // Reset to default calm state
-        sceneRef.current.resetToDefaults();
-        setHasActiveEffect(false);
+        // If an effect is active, reset to defaults
+        // If no effect is active, trigger the zen mode for ultra-calm state
+        if (hasActiveEffect) {
+          sceneRef.current.resetToDefaults();
+          setHasActiveEffect(false);
+        } else {
+          // Trigger zen mode for a very flat, calm sea
+          if (sceneRef.current.triggerEffect('zenMode')) {
+            setHasActiveEffect(true);
+          }
+        }
         break;
     }
   };
