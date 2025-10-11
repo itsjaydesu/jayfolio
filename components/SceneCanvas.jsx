@@ -108,6 +108,10 @@ function fractalNoise(x, y, z, octaves = 3, persistence = 0.5) {
 const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = false, onEffectChange }, ref) {
   const containerRef = useRef(null);
   const stateRef = useRef(null);
+  const effectChangeRef = useRef(onEffectChange);
+  useEffect(() => {
+    effectChangeRef.current = onEffectChange;
+  }, [onEffectChange]);
   const initialSectionRef = useRef(null);
 
   if (initialSectionRef.current === null) {
@@ -384,7 +388,7 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
               easeOutDuration: 0.5,  // 0.5 seconds to ease out
               easeOutStartTime: null
             }),
-            start: ({ data, addRipple }) => {
+            start: ({ data }) => {
               // Configure settings for jittery behavior
               setValue('animationSpeed', 2.5);  // Fast animation
               setValue('amplitude', 120);  // Higher amplitude for jittery motion
@@ -420,7 +424,7 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
                 data.rippleQueue.push({ time: 0.6, x, z, strength: 0.5 + Math.random() * 0.5 });
               }
             },
-            update: ({ delta, effectTime, data, addRipple }) => {
+            update: ({ effectTime, data, addRipple }) => {
               data.time = effectTime;
               
               // Calculate easing intensity
@@ -463,7 +467,7 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
                 addRipple(x, z, (0.3 + Math.random() * 0.7) * effectiveIntensity);
               }
             },
-            perPoint: ({ px, pz, effectTime, data, baseHeight }) => {
+            perPoint: ({ px, pz, effectTime, data }) => {
               const intensity = data.effectiveIntensity ?? 0;
               if (intensity <= 0) return { height: 0, scale: 0, light: 0 };
               
@@ -864,7 +868,7 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
         
         // Notify that effect ended (unless callback already called)
         if (!skipCallback) {
-          onEffectChange?.(false, null);
+          effectChangeRef.current?.(false, null);
         }
         
         return true;
@@ -964,7 +968,7 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
         });
         
         // Notify UI that effect started (menu becomes transparent)
-        onEffectChange?.(true, type);
+        effectChangeRef.current?.(true, type);
         
         return true;
       }
@@ -1017,7 +1021,7 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
               effectRef.fadeStartTime = elapsedTime;
               
               // Notify UI immediately to start CSS transition (menu background fade)
-              onEffectChange?.(false, null);
+              effectChangeRef.current?.(false, null);
               
               // Wait for fade duration (2.5s) before completely clearing the effect
               // This allows both CSS transitions and particle fade to complete smoothly
