@@ -257,8 +257,13 @@ a {
   transition-delay: 0.4s;
 }
 
-.menu-overlay.is-visible .retro-menu__status {
+/* Art menu item - 5th child */
+.menu-overlay.is-visible .retro-menu__item:nth-child(5) {
   transition-delay: 0.46s;
+}
+
+.menu-overlay.is-visible .retro-menu__status {
+  transition-delay: 0.52s;
 }
 
 .content-stage {

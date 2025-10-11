@@ -18,6 +18,19 @@ export default function RetroMenu({
   hasActiveEffect = false,
   activeEffectInfo = null,
 }) {
+  // DEBUG: Log menu items on mount/update
+  useEffect(() => {
+    console.log("🎨 [RetroMenu] Menu items:", {
+      count: items?.length,
+      items: items?.map((item, idx) => ({
+        index: idx,
+        id: item.id,
+        label: item.label,
+        nthChild: idx + 1
+      })),
+      artItem: items?.find(i => i.id === 'art')
+    });
+  }, [items]);
   // Panel transition states: 'closed' | 'fading' | 'opening' | 'open' | 'closing'
   // 'fading' = menu is fading out, panel not visible yet
   const [panelState, setPanelState] = useState("closed");
