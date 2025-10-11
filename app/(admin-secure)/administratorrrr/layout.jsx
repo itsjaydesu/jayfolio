@@ -11,7 +11,7 @@ export default async function AdminLayout({ children }) {
     redirect('/administratorrrr/login');
   }
 
-  const csrfToken = await createCsrfToken(session.sessionId);
+  const csrfToken = (await createCsrfToken(session.sessionId)) ?? '';
 
   return <AdminSessionProvider csrfToken={csrfToken}>{children}</AdminSessionProvider>;
 }

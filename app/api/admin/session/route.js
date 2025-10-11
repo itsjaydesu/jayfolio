@@ -29,7 +29,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Invalid passphrase' }, { status: 401 });
     }
 
-    const { token } = createAdminSessionToken();
+    const { token } = await createAdminSessionToken();
     const response = NextResponse.json({ ok: true });
     response.cookies.set(ADMIN_SESSION_COOKIE, token, COOKIE_OPTIONS);
     return response;
