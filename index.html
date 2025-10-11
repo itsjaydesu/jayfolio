@@ -173,32 +173,71 @@
     }
 
     /* Each menu item gets its complete animation with delay built-in */
+    /* Using explicit animation properties for better browser compatibility */
     .retro-menu__item:nth-child(1) {
-      animation: retroMenuItemEnter 0.52s 0.22s cubic-bezier(0.33, 1, 0.68, 1) both;
-      -webkit-animation: retroMenuItemEnter 0.52s 0.22s cubic-bezier(0.33, 1, 0.68, 1) both;
+      animation-name: retroMenuItemEnter;
+      animation-duration: 0.52s;
+      animation-delay: 0.22s;
+      animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+      animation-fill-mode: both;
+      -webkit-animation-name: retroMenuItemEnter;
+      -webkit-animation-duration: 0.52s;
+      -webkit-animation-delay: 0.22s;
+      -webkit-animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+      -webkit-animation-fill-mode: both;
     }
 
     .retro-menu__item:nth-child(2) {
-      animation: retroMenuItemEnter 0.52s 0.28s cubic-bezier(0.33, 1, 0.68, 1) both;
-      -webkit-animation: retroMenuItemEnter 0.52s 0.28s cubic-bezier(0.33, 1, 0.68, 1) both;
+      animation-name: retroMenuItemEnter;
+      animation-duration: 0.52s;
+      animation-delay: 0.28s;
+      animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+      animation-fill-mode: both;
+      -webkit-animation-name: retroMenuItemEnter;
+      -webkit-animation-duration: 0.52s;
+      -webkit-animation-delay: 0.28s;
+      -webkit-animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+      -webkit-animation-fill-mode: both;
     }
 
     .retro-menu__item:nth-child(3) {
-      animation: retroMenuItemEnter 0.52s 0.34s cubic-bezier(0.33, 1, 0.68, 1) both;
-      -webkit-animation: retroMenuItemEnter 0.52s 0.34s cubic-bezier(0.33, 1, 0.68, 1) both;
+      animation-name: retroMenuItemEnter;
+      animation-duration: 0.52s;
+      animation-delay: 0.34s;
+      animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+      animation-fill-mode: both;
+      -webkit-animation-name: retroMenuItemEnter;
+      -webkit-animation-duration: 0.52s;
+      -webkit-animation-delay: 0.34s;
+      -webkit-animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+      -webkit-animation-fill-mode: both;
     }
 
     .retro-menu__item:nth-child(4) {
-      animation: retroMenuItemEnter 0.52s 0.40s cubic-bezier(0.33, 1, 0.68, 1) both;
-      -webkit-animation: retroMenuItemEnter 0.52s 0.40s cubic-bezier(0.33, 1, 0.68, 1) both;
+      animation-name: retroMenuItemEnter;
+      animation-duration: 0.52s;
+      animation-delay: 0.40s;
+      animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+      animation-fill-mode: both;
+      -webkit-animation-name: retroMenuItemEnter;
+      -webkit-animation-duration: 0.52s;
+      -webkit-animation-delay: 0.40s;
+      -webkit-animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+      -webkit-animation-fill-mode: both;
     }
 
     /* Art menu item - 5th child with proper delay */
     .retro-menu__item:nth-child(5) {
-      animation: retroMenuItemEnter 0.52s 0.46s cubic-bezier(0.33, 1, 0.68, 1) both;
-      -webkit-animation: retroMenuItemEnter 0.52s 0.46s cubic-bezier(0.33, 1, 0.68, 1) both;
-      /* DEBUG: Add visible indicator to verify selector is working */
-      /* border: 2px solid red !important; */
+      animation-name: retroMenuItemEnter;
+      animation-duration: 0.52s;
+      animation-delay: 0.46s;
+      animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+      animation-fill-mode: both;
+      -webkit-animation-name: retroMenuItemEnter;
+      -webkit-animation-duration: 0.52s;
+      -webkit-animation-delay: 0.46s;
+      -webkit-animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+      -webkit-animation-fill-mode: both;
     }
 
     /* Keyframe animation for menu items entering */
@@ -530,10 +569,7 @@
       }
     };
 
-    // DEBUG: Log initialization timing
-    console.log("Starting Three.js init at:", performance.now());
     init();
-    console.log("Starting animation loop at:", performance.now());
     animate();
 
     function init() {
@@ -633,18 +669,6 @@
       window.addEventListener("resize", onWindowResize);
 
       buildGui();
-      
-      // DEBUG: Check timing and DOM state before menu init
-      console.log("About to init menu at:", performance.now());
-      console.log("Document ready state:", document.readyState);
-      const menuElement = document.querySelector(".retro-menu");
-      if (menuElement) {
-        const menuStyle = window.getComputedStyle(menuElement);
-        console.log("Menu visibility:", menuStyle.visibility);
-        console.log("Menu display:", menuStyle.display);
-        console.log("Menu opacity:", menuStyle.opacity);
-      }
-      
       initRetroMenu();
     }
 
@@ -821,54 +845,11 @@
       retroMenu.status = menuRoot.querySelector(".retro-menu__status");
       retroMenu.items = Array.from(menuRoot.querySelectorAll(".retro-menu__item"));
 
-      // DEBUG: Log DOM structure to verify nth-child assumptions
-      const menuList = menuRoot.querySelector(".retro-menu__list");
-      console.log("=== MENU ANIMATION DEBUG ===");
-      console.log("Menu list children:", menuList.children.length);
-      console.log("Menu list child nodes (including text):", menuList.childNodes.length);
-      
-      // Check what's actually in the DOM
-      Array.from(menuList.childNodes).forEach((node, i) => {
-        if (node.nodeType === 1) { // Element node
-          console.log(`Child ${i}: <${node.tagName}> data-section="${node.dataset?.section}"`);
-        } else if (node.nodeType === 3 && node.textContent.trim()) { // Non-empty text node
-          console.log(`Child ${i}: Text node: "${node.textContent.trim()}"`);
-        }
-      });
-
-      // Ensure all menu items are properly hidden initially and trigger animation
+      // Set up menu item event listeners without disrupting animations
       retroMenu.items.forEach((item, index) => {
         const key = item.dataset.section;
-        
-        // DEBUG: Check computed styles before animation
-        const computedStyle = window.getComputedStyle(item);
-        console.log(`\n--- ${key.toUpperCase()} item (index ${index}) ---`);
-        console.log("Initial opacity:", computedStyle.opacity);
-        console.log("Initial transform:", computedStyle.transform);
-        console.log("Animation name:", computedStyle.animationName);
-        console.log("Animation duration:", computedStyle.animationDuration);
-        console.log("Animation delay:", computedStyle.animationDelay);
-        console.log("Animation fill mode:", computedStyle.animationFillMode);
-        console.log("Is :nth-child selector working?:", item.matches(`:nth-child(${index + 1})`));
-        
-        // Check if item is actually the nth-child we expect
-        const parent = item.parentElement;
-        const actualNthChild = Array.from(parent.children).indexOf(item) + 1;
-        if (actualNthChild !== index + 1) {
-          console.warn(`⚠️ MISMATCH: ${key} is child ${actualNthChild}, not ${index + 1}`);
-        }
-        
-        // Force reflow to ensure animation triggers properly
-        item.style.animationName = 'none';
-        item.offsetHeight; // Trigger reflow
-        item.style.animationName = ''; // Reset to CSS-defined animation
-        
-        // DEBUG: Check computed styles after reflow
-        const afterStyle = window.getComputedStyle(item);
-        console.log("After reflow - Animation name:", afterStyle.animationName);
-        console.log("After reflow - Animation delay:", afterStyle.animationDelay);
-        
         const button = item.querySelector("button");
+        
         button.addEventListener("click", () => handleRetroMenuSelection(key));
         button.addEventListener("mouseenter", () => previewRetroMenuStatus(key));
         button.addEventListener("focus", () => previewRetroMenuStatus(key));
@@ -876,25 +857,17 @@
         button.addEventListener("blur", () => restoreRetroMenuStatus());
       });
 
-      console.log("=== END DEBUG ===\n");
-      
-      handleRetroMenuSelection("about");
+      // Delay initial selection until after animations complete
+      // Art animation completes at 460ms + 520ms = 980ms
+      setTimeout(() => {
+        handleRetroMenuSelection("about");
+      }, 1000);
     }
 
     function handleRetroMenuSelection(key) {
-      // DEBUG: Log what happens during menu selection
-      console.log(`handleRetroMenuSelection called for: ${key} at ${performance.now()}`);
-      
       retroActiveKey = key;
       retroMenu.items.forEach((item) => {
-        const isActive = item.dataset.section === key;
-        item.classList.toggle("is-active", isActive);
-        
-        // DEBUG: Check if this affects animations
-        if (item.dataset.section === "art") {
-          const style = window.getComputedStyle(item);
-          console.log(`Art item after selection - opacity: ${style.opacity}, animation: ${style.animationName}`);
-        }
+        item.classList.toggle("is-active", item.dataset.section === key);
       });
       updateRetroMenuStatus(key, true);
       nudgeFieldForMenu(key);
