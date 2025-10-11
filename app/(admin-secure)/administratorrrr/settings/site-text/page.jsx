@@ -2,8 +2,10 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import AdminNav from '../../../../components/admin-nav';
+import { useAdminFetch } from '../../../../components/admin-session-context';
 
 export default function SiteTextSettingsPage() {
+  const adminFetch = useAdminFetch();
   const [brand, setBrand] = useState('');
   const [items, setItems] = useState([]);
   const [status, setStatus] = useState('');
@@ -13,7 +15,7 @@ export default function SiteTextSettingsPage() {
     let ignore = false;
     (async () => {
       try {
-        const res = await fetch('/api/site-text', { cache: 'no-store' });
+        const res = await adminFetch('/api/site-text', { cache: 'no-store' });
         const data = await res.json();
         if (!res.ok) throw new Error(data?.error || 'Failed to load');
         if (ignore) return;
@@ -26,7 +28,7 @@ export default function SiteTextSettingsPage() {
     return () => {
       ignore = true;
     };
-  }, []);
+  }, [adminFetch]);
 
   const setItem = useCallback((index, patch) => {
     setItems((prev) => prev.map((it, i) => (i === index ? { ...it, ...patch } : it)));
@@ -47,7 +49,7 @@ export default function SiteTextSettingsPage() {
     try {
       setSaving(true);
       setStatus('');
-      const res = await fetch('/api/site-text', {
+      const res = await adminFetch('/api/site-text', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ brand, primaryMenu: items })
@@ -60,7 +62,7 @@ export default function SiteTextSettingsPage() {
     } finally {
       setSaving(false);
     }
-  }, [brand, items]);
+  }, [adminFetch, brand, items]);
 
   return (
     <div className="admin-shell">

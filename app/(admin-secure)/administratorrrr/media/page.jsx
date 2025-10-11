@@ -2,7 +2,8 @@
 
 import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import AdminNav from '../../../components/admin-nav';
+import AdminNav from '../../../../components/admin-nav';
+import { useAdminFetch } from '../../../../components/admin-session-context';
 
 const numberFormatter = new Intl.NumberFormat('en-US');
 
@@ -414,6 +415,7 @@ function FileCard({ file, onDelete, onSaveMeta }) {
 }
 
 export default function MediaLibraryPage() {
+  const adminFetch = useAdminFetch();
   const [files, setFiles] = useState([]);
   const [q, setQ] = useState('');
   const [status, setStatus] = useState('');
@@ -421,14 +423,14 @@ export default function MediaLibraryPage() {
   const refresh = useCallback(async () => {
     try {
       setStatus('');
-      const res = await fetch('/api/media', { cache: 'no-store' });
+      const res = await adminFetch('/api/media', { cache: 'no-store' });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || 'Failed to load');
       setFiles(Array.isArray(data.files) ? data.files : []);
     } catch (e) {
       setStatus(e.message);
     }
-  }, []);
+  }, [adminFetch]);
 
   useEffect(() => {
     refresh();
@@ -445,18 +447,18 @@ export default function MediaLibraryPage() {
   const handleDelete = useCallback(async (pathname) => {
     if (!confirm('Delete this file?')) return;
     try {
-      const res = await fetch(`/api/media?pathname=${encodeURIComponent(pathname)}`, { method: 'DELETE' });
+      const res = await adminFetch(`/api/media?pathname=${encodeURIComponent(pathname)}`, { method: 'DELETE' });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || 'Delete failed');
       setFiles((prev) => prev.filter((f) => f.pathname !== pathname));
     } catch (e) {
       setStatus(e.message);
     }
-  }, []);
+  }, [adminFetch]);
 
   const handleSaveMeta = useCallback(async (pathname, patch) => {
     try {
-      const res = await fetch('/api/media', {
+      const res = await adminFetch('/api/media', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pathname, ...patch })
@@ -467,7 +469,7 @@ export default function MediaLibraryPage() {
     } catch (e) {
       setStatus(e.message);
     }
-  }, []);
+  }, [adminFetch]);
 
   return (
     <div className="admin-shell">

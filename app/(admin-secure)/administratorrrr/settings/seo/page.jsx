@@ -2,10 +2,12 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import AdminNav from '../../../../components/admin-nav';
+import { useAdminFetch } from '../../../../components/admin-session-context';
 
 const DEFAULT_PAGE_NAMES = ['home', 'about', 'projects', 'words', 'sounds'];
 
 export default function SeoSettingsPage() {
+  const adminFetch = useAdminFetch();
   const [config, setConfig] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
@@ -17,7 +19,7 @@ export default function SeoSettingsPage() {
     let ignore = false;
     (async () => {
       try {
-        const response = await fetch('/api/seo');
+        const response = await adminFetch('/api/seo');
         const data = await response.json();
         if (!ignore) {
           setConfig(data.config);
@@ -28,7 +30,7 @@ export default function SeoSettingsPage() {
       }
     })();
     return () => { ignore = true; };
-  }, []);
+  }, [adminFetch]);
 
   const handleGlobalChange = useCallback((field, value) => {
     setConfig(prev => ({
@@ -127,7 +129,7 @@ export default function SeoSettingsPage() {
       setIsSaving(true);
       setStatusMessage('');
 
-      const response = await fetch('/api/seo', {
+      const response = await adminFetch('/api/seo', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(config)
@@ -146,7 +148,7 @@ export default function SeoSettingsPage() {
     } finally {
       setIsSaving(false);
     }
-  }, [config]);
+  }, [adminFetch, config]);
 
   if (!config) {
     return (

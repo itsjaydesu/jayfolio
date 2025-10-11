@@ -13,7 +13,7 @@ export default async function robots() {
     rules.push({
       userAgent: '*',
       allow: '/',
-      disallow: ['/api/', '/admin/'],
+      disallow: ['/api/', '/administratorrrr/'],
       crawlDelay: 1,
     });
   } else {
@@ -29,7 +29,7 @@ export default async function robots() {
     const googlebotRules = {
       userAgent: 'Googlebot',
       allow: '/',
-      disallow: ['/api/', '/admin/'],
+      disallow: ['/api/', '/administratorrrr/'],
     };
     
     if (robots.googleBot.index === false) {

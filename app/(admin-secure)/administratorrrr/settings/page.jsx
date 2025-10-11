@@ -3,22 +3,22 @@ import AdminNav from '../../../components/admin-nav';
 
 const SETTINGS_LINKS = [
   {
-    href: '/admin/settings/site-text',
+    href: '/administratorrrr/settings/site-text',
     title: 'Site Text',
     description: 'Manage brand copy and primary navigation labels.'
   },
   {
-    href: '/admin/settings/seo',
+    href: '/administratorrrr/settings/seo',
     title: 'SEO Settings',
     description: 'Manage search engine optimization, social sharing, and metadata for all pages.'
   },
   {
-    href: '/admin/settings/field',
+    href: '/administratorrrr/settings/field',
     title: 'Field Settings',
     description: 'Control the dotfield baseline mood and channel overrides.'
   },
   {
-    href: '/admin/settings/channel',
+    href: '/administratorrrr/settings/channel',
     title: 'Channel Copy',
     description: 'Edit per-channel hero context and about capsule copy.'
   }

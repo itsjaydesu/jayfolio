@@ -4,14 +4,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const NAV_LINKS = [
-  { href: "/admin", label: "Content" },
-  { href: "/admin/media", label: "Media Library" },
-  { href: "/admin/settings", label: "Settings" }
+  { href: "/administratorrrr", label: "Content" },
+  { href: "/administratorrrr/media", label: "Media Library" },
+  { href: "/administratorrrr/settings", label: "Settings" }
 ];
 
 function isActive(pathname, href) {
-  if (href === "/admin") {
-    return pathname === "/admin";
+  if (href === "/administratorrrr") {
+    return pathname === "/administratorrrr";
   }
   return pathname.startsWith(href);
 }

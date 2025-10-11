@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import AdminNav from '../../../../components/admin-nav';
+import { useAdminFetch } from '../../../../components/admin-session-context';
 import { FIELD_DEFAULT_BASE, FIELD_DEFAULT_INFLUENCES } from '../../../../lib/fieldDefaults';
 
 const FIELD_BASE_CONTROLS = [
@@ -78,6 +79,7 @@ function buildDefaultFieldSettings() {
 }
 
 export default function FieldSettingsPage() {
+  const adminFetch = useAdminFetch();
   const [fieldSettings, setFieldSettings] = useState(null);
   const [isSavingField, setIsSavingField] = useState(false);
   const [fieldStatus, setFieldStatus] = useState('');
@@ -161,7 +163,7 @@ export default function FieldSettingsPage() {
         return acc;
       }, {});
 
-      const response = await fetch('/api/field-settings', {
+      const response = await adminFetch('/api/field-settings', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ base: normalizedBase, influences: normalizedInfluences })
@@ -185,13 +187,13 @@ export default function FieldSettingsPage() {
     } finally {
       setIsSavingField(false);
     }
-  }, [fieldSettings]);
+  }, [adminFetch, fieldSettings]);
 
   useEffect(() => {
     let ignore = false;
     (async () => {
       try {
-        const response = await fetch('/api/field-settings', { cache: 'no-store' });
+        const response = await adminFetch('/api/field-settings', { cache: 'no-store' });
         const data = await response.json();
         if (!response.ok) {
           throw new Error(data?.error || 'Failed to load field settings');
@@ -217,7 +219,7 @@ export default function FieldSettingsPage() {
     return () => {
       ignore = true;
     };
-  }, []);
+  }, [adminFetch]);
 
   return (
     <div className="admin-shell">

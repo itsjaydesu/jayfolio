@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import ReactCrop, { centerCrop, makeAspectCrop } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
+import { useAdminFetch } from "./admin-session-context";
 
 const ACCEPT_INPUT = "image/*";
 const DEFAULT_ASPECT = 3 / 2;
@@ -78,6 +79,7 @@ async function readFileAsDataUrl(file) {
 export default function CoverImageUploader({ value, alt, onChange }) {
   const fileInputRef = useRef(null);
   const imgRef = useRef(null);
+  const adminFetch = useAdminFetch();
   const [error, setError] = useState("");
   const [isCropping, setIsCropping] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -187,7 +189,7 @@ export default function CoverImageUploader({ value, alt, onChange }) {
       const formData = new FormData();
       formData.append("file", uploadFile);
 
-      const response = await fetch("/api/upload", { method: "POST", body: formData });
+      const response = await adminFetch("/api/upload", { method: "POST", body: formData });
       const payload = await response.json();
 
       if (!response.ok) {
@@ -211,7 +213,7 @@ export default function CoverImageUploader({ value, alt, onChange }) {
     } finally {
       setIsUploading(false);
     }
-  }, [activeFile, closeCropper, completedCrop, imageSrc, onChange]);
+  }, [activeFile, adminFetch, closeCropper, completedCrop, imageSrc, onChange]);
 
   const toggleExisting = useCallback(() => {
     setError("");

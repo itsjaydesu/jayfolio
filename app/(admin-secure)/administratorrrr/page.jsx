@@ -1,10 +1,11 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import AdminNav from '../../components/admin-nav';
-import CoverImageUploader from '../../components/cover-image-uploader';
-import RichTextEditor from '../../components/rich-text-editor';
-import { ChevronDoubleDownIcon, ChevronDoubleUpIcon } from '../../components/icons';
+import AdminNav from '../../../components/admin-nav';
+import CoverImageUploader from '../../../components/cover-image-uploader';
+import RichTextEditor from '../../../components/rich-text-editor';
+import { useAdminFetch } from '../../../components/admin-session-context';
+import { ChevronDoubleDownIcon, ChevronDoubleUpIcon } from '../../../components/icons';
 
 const TYPE_OPTIONS = [
   { id: 'projects', label: 'Projects' },
@@ -64,6 +65,7 @@ function buildInitialForm() {
 }
 
 export default function AdminPage() {
+  const adminFetch = useAdminFetch();
   const [activeType, setActiveType] = useState(TYPE_OPTIONS[0].id);
   const [entries, setEntries] = useState([]);
   const [form, setForm] = useState(buildInitialForm);
@@ -74,13 +76,13 @@ export default function AdminPage() {
   const [isEditorFullscreen, setIsEditorFullscreen] = useState(false);
 
   const refreshEntries = useCallback(async (type) => {
-    const response = await fetch(`/api/content/${type}`);
+    const response = await adminFetch(`/api/content/${type}`);
     const data = await response.json();
     if (!response.ok) {
       throw new Error(data?.error || 'Failed to load entries');
     }
     return data.entries ?? [];
-  }, []);
+  }, [adminFetch]);
 
   useEffect(() => {
     let ignore = false;
@@ -177,7 +179,7 @@ export default function AdminPage() {
       }
 
       const method = selectedSlug ? 'PUT' : 'POST';
-      const response = await fetch(`/api/content/${activeType}`, {
+      const response = await adminFetch(`/api/content/${activeType}`, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -197,14 +199,14 @@ export default function AdminPage() {
     } finally {
       setIsSaving(false);
     }
-  }, [activeType, form, refreshEntries, selectedSlug]);
+  }, [activeType, adminFetch, form, refreshEntries, selectedSlug]);
 
   const handleDelete = useCallback(async () => {
     if (!selectedSlug) return;
     const confirmDelete = window.confirm('Delete this entry?');
     if (!confirmDelete) return;
     try {
-      const response = await fetch(`/api/content/${activeType}?slug=${selectedSlug}`, {
+      const response = await adminFetch(`/api/content/${activeType}?slug=${selectedSlug}`, {
         method: 'DELETE'
       });
       const result = await response.json();
@@ -219,12 +221,12 @@ export default function AdminPage() {
       console.error(error);
       setStatusMessage(error.message);
     }
-  }, [activeType, handleNew, refreshEntries, selectedSlug]);
+  }, [activeType, adminFetch, handleNew, refreshEntries, selectedSlug]);
 
   const handleDuplicate = useCallback(async () => {
     if (!selectedSlug) return;
     try {
-      const res = await fetch(`/api/content/${activeType}/duplicate`, {
+      const res = await adminFetch(`/api/content/${activeType}/duplicate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ slug: selectedSlug })
@@ -239,7 +241,7 @@ export default function AdminPage() {
       console.error(error);
       setStatusMessage(error.message);
     }
-  }, [activeType, refreshEntries, selectedSlug]);
+  }, [activeType, adminFetch, refreshEntries, selectedSlug]);
 
   const isEditingExisting = useMemo(() => Boolean(selectedSlug), [selectedSlug]);
 

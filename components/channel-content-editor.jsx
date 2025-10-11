@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { createChannelContentDefaults } from '../lib/channelContentDefaults';
+import { useAdminFetch } from './admin-session-context';
 
 const SECTION_LABELS = {
   about: 'About',
@@ -58,6 +59,7 @@ function resetContent(previous, sections) {
 
 export default function ChannelContentEditor({ sections = ['about', 'projects', 'words', 'sounds'] }) {
   const uniqueSections = useMemo(() => Array.from(new Set(sections)), [sections]);
+  const adminFetch = useAdminFetch();
   const [content, setContent] = useState(createInitialState);
   const [status, setStatus] = useState('');
   const [saving, setSaving] = useState(false);
@@ -67,7 +69,7 @@ export default function ChannelContentEditor({ sections = ['about', 'projects', 
     let ignore = false;
     (async () => {
       try {
-        const res = await fetch('/api/channel-content', { cache: 'no-store' });
+        const res = await adminFetch('/api/channel-content', { cache: 'no-store' });
         const data = await res.json();
         if (!res.ok) throw new Error(data?.error || 'Failed to load channel content');
         if (ignore) return;
@@ -81,7 +83,7 @@ export default function ChannelContentEditor({ sections = ['about', 'projects', 
     return () => {
       ignore = true;
     };
-  }, []);
+  }, [adminFetch]);
 
   const about = useMemo(() => content.about, [content]);
   const showAbout = uniqueSections.includes('about');
@@ -229,7 +231,7 @@ export default function ChannelContentEditor({ sections = ['about', 'projects', 
     try {
       setSaving(true);
       setStatus('');
-      const res = await fetch('/api/channel-content', {
+      const res = await adminFetch('/api/channel-content', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(content)
@@ -243,7 +245,7 @@ export default function ChannelContentEditor({ sections = ['about', 'projects', 
     } finally {
       setSaving(false);
     }
-  }, [content]);
+  }, [adminFetch, content]);
 
   if (loading) {
     return (

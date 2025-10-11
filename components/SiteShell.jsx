@@ -33,7 +33,7 @@ export default function SiteShell({ children }) {
   );
   const primarySegment = pathSegments[0] ?? null;
   const isHome = pathSegments.length === 0;
-  const isAdminView = primarySegment === "admin";
+  const isAdminView = primarySegment === "administratorrrr";
   
   // Check if current route should stop animation
   const shouldStopAnimation = primarySegment === 'about' || 

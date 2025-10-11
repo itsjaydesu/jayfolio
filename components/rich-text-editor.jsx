@@ -43,6 +43,7 @@ import {
   UndoIcon,
   UploadIcon
 } from './icons';
+import { useAdminFetch } from './admin-session-context';
 
 // Mirrors the server-side default document so we never render an empty editor root.
 const DEFAULT_EMPTY_DOC = '<p></p>';
@@ -197,6 +198,7 @@ export default function RichTextEditor({
   isFullscreen = false,
   onToggleFullscreen
 }) {
+  const adminFetch = useAdminFetch();
   const fileInputRef = useRef(null);
   const uploadFilesRef = useRef(null);
   const abortControllersRef = useRef(new Set());
@@ -368,7 +370,7 @@ export default function RichTextEditor({
         const body = new FormData();
         body.append('file', file);
 
-        const response = await fetch('/api/upload', {
+        const response = await adminFetch('/api/upload', {
           method: 'POST',
           body,
           signal: controller.signal
@@ -395,7 +397,7 @@ export default function RichTextEditor({
         abortControllersRef.current.delete(controller);
       }
     },
-    [insertUploadedFile, validateFile]
+    [adminFetch, insertUploadedFile, validateFile]
   );
 
   const uploadFiles = useCallback(

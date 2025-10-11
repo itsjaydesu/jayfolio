@@ -3,22 +3,22 @@ import AdminNav from '../../../../components/admin-nav';
 
 const CHANNEL_LINKS = [
   {
-    href: '/admin/settings/channel/about',
+    href: '/administratorrrr/settings/channel/about',
     title: 'About Channel Copy',
     description: 'Edit the about capsule hero, history, and studio signals.'
   },
   {
-    href: '/admin/settings/channel/projects',
+    href: '/administratorrrr/settings/channel/projects',
     title: 'Projects Hero Copy',
     description: 'Update the projects hero title and lead text.'
   },
   {
-    href: '/admin/settings/channel/words',
+    href: '/administratorrrr/settings/channel/words',
     title: 'Words Hero Copy',
     description: 'Tune the words hero headline and descriptive lead.'
   },
   {
-    href: '/admin/settings/channel/sounds',
+    href: '/administratorrrr/settings/channel/sounds',
     title: 'Sounds Hero Copy',
     description: 'Adjust the sounds hero headline and supporting copy.'
   }
