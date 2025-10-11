@@ -16,6 +16,7 @@ export default function RetroMenu({
   variant = "sidebar",
   onFieldEffect,
   hasActiveEffect = false,
+  activeEffectInfo = null,
 }) {
   // Panel transition states: 'closed' | 'fading' | 'opening' | 'open' | 'closing'
   // 'fading' = menu is fading out, panel not visible yet
@@ -24,6 +25,10 @@ export default function RetroMenu({
   const toggleRef = useRef(null);
   const panelTimerRef = useRef(null);
   const panelAnimFrameRef = useRef(null);
+  const [tooltipVisible, setTooltipVisible] = useState(false);
+  const [remainingTime, setRemainingTime] = useState(null);
+  const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
+  const tooltipTimerRef = useRef(null);
 
   // Check for reduced motion preference
   const prefersReducedMotion = useRef(
@@ -271,6 +276,28 @@ export default function RetroMenu({
     }
   };
 
+  // Update countdown timer
+  useEffect(() => {
+    if (activeEffectInfo && activeEffectInfo.duration && tooltipVisible) {
+      const updateCountdown = () => {
+        const elapsed = (Date.now() - activeEffectInfo.startTime) / 1000;
+        const remaining = Math.max(0, activeEffectInfo.duration - elapsed);
+        setRemainingTime(Math.ceil(remaining));
+        
+        if (remaining > 0) {
+          tooltipTimerRef.current = requestAnimationFrame(updateCountdown);
+        }
+      };
+      updateCountdown();
+      
+      return () => {
+        if (tooltipTimerRef.current) {
+          cancelAnimationFrame(tooltipTimerRef.current);
+        }
+      };
+    }
+  }, [activeEffectInfo, tooltipVisible]);
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -279,6 +306,9 @@ export default function RetroMenu({
       }
       if (panelAnimFrameRef.current) {
         cancelAnimationFrame(panelAnimFrameRef.current);
+      }
+      if (tooltipTimerRef.current) {
+        cancelAnimationFrame(tooltipTimerRef.current);
       }
     };
   }, []);
@@ -366,31 +396,69 @@ export default function RetroMenu({
           <span className="indicator" aria-hidden="true" /> Jay Winder
         </span>
         <div className="retro-menu__title-actions">
-          <button
-            ref={toggleRef}
-            type="button"
-            className={`retro-menu__settings-toggle${
-              panelState === "opening" || panelState === "open"
-                ? " is-active"
-                : ""
-            }`}
-            onClick={togglePanel}
-            aria-expanded={panelState === "opening" || panelState === "open"}
-            aria-label="Toggle field effects settings"
-            title="Field Effects"
-          >
-            <svg
-              viewBox="0 0 20 20"
-              aria-hidden="true"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
+          <div className="retro-menu__settings-wrapper">
+            <button
+              ref={toggleRef}
+              type="button"
+              className={`retro-menu__settings-toggle${
+                panelState === "opening" || panelState === "open"
+                  ? " is-active"
+                  : ""
+              }`}
+              onClick={togglePanel}
+              onMouseEnter={() => {
+                if (toggleRef.current && activeEffectInfo) {
+                  const rect = toggleRef.current.getBoundingClientRect();
+                  setTooltipPosition({
+                    top: rect.top - 10,  // Position above the button
+                    left: rect.left + rect.width / 2
+                  });
+                }
+                setTooltipVisible(true);
+              }}
+              onMouseLeave={() => setTooltipVisible(false)}
+              aria-expanded={panelState === "opening" || panelState === "open"}
+              aria-label="Toggle field effects settings"
+              title={!tooltipVisible ? "Field Effects" : undefined}
             >
-              <circle cx="10" cy="10" r="3" />
-              <path d="M10 3.5v-1m0 15v-1m6.5-6.5h1m-15 0h1" />
-              <path d="M14.5 5.5l.7-.7m-10.4 10.4l.7-.7m0-9.4l-.7-.7m10.4 10.4l-.7-.7" />
-            </svg>
-          </button>
+              <svg
+                viewBox="0 0 20 20"
+                aria-hidden="true"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              >
+                <circle cx="10" cy="10" r="3" />
+                <path d="M10 3.5v-1m0 15v-1m6.5-6.5h1m-15 0h1" />
+                <path d="M14.5 5.5l.7-.7m-10.4 10.4l.7-.7m0-9.4l-.7-.7m10.4 10.4l-.7-.7" />
+              </svg>
+            </button>
+            {tooltipVisible && activeEffectInfo && (
+              <div 
+                className="retro-menu__tooltip"
+                style={{
+                  top: `${tooltipPosition.top - 40}px`,  // Adjust to appear above button
+                  left: `${tooltipPosition.left}px`
+                }}
+              >
+                <div className="retro-menu__tooltip-content">
+                  <div className="retro-menu__tooltip-effect">
+                    {activeEffectInfo.name} Active
+                  </div>
+                  {activeEffectInfo.duration && remainingTime !== null && (
+                    <div className="retro-menu__tooltip-timer">
+                      Resets in {remainingTime}s
+                    </div>
+                  )}
+                  {!activeEffectInfo.duration && (
+                    <div className="retro-menu__tooltip-info">
+                      No auto-reset
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
           <Link
             href="https://x.com/itsjaydesu"
             target="_blank"

@@ -363,7 +363,7 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
 
         return {
           zenMode: {
-            duration: null,  // Zen mode stays active until another effect is triggered
+            duration: 15,  // Standardized to 15 seconds
             init: () => ({ 
               time: 0,
               breathPhase: 0
@@ -405,7 +405,7 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
             }
           },
           spiralFlow: {
-            duration: 18,
+            duration: 15,
             init: () => ({}),
             start: () => {
               setValue('animationSpeed', 1.1);
@@ -425,7 +425,7 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
             }
           },
           riverFlow: {  // "Quake" effect - seismic waves through the field
-            duration: 24,
+            duration: 15,
             init: () => ({ 
               riverPhase: 0,
               waveOffset: Math.random() * Math.PI * 2 
@@ -484,7 +484,7 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
             }
           },
           mandelbrotZoom: {
-            duration: 24,
+            duration: 15,
             init: () => ({ c: { x: -0.70176, y: -0.3842 } }),
             update: ({ effectTime, data }) => {
               data.c.x = -0.70176 + Math.cos(effectTime * 0.22) * 0.12;
@@ -523,7 +523,7 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
             }
           },
           reactionDiffusionBloom: {
-            duration: 28,
+            duration: 15,
             init: () => createReactionDiffusion(),
             update: ({ delta, effectTime, data }) => {
               const Du = 0.16;
@@ -605,7 +605,7 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
             }
           },
           harmonicPendulum: {
-            duration: 25,
+            duration: 15,
             init: () => ({ systems: createPendulums() }),
             update: ({ delta, data }) => {
               const g = 9.81;
@@ -657,6 +657,7 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
             }
           },
           starfield: {
+            duration: 15,
             init: () => createStarfieldData(),
             start: ({ data }) => {
               if (data) {
@@ -787,16 +788,19 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
         pointer.worldZ = 0;
       }
 
-      function activateEffect(type) {
+      function activateEffect(type, combine = false) {
         const definition = effectDefinitions[type];
         if (!definition) {
           console.warn(`[SceneCanvas] Unknown effect "${type}" requested`);
           return false;
         }
 
-        // If another effect is running, clear it immediately (no fade)
-        // This handles edge case of starting new effect during fadeout
-        if (effectRef.type) {
+        // Allow combining certain effects (don't clear existing ones)
+        const combinableEffects = ['swirlPulse', 'jitter'];
+        const shouldCombine = combine || combinableEffects.includes(type);
+        
+        // If not combining and another effect is running, clear it
+        if (!shouldCombine && effectRef.type) {
           clearEffect(true);
         }
 
@@ -1201,8 +1205,8 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
             applyMenuValue(key, value, false);
           });
         },
-        triggerEffect: (type) => {
-          return activateEffect(type);
+        triggerEffect: (type, combine = false) => {
+          return activateEffect(type, combine);
         }
       };
 
@@ -1283,10 +1287,10 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
       if (!state?.resetToDefaults) return;
       state.resetToDefaults();
     },
-    triggerEffect: (type) => {
+    triggerEffect: (type, combine = false) => {
       const state = stateRef.current;
       if (!state?.triggerEffect) return false;
-      return state.triggerEffect(type);
+      return state.triggerEffect(type, combine);
     }
   }));
 

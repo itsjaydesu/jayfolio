@@ -67,6 +67,7 @@ export default function SiteShell({ children }) {
   const [navReady, setNavReady] = useState(false);
   const [hasScrolled, setHasScrolled] = useState(false);
   const [hasActiveEffect, setHasActiveEffect] = useState(false);
+  const [activeEffectInfo, setActiveEffectInfo] = useState(null); // { name, startTime, duration }
 
   // Active menu item computation
   const activeItem = useMemo(
@@ -457,8 +458,39 @@ export default function SiteShell({ children }) {
     setStatus(activeStatus);
   };
 
-  const handleEffectChange = useCallback((isActive) => {
+  const handleEffectChange = useCallback((isActive, effectType) => {
     setHasActiveEffect(isActive);
+    if (isActive && effectType) {
+      // All effects standardized to 15 seconds
+      const effectDurations = {
+        spiralFlow: 15,
+        riverFlow: 15,  // Quake
+        mandelbrotZoom: 15,
+        reactionDiffusionBloom: 15,
+        harmonicPendulum: 15,
+        starfield: 15,
+        zenMode: 15,
+      };
+      
+      const effectNames = {
+        spiralFlow: 'Spiral',
+        riverFlow: 'Quake',
+        mandelbrotZoom: 'Hop',
+        reactionDiffusionBloom: 'Bloom',
+        harmonicPendulum: 'Blink',
+        starfield: 'Stars',
+        zenMode: 'Zen',
+      };
+      
+      setActiveEffectInfo({
+        name: effectNames[effectType] || effectType,
+        type: effectType,
+        startTime: Date.now(),
+        duration: effectDurations[effectType] || null
+      });
+    } else {
+      setActiveEffectInfo(null);
+    }
   }, []);
 
   const handleFieldEffect = (effectType) => {
@@ -502,7 +534,7 @@ export default function SiteShell({ children }) {
             sceneRef.current.addRipple(x, z, 0.5 + Math.random() * 0.5);
           }
         }, 600);
-        // Jitter doesn't need transparent menu
+        // Jitter is a temporary effect, not tracked
         break;
       case 'spiralFlow':
       case 'riverFlow':
@@ -522,8 +554,20 @@ export default function SiteShell({ children }) {
           animationSpeed: 1.8,
           amplitude: 60
         });
-        // Swirl pulse is an active effect
+        // Swirl pulse is a temporary active effect
         setHasActiveEffect(true);
+        setActiveEffectInfo({
+          name: 'Swirl',
+          type: 'swirlPulse',
+          startTime: Date.now(),
+          duration: 15  // Standardized duration
+        });
+        // Auto-reset after 15 seconds
+        setTimeout(() => {
+          sceneRef.current.resetToDefaults();
+          setHasActiveEffect(false);
+          setActiveEffectInfo(null);
+        }, 15000);
         break;
       case 'calmReset':
         // If an effect is active, reset to defaults
@@ -531,10 +575,17 @@ export default function SiteShell({ children }) {
         if (hasActiveEffect) {
           sceneRef.current.resetToDefaults();
           setHasActiveEffect(false);
+          setActiveEffectInfo(null);
         } else {
           // Trigger zen mode for a very flat, calm sea
           if (sceneRef.current.triggerEffect('zenMode')) {
             setHasActiveEffect(true);
+            setActiveEffectInfo({
+              name: 'Zen',
+              type: 'zenMode',
+              startTime: Date.now(),
+              duration: null  // Zen mode has no duration
+            });
           }
         }
         break;
@@ -608,6 +659,7 @@ export default function SiteShell({ children }) {
             onNavigate={handleMenuReset}
             onFieldEffect={handleFieldEffect}
             hasActiveEffect={hasActiveEffect}
+            activeEffectInfo={activeEffectInfo}
             isOpen
             variant="centerpiece"
           />
