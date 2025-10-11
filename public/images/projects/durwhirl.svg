@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 320" role="img" aria-labelledby="title desc">
+  <title id="title">DurWhirl Reverse Wordle</title>
+  <desc id="desc">DurWhirl logotype floating above a neon gradient halo.</desc>
+  <defs>
+    <radialGradient id="halo" cx="50%" cy="45%" r="70%">
+      <stop offset="0%" stop-color="#9ef2ff" stop-opacity="0.95" />
+      <stop offset="45%" stop-color="#6c63ff" stop-opacity="0.65" />
+      <stop offset="100%" stop-color="#11063a" stop-opacity="1" />
+    </radialGradient>
+    <linearGradient id="text" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fffcea" />
+      <stop offset="45%" stop-color="#ffe9ff" />
+      <stop offset="100%" stop-color="#8edbff" />
+    </linearGradient>
+  </defs>
+  <rect width="480" height="320" fill="#050314" rx="32" />
+  <circle cx="240" cy="150" r="150" fill="url(#halo)" filter="url(#blur)" />
+  <g transform="translate(60 120)">
+    <path d="M32 80C14.4 80 0 65.6 0 48S14.4 16 32 16h48c26.4 0 48 21.6 48 48s-21.6 48-48 48H32Zm48-24c13.2 0 24-10.8 24-24s-10.8-24-24-24H32c-13.2 0-24 10.8-24 24s10.8 24 24 24h48Z" fill="url(#text)"/>
+    <path d="M152 16h28l38 64 38-64h28v128h-28V73l-38 63-38-63v71h-28V16Z" fill="url(#text)"/>
+    <path d="M332 16h28v72c0 13.2 10.8 24 24 24s24-10.8 24-24V16h28v72c0 28.8-23.2 52-52 52s-52-23.2-52-52V16Z" fill="url(#text)"/>
+  </g>
+  <text x="240" y="266" text-anchor="middle" font-family="'Neue Haas Grotesk', 'Inter', sans-serif" font-size="24" fill="rgba(255,255,255,0.76)">Reverse Wordle guessing your word</text>
+</svg>

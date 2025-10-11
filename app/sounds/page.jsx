@@ -16,9 +16,7 @@ export async function generateViewport() {
 }
 
 const SOUND_TONES = {
-  'chromatic-drones': 'violet',
-  'pulse-sketches': 'amber',
-  'archive-reworks': 'teal'
+  reviola: 'violet'
 };
 
 export default async function SoundsPage() {

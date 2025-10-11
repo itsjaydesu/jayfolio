@@ -1,6 +1,57 @@
 {
   "entries": [
     {
+      "slug": "generate-qr-code-free",
+      "title": "QR Code Generator for 3D Printing",
+      "summary": "Browser-based QR builder exporting STL frames ready for print farms and rapid signage installs.",
+      "content": "<p>Generate QR Code Free turns CAD experiments into production-ready signage. The web app creates scannable codes with customizable frames, exports PNG and SVG assets, and produces beveled STL plates that hold their fidelity after FDM or resin printing.</p><p>The toolkit layers in slicer profiles, post-processing guides, and a scan verifier so fabrication labs can deploy connected experiences without recurring fees.</p>",
+      "tags": [
+        "3D printing",
+        "Tooling",
+        "Open web"
+      ],
+      "coverImage": {
+        "url": "/images/projects/qr-code-generator.svg",
+        "alt": "3D printable QR frame rendered against a gradient"
+      },
+      "status": "published",
+      "createdAt": "2025-08-01"
+    },
+    {
+      "slug": "durwhirl",
+      "title": "DurWhirl",
+      "summary": "Reverse Wordle experiment where the AI deciphers your five-letter secret with animated UI flair.",
+      "content": "<p>DurWhirl flips the classic Wordle loop: you type a word and watch a luminous interface visualize the AI's guesses. The game leans on buttery gradients, playful animations, and a lightweight runtime that works across mobile and desktop.</p><p>Microcopy and motion states keep each round energetic while social links encourage sharing streaks directly from the finish screen.</p>",
+      "tags": [
+        "Game",
+        "AI",
+        "WebGL"
+      ],
+      "coverImage": {
+        "url": "/images/projects/durwhirl.svg",
+        "alt": "DurWhirl logo floating over a gradient halo"
+      },
+      "status": "published",
+      "createdAt": "2024-11-20"
+    },
+    {
+      "slug": "word-battle-sim",
+      "title": "WordBattle Simulator",
+      "summary": "Satirical browser battler showing how outrage campaigns backfire on the instigator.",
+      "content": "<p>WordBattle Simulator riffs on arcade boss fights to parody cancel culture dynamics. Players hurl buzzword attacks but discover the opponent stays at full health while their own credibility bar drains to zero.</p><p>The experience pairs pixel art portraits with tongue-in-cheek copywriting and a FAQ that frames the project as commentary on open-source governance dogpiles.</p>",
+      "tags": [
+        "Satire",
+        "Interactive",
+        "Web"
+      ],
+      "coverImage": {
+        "url": "/images/projects/word-battle-sim.svg",
+        "alt": "Pixel art warning screen inspired by WordBattle Simulator"
+      },
+      "status": "published",
+      "createdAt": "2024-10-01"
+    },
+    {
       "slug": "makeleaps",
       "title": "MakeLeaps",
       "summary": "Cloud invoicing platform built in Tokyo to automate quotes, invoices, and postal delivery for bilingual teams.",

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 320" role="img" aria-labelledby="title desc">
+  <title id="title">WordBattle Simulator</title>
+  <desc id="desc">Pixel art inspired interface with red warning grid.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b0015" />
+      <stop offset="100%" stop-color="#260016" />
+    </linearGradient>
+  </defs>
+  <rect width="480" height="320" rx="28" fill="url(#bg)" />
+  <g transform="translate(56 60)">
+    <rect width="368" height="200" rx="18" fill="rgba(255,67,101,0.12)" stroke="#ff4765" stroke-width="2" stroke-dasharray="10 6" />
+    <rect x="24" y="24" width="120" height="120" rx="12" fill="#12000c" stroke="#ff4765" stroke-width="2" />
+    <rect x="44" y="44" width="80" height="80" rx="10" fill="#ff4765" opacity="0.25" />
+    <rect x="170" y="40" width="154" height="20" rx="6" fill="#ff4765" />
+    <rect x="170" y="72" width="154" height="20" rx="6" fill="#ff4765" opacity="0.6" />
+    <rect x="170" y="104" width="154" height="20" rx="6" fill="#ff4765" opacity="0.4" />
+    <rect x="170" y="136" width="154" height="20" rx="6" fill="#ff4765" opacity="0.25" />
+    <text x="32" y="190" font-family="'Press Start 2P', 'Courier New', monospace" font-size="12" fill="#ff4765">CREDIBILITY: ▓▓▓░░░</text>
+  </g>
+  <text x="240" y="284" text-anchor="middle" font-family="'Press Start 2P', 'Courier New', monospace" font-size="16" fill="#ff4765">WORD BATTLE SIMULATOR</text>
+</svg>

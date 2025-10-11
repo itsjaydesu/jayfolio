@@ -1,28 +1,16 @@
 {
   "entries": [
     {
-      "slug": "chromatic-drones",
-      "title": "Chromatic Drones",
-      "summary": "Looping nocturnal textures tuned for deep focus rituals.",
-      "content": "<p>An evolving suite of drones recorded with analogue synth layers and feedback delay networks. Includes session notes, tuning charts, and an embedded player once assets are uploaded.</p>",
-      "tags": ["ambient", "loops"],
-      "createdAt": "2024-02-02"
-    },
-    {
-      "slug": "pulse-sketches",
-      "title": "Pulse Sketches",
-      "summary": "Percussive prototypes for live manipulation on performance floors.",
-      "content": "<p>Modular rhythms assembled in Hydra and Ableton Link. The collection pairs notated diagrams with audio stems for remixing.</p>",
-      "tags": ["percussion"],
-      "createdAt": "2023-10-15"
-    },
-    {
-      "slug": "archive-reworks",
-      "title": "Archive Reworks",
-      "summary": "Ambient suites conjured from found stems and field recordings.",
-      "content": "<p>Dissected stems from the project archive reassembled into long-form ambient suites. Pair with photo essays and patch notes for each iteration.</p>",
-      "tags": ["rework", "ambient"],
-      "createdAt": "2023-07-08"
+      "slug": "reviola",
+      "title": "Reviola",
+      "summary": "Downtempo strings and spacey arps drifting through a midnight soundscape.",
+      "content": "<p>Reviola floats a lead violin over weightless synth pads, evolving arpeggios, and granular percussion flickers. The track was written as a companion to late-night render sessions and slow-drifting visualizers.</p><p>This capture bundles 24-bit WAV and high-quality MP3 masters alongside liner notes for the generative patches and pedal chain.</p><figure class=\"sound-player\"><figcaption>Lossless master</figcaption><audio controls preload=\"metadata\" src=\"/sounds/reviola/reviola.wav\" /></figure><figure class=\"sound-player\"><figcaption>High quality MP3</figcaption><audio controls preload=\"metadata\" src=\"/sounds/reviola/reviola.mp3\" /></figure>",
+      "tags": ["electronic", "downtempo", "violin"],
+      "coverImage": {
+        "url": "https://irq8pcmcsnz9tzjh.public.blob.vercel-storage.com/reviola.jpeg",
+        "alt": "Cover art for Reviola with textured blue gradients"
+      },
+      "createdAt": "2024-12-12"
     }
   ]
 }

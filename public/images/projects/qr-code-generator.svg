@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 320" role="img" aria-labelledby="title desc">
+  <title id="title">3D Printable QR Generator</title>
+  <desc id="desc">Stylised QR frame floating over a blue to purple gradient.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1f2bff" />
+      <stop offset="55%" stop-color="#7d4bff" />
+      <stop offset="100%" stop-color="#c06bff" />
+    </linearGradient>
+    <linearGradient id="frame" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="#d7e6ff" stop-opacity="0.9" />
+    </linearGradient>
+  </defs>
+  <rect width="480" height="320" fill="url(#bg)" rx="36" />
+  <g transform="translate(120 60)">
+    <rect x="-12" y="-12" width="264" height="264" rx="28" fill="rgba(0,0,0,0.12)" />
+    <rect width="240" height="240" rx="24" fill="#0f172a" />
+    <rect x="16" y="16" width="208" height="208" fill="url(#frame)" rx="20" />
+    <g fill="#0f172a">
+      <rect x="36" y="36" width="48" height="48" rx="8" />
+      <rect x="156" y="36" width="48" height="48" rx="8" />
+      <rect x="36" y="156" width="48" height="48" rx="8" />
+      <rect x="104" y="104" width="32" height="32" />
+      <rect x="156" y="120" width="24" height="48" />
+      <rect x="120" y="156" width="24" height="24" />
+      <rect x="188" y="172" width="16" height="16" />
+      <rect x="188" y="120" width="16" height="16" />
+      <rect x="68" y="120" width="32" height="24" />
+      <rect x="120" y="196" width="16" height="16" />
+    </g>
+  </g>
+  <text x="240" y="300" text-anchor="middle" fill="rgba(255,255,255,0.82)" font-family="'Neue Haas Grotesk', 'Inter', sans-serif" font-size="24" letter-spacing="0.08em">PRINT-READY QR WORKFLOWS</text>
+</svg>
