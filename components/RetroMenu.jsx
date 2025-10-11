@@ -18,19 +18,7 @@ export default function RetroMenu({
   hasActiveEffect = false,
   activeEffectInfo = null,
 }) {
-  // DEBUG: Log menu items on mount/update
-  useEffect(() => {
-    console.log("🎨 [RetroMenu] Menu items:", {
-      count: items?.length,
-      items: items?.map((item, idx) => ({
-        index: idx,
-        id: item.id,
-        label: item.label,
-        nthChild: idx + 1
-      })),
-      artItem: items?.find(i => i.id === 'art')
-    });
-  }, [items]);
+
   // Panel transition states: 'closed' | 'fading' | 'opening' | 'open' | 'closing'
   // 'fading' = menu is fading out, panel not visible yet
   const [panelState, setPanelState] = useState("closed");
@@ -60,46 +48,15 @@ export default function RetroMenu({
 
         // Find the titlebar to calculate overlay position
         const titlebar = menuElement.querySelector(".retro-menu__titlebar");
-        const menuBody = menuElement.querySelector(".retro-menu__body");
-        const menuList = menuElement.querySelector(".retro-menu__list");
 
-        // DIAGNOSTIC: Log menu state and positioning
-        console.log("🔍 [RetroMenu Debug] Panel Opening:", {
-          panelState,
-          dataPanelActive: menuElement.getAttribute("data-panel-active"),
-          menuRect: {
-            top: menuRect.top,
-            left: menuRect.left,
-            width: menuRect.width,
-            height: menuRect.height,
-          },
-          menuContainerOpacity: window.getComputedStyle(menuElement).opacity,
-          menuContainerBackground:
-            window.getComputedStyle(menuElement).background.substring(0, 100) +
-            "...",
-          menuBodyOpacity: menuBody
-            ? window.getComputedStyle(menuBody).opacity
-            : "N/A",
-          menuListOpacity: menuList
-            ? window.getComputedStyle(menuList).opacity
-            : "N/A",
-          menuBodyDisplay: menuBody
-            ? window.getComputedStyle(menuBody).display
-            : "N/A",
-        });
+
 
         // Calculate top position to overlay the menu body area
         // Position panel to replace the menu navbar area
         let topPos = menuRect.top;
         if (titlebar) {
-          const titlebarRect = titlebar.getBoundingClientRect();
           // Align panel with the menu top for cleaner overlay
           topPos = menuRect.top; // Align with menu top
-
-          console.log("🔍 [RetroMenu Debug] Titlebar:", {
-            titlebarBottom: titlebarRect.bottom,
-            calculatedTopPos: topPos,
-          });
         }
 
         // Calculate left position, ensuring panel stays within viewport
@@ -123,7 +80,7 @@ export default function RetroMenu({
           width: panelWidth,
         };
 
-        console.log("🔍 [RetroMenu Debug] Final Panel Position:", newPosition);
+
 
         setPanelPosition(newPosition);
 
@@ -161,8 +118,6 @@ export default function RetroMenu({
 
   // Open panel with transition
   const openPanel = () => {
-    console.log("🔍 [RetroMenu Debug] openPanel called");
-
     // Clear any pending timers
     if (panelTimerRef.current) {
       clearTimeout(panelTimerRef.current);
@@ -177,29 +132,6 @@ export default function RetroMenu({
     // Phase 1: 'fading' state triggers menu fade-out via data-panel-active
     // Phase 2: After menu starts fading, show panel with 'opening' state
     setPanelState("fading");
-    console.log(
-      "🔍 [RetroMenu Debug] Panel state set to 'fading' - menu starts fade"
-    );
-    
-    // Monitor transform changes during transition
-    if (toggleRef.current) {
-      const menuElement = toggleRef.current.closest(".retro-menu");
-      if (menuElement) {
-        let frameCount = 0;
-        const monitorTransform = () => {
-          if (frameCount < 20) { // Monitor for ~300ms
-            const styles = window.getComputedStyle(menuElement);
-            console.log(`🎯 [Transform Monitor] Frame ${frameCount}:`, {
-              transform: styles.transform,
-              opacity: styles.opacity,
-            });
-            frameCount++;
-            requestAnimationFrame(monitorTransform);
-          }
-        };
-        requestAnimationFrame(monitorTransform);
-      }
-    }
 
     if (prefersReducedMotion.current) {
       // No delay for reduced motion
@@ -208,9 +140,6 @@ export default function RetroMenu({
       // Delay panel appearance to allow menu opacity to decrease
       panelTimerRef.current = setTimeout(() => {
         setPanelState("opening");
-        console.log(
-          "🔍 [RetroMenu Debug] Panel state set to 'opening' (menu has faded)"
-        );
         panelTimerRef.current = null;
       }, 150); // 150ms allows menu to visibly start fading
     }
@@ -247,40 +176,6 @@ export default function RetroMenu({
   // Toggle panel
   const togglePanel = () => {
     const isOpen = panelState === "opening" || panelState === "open";
-    
-    // DEBUG: Log computed styles when toggling
-    if (toggleRef.current) {
-      const menuElement = toggleRef.current.closest(".retro-menu");
-      if (menuElement) {
-        const computedStyles = window.getComputedStyle(menuElement);
-        console.log("🎯 [Menu Toggle] Current styles:", {
-          transform: computedStyles.transform,
-          transformOrigin: computedStyles.transformOrigin,
-          opacity: computedStyles.opacity,
-          filter: computedStyles.filter,
-          transition: computedStyles.transition,
-          classList: menuElement.className,
-          dataPanelActive: menuElement.getAttribute("data-panel-active"),
-        });
-        
-        // Check for any inline styles
-        console.log("🎯 [Menu Toggle] Inline styles:", {
-          style: menuElement.style.cssText || "none",
-        });
-        
-        // Check parent container
-        const overlay = menuElement.closest(".menu-overlay");
-        if (overlay) {
-          const overlayStyles = window.getComputedStyle(overlay);
-          console.log("🎯 [Menu Toggle] Parent overlay styles:", {
-            transform: overlayStyles.transform,
-            display: overlayStyles.display,
-            justifyContent: overlayStyles.justifyContent,
-            alignItems: overlayStyles.alignItems,
-          });
-        }
-      }
-    }
     
     if (isOpen) {
       closePanel();
@@ -355,54 +250,7 @@ export default function RetroMenu({
           ? "true"
           : "false"
       }
-      ref={(node) => {
-        if (node) {
-          const isPanelActive =
-            panelState === "fading" ||
-            panelState === "opening" ||
-            panelState === "open";
-          console.log("🔍 [RetroMenu Debug] Nav render:", {
-            panelState,
-            dataPanelActive: isPanelActive,
-            actualAttribute: node.getAttribute("data-panel-active"),
-          });
 
-          // Check if CSS is actually applying opacity
-          if (isPanelActive) {
-            setTimeout(() => {
-              const menuBody = node.querySelector(".retro-menu__body");
-              const menuList = node.querySelector(".retro-menu__list");
-              const menuStatus = node.querySelector(".retro-menu__status");
-
-              // Check ALL elements including the container itself
-              console.log("🔍 [RetroMenu Debug] FULL opacity check:", {
-                panelState,
-                containerOpacity: window.getComputedStyle(node).opacity,
-                containerBackground: window.getComputedStyle(node).background,
-                containerDisplay: window.getComputedStyle(node).display,
-                bodyOpacity: menuBody
-                  ? window.getComputedStyle(menuBody).opacity
-                  : "N/A",
-                listOpacity: menuList
-                  ? window.getComputedStyle(menuList).opacity
-                  : "N/A",
-                statusOpacity: menuStatus
-                  ? window.getComputedStyle(menuStatus).opacity
-                  : "N/A",
-                containerRect: node.getBoundingClientRect(),
-              });
-
-              // Check what's actually visible
-              const rect = node.getBoundingClientRect();
-              console.log("🔍 [RetroMenu Debug] Container visibility:", {
-                isVisible: rect.width > 0 && rect.height > 0,
-                dimensions: `${rect.width}x${rect.height}`,
-                position: `(${rect.left}, ${rect.top})`,
-              });
-            }, 100); // Check after CSS should have started transitioning
-          }
-        }
-      }}
       data-effect-active={hasActiveEffect ? "true" : "false"}
       aria-label="Main navigation"
     >
