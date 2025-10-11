@@ -1,8 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import AdminNav from '../../../../components/admin-nav';
-import { useAdminFetch } from '../../../../components/admin-session-context';
+import AdminNav from '@/components/admin-nav';
+import { useAdminFetch } from '@/components/admin-session-context';
 import { FIELD_DEFAULT_BASE, FIELD_DEFAULT_INFLUENCES } from '../../../../lib/fieldDefaults';
 
 const FIELD_BASE_CONTROLS = [

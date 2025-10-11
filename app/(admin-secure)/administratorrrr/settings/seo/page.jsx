@@ -1,8 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import AdminNav from '../../../../components/admin-nav';
-import { useAdminFetch } from '../../../../components/admin-session-context';
+import AdminNav from '@/components/admin-nav';
+import { useAdminFetch } from '@/components/admin-session-context';
 
 const DEFAULT_PAGE_NAMES = ['home', 'about', 'projects', 'words', 'sounds'];
 

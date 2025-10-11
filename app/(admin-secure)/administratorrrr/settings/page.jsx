@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import AdminNav from '../../../components/admin-nav';
+import AdminNav from '@/components/admin-nav';
 
 const SETTINGS_LINKS = [
   {

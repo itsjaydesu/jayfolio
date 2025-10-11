@@ -2,8 +2,8 @@
 
 import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import AdminNav from '../../../../components/admin-nav';
-import { useAdminFetch } from '../../../../components/admin-session-context';
+import AdminNav from '@/components/admin-nav';
+import { useAdminFetch } from '@/components/admin-session-context';
 
 const numberFormatter = new Intl.NumberFormat('en-US');
 

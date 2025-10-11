@@ -1,11 +1,11 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import AdminNav from '../../../components/admin-nav';
-import CoverImageUploader from '../../../components/cover-image-uploader';
-import RichTextEditor from '../../../components/rich-text-editor';
-import { useAdminFetch } from '../../../components/admin-session-context';
-import { ChevronDoubleDownIcon, ChevronDoubleUpIcon } from '../../../components/icons';
+import AdminNav from '@/components/admin-nav';
+import CoverImageUploader from '@/components/cover-image-uploader';
+import RichTextEditor from '@/components/rich-text-editor';
+import { useAdminFetch } from '@/components/admin-session-context';
+import { ChevronDoubleDownIcon, ChevronDoubleUpIcon } from '@/components/icons';
 
 const TYPE_OPTIONS = [
   { id: 'projects', label: 'Projects' },
