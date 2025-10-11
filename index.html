@@ -159,6 +159,71 @@
       gap: 4px;
     }
 
+    /* Base state for all menu items - hidden by default */
+    .retro-menu__item {
+      opacity: 0;
+      transform: translateY(-18px);
+      -webkit-transform: translateY(-18px);
+      -moz-transform: translateY(-18px);
+      will-change: opacity, transform;
+      /* No animation here - will be added per nth-child */
+      /* Ensure items stay hidden until animation starts */
+      animation-fill-mode: both;
+      -webkit-animation-fill-mode: both;
+    }
+
+    /* Each menu item gets its complete animation with delay built-in */
+    .retro-menu__item:nth-child(1) {
+      animation: retroMenuItemEnter 0.52s 0.22s cubic-bezier(0.33, 1, 0.68, 1) both;
+      -webkit-animation: retroMenuItemEnter 0.52s 0.22s cubic-bezier(0.33, 1, 0.68, 1) both;
+    }
+
+    .retro-menu__item:nth-child(2) {
+      animation: retroMenuItemEnter 0.52s 0.28s cubic-bezier(0.33, 1, 0.68, 1) both;
+      -webkit-animation: retroMenuItemEnter 0.52s 0.28s cubic-bezier(0.33, 1, 0.68, 1) both;
+    }
+
+    .retro-menu__item:nth-child(3) {
+      animation: retroMenuItemEnter 0.52s 0.34s cubic-bezier(0.33, 1, 0.68, 1) both;
+      -webkit-animation: retroMenuItemEnter 0.52s 0.34s cubic-bezier(0.33, 1, 0.68, 1) both;
+    }
+
+    .retro-menu__item:nth-child(4) {
+      animation: retroMenuItemEnter 0.52s 0.40s cubic-bezier(0.33, 1, 0.68, 1) both;
+      -webkit-animation: retroMenuItemEnter 0.52s 0.40s cubic-bezier(0.33, 1, 0.68, 1) both;
+    }
+
+    /* Art menu item - 5th child with proper delay */
+    .retro-menu__item:nth-child(5) {
+      animation: retroMenuItemEnter 0.52s 0.46s cubic-bezier(0.33, 1, 0.68, 1) both;
+      -webkit-animation: retroMenuItemEnter 0.52s 0.46s cubic-bezier(0.33, 1, 0.68, 1) both;
+    }
+
+    /* Keyframe animation for menu items entering */
+    @keyframes retroMenuItemEnter {
+      from {
+        opacity: 0;
+        transform: translateY(-18px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @-webkit-keyframes retroMenuItemEnter {
+      from {
+        opacity: 0;
+        -webkit-transform: translateY(-18px);
+        transform: translateY(-18px);
+      }
+      to {
+        opacity: 1;
+        -webkit-transform: translateY(0);
+        transform: translateY(0);
+      }
+    }
+
     .retro-menu__item button {
       all: unset;
       display: flex;
@@ -739,7 +804,13 @@
       retroMenu.status = menuRoot.querySelector(".retro-menu__status");
       retroMenu.items = Array.from(menuRoot.querySelectorAll(".retro-menu__item"));
 
-      retroMenu.items.forEach((item) => {
+      // Ensure all menu items are properly hidden initially and trigger animation
+      retroMenu.items.forEach((item, index) => {
+        // Force reflow to ensure animation triggers properly
+        item.style.animationName = 'none';
+        item.offsetHeight; // Trigger reflow
+        item.style.animationName = ''; // Reset to CSS-defined animation
+        
         const key = item.dataset.section;
         const button = item.querySelector("button");
         button.addEventListener("click", () => handleRetroMenuSelection(key));
@@ -802,9 +873,9 @@
           applyMenuValue("mouseInfluence", 0.0045);
         },
         art: () => {
-          applyMenuValue("rippleStrength", 58);
-          applyMenuValue("rippleDecay", 0.0012);
-          applyMenuValue("mouseInfluence", 0.0045);
+          applyMenuValue("swirlStrength", 2.25);
+          applyMenuValue("waveXFrequency", 0.34);
+          applyMenuValue("rippleStrength", 72);
         }
       };
 
