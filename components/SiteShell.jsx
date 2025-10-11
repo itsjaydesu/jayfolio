@@ -461,7 +461,7 @@ export default function SiteShell({ children }) {
   const handleEffectChange = useCallback((isActive, effectType) => {
     setHasActiveEffect(isActive);
     if (isActive && effectType) {
-      // All effects standardized to 15 seconds
+      // All effects standardized to 15 seconds, except jitter which is 3 seconds
       const effectDurations = {
         spiralFlow: 15,
         riverFlow: 15,  // Quake
@@ -470,6 +470,7 @@ export default function SiteShell({ children }) {
         harmonicPendulum: 15,
         starfield: 15,
         zenMode: 15,
+        jitter: 3,  // Shorter duration for jitter
       };
       
       const effectNames = {
@@ -480,6 +481,7 @@ export default function SiteShell({ children }) {
         harmonicPendulum: 'Blink',
         starfield: 'Stars',
         zenMode: 'Zen',
+        jitter: 'Jitter',
       };
       
       setActiveEffectInfo({
@@ -498,43 +500,8 @@ export default function SiteShell({ children }) {
     
     switch (effectType) {
       case 'jitter':
-        // Create a jittery ripple cascade with layered splashes
-        // Main drop
-        sceneRef.current.addRipple(0, 0, 3);
-        
-        // First bounce - smaller ripples in a circle
-        setTimeout(() => {
-          const angleStep = (Math.PI * 2) / 6;
-          for (let i = 0; i < 6; i++) {
-            const angle = i * angleStep;
-            const x = Math.cos(angle) * 800;
-            const z = Math.sin(angle) * 800;
-            sceneRef.current.addRipple(x, z, 1.5);
-          }
-        }, 200);
-        
-        // Second bounce - even smaller, wider circle
-        setTimeout(() => {
-          const angleStep = (Math.PI * 2) / 8;
-          for (let i = 0; i < 8; i++) {
-            const angle = i * angleStep + Math.PI / 8; // Offset for variety
-            const x = Math.cos(angle) * 1400;
-            const z = Math.sin(angle) * 1400;
-            sceneRef.current.addRipple(x, z, 0.8);
-          }
-        }, 400);
-        
-        // Final splash - random drops
-        setTimeout(() => {
-          for (let i = 0; i < 5; i++) {
-            const angle = Math.random() * Math.PI * 2;
-            const distance = 600 + Math.random() * 1000;
-            const x = Math.cos(angle) * distance;
-            const z = Math.sin(angle) * distance;
-            sceneRef.current.addRipple(x, z, 0.5 + Math.random() * 0.5);
-          }
-        }, 600);
-        // Jitter is a temporary effect, not tracked
+        // Activate the jitter effect with smooth easing
+        sceneRef.current.triggerEffect('jitter');
         break;
       case 'spiralFlow':
       case 'riverFlow':

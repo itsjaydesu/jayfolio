@@ -362,6 +362,114 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
         };
 
         return {
+          jitter: {
+            duration: 3,  // Shorter duration for jitter effect
+            init: () => ({ 
+              time: 0,
+              intensity: 0,  // For easing in/out
+              rippleQueue: [],  // Queue of ripples to spawn
+              lastRippleTime: 0,
+              easeInDuration: 0.5,  // 0.5 seconds to ease in
+              easeOutDuration: 0.5,  // 0.5 seconds to ease out
+              easeOutStartTime: null
+            }),
+            start: ({ data, addRipple }) => {
+              // Configure settings for jittery behavior
+              setValue('animationSpeed', 2.5);  // Fast animation
+              setValue('amplitude', 120);  // Higher amplitude for jittery motion
+              setValue('swirlStrength', 3.5);  // Strong swirl
+              setValue('waveXFrequency', 0.015);  // Higher frequency waves
+              setValue('waveYFrequency', 0.018);
+              setValue('brightness', 0.75);  // Brighter dots
+              setValue('contrast', 1.8);  // Higher contrast
+              setValue('mouseInfluence', 0.003);  // More responsive
+              setValue('rippleStrength', 25);  // Stronger ripples
+              setValue('rippleSpeed', 180);  // Faster ripple propagation
+              setValue('rippleDecay', 0.006);
+              
+              // Create initial ripple cascade plan
+              // Main drop
+              data.rippleQueue.push({ time: 0, x: 0, z: 0, strength: 3 });
+              
+              // First bounce - smaller ripples in a circle
+              const angleStep = (Math.PI * 2) / 6;
+              for (let i = 0; i < 6; i++) {
+                const angle = i * angleStep;
+                const x = Math.cos(angle) * 800;
+                const z = Math.sin(angle) * 800;
+                data.rippleQueue.push({ time: 0.3, x, z, strength: 1.5 });
+              }
+              
+              // Second wave - more chaotic
+              for (let i = 0; i < 12; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const radius = 400 + Math.random() * 800;
+                const x = Math.cos(angle) * radius;
+                const z = Math.sin(angle) * radius;
+                data.rippleQueue.push({ time: 0.6, x, z, strength: 0.5 + Math.random() * 0.5 });
+              }
+            },
+            update: ({ delta, effectTime, data, addRipple }) => {
+              data.time = effectTime;
+              
+              // Calculate easing intensity
+              if (data.easeOutStartTime !== null) {
+                // We're in the ease-out phase
+                const easeOutProgress = (effectTime - data.easeOutStartTime) / data.easeOutDuration;
+                data.intensity = Math.max(0, 1 - smoothStep(easeOutProgress));
+              } else if (effectTime < data.easeInDuration) {
+                // Ease in phase
+                const easeInProgress = effectTime / data.easeInDuration;
+                data.intensity = smoothStep(easeInProgress);
+              } else if (effectTime > (3 - data.easeOutDuration)) {  // 3 seconds is jitter duration
+                // Start ease out before effect ends
+                if (data.easeOutStartTime === null) {
+                  data.easeOutStartTime = effectTime;
+                }
+                const easeOutProgress = (effectTime - data.easeOutStartTime) / data.easeOutDuration;
+                data.intensity = Math.max(0, 1 - smoothStep(easeOutProgress));
+              } else {
+                // Full intensity
+                data.intensity = 1;
+              }
+              
+              // Process ripple queue
+              while (data.rippleQueue.length > 0 && data.rippleQueue[0].time <= effectTime) {
+                const ripple = data.rippleQueue.shift();
+                addRipple(ripple.x, ripple.z, ripple.strength * data.intensity);
+              }
+              
+              // Add random jitter ripples during main phase
+              if (data.intensity > 0.5 && Math.random() < 0.15) {
+                const angle = Math.random() * Math.PI * 2;
+                const radius = Math.random() * 1200;
+                const x = Math.cos(angle) * radius;
+                const z = Math.sin(angle) * radius;
+                addRipple(x, z, (0.3 + Math.random() * 0.7) * data.intensity);
+              }
+            },
+            perPoint: ({ px, pz, effectTime, data, baseHeight }) => {
+              if (data.intensity === 0) return { height: 0, scale: 0, light: 0 };
+              
+              // Jittery motion with easing
+              const jitterX = Math.sin(px * 0.008 + effectTime * 8) * Math.cos(pz * 0.007 - effectTime * 6);
+              const jitterZ = Math.cos(px * 0.009 - effectTime * 7) * Math.sin(pz * 0.006 + effectTime * 9);
+              const jitter = (jitterX + jitterZ) * 0.5;
+              
+              // Random flickering
+              const flicker = Math.sin(effectTime * 25 + px * 0.1 + pz * 0.1) > 0.7 ? 1 : 0.3;
+              
+              // Apply easing to all effects
+              const height = jitter * currentSettings.amplitude * 0.3 * data.intensity;
+              const scale = Math.abs(jitter) * 1.5 * flicker * data.intensity;
+              const light = Math.max(0, jitter) * 0.5 * flicker * data.intensity;
+              
+              return { height, scale, light };
+            },
+            cleanup: () => {
+              resetSettings();
+            }
+          },
           zenMode: {
             duration: 15,  // Standardized to 15 seconds
             init: () => ({ 
@@ -796,7 +904,7 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
         }
 
         // Allow combining certain effects (don't clear existing ones)
-        const combinableEffects = ['swirlPulse', 'jitter'];
+        const combinableEffects = ['swirlPulse'];
         const shouldCombine = combine || combinableEffects.includes(type);
         
         // If not combining and another effect is running, clear it
