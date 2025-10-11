@@ -4357,7 +4357,8 @@ a {
   aspect-ratio: 5 / 4;
 }
 
-.project-entry__figure--sounds {
+.project-entry__figure--sounds,
+.project-entry__figure--art {
   aspect-ratio: 16 / 11;
 }
 
@@ -4581,7 +4582,8 @@ a {
   transform: rotate(12deg);
 }
 
-.project-entry--sounds .project-entry__surface {
+.project-entry--sounds .project-entry__surface,
+.project-entry--art .project-entry__surface {
   background: radial-gradient(
       circle at 10% -12%,
       rgba(126, 246, 255, 0.16),
@@ -4590,7 +4592,8 @@ a {
     linear-gradient(160deg, rgba(6, 18, 26, 0.9), rgba(0, 4, 10, 0.96));
 }
 
-.project-entry--sounds .project-entry__figure::after {
+.project-entry--sounds .project-entry__figure::after,
+.project-entry--art .project-entry__figure::after {
   background: linear-gradient(180deg, rgba(0, 4, 8, 0.5), transparent 65%);
 }
 

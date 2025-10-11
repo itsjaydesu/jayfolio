@@ -5,15 +5,15 @@ export default function HomePage() {
       <h2>Immersive Field Hub</h2>
       <p>
         Welcome to the latest build of the Hypnotic Field interface. Use the retro control at center stage to activate
-        project dossiers, origin stories, written artefacts, and sound experiments. Each channel opens a focused panel
-        with richer detail while the ripple field responds to your navigation.
+        project dossiers, origin stories, written artefacts, sound experiments, and art studies. Each channel opens a
+        focused panel with richer detail while the ripple field responds to your navigation.
       </p>
       <section>
         <h3>Navigation Map</h3>
         <p>
           The menu mirrors a workstation switcher: About introduces the operator, Projects highlights installations,
-          Words curates essays, and Sounds archives auditory experiments. Cycle through them to see the background waves
-          remix in real-time.
+          Words curates essays, Sounds archives auditory experiments, and Art documents the dot field gallery. Cycle
+          through them to see the background waves remix in real-time.
         </p>
       </section>
       <section>

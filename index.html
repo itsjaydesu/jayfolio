@@ -358,6 +358,9 @@
         <li class="retro-menu__item" data-section="sounds">
           <button type="button">Sounds</button>
         </li>
+        <li class="retro-menu__item" data-section="art">
+          <button type="button">Art</button>
+        </li>
       </ul>
     </div>
     <p class="retro-menu__status" aria-live="polite"></p>
@@ -451,6 +454,11 @@
           title: "Sounds",
           description:
             "A rotating archive of ambient loops, chromatic drones, and responsive audio sketches tuned for late-night wanderers."
+        },
+        art: {
+          title: "Art",
+          description:
+            "Dot field studies and shader sketches documenting how the field bends through every mode."
         }
       }
     };
@@ -789,6 +797,11 @@
           applyMenuValue("contrast", 2.1);
         },
         sounds: () => {
+          applyMenuValue("rippleStrength", 58);
+          applyMenuValue("rippleDecay", 0.0012);
+          applyMenuValue("mouseInfluence", 0.0045);
+        },
+        art: () => {
           applyMenuValue("rippleStrength", 58);
           applyMenuValue("rippleDecay", 0.0012);
           applyMenuValue("mouseInfluence", 0.0045);

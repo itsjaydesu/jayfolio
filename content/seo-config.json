@@ -97,6 +97,16 @@
         "audio"
       ],
       "image": "/og-sounds.jpg"
+    },
+    "art": {
+      "title": "Art",
+      "description": "Generative dot field studies and shader sketches emerging from the homepage installation.",
+      "keywords": [
+        "generative art",
+        "shader",
+        "dot field"
+      ],
+      "image": "/og-default.jpg"
     }
   },
   "structuredData": {
@@ -128,6 +138,11 @@
     "sounds": {
       "titleTemplate": "%s - Sound | Jay Winder",
       "descriptionTemplate": "Sound piece: %s",
+      "type": "article"
+    },
+    "art": {
+      "titleTemplate": "%s - Art | Jay Winder",
+      "descriptionTemplate": "Art study: %s",
       "type": "article"
     }
   }

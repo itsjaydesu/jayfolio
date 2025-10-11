@@ -65,6 +65,15 @@ const FIELD_INFLUENCE_GROUPS = [
       { id: 'rippleDecay', label: 'Ripple Fade', min: 0.0005, max: 0.01, step: 0.0001 },
       { id: 'mouseInfluence', label: 'Pointer Warp', min: 0.001, max: 0.02, step: 0.0005 }
     ]
+  },
+  {
+    id: 'art',
+    label: 'Art Channel',
+    fields: [
+      { id: 'rippleStrength', label: 'Ripple Strength', min: 10, max: 120, step: 1 },
+      { id: 'rippleDecay', label: 'Ripple Fade', min: 0.0005, max: 0.01, step: 0.0001 },
+      { id: 'mouseInfluence', label: 'Pointer Warp', min: 0.001, max: 0.02, step: 0.0005 }
+    ]
   }
 ];
 

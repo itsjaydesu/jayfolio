@@ -49,6 +49,12 @@ export default async function sitemap() {
       changeFrequency: 'weekly',
       priority: 0.7,
     },
+    {
+      url: `${baseUrl}/art`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.7,
+    },
   ];
   
   // Dynamic routes from content
@@ -56,7 +62,7 @@ export default async function sitemap() {
   
   try {
     // Load all content types
-    const contentTypes = ['projects', 'words', 'sounds'];
+    const contentTypes = ['projects', 'words', 'sounds', 'art'];
     
     for (const type of contentTypes) {
       const content = await loadContentEntries(type);

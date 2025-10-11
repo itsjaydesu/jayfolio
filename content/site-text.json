@@ -24,6 +24,12 @@
       "label": "Sounds",
       "route": "/sounds",
       "description": "\"Art is how we decorate space; \nmusic is how we decorate time\""
+    },
+    {
+      "id": "art",
+      "label": "Art",
+      "route": "/art",
+      "description": "Shader studies and dot field experiments that bend the grid into galleries."
     }
   ]
 }

@@ -8,7 +8,8 @@ const SECTION_LABELS = {
   about: 'About',
   projects: 'Projects',
   words: 'Words',
-  sounds: 'Sounds'
+  sounds: 'Sounds',
+  art: 'Art'
 };
 
 function createInitialState() {
@@ -68,7 +69,7 @@ function resetContent(previous, sections) {
   return next;
 }
 
-export default function ChannelContentEditor({ sections = ['about', 'projects', 'words', 'sounds'] }) {
+export default function ChannelContentEditor({ sections = ['about', 'projects', 'words', 'sounds', 'art'] }) {
   const uniqueSections = useMemo(() => Array.from(new Set(sections)), [sections]);
   const adminFetch = useAdminFetch();
   const [content, setContent] = useState(createInitialState);

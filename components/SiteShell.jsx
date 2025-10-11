@@ -39,7 +39,8 @@ export default function SiteShell({ children }) {
   const shouldStopAnimation = primarySegment === 'about' || 
                               primarySegment === 'projects' || 
                               primarySegment === 'words' || 
-                              primarySegment === 'sounds';
+                              primarySegment === 'sounds' || 
+                              primarySegment === 'art';
   
   // ===== INITIAL STATE SETUP =====
   // Track if this is the initial mount (for instant black on subpages)

@@ -21,6 +21,11 @@ const CHANNEL_LINKS = [
     href: '/administratorrrr/settings/channel/sounds',
     title: 'Sounds Hero Copy',
     description: 'Adjust the sounds hero headline and supporting copy.'
+  },
+  {
+    href: '/administratorrrr/settings/channel/art',
+    title: 'Art Hero Copy',
+    description: 'Curate the art hero headline with language tuned for generative studies.'
   }
 ];
 

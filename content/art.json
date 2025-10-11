@@ -1,0 +1,18 @@
+{
+  "entries": [
+    {
+      "slug": "dot-field",
+      "title": "Dot Field",
+      "summary": "A deep dive into the homepage dot field — how each mode bends the grid and why the motion feels alive.",
+      "content": "<p>The dot field that greets you on the homepage started as a humble wave grid. Inside <code>index.html</code> it now behaves like an instrument: every control in the lil-gui panel changes the physics in real time, while the retro menu nudges the shader with context-aware presets.</p><p>The field learns nine behaviours. <strong>Zen</strong> flattens the grid until it becomes a calm oscilloscope. <strong>Jitter</strong> fires micro ripples that make the particles strobe. <strong>Swirl</strong> and <strong>Spiral</strong> twist the grid into vortices. <strong>Quake</strong> sends seismic waves from your pointer, <strong>Hop</strong> dives through Mandelbrot spirals, <strong>Bloom</strong> grows reaction-diffusion petals, <strong>Blink</strong> traces pendulum harmonics, and <strong>Stars</strong> lifts the dots into a drifting nebula.</p><p>The fun part is how these modes layer: the pointer energy and ripple queue keep listening even while presets run, so the composition never repeats. This study captures screenshots, parameter sets, and motion notes pulled directly from that source file so future installations can remix the same field.</p>",
+      "tags": [
+        "generative art",
+        "shader",
+        "dot field"
+      ],
+      "coverImage": null,
+      "status": "published",
+      "createdAt": "2024-12-15"
+    }
+  ]
+}

@@ -10,7 +10,8 @@ import { ChevronDoubleDownIcon, ChevronDoubleUpIcon } from '@/components/icons';
 const TYPE_OPTIONS = [
   { id: 'projects', label: 'Projects' },
   { id: 'words', label: 'Words' },
-  { id: 'sounds', label: 'Sounds' }
+  { id: 'sounds', label: 'Sounds' },
+  { id: 'art', label: 'Art' }
 ];
 
 const INITIAL_CONTENT = '<p></p>';

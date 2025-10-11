@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import AdminNav from '@/components/admin-nav';
 import { useAdminFetch } from '@/components/admin-session-context';
 
-const DEFAULT_PAGE_NAMES = ['home', 'about', 'projects', 'words', 'sounds'];
+const DEFAULT_PAGE_NAMES = ['home', 'about', 'projects', 'words', 'sounds', 'art'];
 
 function parseKeywordInput(value) {
   if (typeof value !== 'string') return [];
@@ -731,6 +731,44 @@ export default function SeoSettingsPage() {
                     value={config.contentTemplates?.sounds?.type || ''}
                     onChange={(e) => handleTemplateChange('sounds', 'type', e.target.value)}
                     placeholder="music"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="admin-section">
+              <h3>Art Template</h3>
+              <div className="admin-panel__body admin-panel__body--grid">
+                <div className="admin-field admin-field--full">
+                  <label htmlFor="artTitleTemplate">Title Template</label>
+                  <input
+                    id="artTitleTemplate"
+                    type="text"
+                    value={config.contentTemplates?.art?.titleTemplate || ''}
+                    onChange={(e) => handleTemplateChange('art', 'titleTemplate', e.target.value)}
+                    placeholder="%s - Art | Site Name"
+                  />
+                </div>
+
+                <div className="admin-field admin-field--full">
+                  <label htmlFor="artDescTemplate">Description Template</label>
+                  <input
+                    id="artDescTemplate"
+                    type="text"
+                    value={config.contentTemplates?.art?.descriptionTemplate || ''}
+                    onChange={(e) => handleTemplateChange('art', 'descriptionTemplate', e.target.value)}
+                    placeholder="Art study: %s"
+                  />
+                </div>
+
+                <div className="admin-field">
+                  <label htmlFor="artType">OG Type</label>
+                  <input
+                    id="artType"
+                    type="text"
+                    value={config.contentTemplates?.art?.type || ''}
+                    onChange={(e) => handleTemplateChange('art', 'type', e.target.value)}
+                    placeholder="article"
                   />
                 </div>
               </div>

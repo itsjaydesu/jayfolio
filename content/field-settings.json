@@ -39,6 +39,11 @@
       "rippleStrength": 58,
       "rippleDecay": 0.0012,
       "mouseInfluence": 0.0045
+    },
+    "art": {
+      "rippleStrength": 58,
+      "rippleDecay": 0.0012,
+      "mouseInfluence": 0.0045
     }
   }
 }

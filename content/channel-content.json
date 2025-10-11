@@ -84,5 +84,9 @@
   "sounds": {
     "title": "Sound Experiments",
     "lead": "Loops, drone suites, and live performance sketches. Dive into each archive entry to access liner notes and embedded media players."
+  },
+  "art": {
+    "title": "Dot Field Studies",
+    "lead": "Generative sequences that document how the homepage dot field bends, glitches, and blooms across its interactive modes."
   }
 }
