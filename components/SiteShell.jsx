@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import RetroMenu from "./RetroMenu";
 import { SITE_TEXT_DEFAULTS } from "../lib/siteTextDefaults";
 import SceneCanvas from "./SceneCanvas";
+import { useAdminStatus } from "../lib/useAdminStatus";
 
 const DEFAULT_MENU_ITEMS = SITE_TEXT_DEFAULTS.primaryMenu.map((i) => ({
   id: i.id,
@@ -25,6 +26,8 @@ export default function SiteShell({ children, isAdmin = false }) {
   const router = useRouter();
   const sceneRef = useRef(null);
   const returnTimerRef = useRef(null);
+  const { isAdmin: clientAdmin } = useAdminStatus();
+  const isAdminActive = isAdmin || clientAdmin;
   
   // ===== ROUTE ANALYSIS =====
   const pathSegments = useMemo(
@@ -41,6 +44,7 @@ export default function SiteShell({ children, isAdmin = false }) {
                               primarySegment === 'words' || 
                               primarySegment === 'sounds' || 
                               primarySegment === 'art';
+  const showAdminControls = isAdminActive && isHome;
   
   // ===== INITIAL STATE SETUP =====
   // Track if this is the initial mount (for instant black on subpages)
@@ -443,9 +447,9 @@ export default function SiteShell({ children, isAdmin = false }) {
 
   useEffect(() => {
     const scene = sceneRef.current;
-    if (!scene?.applySettings) return;
-    scene.applySettings({ showStats: Boolean(isAdmin && isHome) }, true);
-  }, [isAdmin, isHome]);
+    if (!scene?.setControlsVisible) return;
+    scene.setControlsVisible(showAdminControls);
+  }, [showAdminControls]);
 
   const handleStatusChange = (next) => {
     if (!next) return;
@@ -468,11 +472,11 @@ export default function SiteShell({ children, isAdmin = false }) {
   const handleSceneAttach = useCallback(
     (instance) => {
       sceneRef.current = instance;
-      if (instance?.applySettings) {
-        instance.applySettings({ showStats: Boolean(isAdmin && isHome) }, true);
+      if (instance?.setControlsVisible) {
+        instance.setControlsVisible(showAdminControls);
       }
     },
-    [isAdmin, isHome]
+    [showAdminControls]
   );
 
   const handleEffectChange = useCallback((isActive, effectType) => {
@@ -630,6 +634,7 @@ export default function SiteShell({ children, isAdmin = false }) {
             isPaused={false}
             onEffectChange={handleEffectChange}
             isHomeScene
+            showControls={showAdminControls}
             ref={handleSceneAttach}
           />
         </div>
@@ -675,6 +680,7 @@ export default function SiteShell({ children, isAdmin = false }) {
             isPaused={shouldStopAnimation}
             onEffectChange={handleEffectChange}
             isHomeScene={false}
+            showControls={false}
             ref={handleSceneAttach}
           />
         </div>

@@ -106,7 +106,7 @@ function fractalNoise(x, y, z, octaves = 3, persistence = 0.5) {
 }
 
 const SceneCanvas = forwardRef(function SceneCanvas(
-  { activeSection, isPaused = false, onEffectChange, isHomeScene = false },
+  { activeSection, isPaused = false, onEffectChange, isHomeScene = false, showControls = false },
   ref
 ) {
   const containerRef = useRef(null);
@@ -117,10 +117,17 @@ const SceneCanvas = forwardRef(function SceneCanvas(
   }, [onEffectChange]);
   const initialSectionRef = useRef(null);
   const isHomeSceneRef = useRef(isHomeScene);
+  const showControlsRef = useRef(showControls);
 
   useEffect(() => {
     isHomeSceneRef.current = isHomeScene;
   }, [isHomeScene]);
+
+  useEffect(() => {
+    showControlsRef.current = showControls;
+    const state = stateRef.current;
+    state?.setControlsVisible?.(showControls);
+  }, [showControls]);
 
   if (initialSectionRef.current === null) {
     initialSectionRef.current = activeSection || 'about';
@@ -146,6 +153,10 @@ const SceneCanvas = forwardRef(function SceneCanvas(
       let animationFrame;
       let readinessFrame = null;
       let paused = false;
+      let gui = null;
+      const guiControllers = new Map();
+      let isGuiAdjusting = false;
+      let guiBuildPromise = null;
 
       const DESKTOP_PROFILE = {
         orbitRadius: 1180,
@@ -276,8 +287,199 @@ const SceneCanvas = forwardRef(function SceneCanvas(
         if (key === 'showStats' && stats?.dom) {
           stats.dom.style.display = value ? 'block' : 'none';
         }
+        if (!isGuiAdjusting) {
+          const controller = guiControllers.get(key);
+          controller?.updateDisplay?.();
+        }
         return true;
       }
+
+      function bindGuiControl(key, controller, immediate = false) {
+        if (!controller) return;
+        guiControllers.set(key, controller);
+        if (typeof controller.listen === 'function') {
+          controller.listen();
+        }
+        controller.onChange((nextValue) => {
+          isGuiAdjusting = true;
+          applyMenuValue(key, nextValue, immediate);
+          isGuiAdjusting = false;
+        });
+      }
+
+      const setGuiVisibility = (visible) => {
+        if (!gui) return;
+        gui.domElement.style.display = visible ? 'block' : 'none';
+        gui.domElement.style.pointerEvents = visible ? 'auto' : 'none';
+      };
+
+      const destroyGui = () => {
+        if (!gui) return;
+        if (gui.domElement?.parentNode) {
+          gui.domElement.parentNode.removeChild(gui.domElement);
+        }
+        gui.destroy();
+        gui = null;
+        guiControllers.clear();
+        guiBuildPromise = null;
+      };
+
+      const buildGui = async () => {
+        if (gui || guiBuildPromise) {
+          if (gui) {
+            setGuiVisibility(true);
+            return gui;
+          }
+          await guiBuildPromise;
+          return gui;
+        }
+
+        guiBuildPromise = import('lil-gui')
+          .then(({ default: GUI }) => {
+            const instance = new GUI({ title: 'Field Controls', autoPlace: false });
+            instance.domElement.classList.add('field-controls');
+            instance.domElement.style.pointerEvents = 'auto';
+            document.body.appendChild(instance.domElement);
+
+            const waveFolder = instance.addFolder('Waves');
+            bindGuiControl('amplitude', waveFolder.add(settings, 'amplitude', 30, 140, 1), true);
+            bindGuiControl(
+              'waveXFrequency',
+              waveFolder.add(settings, 'waveXFrequency', 0.05, 0.45, 0.005).name('Frequency X'),
+              true
+            );
+            bindGuiControl(
+              'waveYFrequency',
+              waveFolder.add(settings, 'waveYFrequency', 0.05, 0.45, 0.005).name('Frequency Y'),
+              true
+            );
+            bindGuiControl('swirlStrength', waveFolder.add(settings, 'swirlStrength', 0, 3, 0.01), true);
+            bindGuiControl(
+              'swirlFrequency',
+              waveFolder.add(settings, 'swirlFrequency', 0.001, 0.02, 0.0005).name('Swirl Scale'),
+              true
+            );
+            bindGuiControl(
+              'animationSpeed',
+              waveFolder.add(settings, 'animationSpeed', 0.05, 1.2, 0.01).name('Flow Speed'),
+              true
+            );
+            waveFolder.open();
+
+            const toneFolder = instance.addFolder('Tone & Glow');
+            bindGuiControl(
+              'opacity',
+              toneFolder.add(settings, 'opacity', 0.3, 1, 0.01).name('Glow'),
+              true
+            );
+            bindGuiControl(
+              'pointSize',
+              toneFolder.add(settings, 'pointSize', 6, 32, 0.5).name('Point Scale'),
+              true
+            );
+            bindGuiControl('brightness', toneFolder.add(settings, 'brightness', 0.1, 0.6, 0.01), true);
+            bindGuiControl('contrast', toneFolder.add(settings, 'contrast', 0.6, 2.5, 0.05), true);
+            bindGuiControl(
+              'fogDensity',
+              toneFolder.add(settings, 'fogDensity', 0.0002, 0.003, 0.0001).name('Fog'),
+              true
+            );
+            toneFolder.open();
+
+            const interactionFolder = instance.addFolder('Interaction');
+            bindGuiControl(
+              'mouseInfluence',
+              interactionFolder
+                .add(settings, 'mouseInfluence', 0.001, 0.02, 0.0005)
+                .name('Pointer Warp'),
+              true
+            );
+            bindGuiControl(
+              'rippleStrength',
+              interactionFolder.add(settings, 'rippleStrength', 10, 120, 1).name('Ripple Strength'),
+              true
+            );
+            bindGuiControl(
+              'rippleSpeed',
+              interactionFolder.add(settings, 'rippleSpeed', 120, 520, 5).name('Ripple Speed'),
+              true
+            );
+            bindGuiControl(
+              'rippleWidth',
+              interactionFolder.add(settings, 'rippleWidth', 8, 40, 0.1).name('Ripple Width'),
+              true
+            );
+            bindGuiControl(
+              'rippleDecay',
+              interactionFolder.add(settings, 'rippleDecay', 0.0005, 0.01, 0.0001).name('Ripple Fade'),
+              true
+            );
+            bindGuiControl('autoRotate', interactionFolder.add(settings, 'autoRotate'), true);
+            bindGuiControl('showStats', interactionFolder.add(settings, 'showStats').name('Show Stats'), true);
+            interactionFolder.open();
+
+            const ranges = {
+              amplitude: { min: 30, max: 140 },
+              waveXFrequency: { min: 0.05, max: 0.45 },
+              waveYFrequency: { min: 0.05, max: 0.45 },
+              swirlStrength: { min: 0, max: 3 },
+              swirlFrequency: { min: 0.001, max: 0.02 },
+              animationSpeed: { min: 0.05, max: 1.2 },
+              opacity: { min: 0.3, max: 1 },
+              pointSize: { min: 6, max: 32 },
+              brightness: { min: 0.1, max: 0.6 },
+              contrast: { min: 0.6, max: 2.5 },
+              fogDensity: { min: 0.0002, max: 0.003 },
+              mouseInfluence: { min: 0.001, max: 0.02 },
+              rippleStrength: { min: 10, max: 120 },
+              rippleSpeed: { min: 120, max: 520 },
+              rippleWidth: { min: 8, max: 40 },
+              rippleDecay: { min: 0.0005, max: 0.01 },
+              autoRotate: { boolean: true },
+              showStats: { boolean: true }
+            };
+
+            const actions = {
+              randomize: () => {
+                for (const [key, config] of Object.entries(ranges)) {
+                  const controller = guiControllers.get(key);
+                  if (!controller) continue;
+                  let nextValue;
+                  if (config.boolean) {
+                    nextValue = Math.random() > 0.5;
+                  } else {
+                    nextValue = config.min + Math.random() * (config.max - config.min);
+                  }
+                  controller.setValue(nextValue);
+                }
+              },
+              reset: () => {
+                stateRef.current?.resetToDefaults?.();
+              }
+            };
+
+            instance.add(actions, 'randomize').name('Randomize');
+            instance.add(actions, 'reset').name('Reset Defaults');
+
+            gui = instance;
+            setGuiVisibility(true);
+            return instance;
+          })
+          .finally(() => {
+            guiBuildPromise = null;
+          });
+
+        await guiBuildPromise;
+        return gui;
+      };
+
+      const updateGuiVisibility = (visible) => {
+        if (visible) {
+          void buildGui();
+        } else {
+          setGuiVisibility(false);
+        }
+      };
 
       function createEffectDefinitions({ applyMenuValue: setValue, settings: currentSettings, targetSettings: currentTarget }) {
         const totalPoints = AMOUNTX * AMOUNTY;
@@ -1088,6 +1290,9 @@ const SceneCanvas = forwardRef(function SceneCanvas(
             const mouseEnvelope = Math.exp(-mouseDist * settings.mouseInfluence * 0.55);
             height += Math.cos(mouseDist * settings.mouseInfluence * 14 - animationTime * 2.4) * pointer.energy * settings.amplitude * 0.28 * mouseEnvelope;
 
+            let scaleDelta = 0;
+            let lightDelta = 0;
+
             if (isHomeSceneRef.current) {
               const pointerReach = Math.exp(-mouseDist * 0.00085);
               const pointerGlide = Math.sin(mouseDist * 0.011 - elapsedTime * 2.6);
@@ -1112,9 +1317,6 @@ const SceneCanvas = forwardRef(function SceneCanvas(
                 Math.sin((dist - wavefront * 1.3) / (settings.rippleWidth * 0.7)) * 0.3;
               height += wavePattern * settings.rippleStrength * 0.65 * envelope * rippleStrength;
             }
-
-            let scaleDelta = 0;
-            let lightDelta = 0;
 
             if (activeEffect?.perPoint) {
               // Calculate fade factor if effect is fading out
@@ -1339,6 +1541,9 @@ const SceneCanvas = forwardRef(function SceneCanvas(
         setPaused: (value) => {
           paused = value;
         },
+        setControlsVisible: (visible) => {
+          updateGuiVisibility(visible);
+        },
         addRipple: (x, z, strength = 1) => {
           enqueueRipple(x, z, strength);
         },
@@ -1358,6 +1563,7 @@ const SceneCanvas = forwardRef(function SceneCanvas(
         }
       };
 
+      updateGuiVisibility(showControlsRef.current);
       stateRef.current.applyMenuInfluence(initialSection);
 
       return () => {
@@ -1371,6 +1577,7 @@ const SceneCanvas = forwardRef(function SceneCanvas(
         container.removeEventListener('pointerdown', onPointerDown);
         container.removeEventListener('pointerleave', onPointerLeave);
         detachViewportListener();
+        destroyGui();
 
         if (stats?.dom?.parentNode) {
           stats.dom.parentNode.removeChild(stats.dom);
@@ -1439,6 +1646,10 @@ const SceneCanvas = forwardRef(function SceneCanvas(
       const state = stateRef.current;
       if (!state?.triggerEffect) return false;
       return state.triggerEffect(type, combine);
+    },
+    setControlsVisible: (visible) => {
+      const state = stateRef.current;
+      state?.setControlsVisible?.(visible);
     }
   }));
 
