@@ -75,23 +75,32 @@ export default function SiteShell({ children, isAdmin = false }) {
   // Initialize header visibility correctly based on route
   const [headerVisible, setHeaderVisible] = useState(() => !isHome); // Start visible on subpages, hidden on home
   const [headerLeaving, setHeaderLeaving] = useState(false); // Track header fade-out state
-  // Track previous route to detect transitions
-  const prevIsHomeRef = useRef(isHome);
+  // Track previous route to detect transitions - use state for immediate updates
+  const [prevIsHome, setPrevIsHome] = useState(isHome);
   
-  // Detect route change and update leaving state synchronously
-  const isTransitioningToHome = !prevIsHomeRef.current && isHome;
-  const isTransitioningFromHome = prevIsHomeRef.current && !isHome;
+  // Compute if we should keep header mounted - do this inline for immediate evaluation
+  // This runs BEFORE the condition check in render
+  const isTransitioningToHome = !prevIsHome && isHome;
+  const shouldKeepHeaderMounted = 
+    !isHome || // Always show on subpages
+    (isTransitioningToHome && headerVisible) || // Keep mounted during transition to home
+    headerVisible || 
+    headerLeaving || 
+    headerLeavingRef.current;
   
-  // Update prev ref for next render
-  if (prevIsHomeRef.current !== isHome) {
-    console.log('[Header Transition] Route changed from', prevIsHomeRef.current ? 'home' : 'subpage', 'to', isHome ? 'home' : 'subpage');
-    prevIsHomeRef.current = isHome;
+  if (isTransitioningToHome && headerVisible) {
+    console.log('[Header Mount] Keeping header mounted for transition animation');
+  }
+  
+  // Update prev state when route changes
+  if (prevIsHome !== isHome) {
+    console.log('[Header Transition] Route changed from', prevIsHome ? 'home' : 'subpage', 'to', isHome ? 'home' : 'subpage');
+    setPrevIsHome(isHome);
     
-    // If transitioning to home and header is visible, start leaving animation immediately
-    if (isTransitioningToHome && headerVisible && !headerLeaving) {
-      console.log('[Header Transition] Starting leave animation synchronously');
+    // If transitioning to home, mark as leaving immediately
+    if (!prevIsHome && isHome && headerVisible) {
+      console.log('[Header Transition] Starting leave animation');
       headerLeavingRef.current = true;
-      // We'll set the state in the effect, but the ref ensures immediate update
     }
   }
   const [status, setStatus] = useState(DEFAULT_STATUS);
@@ -863,8 +872,8 @@ export default function SiteShell({ children, isAdmin = false }) {
       ) : null}
       <div className={`site-shell${isDetailView ? " site-shell--detail" : ""}`}>
         <div className="site-shell__container">
-          {/* Keep header mounted during leaving animation - check ref for immediate state */}
-          {!isDetailView && (headerVisible || headerLeaving || headerLeavingRef.current) ? (
+          {/* Keep header mounted based on computed value */}
+          {!isDetailView && shouldKeepHeaderMounted ? (
             <header
               className={`site-shell__header${
                 hasScrolled ? " site-shell__header--shaded" : ""
