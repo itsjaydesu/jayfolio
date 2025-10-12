@@ -4237,6 +4237,9 @@ a {
   background: linear-gradient(135deg, rgba(20, 25, 32, 0.4), rgba(10, 12, 16, 0.3));
   border: 1px solid rgba(232, 240, 246, 0.08);
   border-radius: 8px;
+  overflow: hidden;
+  transform-style: preserve-3d;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   color: var(--text-secondary);
   font-size: 0.9375rem;
   font-weight: 500;
@@ -4254,15 +4257,40 @@ a {
   transform: translateY(-2px);
 }
 
+/* Ripple effect on click */
+.channel__category-btn::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(122, 246, 255, 0.6), transparent);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s ease-out, height 0.6s ease-out;
+  pointer-events: none;
+}
+
+.channel__category-btn:active::before {
+  width: 300px;
+  height: 300px;
+}
+
 .channel__category-btn--active {
   background: linear-gradient(135deg, rgba(84, 112, 128, 0.3), rgba(84, 112, 128, 0.15));
   border-color: rgba(84, 112, 128, 0.5);
   color: var(--text-primary);
+  box-shadow: 0 4px 12px rgba(84, 112, 128, 0.3), 
+              0 0 20px rgba(122, 246, 255, 0.15);
 }
 
 .channel__category-btn--active:hover {
   background: linear-gradient(135deg, rgba(84, 112, 128, 0.35), rgba(84, 112, 128, 0.2));
   border-color: rgba(84, 112, 128, 0.6);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(84, 112, 128, 0.4), 
+              0 0 30px rgba(122, 246, 255, 0.2);
 }
 
 .channel__category-count {
@@ -4288,7 +4316,74 @@ a {
 .project-entry {
   position: relative;
   display: block;
+  opacity: 0;
+  transform: translateX(-14px);
+  animation: menuEnter 0.42s cubic-bezier(0.33, 1, 0.68, 1) forwards;
 }
+
+/* Admin edit button */
+.project-entry__edit-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 10;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, rgba(0, 200, 208, 0.9), rgba(0, 139, 178, 0.8));
+  border: 1px solid rgba(122, 246, 255, 0.4);
+  border-radius: 6px;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  box-shadow: 0 2px 8px rgba(0, 200, 208, 0.3);
+  transition: all 0.3s cubic-bezier(0.33, 1, 0.68, 1);
+  opacity: 0;
+  animation: fadeIn 0.4s ease forwards;
+  animation-delay: 0.8s;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
+.project-entry__edit-btn:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, rgba(0, 240, 248, 0.95), rgba(0, 200, 208, 0.85));
+  box-shadow: 0 4px 12px rgba(0, 200, 208, 0.5),
+              0 0 20px rgba(122, 246, 255, 0.3);
+  border-color: rgba(122, 246, 255, 0.6);
+}
+
+.project-entry__edit-btn:active {
+  transform: translateY(0);
+}
+
+@keyframes menuEnter {
+  from {
+    opacity: 0;
+    transform: translateX(-14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Stagger animation matching RetroMenu timing */
+.project-entry:nth-child(1) { animation-delay: 0.22s; }
+.project-entry:nth-child(2) { animation-delay: 0.28s; }
+.project-entry:nth-child(3) { animation-delay: 0.34s; }
+.project-entry:nth-child(4) { animation-delay: 0.40s; }
+.project-entry:nth-child(5) { animation-delay: 0.46s; }
+.project-entry:nth-child(6) { animation-delay: 0.52s; }
+.project-entry:nth-child(7) { animation-delay: 0.58s; }
+.project-entry:nth-child(8) { animation-delay: 0.64s; }
+.project-entry:nth-child(9) { animation-delay: 0.70s; }
+.project-entry:nth-child(10) { animation-delay: 0.76s; }
 
 .project-entry__surface {
   position: relative;

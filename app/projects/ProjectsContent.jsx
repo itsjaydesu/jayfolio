@@ -1,9 +1,11 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { formatDisplayDate } from '../../lib/formatters';
+import { useAdminStatus } from '../../lib/useAdminStatus';
 
 const PROJECT_TONES = {
   'signal-grid': 'cyan',
@@ -14,7 +16,43 @@ const PROJECT_TONES = {
 const CATEGORIES = ['All', 'Useful Tools', 'Fun', 'Events', 'Startups'];
 
 export default function ProjectsContent({ entries, hero }) {
-  const [selectedCategory, setSelectedCategory] = useState('All');
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const { isAdmin } = useAdminStatus();
+  const containerRef = useRef(null);
+  
+  // Get initial category from URL or default to 'All'
+  const initialCategory = searchParams.get('category') || 'All';
+  const [selectedCategory, setSelectedCategory] = useState(initialCategory);
+  
+  // Restore scroll position when coming back
+  useEffect(() => {
+    const scrollPos = sessionStorage.getItem('projectsScrollPosition');
+    if (scrollPos && containerRef.current) {
+      window.scrollTo(0, parseInt(scrollPos, 10));
+      sessionStorage.removeItem('projectsScrollPosition');
+    }
+  }, []);
+  
+  // Update URL when category changes
+  const handleCategoryChange = (category) => {
+    setSelectedCategory(category);
+    const params = new URLSearchParams(searchParams);
+    if (category === 'All') {
+      params.delete('category');
+    } else {
+      params.set('category', category);
+    }
+    const newUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+    router.replace(newUrl, { scroll: false });
+  };
+  
+  // Save scroll position before navigating away
+  const handleProjectClick = () => {
+    sessionStorage.setItem('projectsScrollPosition', window.scrollY.toString());
+    sessionStorage.setItem('projectsSelectedCategory', selectedCategory);
+  };
 
   // Auto-categorize entries based on tags, title, or content
   const categorizedEntries = useMemo(() => {
@@ -84,7 +122,7 @@ export default function ProjectsContent({ entries, hero }) {
             <button
               key={category}
               className={`channel__category-btn ${selectedCategory === category ? 'channel__category-btn--active' : ''}`}
-              onClick={() => setSelectedCategory(category)}
+              onClick={() => handleCategoryChange(category)}
               aria-pressed={selectedCategory === category}
             >
               {category}
@@ -112,10 +150,21 @@ export default function ProjectsContent({ entries, hero }) {
                 data-tone={tone}
                 data-entry-slug={entry.slug}
               >
+                {isAdmin && (
+                  <Link
+                    href={`/administratorrrr/projects/${entry.slug}`}
+                    className="project-entry__edit-btn"
+                    aria-label={`Edit ${entry.title}`}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    Edit
+                  </Link>
+                )}
                 <Link
                   href={href}
                   className="project-entry__surface"
                   aria-label={`Open dossier for ${entry.title}`}
+                  onClick={handleProjectClick}
                 >
                   <div className="project-entry__content">
                     {entry.createdAt ? (

@@ -1,6 +1,21 @@
 {
   "entries": [
     {
+      "slug": "calls-from-the-past",
+      "title": "Calls From The Past",
+      "summary": "AI-powered conversations with history's greatest minds, trained on primary sources for authentic interactions.",
+      "content": "<p>Calls From The Past transforms historical education through real-time AI conversations with figures from antiquity to modern times. Each personality is meticulously trained on diaries, letters, and contemporary texts to recreate authentic voices—from Samuel Pepys describing the Great Fire of London to Lady Murasaki discussing life in 11th-century Japan's imperial court.</p><p>The platform features voice interactions that go beyond facts and dates, capturing the emotion and daily concerns that make history feel remarkably human. With over 1.9 million conversation minutes served and new historical figures regularly added, it offers an immersive alternative to traditional books and documentaries for curious minds and lifelong learners.</p>",
+      "tags": [
+        "AI",
+        "Education",
+        "History",
+        "Tool"
+      ],
+      "coverImage": null,
+      "status": "published",
+      "createdAt": "2024-12-15"
+    },
+    {
       "slug": "generate-qr-code-free",
       "title": "QR Code Generator for 3D Printing",
       "summary": "Browser-based QR builder exporting STL frames ready for print farms and rapid signage installs.",

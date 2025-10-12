@@ -37,6 +37,9 @@ export default function AdminLoginForm() {
           throw new Error(data?.error || 'Invalid passphrase');
         }
 
+        // Trigger storage event to notify other tabs/windows of admin login
+        localStorage.setItem('adminStatusChange', Date.now().toString());
+        
         const next = searchParams?.get('next') || '/administratorrrr';
         router.replace(next);
       } catch (error) {
