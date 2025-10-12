@@ -1284,9 +1284,66 @@ const SceneCanvas = forwardRef(function SceneCanvas(
           console.log('Camera FOV:', camera.fov);
         }
         
-        // Check if particles exist at this position
+        // Raycasting test - project click through camera to world
+        if (camera && renderer) {
+          // Create a raycaster to project the click into 3D space
+          const raycaster = new THREE.Raycaster();
+          const mouse = new THREE.Vector2(normalizedX, -normalizedY); // Note: Three.js uses inverted Y
+          
+          // Set up the ray from camera through mouse position
+          raycaster.setFromCamera(mouse, camera);
+          
+          // The particle grid sits at Y = 0 (or close to it based on wave height)
+          // We need to find where the ray intersects the Y=0 plane
+          const planeY = 0; // The base height of the particle grid
+          
+          // Calculate intersection with Y=0 plane
+          const rayDirection = raycaster.ray.direction;
+          const rayOrigin = raycaster.ray.origin;
+          
+          // Solve for t where: rayOrigin.y + t * rayDirection.y = planeY
+          const t = (planeY - rayOrigin.y) / rayDirection.y;
+          
+          // Calculate the intersection point
+          const intersectionPoint = new THREE.Vector3();
+          intersectionPoint.x = rayOrigin.x + t * rayDirection.x;
+          intersectionPoint.y = planeY;
+          intersectionPoint.z = rayOrigin.z + t * rayDirection.z;
+          
+          console.log('Ray-plane intersection:', {
+            x: intersectionPoint.x,
+            z: intersectionPoint.z,
+            t: t
+          });
+          
+          console.log('Difference from orthographic:', {
+            deltaX: intersectionPoint.x - rippleX,
+            deltaZ: intersectionPoint.z - rippleZ
+          });
+          
+          // Find closest particle to the raycast intersection
+          let rayClosestDist = Infinity;
+          let rayClosestParticle = null;
+          for (let ix = 0; ix < AMOUNTX; ix++) {
+            for (let iy = 0; iy < AMOUNTY; iy++) {
+              const px = ix * SEPARATION - HALF_GRID_X;
+              const pz = iy * SEPARATION - HALF_GRID_Y;
+              const dist = Math.sqrt(
+                (px - intersectionPoint.x) * (px - intersectionPoint.x) + 
+                (pz - intersectionPoint.z) * (pz - intersectionPoint.z)
+              );
+              if (dist < rayClosestDist) {
+                rayClosestDist = dist;
+                rayClosestParticle = { ix, iy, px, pz };
+              }
+            }
+          }
+          console.log('Closest particle (raycast method):', rayClosestParticle);
+          console.log('Distance to closest (raycast):', rayClosestDist);
+        }
+        
+        // Check if particles exist at this position (original orthographic method)
         if (particles && particles.geometry && particles.geometry.attributes.position) {
-          const positions = particles.geometry.attributes.position.array;
           // Find closest particle to click position
           let closestDist = Infinity;
           let closestParticle = null;
@@ -1301,8 +1358,8 @@ const SceneCanvas = forwardRef(function SceneCanvas(
               }
             }
           }
-          console.log('Closest particle:', closestParticle);
-          console.log('Distance to closest:', closestDist);
+          console.log('Closest particle (orthographic method):', closestParticle);
+          console.log('Distance to closest (orthographic):', closestDist);
         }
         
         console.groupEnd();
