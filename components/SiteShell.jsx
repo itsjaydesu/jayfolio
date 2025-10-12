@@ -27,6 +27,7 @@ export default function SiteShell({ children, isAdmin = false }) {
   const sceneRef = useRef(null);
   const returnTimerRef = useRef(null);
   const menuLeaveTimerRef = useRef(null); // Timer for menu fade-out animation
+  const headerLeaveTimerRef = useRef(null); // Timer for header fade-out animation
   const { isAdmin: clientAdmin } = useAdminStatus();
   const isAdminActive = isAdmin || clientAdmin;
   
@@ -70,6 +71,8 @@ export default function SiteShell({ children, isAdmin = false }) {
   const [isReturningHome, setIsReturningHome] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
   const [menuLeaving, setMenuLeaving] = useState(false); // Track menu fade-out state
+  const [headerVisible, setHeaderVisible] = useState(false); // Track header visibility
+  const [headerLeaving, setHeaderLeaving] = useState(false); // Track header fade-out state
   const [status, setStatus] = useState(DEFAULT_STATUS);
   const [navReady, setNavReady] = useState(false);
   const [hasScrolled, setHasScrolled] = useState(false);
@@ -134,6 +137,10 @@ export default function SiteShell({ children, isAdmin = false }) {
       if (menuLeaveTimerRef.current) {
         window.clearTimeout(menuLeaveTimerRef.current);
         menuLeaveTimerRef.current = null;
+      }
+      if (headerLeaveTimerRef.current) {
+        window.clearTimeout(headerLeaveTimerRef.current);
+        headerLeaveTimerRef.current = null;
       }
     };
   }, [router]);
@@ -215,6 +222,67 @@ export default function SiteShell({ children, isAdmin = false }) {
       clearMenuLeaveTimer();
     };
   }, [isHome, menuVisible, menuLeaving]);
+
+  // Handle header visibility and transitions
+  useEffect(() => {
+    // Clear any pending header leave timer
+    const clearHeaderLeaveTimer = () => {
+      if (headerLeaveTimerRef.current) {
+        clearTimeout(headerLeaveTimerRef.current);
+        headerLeaveTimerRef.current = null;
+      }
+    };
+
+    if (isHome) {
+      // Navigating to home - header should fade out
+      if (headerVisible && !headerLeaving) {
+        setHeaderLeaving(true); // Start fade-out animation
+        
+        // Check for reduced motion preference
+        const motionQuery = typeof window !== "undefined" && 
+          window.matchMedia("(prefers-reduced-motion: reduce)");
+        
+        if (motionQuery && motionQuery.matches) {
+          // No animation for reduced motion
+          setHeaderVisible(false);
+          setHeaderLeaving(false);
+        } else {
+          // Allow time for fade-out animation
+          headerLeaveTimerRef.current = setTimeout(() => {
+            setHeaderVisible(false);
+            setHeaderLeaving(false);
+            headerLeaveTimerRef.current = null;
+          }, 520); // 520ms to match the existing header fade-out transition
+        }
+      }
+      return clearHeaderLeaveTimer;
+    }
+
+    // Not on home page - show header
+    clearHeaderLeaveTimer(); // Clear any pending hide timer
+    setHeaderLeaving(false); // Clear leaving state
+    
+    if (typeof window === "undefined") {
+      setHeaderVisible(true);
+      return;
+    }
+
+    const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (motionQuery.matches) {
+      setHeaderVisible(true);
+      return;
+    }
+
+    // Small delay before showing header for smoother transition
+    let frameId = requestAnimationFrame(() => {
+      setHeaderVisible(true);
+    });
+
+    return () => {
+      cancelAnimationFrame(frameId);
+      clearHeaderLeaveTimer();
+    };
+  }, [isHome, headerVisible, headerLeaving]);
 
   useEffect(() => {
     if (isDetailView || typeof window === "undefined") {
@@ -726,11 +794,11 @@ export default function SiteShell({ children, isAdmin = false }) {
       ) : null}
       <div className={`site-shell${isDetailView ? " site-shell--detail" : ""}`}>
         <div className="site-shell__container">
-          {!isDetailView ? (
+          {!isDetailView && headerVisible ? (
             <header
               className={`site-shell__header${
                 hasScrolled ? " site-shell__header--shaded" : ""
-              }`}
+              }${headerLeaving ? " is-leaving" : ""}`}
               data-nav-ready={navReady ? "true" : "false"}
               data-returning-home={isReturningHome ? "true" : "false"}
               style={
