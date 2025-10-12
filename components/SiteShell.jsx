@@ -29,7 +29,16 @@ export default function SiteShell({ children, isAdmin = false }) {
   const menuLeaveTimerRef = useRef(null); // Timer for menu fade-out animation
   const headerLeaveTimerRef = useRef(null); // Timer for header fade-out animation
   const headerLeavingRef = useRef(false); // Track leaving state with ref for immediate updates
+  const componentIdRef = useRef(Math.random().toString(36).substr(2, 9)); // Unique ID for this component instance
   const { isAdmin: clientAdmin } = useAdminStatus();
+  
+  // Log component mount/unmount
+  useEffect(() => {
+    console.log('[SiteShell Mount] Component mounted with ID:', componentIdRef.current);
+    return () => {
+      console.log('[SiteShell Unmount] Component unmounting with ID:', componentIdRef.current);
+    };
+  }, []);
   const isAdminActive = isAdmin || clientAdmin;
   
   // ===== ROUTE ANALYSIS =====
@@ -78,6 +87,10 @@ export default function SiteShell({ children, isAdmin = false }) {
   // Track previous route to detect transitions - use state for immediate updates
   const [prevIsHome, setPrevIsHome] = useState(isHome);
   
+  // Add render counter to track re-renders
+  const renderCountRef = useRef(0);
+  renderCountRef.current++;
+  
   // Compute if we should keep header mounted - do this inline for immediate evaluation
   // This runs BEFORE the condition check in render
   const isTransitioningToHome = !prevIsHome && isHome;
@@ -88,20 +101,36 @@ export default function SiteShell({ children, isAdmin = false }) {
     headerLeaving || 
     headerLeavingRef.current;
   
+  // Detailed logging to understand the mount decision
+  console.log('[Header Mount Decision] Component:', componentIdRef.current, 'Render #', renderCountRef.current, {
+    isHome,
+    prevIsHome,
+    isTransitioningToHome,
+    headerVisible,
+    headerLeaving,
+    'headerLeavingRef.current': headerLeavingRef.current,
+    shouldKeepHeaderMounted,
+    isDetailView
+  });
+  
   if (isTransitioningToHome && headerVisible) {
-    console.log('[Header Mount] Keeping header mounted for transition animation');
+    console.log('[Header Mount] Transition detected - should keep mounted for animation');
   }
   
   // Update prev state when route changes
   if (prevIsHome !== isHome) {
     console.log('[Header Transition] Route changed from', prevIsHome ? 'home' : 'subpage', 'to', isHome ? 'home' : 'subpage');
-    setPrevIsHome(isHome);
+    console.log('[Header Transition] About to call setPrevIsHome - this will trigger re-render');
     
-    // If transitioning to home, mark as leaving immediately
+    // If transitioning to home, mark as leaving immediately BEFORE setting state
     if (!prevIsHome && isHome && headerVisible) {
-      console.log('[Header Transition] Starting leave animation');
+      console.log('[Header Transition] Setting headerLeavingRef.current = true BEFORE setPrevIsHome');
       headerLeavingRef.current = true;
     }
+    
+    // This will trigger a re-render
+    setPrevIsHome(isHome);
+    console.log('[Header Transition] setPrevIsHome called - re-render will happen');
   }
   const [status, setStatus] = useState(DEFAULT_STATUS);
   // Initialize navReady as true on subpages to prevent flash
@@ -873,6 +902,10 @@ export default function SiteShell({ children, isAdmin = false }) {
       <div className={`site-shell${isDetailView ? " site-shell--detail" : ""}`}>
         <div className="site-shell__container">
           {/* Keep header mounted based on computed value */}
+          {console.log('[Header Render Check]', {
+            'Condition': `!isDetailView (${!isDetailView}) && shouldKeepHeaderMounted (${shouldKeepHeaderMounted})`,
+            'Will render': !isDetailView && shouldKeepHeaderMounted
+          })}
           {!isDetailView && shouldKeepHeaderMounted ? (
             <header
               className={`site-shell__header${
