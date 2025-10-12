@@ -238,12 +238,15 @@ export default function SiteShell({ children, isAdmin = false }) {
 
   // Handle header visibility and transitions
   useEffect(() => {
+    console.log('[Header Effect] Running - isHome:', isHome, 'headerVisible:', headerVisible, 'headerLeaving:', headerLeaving);
+    
     // Skip if we're in SSR
     if (typeof window === "undefined") return;
     
     // Clear any pending header leave timer
     const clearHeaderLeaveTimer = () => {
       if (headerLeaveTimerRef.current) {
+        console.log('[Header Effect] Clearing leave timer');
         clearTimeout(headerLeaveTimerRef.current);
         headerLeaveTimerRef.current = null;
       }
@@ -253,14 +256,18 @@ export default function SiteShell({ children, isAdmin = false }) {
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     
     if (isHome) {
+      console.log('[Header Effect] On home page - should hide header');
       // Navigating to home - header should fade out smoothly
       if (headerVisible) {
+        console.log('[Header Effect] Header is visible, need to hide it');
         if (prefersReducedMotion) {
           // Instant hide for reduced motion
+          console.log('[Header Effect] Reduced motion - instant hide');
           setHeaderVisible(false);
           setHeaderLeaving(false);
         } else if (!headerLeaving) {
           // Start graceful fade-out animation
+          console.log('[Header Effect] Starting fade-out animation');
           setHeaderLeaving(true);
           
           // Wait for the full animation to complete
@@ -268,26 +275,36 @@ export default function SiteShell({ children, isAdmin = false }) {
           // Last child (brand): 0.3s delay + 0.6s animation = 0.9s
           // Add small buffer for safety = 950ms total
           headerLeaveTimerRef.current = setTimeout(() => {
+            console.log('[Header Effect] Fade-out complete, hiding header');
             setHeaderVisible(false);
             setHeaderLeaving(false);
             headerLeaveTimerRef.current = null;
           }, 950);
+        } else {
+          console.log('[Header Effect] Already leaving, skipping');
         }
+      } else {
+        console.log('[Header Effect] Header already hidden');
       }
     } else {
+      console.log('[Header Effect] Not on home page - should show header');
       // Not on home page - show header
       clearHeaderLeaveTimer();
       
       if (!headerVisible) {
+        console.log('[Header Effect] Header hidden, need to show it');
         if (prefersReducedMotion) {
           // Instant show for reduced motion
+          console.log('[Header Effect] Reduced motion - instant show');
           setHeaderVisible(true);
           setHeaderLeaving(false);
         } else {
           // Reset leaving state first, then show after a micro delay for smoother entrance
+          console.log('[Header Effect] Starting fade-in animation');
           setHeaderLeaving(false);
           // Use a small delay to ensure DOM is ready and prevent flash
           const showTimer = setTimeout(() => {
+            console.log('[Header Effect] Showing header after delay');
             setHeaderVisible(true);
           }, 50);
           
@@ -298,8 +315,11 @@ export default function SiteShell({ children, isAdmin = false }) {
         }
       } else if (headerLeaving) {
         // If we were in the middle of leaving but route changed, cancel it
+        console.log('[Header Effect] Cancelling leave animation - route changed');
         clearHeaderLeaveTimer();
         setHeaderLeaving(false);
+      } else {
+        console.log('[Header Effect] Header already visible and not leaving');
       }
     }
 
@@ -816,13 +836,30 @@ export default function SiteShell({ children, isAdmin = false }) {
       ) : null}
       <div className={`site-shell${isDetailView ? " site-shell--detail" : ""}`}>
         <div className="site-shell__container">
-          {!isDetailView && headerVisible ? (
+          {/* Keep header mounted during leaving animation */}
+          {!isDetailView && (headerVisible || headerLeaving) ? (
             <header
               className={`site-shell__header${
                 hasScrolled ? " site-shell__header--shaded" : ""
               }${headerLeaving ? " is-leaving" : ""}`}
               data-nav-ready={navReady ? "true" : "false"}
               data-returning-home={isReturningHome ? "true" : "false"}
+              ref={(el) => {
+                if (el) {
+                  console.log('[Header DOM] Rendered with classes:', el.className);
+                  console.log('[Header DOM] data-nav-ready:', el.getAttribute('data-nav-ready'));
+                  console.log('[Header DOM] headerLeaving:', headerLeaving);
+                  console.log('[Header DOM] headerVisible:', headerVisible);
+                  // Check if nav links exist and log their count
+                  const navLinks = el.querySelectorAll('.site-shell__nav-link');
+                  console.log('[Header DOM] Nav links found:', navLinks.length);
+                  if (navLinks.length > 0) {
+                    console.log('[Header DOM] First nav link classes:', navLinks[0].className);
+                  }
+                } else {
+                  console.log('[Header DOM] Header unmounted');
+                }
+              }}
               style={
                 navReady
                   ? undefined
