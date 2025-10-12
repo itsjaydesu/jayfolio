@@ -2,7 +2,6 @@
 
 import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import AdminNav from '@/components/admin-nav';
 import { useAdminFetch } from '@/components/admin-session-context';
 
 const numberFormatter = new Intl.NumberFormat('en-US');
@@ -473,7 +472,6 @@ export default function MediaLibraryPage() {
 
   return (
     <div className="admin-shell">
-      <AdminNav />
       <header className="admin-shell__header">
         <div>
           <h1>Media Library</h1>

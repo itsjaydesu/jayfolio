@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import AdminNav from '@/components/admin-nav';
 
 const CHANNEL_LINKS = [
   {
@@ -32,7 +31,6 @@ const CHANNEL_LINKS = [
 export default function ChannelSettingsIndexPage() {
   return (
     <div className="admin-shell">
-      <AdminNav />
       <header className="admin-shell__header">
         <div>
           <h1>Channel Copy</h1>

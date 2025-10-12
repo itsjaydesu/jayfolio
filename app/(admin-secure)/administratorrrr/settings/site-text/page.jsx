@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import AdminNav from '@/components/admin-nav';
 import { useAdminFetch } from '@/components/admin-session-context';
 
 export default function SiteTextSettingsPage() {
@@ -66,7 +65,6 @@ export default function SiteTextSettingsPage() {
 
   return (
     <div className="admin-shell">
-      <AdminNav />
       <header className="admin-shell__header">
         <div>
           <h1>Site Text</h1>

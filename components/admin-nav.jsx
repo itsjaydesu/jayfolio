@@ -21,21 +21,28 @@ export default function AdminNav() {
 
   return (
     <nav className="admin-nav" aria-label="Admin sections">
-      <ul className="admin-nav__list">
-        {NAV_LINKS.map((link) => {
-          const active = isActive(pathname, link.href);
-          return (
-            <li key={link.href} className="admin-nav__item">
-              <Link
-                href={link.href}
-                className={`admin-nav__link${active ? " is-active" : ""}`}
-              >
-                {link.label}
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
+      <div className="admin-nav__inner">
+        <div className="admin-nav__label">
+          <span className="admin-nav__label-dot" aria-hidden="true" />
+          Console
+        </div>
+        <ul className="admin-nav__list">
+          {NAV_LINKS.map((link) => {
+            const active = isActive(pathname, link.href);
+            return (
+              <li key={link.href} className="admin-nav__item">
+                <Link
+                  href={link.href}
+                  className={`admin-nav__link${active ? " is-active" : ""}`}
+                >
+                  <span className="admin-nav__link-text">{link.label}</span>
+                  <span className="admin-nav__link-glow" aria-hidden="true" />
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
     </nav>
   );
 }

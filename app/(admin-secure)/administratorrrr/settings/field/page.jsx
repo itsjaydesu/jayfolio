@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import AdminNav from '@/components/admin-nav';
 import { useAdminFetch } from '@/components/admin-session-context';
 import { FIELD_DEFAULT_BASE, FIELD_DEFAULT_INFLUENCES } from '@/lib/fieldDefaults';
 
@@ -232,7 +231,6 @@ export default function FieldSettingsPage() {
 
   return (
     <div className="admin-shell">
-      <AdminNav />
       <header className="admin-shell__header">
         <div>
           <h1>Field Settings</h1>

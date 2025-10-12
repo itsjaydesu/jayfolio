@@ -1,6 +1,7 @@
 import { readEntries } from '../../lib/contentStore';
 import { readChannelContent } from '../../lib/channelContent';
 import { generateMetadata as getMetadata, generateViewportData } from '../../lib/metadata';
+import { hasAdminSession } from '../../lib/adminSession';
 import ProjectsContent from './ProjectsContent';
 
 export const dynamic = 'force-dynamic';
@@ -19,6 +20,7 @@ export default async function ProjectsPage() {
     readChannelContent()
   ]);
   const hero = channelContent.projects;
+  const isAdmin = await hasAdminSession();
 
-  return <ProjectsContent entries={entries} hero={hero} />;
+  return <ProjectsContent entries={entries} hero={hero} isAdmin={isAdmin} />;
 }

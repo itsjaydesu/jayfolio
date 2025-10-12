@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import AdminNav from '@/components/admin-nav';
 
 const SETTINGS_LINKS = [
   {
@@ -27,7 +26,6 @@ const SETTINGS_LINKS = [
 export default function AdminSettingsIndexPage() {
   return (
     <div className="admin-shell">
-      <AdminNav />
       <header className="admin-shell__header">
         <div>
           <h1>Settings</h1>

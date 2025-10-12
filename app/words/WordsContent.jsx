@@ -12,7 +12,7 @@ const WORD_TONES = {
 
 const CATEGORIES = ['All', 'Blog', 'Essays'];
 
-export default function WordsContent({ entries, hero }) {
+export default function WordsContent({ entries, hero, isAdmin = false }) {
   const [selectedCategory, setSelectedCategory] = useState('All');
 
   // Auto-categorize entries based on tags or content
@@ -66,6 +66,7 @@ export default function WordsContent({ entries, hero }) {
         <div className="channel__grid">
           {filteredEntries.map((entry) => {
             const tone = WORD_TONES[entry.slug] ?? 'neutral';
+            const editHref = `/administratorrrr?type=words&slug=${encodeURIComponent(entry.slug)}`;
             return (
               <article
                 key={entry.slug}
@@ -73,11 +74,7 @@ export default function WordsContent({ entries, hero }) {
                 data-tone={tone}
                 data-entry-slug={entry.slug}
               >
-                <Link
-                  href={`/words/${entry.slug}`}
-                  className="project-entry__surface"
-                  aria-label={`Open ${entry.category === 'Essays' ? 'essay' : 'blog post'} ${entry.title}`}
-                >
+                <div className="project-entry__surface">
                   <div className="project-entry__content">
                     {entry.createdAt ? (
                       <time className="project-entry__date" dateTime={entry.createdAt}>
@@ -90,7 +87,18 @@ export default function WordsContent({ entries, hero }) {
                       {entry.tags?.length ? (
                         <p className="project-entry__tags">{entry.tags.join(' • ')}</p>
                       ) : null}
-                      <h2 className="project-entry__title">{entry.title}</h2>
+                      <div className="project-entry__title-row">
+                        <h2 className="project-entry__title">{entry.title}</h2>
+                        {isAdmin ? (
+                          <Link
+                            href={editHref}
+                            className="project-entry__edit-btn"
+                            aria-label={`Edit ${entry.title}`}
+                          >
+                            Edit
+                          </Link>
+                        ) : null}
+                      </div>
                       {entry.summary ? <p className="project-entry__summary">{entry.summary}</p> : null}
                     </div>
 
@@ -102,7 +110,13 @@ export default function WordsContent({ entries, hero }) {
                   <figure className="project-entry__figure project-entry__figure--words" aria-hidden="true">
                     <div className="project-entry__art" />
                   </figure>
-                </Link>
+
+                  <Link
+                    href={`/words/${entry.slug}`}
+                    className="project-entry__overlay"
+                    aria-label={`Open ${entry.category === 'Essays' ? 'essay' : 'blog post'} ${entry.title}`}
+                  />
+                </div>
               </article>
             );
           })}

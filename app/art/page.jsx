@@ -4,6 +4,7 @@ import { readEntries } from '../../lib/contentStore';
 import { formatDisplayDate } from '../../lib/formatters';
 import { readChannelContent } from '../../lib/channelContent';
 import { generateMetadata as getMetadata, generateViewportData } from '../../lib/metadata';
+import { hasAdminSession } from '../../lib/adminSession';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,6 +26,7 @@ export default async function ArtPage() {
     readChannelContent()
   ]);
   const hero = channelContent.art;
+  const isAdmin = await hasAdminSession();
 
   return (
     <section className="channel channel--art">
@@ -40,6 +42,7 @@ export default async function ArtPage() {
           <div className="channel__grid">
             {entries.map((entry) => {
               const tone = ART_TONES[entry.slug] ?? 'neutral';
+              const editHref = `/administratorrrr?type=art&slug=${encodeURIComponent(entry.slug)}`;
               return (
                 <article
                   key={entry.slug}
@@ -47,11 +50,7 @@ export default async function ArtPage() {
                   data-tone={tone}
                   data-entry-slug={entry.slug}
                 >
-                  <Link
-                    href={`/art/${entry.slug}`}
-                    className="project-entry__surface"
-                    aria-label={`Open art study ${entry.title}`}
-                  >
+                  <div className="project-entry__surface">
                     <div className="project-entry__content">
                       {entry.createdAt ? (
                         <time className="project-entry__date" dateTime={entry.createdAt}>
@@ -63,7 +62,18 @@ export default async function ArtPage() {
                         {entry.tags?.length ? (
                           <p className="project-entry__tags">{entry.tags.join(' • ')}</p>
                         ) : null}
-                        <h2 className="project-entry__title">{entry.title}</h2>
+                        <div className="project-entry__title-row">
+                          <h2 className="project-entry__title">{entry.title}</h2>
+                          {isAdmin ? (
+                            <Link
+                              href={editHref}
+                              className="project-entry__edit-btn"
+                              aria-label={`Edit ${entry.title}`}
+                            >
+                              Edit
+                            </Link>
+                          ) : null}
+                        </div>
                         {entry.summary ? <p className="project-entry__summary">{entry.summary}</p> : null}
                       </div>
 
@@ -75,7 +85,13 @@ export default async function ArtPage() {
                         <span className="project-entry__signal" />
                       </div>
                     </figure>
-                  </Link>
+
+                    <Link
+                      href={`/art/${entry.slug}`}
+                      className="project-entry__overlay"
+                      aria-label={`Open art study ${entry.title}`}
+                    />
+                  </div>
                 </article>
               );
             })}

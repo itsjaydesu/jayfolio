@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import EntryDetail from '../../../components/EntryDetail';
 import { readEntry } from '../../../lib/contentStore';
+import { hasAdminSession } from '../../../lib/adminSession';
 import { generateMetadata as getMetadata, generateViewportData } from '../../../lib/metadata';
 
 export const dynamic = 'force-dynamic';
@@ -27,10 +28,13 @@ export async function generateViewport({ params }) {
 
 export default async function WordDetailPage({ params }) {
   const { slug } = await params;
-  const entry = await readEntry('words', slug);
+  const [entry, isAdmin] = await Promise.all([
+    readEntry('words', slug),
+    hasAdminSession()
+  ]);
   if (!entry) {
     notFound();
   }
 
-  return <EntryDetail type="words" entry={entry} />;
+  return <EntryDetail type="words" entry={entry} isAdmin={isAdmin} />;
 }

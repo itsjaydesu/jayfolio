@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import AdminNav from '@/components/admin-nav';
 import { useAdminFetch } from '@/components/admin-session-context';
 
 const DEFAULT_PAGE_NAMES = ['home', 'about', 'projects', 'words', 'sounds', 'art'];
@@ -164,7 +163,6 @@ export default function SeoSettingsPage() {
   if (!config) {
     return (
       <div className="admin-shell">
-        <AdminNav />
         <div className="admin-loading">Loading SEO configuration...</div>
       </div>
     );
@@ -172,7 +170,6 @@ export default function SeoSettingsPage() {
 
   return (
     <div className="admin-shell">
-      <AdminNav />
       <header className="admin-shell__header">
         <div>
           <h1>SEO Settings</h1>

@@ -5,7 +5,6 @@ import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { formatDisplayDate } from '../../lib/formatters';
-import { useAdminStatus } from '../../lib/useAdminStatus';
 
 const PROJECT_TONES = {
   'signal-grid': 'cyan',
@@ -15,11 +14,10 @@ const PROJECT_TONES = {
 
 const CATEGORIES = ['All', 'Useful Tools', 'Fun', 'Events', 'Startups'];
 
-export default function ProjectsContent({ entries, hero }) {
+export default function ProjectsContent({ entries, hero, isAdmin = false }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { isAdmin } = useAdminStatus();
   const containerRef = useRef(null);
   
   // Get initial category from URL or default to 'All'
@@ -143,6 +141,7 @@ export default function ProjectsContent({ entries, hero }) {
           {filteredEntries.map((entry) => {
             const tone = PROJECT_TONES[entry.slug] ?? 'neutral';
             const href = `/projects/${entry.slug}`;
+            const editHref = `/administratorrrr?type=projects&slug=${encodeURIComponent(entry.slug)}`;
             return (
               <article
                 key={entry.slug}
@@ -150,39 +149,35 @@ export default function ProjectsContent({ entries, hero }) {
                 data-tone={tone}
                 data-entry-slug={entry.slug}
               >
-                {isAdmin && (
-                  <Link
-                    href={`/administratorrrr/projects/${entry.slug}`}
-                    className="project-entry__edit-btn"
-                    aria-label={`Edit ${entry.title}`}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    Edit
-                  </Link>
-                )}
-                <Link
-                  href={href}
-                  className="project-entry__surface"
-                  aria-label={`Open dossier for ${entry.title}`}
-                  onClick={handleProjectClick}
-                >
+                <div className="project-entry__surface">
                   <div className="project-entry__content">
-                    {entry.createdAt ? (
-                      <time className="project-entry__date" dateTime={entry.createdAt}>
-                        {formatDisplayDate(entry.createdAt).toUpperCase()}
-                      </time>
-                    ) : null}
+                    <div className="project-entry__header">
+                      {entry.createdAt ? (
+                        <time className="project-entry__date" dateTime={entry.createdAt}>
+                          {formatDisplayDate(entry.createdAt).toUpperCase()}
+                        </time>
+                      ) : null}
+                      <span className="project-entry__category">{entry.category}</span>
+                    </div>
 
                     <div className="project-entry__body">
-                      <p className="project-entry__category">{entry.category}</p>
                       {entry.tags?.length ? (
                         <p className="project-entry__tags">{entry.tags.join(' • ')}</p>
                       ) : null}
-                      <h2 className="project-entry__title">{entry.title}</h2>
+                      <div className="project-entry__title-row">
+                        <h2 className="project-entry__title">{entry.title}</h2>
+                        {isAdmin ? (
+                          <Link
+                            href={editHref}
+                            className="project-entry__edit-btn"
+                            aria-label={`Edit ${entry.title}`}
+                          >
+                            Edit
+                          </Link>
+                        ) : null}
+                      </div>
                       {entry.summary ? <p className="project-entry__summary">{entry.summary}</p> : null}
                     </div>
-
-                    <span className="project-entry__cta">Open dossier ↗</span>
                   </div>
 
                   <figure className="project-entry__figure">
@@ -198,7 +193,14 @@ export default function ProjectsContent({ entries, hero }) {
                       <div className="project-entry__art" aria-hidden="true" />
                     )}
                   </figure>
-                </Link>
+
+                  <Link
+                    href={href}
+                    className="project-entry__overlay"
+                    aria-label={`Open dossier for ${entry.title}`}
+                    onClick={handleProjectClick}
+                  />
+                </div>
               </article>
             );
           })}

@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import AdminNav from '@/components/admin-nav';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import CoverImageUploader from '@/components/cover-image-uploader';
 import RichTextEditor from '@/components/rich-text-editor';
 import { useAdminFetch } from '@/components/admin-session-context';
@@ -67,7 +67,20 @@ function buildInitialForm() {
 
 export default function AdminPage() {
   const adminFetch = useAdminFetch();
-  const [activeType, setActiveType] = useState(TYPE_OPTIONS[0].id);
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const typeParam = searchParams.get('type');
+  const slugParam = searchParams.get('slug');
+
+  const initialType = useMemo(() => {
+    if (typeParam && TYPE_OPTIONS.some((option) => option.id === typeParam)) {
+      return typeParam;
+    }
+    return TYPE_OPTIONS[0].id;
+  }, [typeParam]);
+
+  const [activeType, setActiveType] = useState(initialType);
   const [entries, setEntries] = useState([]);
   const [form, setForm] = useState(buildInitialForm);
   const [selectedSlug, setSelectedSlug] = useState(null);
@@ -75,6 +88,30 @@ export default function AdminPage() {
   const [statusMessage, setStatusMessage] = useState('');
   const [isEntryPanelCollapsed, setIsEntryPanelCollapsed] = useState(false);
   const [isEditorFullscreen, setIsEditorFullscreen] = useState(false);
+
+  const updateUrlState = useCallback(
+    (nextType, nextSlug) => {
+      const params = new URLSearchParams();
+      const resolvedType = nextType && TYPE_OPTIONS.some((option) => option.id === nextType)
+        ? nextType
+        : activeType;
+      if (resolvedType) {
+        params.set('type', resolvedType);
+      }
+      if (nextSlug) {
+        params.set('slug', nextSlug);
+      }
+      const nextUrl = params.size ? `${pathname}?${params.toString()}` : pathname;
+      router.replace(nextUrl, { scroll: false });
+    },
+    [activeType, pathname, router]
+  );
+
+  useEffect(() => {
+    if (typeParam && TYPE_OPTIONS.some((option) => option.id === typeParam) && typeParam !== activeType) {
+      setActiveType(typeParam);
+    }
+  }, [typeParam, activeType]);
 
   const refreshEntries = useCallback(async (type) => {
     const response = await adminFetch(`/api/content/${type}`);
@@ -92,8 +129,6 @@ export default function AdminPage() {
         const items = await refreshEntries(activeType);
         if (ignore) return;
         setEntries(items);
-        setSelectedSlug(null);
-        setForm(buildInitialForm());
         setStatusMessage('');
       } catch (error) {
         if (ignore) return;
@@ -121,13 +156,34 @@ export default function AdminPage() {
       content: entry.content || INITIAL_CONTENT
     });
     setStatusMessage('');
-  }, []);
+    updateUrlState(activeType, entry.slug);
+  }, [activeType, updateUrlState]);
 
   const handleNew = useCallback(() => {
     setSelectedSlug(null);
     setForm(buildInitialForm());
     setStatusMessage('');
-  }, []);
+    updateUrlState(activeType, null);
+  }, [activeType, updateUrlState]);
+
+  useEffect(() => {
+    if (!entries.length) {
+      return;
+    }
+    if (slugParam) {
+      if (selectedSlug === slugParam) {
+        return;
+      }
+      const match = entries.find((entry) => entry.slug === slugParam);
+      if (match) {
+        handleSelect(match);
+      }
+      return;
+    }
+    if (selectedSlug) {
+      handleNew();
+    }
+  }, [entries, slugParam, selectedSlug, handleSelect, handleNew]);
 
   const handleFieldChange = useCallback(
     (field, value) => {
@@ -248,7 +304,6 @@ export default function AdminPage() {
 
   return (
     <div className="admin-shell">
-      <AdminNav />
       <header className="admin-shell__header">
         <div>
           <h1>Content Console</h1>
@@ -260,7 +315,13 @@ export default function AdminPage() {
               key={option.id}
               type="button"
               className={`admin-type${activeType === option.id ? ' is-active' : ''}`}
-              onClick={() => setActiveType(option.id)}
+            onClick={() => {
+              if (activeType === option.id) return;
+              setActiveType(option.id);
+              updateUrlState(option.id, null);
+              setSelectedSlug(null);
+              setForm(buildInitialForm());
+            }}
             >
               {option.label}
             </button>

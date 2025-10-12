@@ -9,7 +9,7 @@ import { storeEntryReturnTarget } from '../lib/entryReturn';
 
 const TRANSITION_DURATION_MS = 480;
 
-export default function EntryDetail({ type, entry }) {
+export default function EntryDetail({ type, entry, isAdmin = false }) {
   const router = useRouter();
   const [stageState, setStageState] = useState('idle');
   const stageRef = useRef(null);
@@ -118,6 +118,7 @@ export default function EntryDetail({ type, entry }) {
   if (!entry) return null;
 
   const { title, summary, content, tags, createdAt, coverImage } = entry;
+  const editHref = entry?.slug ? `/administratorrrr?type=${type}&slug=${encodeURIComponent(entry.slug)}` : null;
   const dateLabel = createdAt ? formatDisplayDate(createdAt) : '';
   const stageClasses = ['detail-stage'];
   const typeLabel = type ? `${type.charAt(0).toUpperCase()}${type.slice(1)}` : '';
@@ -152,7 +153,14 @@ export default function EntryDetail({ type, entry }) {
 
         <header className="detail-view__header">
           <div className="detail-view__title-group">
-            <h1 className="detail-view__title">{title}</h1>
+            <div className="detail-view__title-row">
+              <h1 className="detail-view__title">{title}</h1>
+              {isAdmin && editHref ? (
+                <Link href={editHref} className="detail-view__edit-btn">
+                  Edit entry
+                </Link>
+              ) : null}
+            </div>
             {summary ? <p className="detail-view__summary">{summary}</p> : null}
           </div>
           {(dateLabel || tags?.length) && (
