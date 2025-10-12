@@ -213,7 +213,26 @@ const SceneCanvas = forwardRef(function SceneCanvas(
       let animationTime = 0;
       let autoAngle = 0;
 
-      const pointer = { x: 0, y: 0, worldX: 0, worldZ: 0, energy: 0 };
+      const pointer = {
+        x: 0,
+        y: 0,
+        targetX: 0,
+        targetY: 0,
+        smoothedX: 0,
+        smoothedY: 0,
+        worldX: 0,
+        worldZ: 0,
+        targetWorldX: 0,
+        targetWorldZ: 0,
+        smoothedWorldX: 0,
+        smoothedWorldZ: 0,
+        velocityX: 0,
+        velocityY: 0,
+        flowStrength: 0,
+        flowAngle: 0,
+        lastUpdate: 0,
+        energy: 0
+      };
       const ripples = [];
       const effectRef = { type: null, startTime: 0, data: null, fadingOut: false, fadeStartTime: 0 };
 
@@ -1097,14 +1116,27 @@ const SceneCanvas = forwardRef(function SceneCanvas(
         const normalizedX = (event.clientX / window.innerWidth) * 2 - 1;
         const normalizedY = (event.clientY / window.innerHeight) * 2 - 1;
 
+        const prevTargetX = pointer.targetX;
+        const prevTargetY = pointer.targetY;
         const deltaX = normalizedX - pointer.x;
         const deltaY = normalizedY - pointer.y;
+        const now = event.timeStamp || performance.now();
+        const dt = pointer.lastUpdate ? Math.min((now - pointer.lastUpdate) / 1000, 0.25) : 0.016;
+        const invDt = dt > 0.0001 ? 1 / dt : 60;
+        const velocityX = (normalizedX - prevTargetX) * invDt;
+        const velocityY = (normalizedY - prevTargetY) * invDt;
 
-        pointer.x = normalizedX;
-        pointer.y = normalizedY;
-        pointer.worldX = pointer.x * HALF_GRID_X;
-        pointer.worldZ = pointer.y * HALF_GRID_Y;
-        pointer.energy = Math.min(pointer.energy + (Math.abs(deltaX) + Math.abs(deltaY)) * 0.35, 1.2);
+        pointer.velocityX = THREE.MathUtils.lerp(pointer.velocityX, velocityX, 0.2);
+        pointer.velocityY = THREE.MathUtils.lerp(pointer.velocityY, velocityY, 0.2);
+        pointer.targetX = normalizedX;
+        pointer.targetY = normalizedY;
+        pointer.targetWorldX = normalizedX * HALF_GRID_X;
+        pointer.targetWorldZ = normalizedY * HALF_GRID_Y;
+        pointer.lastUpdate = now;
+
+        const moveEnergy = Math.abs(deltaX) + Math.abs(deltaY);
+        const velocityEnergy = Math.hypot(pointer.velocityX, pointer.velocityY) * 0.0015;
+        pointer.energy = Math.min(pointer.energy + moveEnergy * 0.28 + velocityEnergy, 1.3);
       }
 
       function onPointerDown(event) {
@@ -1117,16 +1149,18 @@ const SceneCanvas = forwardRef(function SceneCanvas(
         const rippleX = normX * HALF_GRID_X;
         const rippleZ = normY * HALF_GRID_Y;
 
-        enqueueRipple(rippleX, rippleZ, 1);
+        enqueueRipple(rippleX, rippleZ, 1.1);
 
-        pointer.energy = Math.min(pointer.energy + 0.5, 1.4);
+        pointer.energy = Math.min(pointer.energy + 0.35, 1.3);
       }
 
       function onPointerLeave() {
-        pointer.x = 0;
-        pointer.y = 0;
-        pointer.worldX = 0;
-        pointer.worldZ = 0;
+        pointer.targetX = 0;
+        pointer.targetY = 0;
+        pointer.targetWorldX = 0;
+        pointer.targetWorldZ = 0;
+        pointer.velocityX *= 0.4;
+        pointer.velocityY *= 0.4;
       }
 
       function activateEffect(type, combine = false) {
@@ -1210,7 +1244,28 @@ const SceneCanvas = forwardRef(function SceneCanvas(
           autoAngle += delta * 0.1;
         }
 
-        pointer.energy = Math.max(pointer.energy * 0.92 - 0.002, 0);
+        pointer.smoothedX += (pointer.targetX - pointer.smoothedX) * 0.2;
+        pointer.smoothedY += (pointer.targetY - pointer.smoothedY) * 0.2;
+        pointer.smoothedWorldX += (pointer.targetWorldX - pointer.smoothedWorldX) * 0.2;
+        pointer.smoothedWorldZ += (pointer.targetWorldZ - pointer.smoothedWorldZ) * 0.2;
+
+        pointer.x = pointer.smoothedX;
+        pointer.y = pointer.smoothedY;
+        pointer.worldX = pointer.smoothedWorldX;
+        pointer.worldZ = pointer.smoothedWorldZ;
+
+        const velocityMagnitude = Math.min(Math.hypot(pointer.velocityX, pointer.velocityY), 60);
+        pointer.flowStrength = THREE.MathUtils.lerp(pointer.flowStrength, velocityMagnitude * 0.04, 0.12);
+        if (velocityMagnitude > 0.001) {
+          pointer.flowAngle = Math.atan2(pointer.velocityY, pointer.velocityX);
+        } else {
+          pointer.flowStrength *= 0.94;
+        }
+        pointer.flowStrength = Math.max(pointer.flowStrength, 0);
+        pointer.velocityX *= 0.92;
+        pointer.velocityY *= 0.92;
+
+        pointer.energy = Math.max(pointer.energy * 0.95 - 0.0012, 0);
 
         const positions = particles.geometry.attributes.position.array;
         const scales = particles.geometry.attributes.scale.array;
@@ -1294,12 +1349,23 @@ const SceneCanvas = forwardRef(function SceneCanvas(
             let lightDelta = 0;
 
             if (isHomeSceneRef.current) {
-              const pointerReach = Math.exp(-mouseDist * 0.00085);
-              const pointerGlide = Math.sin(mouseDist * 0.011 - elapsedTime * 2.6);
-              const pointerLift = pointerReach * (0.25 + pointer.energy * 0.65);
-              height += pointerGlide * settings.amplitude * 0.34 * pointerLift;
-              scaleDelta += pointerLift * 0.55;
-              lightDelta += pointerLift * 0.42;
+              const pointerReach = Math.exp(-mouseDist * 0.00055);
+              const pointerEnergyLift = pointerReach * (0.18 + pointer.energy * 0.38);
+              const glidePhase = mouseDist * 0.006 - elapsedTime * (1.6 + pointer.flowStrength * 0.22);
+              const baseGlide = Math.sin(glidePhase);
+              height += baseGlide * settings.amplitude * 0.2 * pointerEnergyLift;
+              scaleDelta += pointerEnergyLift * 0.32;
+              lightDelta += pointerEnergyLift * 0.26;
+
+              const flowStrength = pointer.flowStrength;
+              if (flowStrength > 0.001) {
+                const directional = Math.cos(theta - pointer.flowAngle) * pointerReach;
+                const flowWave = Math.sin(glidePhase * 0.6 + radial * 0.0008);
+                const flowLift = (directional * 0.4 + flowWave * 0.25) * settings.amplitude * flowStrength * 0.28 * pointerReach;
+                height += flowLift;
+                scaleDelta += flowStrength * pointerReach * 0.14;
+                lightDelta += Math.max(0, directional) * flowStrength * 0.22 * pointerReach + flowStrength * pointerReach * 0.08;
+              }
             }
 
             for (let r = ripples.length - 1; r >= 0; r--) {
@@ -1311,11 +1377,19 @@ const SceneCanvas = forwardRef(function SceneCanvas(
               }
               const dist = Math.sqrt((px - ripple.x) * (px - ripple.x) + (pz - ripple.z) * (pz - ripple.z)) + 0.0001;
               const wavefront = age * settings.rippleSpeed;
-              const envelope = Math.exp(-dist * settings.rippleDecay) * Math.exp(-age * 0.45);
+              const envelope = Math.exp(-dist * settings.rippleDecay) * Math.exp(-age * 0.32);
               const rippleStrength = ripple.strength || 1;
-              const wavePattern = Math.sin((dist - wavefront) / settings.rippleWidth) * 0.7 +
-                Math.sin((dist - wavefront * 1.3) / (settings.rippleWidth * 0.7)) * 0.3;
-              height += wavePattern * settings.rippleStrength * 0.65 * envelope * rippleStrength;
+              const width = settings.rippleWidth;
+              const normalized = (dist - wavefront) / (width * 1.15);
+              const crest = Math.exp(-normalized * normalized * 1.35);
+              const trough = Math.exp(-(normalized + 0.85) * (normalized + 0.85) * 1.45);
+              const oscillation = Math.sin(normalized * Math.PI) * 0.2;
+              const rippleProfile = (crest - trough * 0.65) * 0.7 + oscillation;
+              const rippleContribution = rippleProfile * settings.rippleStrength * 0.55 * envelope * rippleStrength;
+              height += rippleContribution;
+              const sparkle = Math.max(0, crest - trough * 0.5);
+              scaleDelta += sparkle * 0.42 * rippleStrength * envelope;
+              lightDelta += sparkle * 0.55 * rippleStrength * envelope;
             }
 
             if (activeEffect?.perPoint) {

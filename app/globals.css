@@ -227,7 +227,7 @@ a {
 
 .menu-overlay.is-visible {
   opacity: 1;
-  pointer-events: auto;
+  pointer-events: none;
   transform: scale(1) translateY(0);
 }
 
@@ -245,6 +245,7 @@ a {
   transform: translate(-50%, 0) scale(1);
   filter: blur(0);
   transition-delay: 0.12s;
+  pointer-events: auto;
 }
 
 .menu-overlay .retro-menu__list,
