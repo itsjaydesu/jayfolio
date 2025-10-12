@@ -105,7 +105,10 @@ function fractalNoise(x, y, z, octaves = 3, persistence = 0.5) {
   return total / max;
 }
 
-const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = false, onEffectChange }, ref) {
+const SceneCanvas = forwardRef(function SceneCanvas(
+  { activeSection, isPaused = false, onEffectChange, isHomeScene = false },
+  ref
+) {
   const containerRef = useRef(null);
   const stateRef = useRef(null);
   const effectChangeRef = useRef(onEffectChange);
@@ -113,6 +116,11 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
     effectChangeRef.current = onEffectChange;
   }, [onEffectChange]);
   const initialSectionRef = useRef(null);
+  const isHomeSceneRef = useRef(isHomeScene);
+
+  useEffect(() => {
+    isHomeSceneRef.current = isHomeScene;
+  }, [isHomeScene]);
 
   if (initialSectionRef.current === null) {
     initialSectionRef.current = activeSection || 'about';
@@ -1079,6 +1087,15 @@ const SceneCanvas = forwardRef(function SceneCanvas({ activeSection, isPaused = 
             const mouseDist = Math.sqrt(dxMouse * dxMouse + dzMouse * dzMouse) + 0.0001;
             const mouseEnvelope = Math.exp(-mouseDist * settings.mouseInfluence * 0.55);
             height += Math.cos(mouseDist * settings.mouseInfluence * 14 - animationTime * 2.4) * pointer.energy * settings.amplitude * 0.28 * mouseEnvelope;
+
+            if (isHomeSceneRef.current) {
+              const pointerReach = Math.exp(-mouseDist * 0.00085);
+              const pointerGlide = Math.sin(mouseDist * 0.011 - elapsedTime * 2.6);
+              const pointerLift = pointerReach * (0.25 + pointer.energy * 0.65);
+              height += pointerGlide * settings.amplitude * 0.34 * pointerLift;
+              scaleDelta += pointerLift * 0.55;
+              lightDelta += pointerLift * 0.42;
+            }
 
             for (let r = ripples.length - 1; r >= 0; r--) {
               const ripple = ripples[r];

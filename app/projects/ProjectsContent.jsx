@@ -35,6 +35,12 @@ export default function ProjectsContent({ entries, hero, isAdmin = false }) {
   
   // Update URL when category changes
   const handleCategoryChange = (category) => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[ProjectsContent] handleCategoryChange', {
+        from: selectedCategory,
+        to: category
+      });
+    }
     setSelectedCategory(category);
     const params = new URLSearchParams(searchParams);
     if (category === 'All') {
@@ -109,8 +115,19 @@ export default function ProjectsContent({ entries, hero, isAdmin = false }) {
     return categorizedEntries.filter(entry => entry.category === selectedCategory);
   }, [categorizedEntries, selectedCategory]);
 
+  useEffect(() => {
+    if (process.env.NODE_ENV !== 'development') return;
+    console.log('[ProjectsContent] filter diagnostics', {
+      category: selectedCategory,
+      totalEntries: entries.length,
+      categorizedSlugs: entries.map((entry) => entry.slug),
+      filteredSlugs: filteredEntries.map((entry) => entry.slug),
+      filteredCount: filteredEntries.length
+    });
+  }, [entries, filteredEntries, selectedCategory]);
+
   return (
-    <section className="channel channel--projects">
+    <section className="channel channel--projects" ref={containerRef}>
       <header className="channel__intro">
         <h1 className="channel__title">{hero.title}</h1>
         <p className="channel__lead">{hero.lead}</p>
@@ -137,7 +154,7 @@ export default function ProjectsContent({ entries, hero, isAdmin = false }) {
       {filteredEntries.length === 0 ? (
         <p className="channel__empty">No {selectedCategory.toLowerCase()} projects found.</p>
       ) : (
-        <div className="channel__grid">
+        <div className="channel__grid" key={selectedCategory} data-category={selectedCategory}>
           {filteredEntries.map((entry) => {
             const tone = PROJECT_TONES[entry.slug] ?? 'neutral';
             const href = `/projects/${entry.slug}`;

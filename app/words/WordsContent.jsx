@@ -63,7 +63,7 @@ export default function WordsContent({ entries, hero, isAdmin = false }) {
       {filteredEntries.length === 0 ? (
         <p className="channel__empty">No {selectedCategory.toLowerCase()} entries found.</p>
       ) : (
-        <div className="channel__grid">
+        <div className="channel__grid" key={selectedCategory} data-category={selectedCategory}>
           {filteredEntries.map((entry) => {
             const tone = WORD_TONES[entry.slug] ?? 'neutral';
             const editHref = `/administratorrrr?type=words&slug=${encodeURIComponent(entry.slug)}`;

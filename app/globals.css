@@ -1646,6 +1646,17 @@ a {
   transform: translate(-50%, -28px);
   pointer-events: none;
 }
+.site-shell__header[data-returning-home="true"] .site-shell__brand,
+.site-shell__header[data-returning-home="true"] .site-shell__nav-link,
+.site-shell__header[data-returning-home="true"] .site-shell__social {
+  opacity: 0;
+  transform: translateY(-14px);
+  transition-duration: 0.52s;
+  transition-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+}
+.site-shell__header[data-returning-home="true"] .site-shell__nav-link {
+  transition-delay: 0s !important;
+}
 .site-shell__header::before,
 .site-shell__header::after {
   content: "";
@@ -4581,7 +4592,7 @@ a {
   display: block;
   opacity: 0;
   transform: translateY(-20px);
-  animation: slideDown 0.42s cubic-bezier(0.33, 1, 0.68, 1) forwards;
+  animation: slideDown 0.68s cubic-bezier(0.33, 1, 0.68, 1) forwards;
 }
 
 .project-entry__title-row {
@@ -4639,16 +4650,16 @@ a {
 }
 
 /* Stagger animation matching RetroMenu timing */
-.project-entry:nth-child(1) { animation-delay: 0.22s; }
-.project-entry:nth-child(2) { animation-delay: 0.28s; }
-.project-entry:nth-child(3) { animation-delay: 0.34s; }
-.project-entry:nth-child(4) { animation-delay: 0.40s; }
-.project-entry:nth-child(5) { animation-delay: 0.46s; }
-.project-entry:nth-child(6) { animation-delay: 0.52s; }
-.project-entry:nth-child(7) { animation-delay: 0.58s; }
-.project-entry:nth-child(8) { animation-delay: 0.64s; }
-.project-entry:nth-child(9) { animation-delay: 0.70s; }
-.project-entry:nth-child(10) { animation-delay: 0.76s; }
+.project-entry:nth-child(1) { animation-delay: 0.28s; }
+.project-entry:nth-child(2) { animation-delay: 0.36s; }
+.project-entry:nth-child(3) { animation-delay: 0.44s; }
+.project-entry:nth-child(4) { animation-delay: 0.52s; }
+.project-entry:nth-child(5) { animation-delay: 0.6s; }
+.project-entry:nth-child(6) { animation-delay: 0.68s; }
+.project-entry:nth-child(7) { animation-delay: 0.76s; }
+.project-entry:nth-child(8) { animation-delay: 0.84s; }
+.project-entry:nth-child(9) { animation-delay: 0.92s; }
+.project-entry:nth-child(10) { animation-delay: 1s; }
 
 .project-entry__surface {
   position: relative;

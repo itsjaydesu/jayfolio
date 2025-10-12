@@ -20,7 +20,7 @@ const DEFAULT_STATUS = {
   mode: "waiting for your selection",
 };
 
-export default function SiteShell({ children }) {
+export default function SiteShell({ children, isAdmin = false }) {
   const pathname = usePathname();
   const router = useRouter();
   const sceneRef = useRef(null);
@@ -441,6 +441,12 @@ export default function SiteShell({ children }) {
     setIsReturningHome(false);
   }, [isHome]);
 
+  useEffect(() => {
+    const scene = sceneRef.current;
+    if (!scene?.applySettings) return;
+    scene.applySettings({ showStats: Boolean(isAdmin && isHome) }, true);
+  }, [isAdmin, isHome]);
+
   const handleStatusChange = (next) => {
     if (!next) return;
     setStatus(next);
@@ -458,6 +464,16 @@ export default function SiteShell({ children }) {
   const handleReset = () => {
     setStatus(activeStatus);
   };
+
+  const handleSceneAttach = useCallback(
+    (instance) => {
+      sceneRef.current = instance;
+      if (instance?.applySettings) {
+        instance.applySettings({ showStats: Boolean(isAdmin && isHome) }, true);
+      }
+    },
+    [isAdmin, isHome]
+  );
 
   const handleEffectChange = useCallback((isActive, effectType) => {
     setHasActiveEffect(isActive);
@@ -613,7 +629,8 @@ export default function SiteShell({ children }) {
             activeSection={activeSectionForCanvas} 
             isPaused={false}
             onEffectChange={handleEffectChange}
-            ref={sceneRef}
+            isHomeScene
+            ref={handleSceneAttach}
           />
         </div>
         <div className={`menu-overlay${menuVisible ? " is-visible" : ""}`}>
@@ -657,7 +674,8 @@ export default function SiteShell({ children }) {
             activeSection={activeSectionForCanvas} 
             isPaused={shouldStopAnimation}
             onEffectChange={handleEffectChange}
-            ref={sceneRef}
+            isHomeScene={false}
+            ref={handleSceneAttach}
           />
         </div>
       ) : null}

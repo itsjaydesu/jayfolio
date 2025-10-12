@@ -1,5 +1,6 @@
 import './globals.css';
 import SiteShell from '../components/SiteShell';
+import { hasAdminSession } from '../lib/adminSession';
 import { generateMetadata as getMetadata, generateStructuredData, generateViewportData } from '../lib/metadata';
 
 export async function generateMetadata() {
@@ -12,6 +13,7 @@ export async function generateViewport() {
 
 export default async function RootLayout({ children }) {
   const structuredData = await generateStructuredData('home');
+  const isAdmin = await hasAdminSession();
   
   return (
     <html lang="en">
@@ -25,7 +27,7 @@ export default async function RootLayout({ children }) {
         ))}
       </head>
       <body>
-        <SiteShell>{children}</SiteShell>
+        <SiteShell isAdmin={isAdmin}>{children}</SiteShell>
         <noscript>
           <style>{`
             :root {
