@@ -263,12 +263,15 @@ export default function SiteShell({ children, isAdmin = false }) {
           // Start graceful fade-out animation
           setHeaderLeaving(true);
           
-          // Match the fade-in duration for consistency (800ms for smoother effect)
+          // Wait for the full animation to complete
+          // Container: 0.1s delay + 0.8s animation = 0.9s
+          // Last child (brand): 0.3s delay + 0.6s animation = 0.9s
+          // Add small buffer for safety = 950ms total
           headerLeaveTimerRef.current = setTimeout(() => {
             setHeaderVisible(false);
             setHeaderLeaving(false);
             headerLeaveTimerRef.current = null;
-          }, 800);
+          }, 950);
         }
       }
     } else {

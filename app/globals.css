@@ -1753,12 +1753,15 @@ a {
 }
 
 /* Smooth fade-out when header is leaving (navigating to home) */
+/* This is the exact reverse of the fade-in animation */
 .site-shell__header.is-leaving {
   opacity: 0;
   transform: translate(-50%, -20px);
   pointer-events: none;
   transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1),
     transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Add slight delay to allow children to start animating first */
+  transition-delay: 0.1s;
 }
 
 .site-shell__header.is-leaving .site-shell__brand,
@@ -1770,33 +1773,36 @@ a {
     transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Staggered fade-out for nav links - reversed order for elegant exit */
-.site-shell__header.is-leaving .site-shell__brand {
-  transition-delay: 0.15s;
-}
-
-.site-shell__header.is-leaving .site-shell__nav-link:nth-child(1) {
-  transition-delay: 0.12s;
-}
-
-.site-shell__header.is-leaving .site-shell__nav-link:nth-child(2) {
-  transition-delay: 0.09s;
-}
-
-.site-shell__header.is-leaving .site-shell__nav-link:nth-child(3) {
-  transition-delay: 0.06s;
-}
-
-.site-shell__header.is-leaving .site-shell__nav-link:nth-child(4) {
-  transition-delay: 0.03s;
-}
-
-.site-shell__header.is-leaving .site-shell__nav-link:nth-child(5) {
-  transition-delay: 0s;
-}
+/* Staggered fade-out - TRUE REVERSE order of fade-in sequence */
+/* Fade-in order was: brand(0.1s) -> nav1-5(0.15-0.35s) -> social(0.4s) */
+/* Fade-out order is: social(first) -> nav5-1(reversed) -> brand(last) */
 
 .site-shell__header.is-leaving .site-shell__social {
-  transition-delay: 0.18s;
+  transition-delay: 0s; /* First to disappear (was last to appear at 0.4s) */
+}
+
+.site-shell__header.is-leaving .site-shell__nav .site-shell__nav-link:nth-child(5) {
+  transition-delay: 0.05s; /* Was at 0.35s coming in */
+}
+
+.site-shell__header.is-leaving .site-shell__nav .site-shell__nav-link:nth-child(4) {
+  transition-delay: 0.1s; /* Was at 0.3s coming in */
+}
+
+.site-shell__header.is-leaving .site-shell__nav .site-shell__nav-link:nth-child(3) {
+  transition-delay: 0.15s; /* Was at 0.25s coming in */
+}
+
+.site-shell__header.is-leaving .site-shell__nav .site-shell__nav-link:nth-child(2) {
+  transition-delay: 0.2s; /* Was at 0.2s coming in */
+}
+
+.site-shell__header.is-leaving .site-shell__nav .site-shell__nav-link:nth-child(1) {
+  transition-delay: 0.25s; /* Was at 0.15s coming in */
+}
+
+.site-shell__header.is-leaving .site-shell__brand {
+  transition-delay: 0.3s; /* Last to disappear (was first to appear at 0.1s) */
 }
 .site-shell__header::before,
 .site-shell__header::after {
@@ -4374,32 +4380,33 @@ a {
 }
 
 /* Staggered delays for nav links fade-in - progressive for elegant entrance */
+/* Elements cascade in from left to right: brand -> nav items -> social */
 .site-shell__header:not(.is-leaving)[data-nav-ready="true"] .site-shell__brand {
-  animation-delay: 0.1s;
+  animation-delay: 0.1s; /* First to appear */
 }
 
-.site-shell__header:not(.is-leaving)[data-nav-ready="true"] .site-shell__nav-link:nth-child(1) {
+.site-shell__header:not(.is-leaving)[data-nav-ready="true"] .site-shell__nav .site-shell__nav-link:nth-child(1) {
   animation-delay: 0.15s;
 }
 
-.site-shell__header:not(.is-leaving)[data-nav-ready="true"] .site-shell__nav-link:nth-child(2) {
+.site-shell__header:not(.is-leaving)[data-nav-ready="true"] .site-shell__nav .site-shell__nav-link:nth-child(2) {
   animation-delay: 0.2s;
 }
 
-.site-shell__header:not(.is-leaving)[data-nav-ready="true"] .site-shell__nav-link:nth-child(3) {
+.site-shell__header:not(.is-leaving)[data-nav-ready="true"] .site-shell__nav .site-shell__nav-link:nth-child(3) {
   animation-delay: 0.25s;
 }
 
-.site-shell__header:not(.is-leaving)[data-nav-ready="true"] .site-shell__nav-link:nth-child(4) {
+.site-shell__header:not(.is-leaving)[data-nav-ready="true"] .site-shell__nav .site-shell__nav-link:nth-child(4) {
   animation-delay: 0.3s;
 }
 
-.site-shell__header:not(.is-leaving)[data-nav-ready="true"] .site-shell__nav-link:nth-child(5) {
+.site-shell__header:not(.is-leaving)[data-nav-ready="true"] .site-shell__nav .site-shell__nav-link:nth-child(5) {
   animation-delay: 0.35s;
 }
 
 .site-shell__header:not(.is-leaving)[data-nav-ready="true"] .site-shell__social {
-  animation-delay: 0.4s;
+  animation-delay: 0.4s; /* Last to appear */
 }
 
 .site-shell--detail .site-shell__container {
