@@ -1201,6 +1201,18 @@ const SceneCanvas = forwardRef(function SceneCanvas(
         const normalizedX = (event.clientX / window.innerWidth) * 2 - 1;
         const normalizedY = (event.clientY / window.innerHeight) * 2 - 1;
 
+        // DEBUG: Log first few move events for comparison with click
+        if (Math.random() < 0.01) {  // Log 1% of move events to avoid spam
+          console.log('🖱️ Move coords:', {
+            clientX: event.clientX,
+            clientY: event.clientY,
+            normalizedX,
+            normalizedY,
+            worldX: normalizedX * HALF_GRID_X,
+            worldZ: normalizedY * HALF_GRID_Y
+          });
+        }
+
         const prevTargetX = pointer.targetX;
         const prevTargetY = pointer.targetY;
         const deltaX = normalizedX - pointer.x;
@@ -1230,13 +1242,70 @@ const SceneCanvas = forwardRef(function SceneCanvas(
       function onPointerDown(event) {
         if (!event.isPrimary) return;
 
+        // DEBUG: Log coordinate transformation details
+        console.group('🎯 Click Coordinate Debug');
+        console.log('Raw click position:', { clientX: event.clientX, clientY: event.clientY });
+        console.log('Window dimensions:', { width: window.innerWidth, height: window.innerHeight });
+        
+        // Check canvas position and size
+        if (renderer && renderer.domElement) {
+          const rect = renderer.domElement.getBoundingClientRect();
+          console.log('Canvas rect:', {
+            left: rect.left,
+            top: rect.top,
+            width: rect.width,
+            height: rect.height,
+            right: rect.right,
+            bottom: rect.bottom
+          });
+          console.log('Canvas offset from viewport:', { offsetX: rect.left, offsetY: rect.top });
+          
+          // Alternative calculation using canvas rect
+          const canvasNormX = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+          const canvasNormY = ((event.clientY - rect.top) / rect.height) * 2 - 1;
+          console.log('Canvas-based normalized:', { x: canvasNormX, y: canvasNormY });
+        }
+
         // Use the same coordinate calculation as onPointerMove for consistency
         const normalizedX = (event.clientX / window.innerWidth) * 2 - 1;
         const normalizedY = (event.clientY / window.innerHeight) * 2 - 1;
+        console.log('Window-based normalized:', { x: normalizedX, y: normalizedY });
 
         // Convert to world coordinates (matching pointer tracking)
         const rippleX = normalizedX * HALF_GRID_X;
         const rippleZ = normalizedY * HALF_GRID_Y;  // Note: Y in screen space maps to Z in world space
+        console.log('World coordinates:', { x: rippleX, z: rippleZ });
+        console.log('Grid constants:', { HALF_GRID_X, HALF_GRID_Y, SEPARATION, AMOUNTX, AMOUNTY });
+        
+        // Camera info
+        if (camera) {
+          console.log('Camera position:', camera.position);
+          console.log('Camera aspect:', camera.aspect);
+          console.log('Camera FOV:', camera.fov);
+        }
+        
+        // Check if particles exist at this position
+        if (particles && particles.geometry && particles.geometry.attributes.position) {
+          const positions = particles.geometry.attributes.position.array;
+          // Find closest particle to click position
+          let closestDist = Infinity;
+          let closestParticle = null;
+          for (let ix = 0; ix < AMOUNTX; ix++) {
+            for (let iy = 0; iy < AMOUNTY; iy++) {
+              const px = ix * SEPARATION - HALF_GRID_X;
+              const pz = iy * SEPARATION - HALF_GRID_Y;
+              const dist = Math.sqrt((px - rippleX) * (px - rippleX) + (pz - rippleZ) * (pz - rippleZ));
+              if (dist < closestDist) {
+                closestDist = dist;
+                closestParticle = { ix, iy, px, pz };
+              }
+            }
+          }
+          console.log('Closest particle:', closestParticle);
+          console.log('Distance to closest:', closestDist);
+        }
+        
+        console.groupEnd();
         
         // Update pointer position immediately for accurate ripple placement
         pointer.targetX = normalizedX;
