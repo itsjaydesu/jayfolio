@@ -26,6 +26,7 @@ export default function SiteShell({ children, isAdmin = false }) {
   const router = useRouter();
   const sceneRef = useRef(null);
   const returnTimerRef = useRef(null);
+  const menuLeaveTimerRef = useRef(null); // Timer for menu fade-out animation
   const { isAdmin: clientAdmin } = useAdminStatus();
   const isAdminActive = isAdmin || clientAdmin;
   
@@ -68,6 +69,7 @@ export default function SiteShell({ children, isAdmin = false }) {
   const [menuItems, setMenuItems] = useState(DEFAULT_MENU_ITEMS);
   const [isReturningHome, setIsReturningHome] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
+  const [menuLeaving, setMenuLeaving] = useState(false); // Track menu fade-out state
   const [status, setStatus] = useState(DEFAULT_STATUS);
   const [navReady, setNavReady] = useState(false);
   const [hasScrolled, setHasScrolled] = useState(false);
@@ -129,6 +131,10 @@ export default function SiteShell({ children, isAdmin = false }) {
         window.clearTimeout(returnTimerRef.current);
         returnTimerRef.current = null;
       }
+      if (menuLeaveTimerRef.current) {
+        window.clearTimeout(menuLeaveTimerRef.current);
+        menuLeaveTimerRef.current = null;
+      }
     };
   }, [router]);
 
@@ -152,10 +158,42 @@ export default function SiteShell({ children, isAdmin = false }) {
   }, []);
 
   useEffect(() => {
+    // Clear any pending menu leave timer when component unmounts or dependencies change
+    const clearMenuLeaveTimer = () => {
+      if (menuLeaveTimerRef.current) {
+        clearTimeout(menuLeaveTimerRef.current);
+        menuLeaveTimerRef.current = null;
+      }
+    };
+
     if (!isHome) {
-      setMenuVisible(false);
-      return;
+      // Navigating away from home - start fade-out animation
+      if (menuVisible && !menuLeaving) {
+        setMenuLeaving(true); // Start fade-out animation
+        
+        // Check for reduced motion preference
+        const motionQuery = typeof window !== "undefined" && 
+          window.matchMedia("(prefers-reduced-motion: reduce)");
+        
+        if (motionQuery && motionQuery.matches) {
+          // No animation for reduced motion
+          setMenuVisible(false);
+          setMenuLeaving(false);
+        } else {
+          // Allow time for fade-out animation (0.68s matches the CSS transition)
+          menuLeaveTimerRef.current = setTimeout(() => {
+            setMenuVisible(false);
+            setMenuLeaving(false);
+            menuLeaveTimerRef.current = null;
+          }, 680); // 680ms to match the menu fade-out transition duration
+        }
+      }
+      return clearMenuLeaveTimer;
     }
+
+    // Navigating to home - show menu
+    clearMenuLeaveTimer(); // Clear any pending hide timer
+    setMenuLeaving(false); // Clear leaving state
 
     if (typeof window === "undefined") {
       setMenuVisible(true);
@@ -174,8 +212,9 @@ export default function SiteShell({ children, isAdmin = false }) {
 
     return () => {
       cancelAnimationFrame(frameId);
+      clearMenuLeaveTimer();
     };
-  }, [isHome]);
+  }, [isHome, menuVisible, menuLeaving]);
 
   useEffect(() => {
     if (isDetailView || typeof window === "undefined") {
@@ -638,7 +677,7 @@ export default function SiteShell({ children, isAdmin = false }) {
             ref={handleSceneAttach}
           />
         </div>
-        <div className={`menu-overlay${menuVisible ? " is-visible" : ""}`}>
+        <div className={`menu-overlay${menuVisible ? " is-visible" : ""}${menuLeaving ? " is-leaving" : ""}`}>
           <RetroMenu
             id="retro-menu"
             items={menuItems}
