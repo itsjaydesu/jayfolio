@@ -28,6 +28,7 @@ export default function SiteShell({ children, isAdmin = false }) {
   const returnTimerRef = useRef(null);
   const menuLeaveTimerRef = useRef(null); // Timer for menu fade-out animation
   const headerLeaveTimerRef = useRef(null); // Timer for header fade-out animation
+  const headerLeavingRef = useRef(false); // Track leaving state with ref for immediate updates
   const { isAdmin: clientAdmin } = useAdminStatus();
   const isAdminActive = isAdmin || clientAdmin;
   
@@ -258,17 +259,25 @@ export default function SiteShell({ children, isAdmin = false }) {
     if (isHome) {
       console.log('[Header Effect] On home page - should hide header');
       // Navigating to home - header should fade out smoothly
-      if (headerVisible) {
+      if (headerVisible && !headerLeavingRef.current) {
         console.log('[Header Effect] Header is visible, need to hide it');
         if (prefersReducedMotion) {
           // Instant hide for reduced motion
           console.log('[Header Effect] Reduced motion - instant hide');
+          headerLeavingRef.current = false;
           setHeaderVisible(false);
           setHeaderLeaving(false);
-        } else if (!headerLeaving) {
+        } else {
           // Start graceful fade-out animation
-          console.log('[Header Effect] Starting fade-out animation');
+          console.log('[Header Effect] Starting fade-out animation - setting headerLeaving to true');
+          // Set ref immediately for synchronous update
+          headerLeavingRef.current = true;
           setHeaderLeaving(true);
+          
+          // Force a re-render to ensure the leaving class is applied
+          requestAnimationFrame(() => {
+            console.log('[Header Effect] Animation frame - header should now have leaving class');
+          });
           
           // Wait for the full animation to complete
           // Container: 0.1s delay + 0.8s animation = 0.9s
@@ -276,55 +285,51 @@ export default function SiteShell({ children, isAdmin = false }) {
           // Add small buffer for safety = 950ms total
           headerLeaveTimerRef.current = setTimeout(() => {
             console.log('[Header Effect] Fade-out complete, hiding header');
+            headerLeavingRef.current = false;
             setHeaderVisible(false);
             setHeaderLeaving(false);
             headerLeaveTimerRef.current = null;
           }, 950);
-        } else {
-          console.log('[Header Effect] Already leaving, skipping');
         }
+      } else if (headerLeavingRef.current) {
+        console.log('[Header Effect] Already leaving (ref check), skipping');
       } else {
-        console.log('[Header Effect] Header already hidden');
+        console.log('[Header Effect] Header already hidden or leaving');
       }
     } else {
       console.log('[Header Effect] Not on home page - should show header');
       // Not on home page - show header
       clearHeaderLeaveTimer();
       
-      if (!headerVisible) {
+      if (!headerVisible && !headerLeavingRef.current) {
         console.log('[Header Effect] Header hidden, need to show it');
         if (prefersReducedMotion) {
           // Instant show for reduced motion
           console.log('[Header Effect] Reduced motion - instant show');
+          headerLeavingRef.current = false;
           setHeaderVisible(true);
           setHeaderLeaving(false);
         } else {
-          // Reset leaving state first, then show after a micro delay for smoother entrance
-          console.log('[Header Effect] Starting fade-in animation');
+          // Show immediately - no delay needed
+          console.log('[Header Effect] Showing header');
+          headerLeavingRef.current = false;
           setHeaderLeaving(false);
-          // Use a small delay to ensure DOM is ready and prevent flash
-          const showTimer = setTimeout(() => {
-            console.log('[Header Effect] Showing header after delay');
-            setHeaderVisible(true);
-          }, 50);
-          
-          return () => {
-            clearTimeout(showTimer);
-            clearHeaderLeaveTimer();
-          };
+          setHeaderVisible(true);
         }
-      } else if (headerLeaving) {
+      } else if (headerLeavingRef.current) {
         // If we were in the middle of leaving but route changed, cancel it
         console.log('[Header Effect] Cancelling leave animation - route changed');
         clearHeaderLeaveTimer();
+        headerLeavingRef.current = false;
         setHeaderLeaving(false);
+        setHeaderVisible(true);
       } else {
         console.log('[Header Effect] Header already visible and not leaving');
       }
     }
 
     return clearHeaderLeaveTimer;
-  }, [isHome]); // Simplified dependencies - only care about route change
+  }, [isHome, headerVisible]); // Depend on route and visibility state
 
   useEffect(() => {
     if (isDetailView || typeof window === "undefined") {
