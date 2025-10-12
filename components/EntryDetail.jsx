@@ -2,10 +2,11 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { formatDisplayDate } from '../lib/formatters';
 import { storeEntryReturnTarget } from '../lib/entryReturn';
+import TabbedAudioPlayer from './TabbedAudioPlayer';
 
 const TRANSITION_DURATION_MS = 480;
 
@@ -115,6 +116,59 @@ export default function EntryDetail({ type, entry, isAdmin = false }) {
     [entry?.slug, router, stageState, type]
   );
 
+  // Extract audio URLs from content for sound posts
+  const audioData = useMemo(() => {
+    if (type !== 'sounds' || !entry?.content) return null;
+    
+    // Parse the HTML content to find audio sources
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(entry.content, 'text/html');
+    const audioElements = doc.querySelectorAll('audio');
+    
+    let mp3Url = null;
+    let losslessUrl = null;
+    
+    audioElements.forEach(audio => {
+      const src = audio.getAttribute('src');
+      if (src) {
+        if (src.endsWith('.mp3')) {
+          mp3Url = src;
+        } else if (src.endsWith('.wav') || src.endsWith('.flac') || src.endsWith('.aiff')) {
+          losslessUrl = src;
+        }
+      }
+    });
+    
+    // Only return data if we have both formats
+    if (mp3Url && losslessUrl) {
+      return {
+        mp3Url,
+        losslessUrl,
+        title: entry.title,
+        artist: 'Jay Winder', // You can make this configurable
+        coverImage: entry.coverImage
+      };
+    }
+    
+    return null;
+  }, [type, entry]);
+
+  // Process content to remove audio elements if we're using the tabbed player
+  const processedContent = useMemo(() => {
+    if (!audioData || !entry?.content) return entry?.content;
+    
+    // Remove the audio figure elements from content
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(entry.content, 'text/html');
+    const audioFigures = doc.querySelectorAll('figure.sound-player');
+    
+    audioFigures.forEach(figure => {
+      figure.remove();
+    });
+    
+    return doc.body.innerHTML;
+  }, [audioData, entry?.content]);
+
   if (!entry) return null;
 
   const { title, summary, content, tags, createdAt, coverImage } = entry;
@@ -185,7 +239,7 @@ export default function EntryDetail({ type, entry, isAdmin = false }) {
           )}
         </header>
 
-        {coverImage?.url ? (
+        {coverImage?.url && !audioData ? (
           <figure className="detail-view__media">
             <Image
               src={coverImage.url}
@@ -197,8 +251,19 @@ export default function EntryDetail({ type, entry, isAdmin = false }) {
           </figure>
         ) : null}
 
+        {audioData && (
+          <TabbedAudioPlayer
+            title={audioData.title}
+            artist={audioData.artist}
+            coverImage={audioData.coverImage}
+            mp3Url={audioData.mp3Url}
+            losslessUrl={audioData.losslessUrl}
+            className="detail-view__audio-player"
+          />
+        )}
+
         <article className="detail-view__body">
-          <div className="detail-view__content" dangerouslySetInnerHTML={{ __html: content }} />
+          <div className="detail-view__content" dangerouslySetInnerHTML={{ __html: processedContent || content }} />
         </article>
       </div>
     </div>
