@@ -109,8 +109,7 @@ export default function SiteShell({ children, isAdmin = false }) {
     headerVisible,
     headerLeaving,
     'headerLeavingRef.current': headerLeavingRef.current,
-    shouldKeepHeaderMounted,
-    isDetailView
+    shouldKeepHeaderMounted
   });
   
   if (isTransitioningToHome && headerVisible) {
@@ -903,8 +902,10 @@ export default function SiteShell({ children, isAdmin = false }) {
         <div className="site-shell__container">
           {/* Keep header mounted based on computed value */}
           {console.log('[Header Render Check]', {
+            'isDetailView': isDetailView,
+            'shouldKeepHeaderMounted': shouldKeepHeaderMounted,
             'Condition': `!isDetailView (${!isDetailView}) && shouldKeepHeaderMounted (${shouldKeepHeaderMounted})`,
-            'Will render': !isDetailView && shouldKeepHeaderMounted
+            'Will render header': !isDetailView && shouldKeepHeaderMounted
           })}
           {!isDetailView && shouldKeepHeaderMounted ? (
             <header
