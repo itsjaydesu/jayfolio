@@ -30,9 +30,10 @@ export default function AboutContent({ initialContent }) {
         
         <main className="clean-about-page__main">
           <div className="clean-about-page__text-content">
-            <p className="clean-about-page__lead">
-              {content}
-            </p>
+            <div 
+              className="clean-about-page__lead"
+              dangerouslySetInnerHTML={{ __html: content }}
+            />
           </div>
           
           {detailCards.length > 0 && (
