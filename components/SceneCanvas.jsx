@@ -231,14 +231,55 @@ const SceneCanvas = forwardRef(function SceneCanvas(
         flowStrength: 0,
         flowAngle: 0,
         lastUpdate: 0,
-        energy: 0
+        energy: 0,
+        // Enhanced smoothing parameters
+        dampingFactor: 0.08,  // Reduced from implicit 0.2 for smoother movement
+        velocityDamping: 0.85  // Slower velocity decay for fluid motion
       };
       const ripples = [];
       const effectRef = { type: null, startTime: 0, data: null, fadingOut: false, fadeStartTime: 0 };
 
-      const enqueueRipple = (x, z, strength = 1) => {
-        ripples.push({ x, z, start: elapsedTime, strength });
-        if (ripples.length > 20) {
+      const enqueueRipple = (x, z, strength = 1, isClick = false) => {
+        // Create a beautiful multi-layered ripple effect
+        if (isClick) {
+          // Main ripple with enhanced parameters
+          ripples.push({ 
+            x, 
+            z, 
+            start: elapsedTime, 
+            strength: strength * 1.2,
+            type: 'primary',
+            color: 1.0
+          });
+          
+          // Secondary ripple - smaller, faster, adds detail
+          ripples.push({ 
+            x, 
+            z, 
+            start: elapsedTime + 0.1, 
+            strength: strength * 0.6,
+            type: 'secondary',
+            speedMultiplier: 1.4,
+            color: 0.8
+          });
+          
+          // Tertiary ripple - subtle outer glow
+          ripples.push({ 
+            x, 
+            z, 
+            start: elapsedTime + 0.2, 
+            strength: strength * 0.3,
+            type: 'tertiary',
+            speedMultiplier: 0.7,
+            widthMultiplier: 1.8,
+            color: 0.6
+          });
+        } else {
+          ripples.push({ x, z, start: elapsedTime, strength, type: 'standard' });
+        }
+        
+        // Keep ripple count reasonable
+        while (ripples.length > 30) {
           ripples.shift();
         }
       };
@@ -1126,17 +1167,20 @@ const SceneCanvas = forwardRef(function SceneCanvas(
         const velocityX = (normalizedX - prevTargetX) * invDt;
         const velocityY = (normalizedY - prevTargetY) * invDt;
 
-        pointer.velocityX = THREE.MathUtils.lerp(pointer.velocityX, velocityX, 0.2);
-        pointer.velocityY = THREE.MathUtils.lerp(pointer.velocityY, velocityY, 0.2);
+        // Much smoother velocity interpolation
+        pointer.velocityX = THREE.MathUtils.lerp(pointer.velocityX, velocityX, 0.1);
+        pointer.velocityY = THREE.MathUtils.lerp(pointer.velocityY, velocityY, 0.1);
         pointer.targetX = normalizedX;
         pointer.targetY = normalizedY;
         pointer.targetWorldX = normalizedX * HALF_GRID_X;
         pointer.targetWorldZ = normalizedY * HALF_GRID_Y;
         pointer.lastUpdate = now;
 
+        // Smoother energy accumulation
         const moveEnergy = Math.abs(deltaX) + Math.abs(deltaY);
-        const velocityEnergy = Math.hypot(pointer.velocityX, pointer.velocityY) * 0.0015;
-        pointer.energy = Math.min(pointer.energy + moveEnergy * 0.28 + velocityEnergy, 1.3);
+        const velocityEnergy = Math.hypot(pointer.velocityX, pointer.velocityY) * 0.001;
+        const targetEnergy = Math.min(pointer.energy + moveEnergy * 0.15 + velocityEnergy, 1.0);
+        pointer.energy = THREE.MathUtils.lerp(pointer.energy, targetEnergy, 0.3);
       }
 
       function onPointerDown(event) {
@@ -1149,9 +1193,12 @@ const SceneCanvas = forwardRef(function SceneCanvas(
         const rippleX = normX * HALF_GRID_X;
         const rippleZ = normY * HALF_GRID_Y;
 
-        enqueueRipple(rippleX, rippleZ, 1.1);
+        // Create beautiful click ripple
+        enqueueRipple(rippleX, rippleZ, 1.0, true);  // true = isClick for multi-layer ripple
 
-        pointer.energy = Math.min(pointer.energy + 0.35, 1.3);
+        // Gentler energy boost on click
+        const targetEnergy = Math.min(pointer.energy + 0.25, 1.0);
+        pointer.energy = THREE.MathUtils.lerp(pointer.energy, targetEnergy, 0.5);
       }
 
       function onPointerLeave() {
@@ -1159,8 +1206,9 @@ const SceneCanvas = forwardRef(function SceneCanvas(
         pointer.targetY = 0;
         pointer.targetWorldX = 0;
         pointer.targetWorldZ = 0;
-        pointer.velocityX *= 0.4;
-        pointer.velocityY *= 0.4;
+        // Smoother velocity decay on pointer leave
+        pointer.velocityX *= 0.6;
+        pointer.velocityY *= 0.6;
       }
 
       function activateEffect(type, combine = false) {
@@ -1244,28 +1292,39 @@ const SceneCanvas = forwardRef(function SceneCanvas(
           autoAngle += delta * 0.1;
         }
 
-        pointer.smoothedX += (pointer.targetX - pointer.smoothedX) * 0.2;
-        pointer.smoothedY += (pointer.targetY - pointer.smoothedY) * 0.2;
-        pointer.smoothedWorldX += (pointer.targetWorldX - pointer.smoothedWorldX) * 0.2;
-        pointer.smoothedWorldZ += (pointer.targetWorldZ - pointer.smoothedWorldZ) * 0.2;
+        // Much smoother pointer interpolation for less jitter
+        const smoothingFactor = pointer.dampingFactor;
+        pointer.smoothedX += (pointer.targetX - pointer.smoothedX) * smoothingFactor;
+        pointer.smoothedY += (pointer.targetY - pointer.smoothedY) * smoothingFactor;
+        pointer.smoothedWorldX += (pointer.targetWorldX - pointer.smoothedWorldX) * smoothingFactor;
+        pointer.smoothedWorldZ += (pointer.targetWorldZ - pointer.smoothedWorldZ) * smoothingFactor;
 
         pointer.x = pointer.smoothedX;
         pointer.y = pointer.smoothedY;
         pointer.worldX = pointer.smoothedWorldX;
         pointer.worldZ = pointer.smoothedWorldZ;
 
-        const velocityMagnitude = Math.min(Math.hypot(pointer.velocityX, pointer.velocityY), 60);
-        pointer.flowStrength = THREE.MathUtils.lerp(pointer.flowStrength, velocityMagnitude * 0.04, 0.12);
+        // Smoother flow dynamics
+        const velocityMagnitude = Math.min(Math.hypot(pointer.velocityX, pointer.velocityY), 40);  // Reduced max
+        pointer.flowStrength = THREE.MathUtils.lerp(pointer.flowStrength, velocityMagnitude * 0.03, 0.08);  // Smoother lerp
         if (velocityMagnitude > 0.001) {
-          pointer.flowAngle = Math.atan2(pointer.velocityY, pointer.velocityX);
+          const targetAngle = Math.atan2(pointer.velocityY, pointer.velocityX);
+          // Smooth angle transition to prevent sudden direction changes
+          const angleDiff = targetAngle - pointer.flowAngle;
+          const smoothedAngleDiff = Math.atan2(Math.sin(angleDiff), Math.cos(angleDiff));
+          pointer.flowAngle += smoothedAngleDiff * 0.15;
         } else {
-          pointer.flowStrength *= 0.94;
+          pointer.flowStrength *= 0.96;  // Slower decay
         }
         pointer.flowStrength = Math.max(pointer.flowStrength, 0);
-        pointer.velocityX *= 0.92;
-        pointer.velocityY *= 0.92;
+        
+        // Smoother velocity damping
+        const velocityDecay = pointer.velocityDamping;
+        pointer.velocityX *= velocityDecay;
+        pointer.velocityY *= velocityDecay;
 
-        pointer.energy = Math.max(pointer.energy * 0.95 - 0.0012, 0);
+        // Gentler energy decay
+        pointer.energy = Math.max(pointer.energy * 0.97 - 0.0008, 0);
 
         const positions = particles.geometry.attributes.position.array;
         const scales = particles.geometry.attributes.scale.array;
@@ -1339,11 +1398,14 @@ const SceneCanvas = forwardRef(function SceneCanvas(
             height += Math.cos(iy * settings.waveYFrequency - animationTime * 1.25) * settings.amplitude * 0.6;
             height += Math.sin(radial * settings.swirlFrequency - animationTime * 1.6) * settings.swirlStrength * settings.amplitude * 0.4;
 
+            // Smoother mouse influence
             const dxMouse = px - pointer.worldX;
             const dzMouse = pz - pointer.worldZ;
             const mouseDist = Math.sqrt(dxMouse * dxMouse + dzMouse * dzMouse) + 0.0001;
-            const mouseEnvelope = Math.exp(-mouseDist * settings.mouseInfluence * 0.55);
-            height += Math.cos(mouseDist * settings.mouseInfluence * 14 - animationTime * 2.4) * pointer.energy * settings.amplitude * 0.28 * mouseEnvelope;
+            const mouseEnvelope = Math.exp(-mouseDist * settings.mouseInfluence * 0.4);  // Gentler falloff
+            // Smoother wave pattern with less aggressive frequency
+            const mouseWave = Math.cos(mouseDist * settings.mouseInfluence * 10 - animationTime * 1.8);
+            height += mouseWave * pointer.energy * settings.amplitude * 0.2 * mouseEnvelope;
 
             let scaleDelta = 0;
             let lightDelta = 0;
@@ -1368,28 +1430,67 @@ const SceneCanvas = forwardRef(function SceneCanvas(
               }
             }
 
+            // Enhanced beautiful ripple rendering
             for (let r = ripples.length - 1; r >= 0; r--) {
               const ripple = ripples[r];
               const age = elapsedTime - ripple.start;
-              if (age > 8) {
+              const maxAge = ripple.type === 'primary' ? 10 : 8;  // Primary ripples last longer
+              
+              if (age > maxAge) {
                 ripples.splice(r, 1);
                 continue;
               }
+              
               const dist = Math.sqrt((px - ripple.x) * (px - ripple.x) + (pz - ripple.z) * (pz - ripple.z)) + 0.0001;
-              const wavefront = age * settings.rippleSpeed;
-              const envelope = Math.exp(-dist * settings.rippleDecay) * Math.exp(-age * 0.32);
+              const speedMult = ripple.speedMultiplier || 1.0;
+              const wavefront = age * settings.rippleSpeed * speedMult;
+              
+              // Smoother envelope with easing
+              const ageNormalized = THREE.MathUtils.clamp(age / maxAge, 0, 1);
+              const ageDecay = 1.0 - (ageNormalized * ageNormalized * (3 - 2 * ageNormalized));  // Smooth step function
+              const distanceDecay = Math.exp(-dist * settings.rippleDecay * 0.8);
+              const envelope = distanceDecay * ageDecay;
+              
               const rippleStrength = ripple.strength || 1;
-              const width = settings.rippleWidth;
-              const normalized = (dist - wavefront) / (width * 1.15);
-              const crest = Math.exp(-normalized * normalized * 1.35);
-              const trough = Math.exp(-(normalized + 0.85) * (normalized + 0.85) * 1.45);
-              const oscillation = Math.sin(normalized * Math.PI) * 0.2;
-              const rippleProfile = (crest - trough * 0.65) * 0.7 + oscillation;
-              const rippleContribution = rippleProfile * settings.rippleStrength * 0.55 * envelope * rippleStrength;
+              const widthMult = ripple.widthMultiplier || 1.0;
+              const width = settings.rippleWidth * widthMult;
+              
+              const normalized = (dist - wavefront) / width;
+              
+              // Beautiful multi-component wave
+              let rippleProfile = 0;
+              
+              if (ripple.type === 'primary') {
+                // Main wave with smooth Gaussian profile
+                const gaussian = Math.exp(-normalized * normalized * 0.8);
+                const secondaryWave = Math.sin(normalized * Math.PI * 2) * 0.15 * Math.exp(-Math.abs(normalized) * 2);
+                rippleProfile = gaussian + secondaryWave;
+              } else if (ripple.type === 'secondary') {
+                // Sharper, detailed wave
+                const sharpGaussian = Math.exp(-normalized * normalized * 1.5);
+                const detail = Math.cos(normalized * Math.PI * 3) * 0.1 * Math.exp(-Math.abs(normalized) * 3);
+                rippleProfile = sharpGaussian * 0.7 + detail;
+              } else if (ripple.type === 'tertiary') {
+                // Soft outer glow
+                const softGaussian = Math.exp(-normalized * normalized * 0.4);
+                rippleProfile = softGaussian * 0.4;
+              } else {
+                // Standard ripple (original formula but smoother)
+                const crest = Math.exp(-normalized * normalized * 1.2);
+                const trough = Math.exp(-(normalized + 0.85) * (normalized + 0.85) * 1.3);
+                const oscillation = Math.sin(normalized * Math.PI) * 0.15;
+                rippleProfile = (crest - trough * 0.6) * 0.8 + oscillation;
+              }
+              
+              // Apply ripple with smooth transitions
+              const rippleContribution = rippleProfile * settings.rippleStrength * 0.6 * envelope * rippleStrength;
               height += rippleContribution;
-              const sparkle = Math.max(0, crest - trough * 0.5);
-              scaleDelta += sparkle * 0.42 * rippleStrength * envelope;
-              lightDelta += sparkle * 0.55 * rippleStrength * envelope;
+              
+              // Enhanced sparkle effect with color variation
+              const sparkle = Math.max(0, rippleProfile * 0.8);
+              const colorVar = ripple.color || 1.0;
+              scaleDelta += sparkle * 0.5 * rippleStrength * envelope;
+              lightDelta += sparkle * 0.6 * rippleStrength * envelope * colorVar;
             }
 
             if (activeEffect?.perPoint) {
