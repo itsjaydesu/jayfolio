@@ -75,6 +75,25 @@ export default function SiteShell({ children, isAdmin = false }) {
   // Initialize header visibility correctly based on route
   const [headerVisible, setHeaderVisible] = useState(() => !isHome); // Start visible on subpages, hidden on home
   const [headerLeaving, setHeaderLeaving] = useState(false); // Track header fade-out state
+  // Track previous route to detect transitions
+  const prevIsHomeRef = useRef(isHome);
+  
+  // Detect route change and update leaving state synchronously
+  const isTransitioningToHome = !prevIsHomeRef.current && isHome;
+  const isTransitioningFromHome = prevIsHomeRef.current && !isHome;
+  
+  // Update prev ref for next render
+  if (prevIsHomeRef.current !== isHome) {
+    console.log('[Header Transition] Route changed from', prevIsHomeRef.current ? 'home' : 'subpage', 'to', isHome ? 'home' : 'subpage');
+    prevIsHomeRef.current = isHome;
+    
+    // If transitioning to home and header is visible, start leaving animation immediately
+    if (isTransitioningToHome && headerVisible && !headerLeaving) {
+      console.log('[Header Transition] Starting leave animation synchronously');
+      headerLeavingRef.current = true;
+      // We'll set the state in the effect, but the ref ensures immediate update
+    }
+  }
   const [status, setStatus] = useState(DEFAULT_STATUS);
   // Initialize navReady as true on subpages to prevent flash
   const [navReady, setNavReady] = useState(() => {
@@ -239,7 +258,7 @@ export default function SiteShell({ children, isAdmin = false }) {
 
   // Handle header visibility and transitions
   useEffect(() => {
-    console.log('[Header Effect] Running - isHome:', isHome, 'headerVisible:', headerVisible, 'headerLeaving:', headerLeaving);
+    console.log('[Header Effect] Running - isHome:', isHome, 'headerVisible:', headerVisible, 'headerLeaving:', headerLeaving, 'ref:', headerLeavingRef.current);
     
     // Skip if we're in SSR
     if (typeof window === "undefined") return;
@@ -257,9 +276,22 @@ export default function SiteShell({ children, isAdmin = false }) {
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     
     if (isHome) {
-      console.log('[Header Effect] On home page - should hide header');
-      // Navigating to home - header should fade out smoothly
-      if (headerVisible && !headerLeavingRef.current) {
+      console.log('[Header Effect] On home page');
+      
+      // If we already started leaving synchronously, just set up the timer
+      if (headerLeavingRef.current && !headerLeaving) {
+        console.log('[Header Effect] Leave animation already started synchronously, setting up timer');
+        setHeaderLeaving(true); // Sync state with ref
+        
+        // Wait for the full animation to complete
+        headerLeaveTimerRef.current = setTimeout(() => {
+          console.log('[Header Effect] Fade-out complete, hiding header');
+          headerLeavingRef.current = false;
+          setHeaderVisible(false);
+          setHeaderLeaving(false);
+          headerLeaveTimerRef.current = null;
+        }, 950);
+      } else if (headerVisible && !headerLeavingRef.current) {
         console.log('[Header Effect] Header is visible, need to hide it');
         if (prefersReducedMotion) {
           // Instant hide for reduced motion
@@ -268,21 +300,11 @@ export default function SiteShell({ children, isAdmin = false }) {
           setHeaderVisible(false);
           setHeaderLeaving(false);
         } else {
-          // Start graceful fade-out animation
-          console.log('[Header Effect] Starting fade-out animation - setting headerLeaving to true');
-          // Set ref immediately for synchronous update
+          // Start graceful fade-out animation (this path should rarely be hit now)
+          console.log('[Header Effect] Starting fade-out animation in effect');
           headerLeavingRef.current = true;
           setHeaderLeaving(true);
           
-          // Force a re-render to ensure the leaving class is applied
-          requestAnimationFrame(() => {
-            console.log('[Header Effect] Animation frame - header should now have leaving class');
-          });
-          
-          // Wait for the full animation to complete
-          // Container: 0.1s delay + 0.8s animation = 0.9s
-          // Last child (brand): 0.3s delay + 0.6s animation = 0.9s
-          // Add small buffer for safety = 950ms total
           headerLeaveTimerRef.current = setTimeout(() => {
             console.log('[Header Effect] Fade-out complete, hiding header');
             headerLeavingRef.current = false;
@@ -292,9 +314,9 @@ export default function SiteShell({ children, isAdmin = false }) {
           }, 950);
         }
       } else if (headerLeavingRef.current) {
-        console.log('[Header Effect] Already leaving (ref check), skipping');
+        console.log('[Header Effect] Already leaving, skipping');
       } else {
-        console.log('[Header Effect] Header already hidden or leaving');
+        console.log('[Header Effect] Header already hidden');
       }
     } else {
       console.log('[Header Effect] Not on home page - should show header');
@@ -841,20 +863,21 @@ export default function SiteShell({ children, isAdmin = false }) {
       ) : null}
       <div className={`site-shell${isDetailView ? " site-shell--detail" : ""}`}>
         <div className="site-shell__container">
-          {/* Keep header mounted during leaving animation */}
-          {!isDetailView && (headerVisible || headerLeaving) ? (
+          {/* Keep header mounted during leaving animation - check ref for immediate state */}
+          {!isDetailView && (headerVisible || headerLeaving || headerLeavingRef.current) ? (
             <header
               className={`site-shell__header${
                 hasScrolled ? " site-shell__header--shaded" : ""
-              }${headerLeaving ? " is-leaving" : ""}`}
+              }${headerLeaving || headerLeavingRef.current ? " is-leaving" : ""}`}
               data-nav-ready={navReady ? "true" : "false"}
               data-returning-home={isReturningHome ? "true" : "false"}
               ref={(el) => {
                 if (el) {
                   console.log('[Header DOM] Rendered with classes:', el.className);
                   console.log('[Header DOM] data-nav-ready:', el.getAttribute('data-nav-ready'));
-                  console.log('[Header DOM] headerLeaving:', headerLeaving);
+                  console.log('[Header DOM] headerLeaving state:', headerLeaving, 'ref:', headerLeavingRef.current);
                   console.log('[Header DOM] headerVisible:', headerVisible);
+                  console.log('[Header DOM] Has is-leaving class:', el.className.includes('is-leaving'));
                   // Check if nav links exist and log their count
                   const navLinks = el.querySelectorAll('.site-shell__nav-link');
                   console.log('[Header DOM] Nav links found:', navLinks.length);
