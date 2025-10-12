@@ -4,7 +4,8 @@ import { generateMetadata as getMetadata, generateViewportData } from '../../lib
 import { hasAdminSession } from '../../lib/adminSession';
 import WordsContent from './WordsContent';
 
-export const dynamic = 'force-dynamic';
+// Use ISR with 1 hour revalidation for better performance
+export const revalidate = 3600;
 
 export async function generateMetadata() {
   return await getMetadata('words');

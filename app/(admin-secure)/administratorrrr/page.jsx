@@ -1,11 +1,21 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, Suspense } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import CoverImageUploader from '@/components/cover-image-uploader';
-import RichTextEditor from '@/components/rich-text-editor';
+import dynamic from 'next/dynamic';
 import { useAdminFetch } from '@/components/admin-session-context';
 import { ChevronDoubleDownIcon, ChevronDoubleUpIcon } from '@/components/icons';
+
+// Dynamically import heavy editor components to reduce admin bundle size
+const RichTextEditor = dynamic(() => import('@/components/rich-text-editor'), {
+  loading: () => <div className="editor-loading">Loading editor...</div>,
+  ssr: false
+});
+
+const CoverImageUploader = dynamic(() => import('@/components/cover-image-uploader'), {
+  loading: () => <div className="uploader-loading">Loading uploader...</div>,
+  ssr: false
+});
 
 const TYPE_OPTIONS = [
   { id: 'projects', label: 'Projects' },
@@ -414,13 +424,15 @@ export default function AdminPage() {
             </div>
 
             <div className="admin-editor-card__body">
-              <RichTextEditor
-                value={form.content}
-                initialContent={INITIAL_CONTENT}
-                onChange={(value) => handleFieldChange('content', value)}
-                isFullscreen={isEditorFullscreen}
-                onToggleFullscreen={toggleEditorFullscreen}
-              />
+              <Suspense fallback={<div className="editor-loading">Loading editor...</div>}>
+                <RichTextEditor
+                  value={form.content}
+                  initialContent={INITIAL_CONTENT}
+                  onChange={(value) => handleFieldChange('content', value)}
+                  isFullscreen={isEditorFullscreen}
+                  onToggleFullscreen={toggleEditorFullscreen}
+                />
+              </Suspense>
             </div>
           </section>
 
@@ -506,11 +518,13 @@ export default function AdminPage() {
               <div className="admin-panel__body">
                 <div className="admin-field admin-field--cover">
                   <span>Cover image</span>
-                  <CoverImageUploader
-                    value={form.coverImageUrl}
-                    alt={form.coverImageAlt}
-                    onChange={handleCoverChange}
-                  />
+                  <Suspense fallback={<div className="uploader-loading">Loading uploader...</div>}>
+                    <CoverImageUploader
+                      value={form.coverImageUrl}
+                      alt={form.coverImageAlt}
+                      onChange={handleCoverChange}
+                    />
+                  </Suspense>
                 </div>
                 <div className="admin-field">
                   <label htmlFor="coverAlt">Cover alt text</label>

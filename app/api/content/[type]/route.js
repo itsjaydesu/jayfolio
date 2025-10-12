@@ -7,6 +7,7 @@ import {
   upsertEntry
 } from '../../../../lib/contentStore';
 
+// Keep dynamic for admin operations, but add cache headers to GET requests
 export const dynamic = 'force-dynamic';
 
 function isValidType(type) {
@@ -58,11 +59,19 @@ export async function GET(request, context) {
       if (!entry) {
         return NextResponse.json({ error: 'Entry not found' }, { status: 404 });
       }
-      return NextResponse.json({ entry });
+      return NextResponse.json({ entry }, {
+        headers: {
+          'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=3600'
+        }
+      });
     }
 
     const entries = await readEntries(type);
-    return NextResponse.json({ entries });
+    return NextResponse.json({ entries }, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=3600'
+      }
+    });
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

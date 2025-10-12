@@ -1,12 +1,17 @@
 import { NextResponse } from 'next/server';
 import { readSiteText, writeSiteText } from '../../../lib/siteText';
 
-export const dynamic = 'force-dynamic';
+// Use ISR with cache headers for better performance
+export const revalidate = 60; // Revalidate every minute for admin data
 
 export async function GET() {
   try {
     const data = await readSiteText();
-    return NextResponse.json(data);
+    return NextResponse.json(data, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300'
+      }
+    });
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

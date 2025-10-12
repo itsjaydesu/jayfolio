@@ -6,7 +6,8 @@ import { readChannelContent } from '../../lib/channelContent';
 import { generateMetadata as getMetadata, generateViewportData } from '../../lib/metadata';
 import { hasAdminSession } from '../../lib/adminSession';
 
-export const dynamic = 'force-dynamic';
+// Use ISR with 1 hour revalidation for better performance
+export const revalidate = 3600;
 
 export async function generateMetadata() {
   return await getMetadata('art');

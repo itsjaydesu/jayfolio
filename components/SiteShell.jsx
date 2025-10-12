@@ -1,12 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback, Suspense } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import dynamic from 'next/dynamic';
 import RetroMenu from "./RetroMenu";
 import { SITE_TEXT_DEFAULTS } from "../lib/siteTextDefaults";
-import SceneCanvas from "./SceneCanvas";
 import { useAdminStatus } from "../lib/useAdminStatus";
+
+// Dynamically import SceneCanvas to reduce initial bundle size
+const SceneCanvas = dynamic(() => import('./SceneCanvas'), {
+  loading: () => <div className="canvas-placeholder" aria-label="Loading visualization" />,
+  ssr: false // Disable SSR for Three.js component
+});
 
 const DEFAULT_MENU_ITEMS = SITE_TEXT_DEFAULTS.primaryMenu.map((i) => ({
   id: i.id,
@@ -779,14 +785,16 @@ export default function SiteShell({ children, isAdmin = false }) {
     return (
       <>
         <div className="scene-wrapper">
-          <SceneCanvas 
-            activeSection={activeSectionForCanvas} 
-            isPaused={false}
-            onEffectChange={handleEffectChange}
-            isHomeScene
-            showControls={showAdminControls}
-            ref={handleSceneAttach}
-          />
+          <Suspense fallback={<div className="canvas-placeholder" aria-label="Loading visualization" />}>
+            <SceneCanvas 
+              activeSection={activeSectionForCanvas} 
+              isPaused={false}
+              onEffectChange={handleEffectChange}
+              isHomeScene
+              showControls={showAdminControls}
+              ref={handleSceneAttach}
+            />
+          </Suspense>
         </div>
         <div className={`menu-overlay${menuVisible ? " is-visible" : ""}${menuLeaving ? " is-leaving" : ""}`}>
           <RetroMenu
@@ -825,14 +833,16 @@ export default function SiteShell({ children, isAdmin = false }) {
           className={sceneWrapperClasses}
           data-initial-mount={isInitialMount}
         >
-          <SceneCanvas 
-            activeSection={activeSectionForCanvas} 
-            isPaused={shouldStopAnimation}
-            onEffectChange={handleEffectChange}
-            isHomeScene={false}
-            showControls={false}
-            ref={handleSceneAttach}
-          />
+          <Suspense fallback={<div className="canvas-placeholder" aria-label="Loading visualization" />}>
+            <SceneCanvas 
+              activeSection={activeSectionForCanvas} 
+              isPaused={shouldStopAnimation}
+              onEffectChange={handleEffectChange}
+              isHomeScene={false}
+              showControls={false}
+              ref={handleSceneAttach}
+            />
+          </Suspense>
         </div>
       ) : null}
       <div className={`site-shell${isDetailView ? " site-shell--detail" : ""}`}>
