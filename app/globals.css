@@ -4221,6 +4221,69 @@ a {
   color: rgba(180, 204, 210, 0.6);
 }
 
+/* Category filters */
+.channel__categories {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(232, 240, 246, 0.08);
+}
+
+.channel__category-btn {
+  position: relative;
+  padding: 0.625rem 1.25rem;
+  background: linear-gradient(135deg, rgba(20, 25, 32, 0.4), rgba(10, 12, 16, 0.3));
+  border: 1px solid rgba(232, 240, 246, 0.08);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.channel__category-btn:hover {
+  background: linear-gradient(135deg, rgba(232, 240, 246, 0.08), rgba(232, 240, 246, 0.04));
+  border-color: rgba(232, 240, 246, 0.15);
+  transform: translateY(-2px);
+}
+
+.channel__category-btn--active {
+  background: linear-gradient(135deg, rgba(84, 112, 128, 0.3), rgba(84, 112, 128, 0.15));
+  border-color: rgba(84, 112, 128, 0.5);
+  color: var(--text-primary);
+}
+
+.channel__category-btn--active:hover {
+  background: linear-gradient(135deg, rgba(84, 112, 128, 0.35), rgba(84, 112, 128, 0.2));
+  border-color: rgba(84, 112, 128, 0.6);
+}
+
+.channel__category-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding: 0 0.25rem;
+  background: rgba(232, 240, 246, 0.1);
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-tertiary);
+}
+
+.channel__category-btn--active .channel__category-count {
+  background: rgba(84, 112, 128, 0.3);
+  color: var(--text-primary);
+}
+
 
 .project-entry {
   position: relative;
@@ -4317,6 +4380,20 @@ a {
   letter-spacing: 0.36em;
   text-transform: uppercase;
   color: rgba(182, 224, 236, 0.7);
+}
+
+.project-entry__category {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(84, 112, 128, 0.9);
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  background: rgba(84, 112, 128, 0.1);
+  border-radius: 4px;
+  border: 1px solid rgba(84, 112, 128, 0.2);
 }
 
 .project-entry__title {
@@ -5514,10 +5591,10 @@ body.qr-intro-active .site-shell__social {
   }
 }
 
-/* ===== GLASSMORPHIC ABOUT PAGE ===== */
-.glass-about-page {
+/* ===== CLEAN ABOUT PAGE ===== */
+.clean-about-page {
   min-height: 100vh;
-  padding: 0.5rem 2rem 3rem;
+  padding: 3rem 2rem 4rem;
   position: relative;
   overflow: hidden;
   opacity: 0;

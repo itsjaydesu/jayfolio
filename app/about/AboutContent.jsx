@@ -17,50 +17,49 @@ export default function AboutContent({ initialContent }) {
   const tags = initialContent.aboutTags || [];
 
   return (
-    <section className={`glass-about-page ${isLoaded ? 'is-loaded' : ''}`}>
-      <div className="glass-about-page__background">
-        <div className="glass-about-page__orb glass-about-page__orb--1" />
-        <div className="glass-about-page__orb glass-about-page__orb--2" />
-        <div className="glass-about-page__orb glass-about-page__orb--3" />
+    <section className={`clean-about-page ${isLoaded ? 'is-loaded' : ''}`}>
+      <div className="clean-about-page__background">
+        <div className="clean-about-page__gradient" />
       </div>
       
-      <div className="glass-about-page__container">
-        <div className="glass-about-page__header">
-          <h1 className="glass-about-page__title">
-            <span className="glass-about-page__title-main">{title}</span>
-            <span className="glass-about-page__title-sub">{subtitle}</span>
-          </h1>
-          <div className="glass-about-page__divider" />
-        </div>
+      <div className="clean-about-page__container">
+        <header className="clean-about-page__header">
+          <h1 className="clean-about-page__title">{title}</h1>
+          <p className="clean-about-page__subtitle">{subtitle}</p>
+        </header>
         
-        <div className="glass-about-page__content">
-          <p className="glass-about-page__lead">
-            {content}
-          </p>
+        <main className="clean-about-page__main">
+          <div className="clean-about-page__text-content">
+            <p className="clean-about-page__lead">
+              {content}
+            </p>
+          </div>
           
           {detailCards.length > 0 && (
-            <div className="glass-about-page__details">
+            <div className="clean-about-page__cards">
               {detailCards.map((card, index) => (
-                <div key={index} className="glass-about-page__detail-card">
-                  <h3 className="glass-about-page__detail-title">{card.title}</h3>
-                  <p className="glass-about-page__detail-text">
+                <article key={index} className="clean-about-page__card">
+                  <h2 className="clean-about-page__card-title">{card.title}</h2>
+                  <p className="clean-about-page__card-text">
                     {card.text}
                   </p>
-                </div>
+                </article>
               ))}
             </div>
           )}
           
           {tags.length > 0 && (
-            <div className="glass-about-page__tags">
-              {tags.map((tag, index) => (
-                <span key={index} className="glass-about-page__tag">
-                  {tag}
-                </span>
-              ))}
-            </div>
+            <footer className="clean-about-page__footer">
+              <div className="clean-about-page__tags">
+                {tags.map((tag, index) => (
+                  <span key={index} className="clean-about-page__tag">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </footer>
           )}
-        </div>
+        </main>
       </div>
     </section>
   );
