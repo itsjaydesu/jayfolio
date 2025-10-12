@@ -29,16 +29,7 @@ export default function SiteShell({ children, isAdmin = false }) {
   const menuLeaveTimerRef = useRef(null); // Timer for menu fade-out animation
   const headerLeaveTimerRef = useRef(null); // Timer for header fade-out animation
   const headerLeavingRef = useRef(false); // Track leaving state with ref for immediate updates
-  const componentIdRef = useRef(Math.random().toString(36).substr(2, 9)); // Unique ID for this component instance
   const { isAdmin: clientAdmin } = useAdminStatus();
-  
-  // Log component mount/unmount
-  useEffect(() => {
-    console.log('[SiteShell Mount] Component mounted with ID:', componentIdRef.current);
-    return () => {
-      console.log('[SiteShell Unmount] Component unmounting with ID:', componentIdRef.current);
-    };
-  }, []);
   const isAdminActive = isAdmin || clientAdmin;
   
   // ===== ROUTE ANALYSIS =====
@@ -86,50 +77,36 @@ export default function SiteShell({ children, isAdmin = false }) {
   const [headerLeaving, setHeaderLeaving] = useState(false); // Track header fade-out state
   // Track previous route to detect transitions - use state for immediate updates
   const [prevIsHome, setPrevIsHome] = useState(isHome);
+  // Track if we're currently animating out - this persists through re-renders
+  const [isAnimatingOut, setIsAnimatingOut] = useState(false);
   
-  // Add render counter to track re-renders
-  const renderCountRef = useRef(0);
-  renderCountRef.current++;
-  
-  // Compute if we should keep header mounted - do this inline for immediate evaluation
-  // This runs BEFORE the condition check in render
+  // Detect route transition
   const isTransitioningToHome = !prevIsHome && isHome;
+  const isTransitioningFromHome = prevIsHome && !isHome;
+  
+  // Compute if we should keep header mounted - check animation flag first
   const shouldKeepHeaderMounted = 
     !isHome || // Always show on subpages
-    (isTransitioningToHome && headerVisible) || // Keep mounted during transition to home
+    isAnimatingOut || // CRITICAL: Keep mounted during animation
     headerVisible || 
     headerLeaving || 
     headerLeavingRef.current;
   
-  // Detailed logging to understand the mount decision
-  console.log('[Header Mount Decision] Component:', componentIdRef.current, 'Render #', renderCountRef.current, {
-    isHome,
-    prevIsHome,
-    isTransitioningToHome,
-    headerVisible,
-    headerLeaving,
-    'headerLeavingRef.current': headerLeavingRef.current,
-    shouldKeepHeaderMounted
-  });
-  
-  if (isTransitioningToHome && headerVisible) {
-    console.log('[Header Mount] Transition detected - should keep mounted for animation');
-  }
-  
-  // Update prev state when route changes
-  if (prevIsHome !== isHome) {
-    console.log('[Header Transition] Route changed from', prevIsHome ? 'home' : 'subpage', 'to', isHome ? 'home' : 'subpage');
-    console.log('[Header Transition] About to call setPrevIsHome - this will trigger re-render');
-    
-    // If transitioning to home, mark as leaving immediately BEFORE setting state
+  // Handle route changes - but DON'T update prevIsHome immediately if animating
+  if (prevIsHome !== isHome && !isAnimatingOut) {
+    // If transitioning to home with visible header, start animation sequence
     if (!prevIsHome && isHome && headerVisible) {
-      console.log('[Header Transition] Setting headerLeavingRef.current = true BEFORE setPrevIsHome');
       headerLeavingRef.current = true;
+      setIsAnimatingOut(true); // Set animation flag
+      // DON'T update prevIsHome yet - wait for animation to complete
+    } else {
+      // For other transitions, update immediately
+      setPrevIsHome(isHome);
+      // Clear any lingering animation state
+      if (isAnimatingOut) {
+        setIsAnimatingOut(false);
+      }
     }
-    
-    // This will trigger a re-render
-    setPrevIsHome(isHome);
-    console.log('[Header Transition] setPrevIsHome called - re-render will happen');
   }
   const [status, setStatus] = useState(DEFAULT_STATUS);
   // Initialize navReady as true on subpages to prevent flash
@@ -295,15 +272,12 @@ export default function SiteShell({ children, isAdmin = false }) {
 
   // Handle header visibility and transitions
   useEffect(() => {
-    console.log('[Header Effect] Running - isHome:', isHome, 'headerVisible:', headerVisible, 'headerLeaving:', headerLeaving, 'ref:', headerLeavingRef.current);
-    
     // Skip if we're in SSR
     if (typeof window === "undefined") return;
     
     // Clear any pending header leave timer
     const clearHeaderLeaveTimer = () => {
       if (headerLeaveTimerRef.current) {
-        console.log('[Header Effect] Clearing leave timer');
         clearTimeout(headerLeaveTimerRef.current);
         headerLeaveTimerRef.current = null;
       }
@@ -312,83 +286,50 @@ export default function SiteShell({ children, isAdmin = false }) {
     // Check for reduced motion preference once
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     
-    if (isHome) {
-      console.log('[Header Effect] On home page');
+    if (isHome && isAnimatingOut) {
+      // Start the leave animation if not already started
+      if (!headerLeaving) {
+        setHeaderLeaving(true);
+      }
       
-      // If we already started leaving synchronously, just set up the timer
-      if (headerLeavingRef.current && !headerLeaving) {
-        console.log('[Header Effect] Leave animation already started synchronously, setting up timer');
-        setHeaderLeaving(true); // Sync state with ref
-        
-        // Wait for the full animation to complete
+      // Set up timer to complete the animation
+      if (!headerLeaveTimerRef.current) {
         headerLeaveTimerRef.current = setTimeout(() => {
-          console.log('[Header Effect] Fade-out complete, hiding header');
           headerLeavingRef.current = false;
           setHeaderVisible(false);
           setHeaderLeaving(false);
+          setIsAnimatingOut(false); // Clear animation flag
+          setPrevIsHome(true); // NOW update the prev state after animation
           headerLeaveTimerRef.current = null;
-        }, 950);
-      } else if (headerVisible && !headerLeavingRef.current) {
-        console.log('[Header Effect] Header is visible, need to hide it');
-        if (prefersReducedMotion) {
-          // Instant hide for reduced motion
-          console.log('[Header Effect] Reduced motion - instant hide');
-          headerLeavingRef.current = false;
-          setHeaderVisible(false);
-          setHeaderLeaving(false);
-        } else {
-          // Start graceful fade-out animation (this path should rarely be hit now)
-          console.log('[Header Effect] Starting fade-out animation in effect');
-          headerLeavingRef.current = true;
-          setHeaderLeaving(true);
-          
-          headerLeaveTimerRef.current = setTimeout(() => {
-            console.log('[Header Effect] Fade-out complete, hiding header');
-            headerLeavingRef.current = false;
-            setHeaderVisible(false);
-            setHeaderLeaving(false);
-            headerLeaveTimerRef.current = null;
-          }, 950);
-        }
-      } else if (headerLeavingRef.current) {
-        console.log('[Header Effect] Already leaving, skipping');
-      } else {
-        console.log('[Header Effect] Header already hidden');
+        }, prefersReducedMotion ? 0 : 950);
+      }
+    } else if (isHome && !isAnimatingOut) {
+      // On home, not animating - ensure header is hidden
+      if (headerVisible) {
+        setHeaderVisible(false);
+        setHeaderLeaving(false);
+        headerLeavingRef.current = false;
       }
     } else {
-      console.log('[Header Effect] Not on home page - should show header');
       // Not on home page - show header
       clearHeaderLeaveTimer();
       
       if (!headerVisible && !headerLeavingRef.current) {
-        console.log('[Header Effect] Header hidden, need to show it');
-        if (prefersReducedMotion) {
-          // Instant show for reduced motion
-          console.log('[Header Effect] Reduced motion - instant show');
-          headerLeavingRef.current = false;
-          setHeaderVisible(true);
-          setHeaderLeaving(false);
-        } else {
-          // Show immediately - no delay needed
-          console.log('[Header Effect] Showing header');
-          headerLeavingRef.current = false;
-          setHeaderLeaving(false);
-          setHeaderVisible(true);
-        }
+        // Show header immediately
+        headerLeavingRef.current = false;
+        setHeaderVisible(true);
+        setHeaderLeaving(false);
       } else if (headerLeavingRef.current) {
         // If we were in the middle of leaving but route changed, cancel it
-        console.log('[Header Effect] Cancelling leave animation - route changed');
         clearHeaderLeaveTimer();
         headerLeavingRef.current = false;
         setHeaderLeaving(false);
         setHeaderVisible(true);
-      } else {
-        console.log('[Header Effect] Header already visible and not leaving');
       }
     }
 
     return clearHeaderLeaveTimer;
-  }, [isHome, headerVisible]); // Depend on route and visibility state
+  }, [isHome, isAnimatingOut, headerVisible, headerLeaving]); // Include animation state in dependencies
 
   useEffect(() => {
     if (isDetailView || typeof window === "undefined") {
@@ -901,12 +842,6 @@ export default function SiteShell({ children, isAdmin = false }) {
       <div className={`site-shell${isDetailView ? " site-shell--detail" : ""}`}>
         <div className="site-shell__container">
           {/* Keep header mounted based on computed value */}
-          {console.log('[Header Render Check]', {
-            'isDetailView': isDetailView,
-            'shouldKeepHeaderMounted': shouldKeepHeaderMounted,
-            'Condition': `!isDetailView (${!isDetailView}) && shouldKeepHeaderMounted (${shouldKeepHeaderMounted})`,
-            'Will render header': !isDetailView && shouldKeepHeaderMounted
-          })}
           {!isDetailView && shouldKeepHeaderMounted ? (
             <header
               className={`site-shell__header${
@@ -914,23 +849,7 @@ export default function SiteShell({ children, isAdmin = false }) {
               }${headerLeaving || headerLeavingRef.current ? " is-leaving" : ""}`}
               data-nav-ready={navReady ? "true" : "false"}
               data-returning-home={isReturningHome ? "true" : "false"}
-              ref={(el) => {
-                if (el) {
-                  console.log('[Header DOM] Rendered with classes:', el.className);
-                  console.log('[Header DOM] data-nav-ready:', el.getAttribute('data-nav-ready'));
-                  console.log('[Header DOM] headerLeaving state:', headerLeaving, 'ref:', headerLeavingRef.current);
-                  console.log('[Header DOM] headerVisible:', headerVisible);
-                  console.log('[Header DOM] Has is-leaving class:', el.className.includes('is-leaving'));
-                  // Check if nav links exist and log their count
-                  const navLinks = el.querySelectorAll('.site-shell__nav-link');
-                  console.log('[Header DOM] Nav links found:', navLinks.length);
-                  if (navLinks.length > 0) {
-                    console.log('[Header DOM] First nav link classes:', navLinks[0].className);
-                  }
-                } else {
-                  console.log('[Header DOM] Header unmounted');
-                }
-              }}
+
               style={
                 navReady
                   ? undefined
