@@ -2,9 +2,7 @@
 
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import Image from 'next/image';
-import Link from 'next/link';
-import { formatDisplayDate } from '../../lib/formatters';
+import PostCard from '../../components/PostCard';
 
 const PROJECT_TONES = {
   'signal-grid': 'cyan',
@@ -157,68 +155,16 @@ export default function ProjectsContent({ entries, hero, isAdmin = false }) {
         <div className="channel__grid" key={selectedCategory} data-category={selectedCategory}>
           {filteredEntries.map((entry) => {
             const tone = PROJECT_TONES[entry.slug] ?? 'neutral';
-            const href = `/projects/${entry.slug}`;
-            const editHref = `/administratorrrr?type=projects&slug=${encodeURIComponent(entry.slug)}`;
             return (
-              <article
+              <PostCard
                 key={entry.slug}
-                className="project-entry"
-                data-tone={tone}
-                data-entry-slug={entry.slug}
-              >
-                <div className="project-entry__surface">
-                  <div className="project-entry__content">
-                    <div className="project-entry__header">
-                      {entry.createdAt ? (
-                        <time className="project-entry__date" dateTime={entry.createdAt}>
-                          {formatDisplayDate(entry.createdAt).toUpperCase()}
-                        </time>
-                      ) : null}
-                      <span className="project-entry__category">{entry.category}</span>
-                    </div>
-
-                    <div className="project-entry__body">
-                      {entry.tags?.length ? (
-                        <p className="project-entry__tags">{entry.tags.join(' • ')}</p>
-                      ) : null}
-                      <div className="project-entry__title-row">
-                        <h2 className="project-entry__title">{entry.title}</h2>
-                        {isAdmin ? (
-                          <Link
-                            href={editHref}
-                            className="project-entry__edit-btn"
-                            aria-label={`Edit ${entry.title}`}
-                          >
-                            Edit
-                          </Link>
-                        ) : null}
-                      </div>
-                      {entry.summary ? <p className="project-entry__summary">{entry.summary}</p> : null}
-                    </div>
-                  </div>
-
-                  <figure className="project-entry__figure">
-                    {entry.coverImage?.url ? (
-                      <Image
-                        src={entry.coverImage.url}
-                        alt={entry.coverImage.alt || `${entry.title} cover image`}
-                        fill
-                        sizes="(max-width: 900px) 100vw, 420px"
-                        className="project-entry__image"
-                      />
-                    ) : (
-                      <div className="project-entry__art" aria-hidden="true" />
-                    )}
-                  </figure>
-
-                  <Link
-                    href={href}
-                    className="project-entry__overlay"
-                    aria-label={`Open dossier for ${entry.title}`}
-                    onClick={handleProjectClick}
-                  />
-                </div>
-              </article>
+                entry={entry}
+                type="projects"
+                tone={tone}
+                isAdmin={isAdmin}
+                category={entry.category}
+                onClick={handleProjectClick}
+              />
             );
           })}
         </div>

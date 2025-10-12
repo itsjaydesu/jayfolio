@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import Link from 'next/link';
-import { formatDisplayDate } from '../../lib/formatters';
+import PostCard from '../../components/PostCard';
 
 const WORD_TONES = {
   'slow-scan-memo': 'violet',
@@ -66,58 +65,15 @@ export default function WordsContent({ entries, hero, isAdmin = false }) {
         <div className="channel__grid" key={selectedCategory} data-category={selectedCategory}>
           {filteredEntries.map((entry) => {
             const tone = WORD_TONES[entry.slug] ?? 'neutral';
-            const editHref = `/administratorrrr?type=words&slug=${encodeURIComponent(entry.slug)}`;
             return (
-              <article
+              <PostCard
                 key={entry.slug}
-                className="project-entry project-entry--words"
-                data-tone={tone}
-                data-entry-slug={entry.slug}
-              >
-                <div className="project-entry__surface">
-                  <div className="project-entry__content">
-                    {entry.createdAt ? (
-                      <time className="project-entry__date" dateTime={entry.createdAt}>
-                        {formatDisplayDate(entry.createdAt).toUpperCase()}
-                      </time>
-                    ) : null}
-
-                    <div className="project-entry__body">
-                      <p className="project-entry__category">{entry.category}</p>
-                      {entry.tags?.length ? (
-                        <p className="project-entry__tags">{entry.tags.join(' • ')}</p>
-                      ) : null}
-                      <div className="project-entry__title-row">
-                        <h2 className="project-entry__title">{entry.title}</h2>
-                        {isAdmin ? (
-                          <Link
-                            href={editHref}
-                            className="project-entry__edit-btn"
-                            aria-label={`Edit ${entry.title}`}
-                          >
-                            Edit
-                          </Link>
-                        ) : null}
-                      </div>
-                      {entry.summary ? <p className="project-entry__summary">{entry.summary}</p> : null}
-                    </div>
-
-                    <span className="project-entry__cta">
-                      Open {entry.category === 'Essays' ? 'essay' : 'post'} ↗
-                    </span>
-                  </div>
-
-                  <figure className="project-entry__figure project-entry__figure--words" aria-hidden="true">
-                    <div className="project-entry__art" />
-                  </figure>
-
-                  <Link
-                    href={`/words/${entry.slug}`}
-                    className="project-entry__overlay"
-                    aria-label={`Open ${entry.category === 'Essays' ? 'essay' : 'blog post'} ${entry.title}`}
-                  />
-                </div>
-              </article>
+                entry={entry}
+                type="words"
+                tone={tone}
+                isAdmin={isAdmin}
+                category={entry.category}
+              />
             );
           })}
         </div>
