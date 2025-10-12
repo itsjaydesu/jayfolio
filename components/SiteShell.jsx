@@ -71,10 +71,18 @@ export default function SiteShell({ children, isAdmin = false }) {
   const [isReturningHome, setIsReturningHome] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
   const [menuLeaving, setMenuLeaving] = useState(false); // Track menu fade-out state
-  const [headerVisible, setHeaderVisible] = useState(false); // Track header visibility
+  // Initialize header visibility correctly based on route
+  const [headerVisible, setHeaderVisible] = useState(() => !isHome); // Start visible on subpages, hidden on home
   const [headerLeaving, setHeaderLeaving] = useState(false); // Track header fade-out state
   const [status, setStatus] = useState(DEFAULT_STATUS);
-  const [navReady, setNavReady] = useState(false);
+  // Initialize navReady as true on subpages to prevent flash
+  const [navReady, setNavReady] = useState(() => {
+    // Start as ready if we're not on home and not server-side
+    if (typeof window !== "undefined" && !isHome) {
+      return true;
+    }
+    return false;
+  });
   const [hasScrolled, setHasScrolled] = useState(false);
   const [hasActiveEffect, setHasActiveEffect] = useState(false);
   const [activeEffectInfo, setActiveEffectInfo] = useState(null); // { name, startTime, duration }
@@ -145,8 +153,12 @@ export default function SiteShell({ children, isAdmin = false }) {
     };
   }, [router]);
 
+  // Set nav ready state after component mounts
   useEffect(() => {
     if (typeof window === "undefined") return;
+    
+    // If already ready (on subpage), keep it ready
+    if (navReady) return;
 
     const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 
@@ -155,14 +167,15 @@ export default function SiteShell({ children, isAdmin = false }) {
       return;
     }
 
-    let frameId = requestAnimationFrame(() => {
+    // Small delay to ensure smooth initial render
+    const timer = setTimeout(() => {
       setNavReady(true);
-    });
+    }, 100);
 
     return () => {
-      cancelAnimationFrame(frameId);
+      clearTimeout(timer);
     };
-  }, []);
+  }, []); // Run once on mount
 
   useEffect(() => {
     // Clear any pending menu leave timer when component unmounts or dependencies change
@@ -225,6 +238,9 @@ export default function SiteShell({ children, isAdmin = false }) {
 
   // Handle header visibility and transitions
   useEffect(() => {
+    // Skip if we're in SSR
+    if (typeof window === "undefined") return;
+    
     // Clear any pending header leave timer
     const clearHeaderLeaveTimer = () => {
       if (headerLeaveTimerRef.current) {
@@ -233,56 +249,59 @@ export default function SiteShell({ children, isAdmin = false }) {
       }
     };
 
+    // Check for reduced motion preference once
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    
     if (isHome) {
-      // Navigating to home - header should fade out
-      if (headerVisible && !headerLeaving) {
-        setHeaderLeaving(true); // Start fade-out animation
-        
-        // Check for reduced motion preference
-        const motionQuery = typeof window !== "undefined" && 
-          window.matchMedia("(prefers-reduced-motion: reduce)");
-        
-        if (motionQuery && motionQuery.matches) {
-          // No animation for reduced motion
+      // Navigating to home - header should fade out smoothly
+      if (headerVisible) {
+        if (prefersReducedMotion) {
+          // Instant hide for reduced motion
           setHeaderVisible(false);
           setHeaderLeaving(false);
-        } else {
-          // Allow time for fade-out animation
+        } else if (!headerLeaving) {
+          // Start graceful fade-out animation
+          setHeaderLeaving(true);
+          
+          // Match the fade-in duration for consistency (800ms for smoother effect)
           headerLeaveTimerRef.current = setTimeout(() => {
             setHeaderVisible(false);
             setHeaderLeaving(false);
             headerLeaveTimerRef.current = null;
-          }, 520); // 520ms to match the existing header fade-out transition
+          }, 800);
         }
       }
-      return clearHeaderLeaveTimer;
-    }
-
-    // Not on home page - show header
-    clearHeaderLeaveTimer(); // Clear any pending hide timer
-    setHeaderLeaving(false); // Clear leaving state
-    
-    if (typeof window === "undefined") {
-      setHeaderVisible(true);
-      return;
-    }
-
-    const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    if (motionQuery.matches) {
-      setHeaderVisible(true);
-      return;
-    }
-
-    // Small delay before showing header for smoother transition
-    let frameId = requestAnimationFrame(() => {
-      setHeaderVisible(true);
-    });
-
-    return () => {
-      cancelAnimationFrame(frameId);
+    } else {
+      // Not on home page - show header
       clearHeaderLeaveTimer();
-    };
-  }, [isHome, headerVisible, headerLeaving]);
+      
+      if (!headerVisible) {
+        if (prefersReducedMotion) {
+          // Instant show for reduced motion
+          setHeaderVisible(true);
+          setHeaderLeaving(false);
+        } else {
+          // Reset leaving state first, then show after a micro delay for smoother entrance
+          setHeaderLeaving(false);
+          // Use a small delay to ensure DOM is ready and prevent flash
+          const showTimer = setTimeout(() => {
+            setHeaderVisible(true);
+          }, 50);
+          
+          return () => {
+            clearTimeout(showTimer);
+            clearHeaderLeaveTimer();
+          };
+        }
+      } else if (headerLeaving) {
+        // If we were in the middle of leaving but route changed, cancel it
+        clearHeaderLeaveTimer();
+        setHeaderLeaving(false);
+      }
+    }
+
+    return clearHeaderLeaveTimer;
+  }, [isHome]); // Simplified dependencies - only care about route change
 
   useEffect(() => {
     if (isDetailView || typeof window === "undefined") {
