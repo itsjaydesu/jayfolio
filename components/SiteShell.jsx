@@ -80,10 +80,6 @@ export default function SiteShell({ children, isAdmin = false }) {
   // Track if we're currently animating out - this persists through re-renders
   const [isAnimatingOut, setIsAnimatingOut] = useState(false);
   
-  // Detect route transition
-  const isTransitioningToHome = !prevIsHome && isHome;
-  const isTransitioningFromHome = prevIsHome && !isHome;
-  
   // Compute if we should keep header mounted - check animation flag first
   const shouldKeepHeaderMounted = 
     !isHome || // Always show on subpages
@@ -209,7 +205,7 @@ export default function SiteShell({ children, isAdmin = false }) {
     return () => {
       clearTimeout(timer);
     };
-  }, []); // Run once on mount
+  }, [navReady]); // Run when navReady changes
 
   useEffect(() => {
     // Clear any pending menu leave timer when component unmounts or dependencies change

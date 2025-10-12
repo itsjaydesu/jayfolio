@@ -1780,22 +1780,24 @@ const SceneCanvas = forwardRef(function SceneCanvas(
               let rippleProfile = 0;
               
               switch(ripple.type) {
-                case 'flash':
+                case 'flash': {
                   // Ultra-bright, ultra-fast flash
                   const flashPeak = Math.exp(-normalized * normalized * 5.0);
                   const flashRing = Math.exp(-Math.pow(Math.abs(normalized - 0.15), 2) * 12);
                   rippleProfile = flashPeak * 2.0 + flashRing * 1.0;
                   break;
+                }
                   
-                case 'impact':
+                case 'impact': {
                   // Sharp, dramatic impact wave
                   const impactPeak = Math.exp(-normalized * normalized * 3.5);
                   const impactRing1 = Math.exp(-Math.pow(Math.abs(normalized - 0.25), 2) * 10);
                   const impactRing2 = Math.exp(-Math.pow(Math.abs(normalized - 0.5), 2) * 8);
                   rippleProfile = impactPeak * 1.6 + impactRing1 * 0.9 + impactRing2 * 0.4;
                   break;
+                }
                   
-                case 'primary':
+                case 'primary': {
                   // Beautiful main wave with complex structure
                   const primaryGaussian = Math.exp(-normalized * normalized * 0.7);
                   const primaryWave1 = Math.sin(normalized * Math.PI * 2 * frequency) * 0.2 * Math.exp(-Math.abs(normalized) * 1.5);
@@ -1803,8 +1805,9 @@ const SceneCanvas = forwardRef(function SceneCanvas(
                   const primaryDetail = Math.sin((normalized - 0.2) * Math.PI * 4) * 0.05 * Math.exp(-Math.abs(normalized - 0.2) * 4);
                   rippleProfile = primaryGaussian * 1.1 + primaryWave1 + primaryWave2 + primaryDetail;
                   break;
+                }
                   
-                case 'harmonic':
+                case 'harmonic': {
                   // Creates beautiful interference patterns
                   const harmonicBase = Math.exp(-normalized * normalized * 1.0);
                   const harmonic1 = Math.sin(normalized * Math.PI * 2.5 * frequency) * 0.3;
@@ -1812,43 +1815,49 @@ const SceneCanvas = forwardRef(function SceneCanvas(
                   const harmonic3 = Math.cos(normalized * Math.PI * 1.3 * frequency) * 0.15;
                   rippleProfile = harmonicBase * 0.8 + (harmonic1 + harmonic2 + harmonic3) * Math.exp(-Math.abs(normalized) * 1.2);
                   break;
+                }
                   
-                case 'secondary':
+                case 'secondary': {
                   // Detailed follow-up wave
                   const secondaryGaussian = Math.exp(-normalized * normalized * 1.3);
                   const secondaryDetail1 = Math.cos(normalized * Math.PI * 3.5) * 0.12 * Math.exp(-Math.abs(normalized) * 2.5);
                   const secondaryDetail2 = Math.sin(normalized * Math.PI * 5) * 0.08 * Math.exp(-Math.abs(normalized) * 3);
                   rippleProfile = secondaryGaussian * 0.8 + secondaryDetail1 + secondaryDetail2;
                   break;
+                }
                   
-                case 'glow':
+                case 'glow': {
                   // Soft, wide outer glow with gentle undulation
                   const glowGaussian = Math.exp(-normalized * normalized * 0.3);
                   const glowWave = Math.sin(normalized * Math.PI * 0.8) * 0.1;
                   rippleProfile = (glowGaussian + glowWave * glowGaussian) * 0.5;
                   break;
+                }
                   
-                case 'echo':
+                case 'echo': {
                   // Subtle echo waves with diminishing amplitude
                   const echoGaussian = Math.exp(-normalized * normalized * 0.5);
                   const echoWave1 = Math.sin(normalized * Math.PI * 2) * 0.15;
                   const echoWave2 = Math.cos(normalized * Math.PI * 1.5) * 0.1;
                   rippleProfile = echoGaussian * 0.6 + (echoWave1 + echoWave2) * echoGaussian;
                   break;
+                }
                   
-                case 'resonance':
+                case 'resonance': {
                   // Very subtle, slow resonance
                   const resonanceGaussian = Math.exp(-normalized * normalized * 0.2);
                   const resonanceWave = Math.sin(normalized * Math.PI * 0.5) * 0.2;
                   rippleProfile = (resonanceGaussian * 0.3 + resonanceWave * resonanceGaussian * 0.2);
                   break;
+                }
                   
-                default:
+                default: {
                   // Standard ripple with smooth wave
                   const standardCrest = Math.exp(-normalized * normalized * 1.0);
                   const standardTrough = Math.exp(-(normalized + 0.8) * (normalized + 0.8) * 1.2);
                   const standardOscillation = Math.sin(normalized * Math.PI * 1.5) * 0.18;
                   rippleProfile = (standardCrest - standardTrough * 0.5) * 0.9 + standardOscillation;
+                }
               }
               
               // Apply ripple with smooth transitions
