@@ -237,49 +237,93 @@ const SceneCanvas = forwardRef(function SceneCanvas(
         velocityDamping: 0.85  // Slower velocity decay for fluid motion
       };
       const ripples = [];
+      const clickBursts = [];  // Array to store click burst effects
       const effectRef = { type: null, startTime: 0, data: null, fadingOut: false, fadeStartTime: 0 };
+      
+      // Create an instant "burst" effect at click location
+      const createClickBurst = (x, z) => {
+        clickBursts.push({
+          x,
+          z,
+          start: elapsedTime,
+          intensity: 1.0,
+          radius: 0
+        });
+        
+        // Clean up old bursts
+        while (clickBursts.length > 5) {
+          clickBursts.shift();
+        }
+      };
 
       const enqueueRipple = (x, z, strength = 1, isClick = false) => {
         // Create a beautiful multi-layered ripple effect
         if (isClick) {
-          // Main ripple with enhanced parameters
+          // Enhanced click ripples for more drama
+          
+          // Instant impact ripple - very fast, bright
           ripples.push({ 
             x, 
             z, 
             start: elapsedTime, 
-            strength: strength * 1.2,
+            strength: strength * 2.0,  // Much stronger initial impact
+            type: 'impact',
+            speedMultiplier: 2.5,  // Very fast expansion
+            widthMultiplier: 0.5,  // Narrow, sharp wave
+            color: 1.5,  // Bright flash
+            decayMultiplier: 2.0  // Fades quickly
+          });
+          
+          // Main ripple with enhanced parameters
+          ripples.push({ 
+            x, 
+            z, 
+            start: elapsedTime + 0.05, 
+            strength: strength * 1.5,  // Stronger than before
             type: 'primary',
-            color: 1.0
+            color: 1.2
           });
           
           // Secondary ripple - smaller, faster, adds detail
           ripples.push({ 
             x, 
             z, 
-            start: elapsedTime + 0.1, 
-            strength: strength * 0.6,
+            start: elapsedTime + 0.15, 
+            strength: strength * 0.8,
             type: 'secondary',
             speedMultiplier: 1.4,
-            color: 0.8
+            color: 0.9
           });
           
           // Tertiary ripple - subtle outer glow
           ripples.push({ 
             x, 
             z, 
-            start: elapsedTime + 0.2, 
-            strength: strength * 0.3,
+            start: elapsedTime + 0.25, 
+            strength: strength * 0.5,
             type: 'tertiary',
             speedMultiplier: 0.7,
-            widthMultiplier: 1.8,
-            color: 0.6
+            widthMultiplier: 2.0,
+            color: 0.7
+          });
+          
+          // Echo ripple - delayed subtle follow-up
+          ripples.push({ 
+            x, 
+            z, 
+            start: elapsedTime + 0.4, 
+            strength: strength * 0.3,
+            type: 'echo',
+            speedMultiplier: 0.9,
+            widthMultiplier: 1.5,
+            color: 0.5
           });
         } else {
           ripples.push({ x, z, start: elapsedTime, strength, type: 'standard' });
         }
         
         // Keep ripple count reasonable
-        while (ripples.length > 30) {
+        while (ripples.length > 40) {  // Increased limit for more complex effects
           ripples.shift();
         }
       };
@@ -1184,21 +1228,31 @@ const SceneCanvas = forwardRef(function SceneCanvas(
       }
 
       function onPointerDown(event) {
-        if (!event.isPrimary || !renderer) return;
+        if (!event.isPrimary) return;
 
-        const rect = renderer.domElement.getBoundingClientRect();
-        const normX = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-        const normY = ((event.clientY - rect.top) / rect.height) * 2 - 1;
+        // Use the same coordinate calculation as onPointerMove for consistency
+        const normalizedX = (event.clientX / window.innerWidth) * 2 - 1;
+        const normalizedY = (event.clientY / window.innerHeight) * 2 - 1;
 
-        const rippleX = normX * HALF_GRID_X;
-        const rippleZ = normY * HALF_GRID_Y;
+        // Convert to world coordinates (matching pointer tracking)
+        const rippleX = normalizedX * HALF_GRID_X;
+        const rippleZ = normalizedY * HALF_GRID_Y;  // Note: Y in screen space maps to Z in world space
+        
+        // Update pointer position immediately for accurate ripple placement
+        pointer.targetX = normalizedX;
+        pointer.targetY = normalizedY;
+        pointer.targetWorldX = rippleX;
+        pointer.targetWorldZ = rippleZ;
 
-        // Create beautiful click ripple
+        // Create beautiful click ripple with enhanced drama
         enqueueRipple(rippleX, rippleZ, 1.0, true);  // true = isClick for multi-layer ripple
+        
+        // Add instant "burst" effect at click point for immediate feedback
+        createClickBurst(rippleX, rippleZ);
 
-        // Gentler energy boost on click
-        const targetEnergy = Math.min(pointer.energy + 0.25, 1.0);
-        pointer.energy = THREE.MathUtils.lerp(pointer.energy, targetEnergy, 0.5);
+        // More noticeable energy boost on click
+        const targetEnergy = Math.min(pointer.energy + 0.4, 1.2);
+        pointer.energy = THREE.MathUtils.lerp(pointer.energy, targetEnergy, 0.7);
       }
 
       function onPointerLeave() {
@@ -1430,6 +1484,44 @@ const SceneCanvas = forwardRef(function SceneCanvas(
               }
             }
 
+            // Click burst effects (instant feedback at click point)
+            for (let b = clickBursts.length - 1; b >= 0; b--) {
+              const burst = clickBursts[b];
+              const age = elapsedTime - burst.start;
+              const maxAge = 0.8;  // Bursts are short-lived
+              
+              if (age > maxAge) {
+                clickBursts.splice(b, 1);
+                continue;
+              }
+              
+              // Distance from burst center
+              const dx = px - burst.x;
+              const dz = pz - burst.z;
+              const dist = Math.sqrt(dx * dx + dz * dz);
+              
+              // Expanding radius with fast initial speed
+              burst.radius = age * 800 * (2 - age / maxAge);  // Slows down as it expands
+              
+              // Create a sharp, bright ring that expands outward
+              const ringWidth = 100;
+              const ringDist = Math.abs(dist - burst.radius);
+              const ringProfile = Math.exp(-(ringDist * ringDist) / (ringWidth * ringWidth));
+              
+              // Fade out over time
+              const fade = 1.0 - (age / maxAge);
+              burst.intensity = fade * fade;  // Quadratic fade for smoother appearance
+              
+              // Apply dramatic height and visual effects
+              const burstHeight = ringProfile * burst.intensity * settings.amplitude * 1.5;
+              const burstScale = ringProfile * burst.intensity * 2.0;
+              const burstLight = ringProfile * burst.intensity * 1.2;
+              
+              height += burstHeight;
+              scaleDelta += burstScale;
+              lightDelta += burstLight;
+            }
+            
             // Enhanced beautiful ripple rendering
             for (let r = ripples.length - 1; r >= 0; r--) {
               const ripple = ripples[r];
@@ -1448,7 +1540,8 @@ const SceneCanvas = forwardRef(function SceneCanvas(
               // Smoother envelope with easing
               const ageNormalized = THREE.MathUtils.clamp(age / maxAge, 0, 1);
               const ageDecay = 1.0 - (ageNormalized * ageNormalized * (3 - 2 * ageNormalized));  // Smooth step function
-              const distanceDecay = Math.exp(-dist * settings.rippleDecay * 0.8);
+              const decayMultiplier = ripple.decayMultiplier || 1.0;
+              const distanceDecay = Math.exp(-dist * settings.rippleDecay * 0.8 * decayMultiplier);
               const envelope = distanceDecay * ageDecay;
               
               const rippleStrength = ripple.strength || 1;
@@ -1460,7 +1553,12 @@ const SceneCanvas = forwardRef(function SceneCanvas(
               // Beautiful multi-component wave
               let rippleProfile = 0;
               
-              if (ripple.type === 'primary') {
+              if (ripple.type === 'impact') {
+                // Sharp, fast impact wave
+                const sharpPeak = Math.exp(-normalized * normalized * 3.0);
+                const ring = Math.exp(-Math.pow(Math.abs(normalized - 0.3), 2) * 8);
+                rippleProfile = sharpPeak * 1.5 + ring * 0.8;
+              } else if (ripple.type === 'primary') {
                 // Main wave with smooth Gaussian profile
                 const gaussian = Math.exp(-normalized * normalized * 0.8);
                 const secondaryWave = Math.sin(normalized * Math.PI * 2) * 0.15 * Math.exp(-Math.abs(normalized) * 2);
@@ -1474,6 +1572,11 @@ const SceneCanvas = forwardRef(function SceneCanvas(
                 // Soft outer glow
                 const softGaussian = Math.exp(-normalized * normalized * 0.4);
                 rippleProfile = softGaussian * 0.4;
+              } else if (ripple.type === 'echo') {
+                // Subtle echo wave
+                const echoGaussian = Math.exp(-normalized * normalized * 0.6);
+                const echoOscillation = Math.sin(normalized * Math.PI * 1.5) * 0.1;
+                rippleProfile = echoGaussian * 0.5 + echoOscillation;
               } else {
                 // Standard ripple (original formula but smoother)
                 const crest = Math.exp(-normalized * normalized * 1.2);
