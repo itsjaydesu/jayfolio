@@ -1201,18 +1201,6 @@ const SceneCanvas = forwardRef(function SceneCanvas(
         const normalizedX = (event.clientX / window.innerWidth) * 2 - 1;
         const normalizedY = (event.clientY / window.innerHeight) * 2 - 1;
 
-        // DEBUG: Log first few move events for comparison with click
-        if (Math.random() < 0.01) {  // Log 1% of move events to avoid spam
-          console.log('🖱️ Move coords:', {
-            clientX: event.clientX,
-            clientY: event.clientY,
-            normalizedX,
-            normalizedY,
-            worldX: normalizedX * HALF_GRID_X,
-            worldZ: normalizedY * HALF_GRID_Y
-          });
-        }
-
         const prevTargetX = pointer.targetX;
         const prevTargetY = pointer.targetY;
         const deltaX = normalizedX - pointer.x;
@@ -1242,60 +1230,23 @@ const SceneCanvas = forwardRef(function SceneCanvas(
       function onPointerDown(event) {
         if (!event.isPrimary) return;
 
-        // DEBUG: Log coordinate transformation details
-        console.group('🎯 Click Coordinate Debug');
-        console.log('Raw click position:', { clientX: event.clientX, clientY: event.clientY });
-        console.log('Window dimensions:', { width: window.innerWidth, height: window.innerHeight });
-        
-        // Check canvas position and size
-        if (renderer && renderer.domElement) {
-          const rect = renderer.domElement.getBoundingClientRect();
-          console.log('Canvas rect:', {
-            left: rect.left,
-            top: rect.top,
-            width: rect.width,
-            height: rect.height,
-            right: rect.right,
-            bottom: rect.bottom
-          });
-          console.log('Canvas offset from viewport:', { offsetX: rect.left, offsetY: rect.top });
-          
-          // Alternative calculation using canvas rect
-          const canvasNormX = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-          const canvasNormY = ((event.clientY - rect.top) / rect.height) * 2 - 1;
-          console.log('Canvas-based normalized:', { x: canvasNormX, y: canvasNormY });
-        }
-
-        // Use the same coordinate calculation as onPointerMove for consistency
+        // Calculate normalized coordinates (same as onPointerMove)
         const normalizedX = (event.clientX / window.innerWidth) * 2 - 1;
         const normalizedY = (event.clientY / window.innerHeight) * 2 - 1;
-        console.log('Window-based normalized:', { x: normalizedX, y: normalizedY });
 
-        // Convert to world coordinates (matching pointer tracking)
-        const rippleX = normalizedX * HALF_GRID_X;
-        const rippleZ = normalizedY * HALF_GRID_Y;  // Note: Y in screen space maps to Z in world space
-        console.log('World coordinates:', { x: rippleX, z: rippleZ });
-        console.log('Grid constants:', { HALF_GRID_X, HALF_GRID_Y, SEPARATION, AMOUNTX, AMOUNTY });
+        let rippleX, rippleZ;
         
-        // Camera info
-        if (camera) {
-          console.log('Camera position:', camera.position);
-          console.log('Camera aspect:', camera.aspect);
-          console.log('Camera FOV:', camera.fov);
-        }
-        
-        // Raycasting test - project click through camera to world
+        // Use raycasting for accurate world position calculation with perspective camera
         if (camera && renderer) {
           // Create a raycaster to project the click into 3D space
           const raycaster = new THREE.Raycaster();
-          const mouse = new THREE.Vector2(normalizedX, -normalizedY); // Note: Three.js uses inverted Y
+          const mouse = new THREE.Vector2(normalizedX, -normalizedY); // Three.js uses inverted Y
           
           // Set up the ray from camera through mouse position
           raycaster.setFromCamera(mouse, camera);
           
-          // The particle grid sits at Y = 0 (or close to it based on wave height)
-          // We need to find where the ray intersects the Y=0 plane
-          const planeY = 0; // The base height of the particle grid
+          // The particle grid sits at Y = 0 (base plane)
+          const planeY = 0;
           
           // Calculate intersection with Y=0 plane
           const rayDirection = raycaster.ray.direction;
@@ -1304,65 +1255,20 @@ const SceneCanvas = forwardRef(function SceneCanvas(
           // Solve for t where: rayOrigin.y + t * rayDirection.y = planeY
           const t = (planeY - rayOrigin.y) / rayDirection.y;
           
-          // Calculate the intersection point
-          const intersectionPoint = new THREE.Vector3();
-          intersectionPoint.x = rayOrigin.x + t * rayDirection.x;
-          intersectionPoint.y = planeY;
-          intersectionPoint.z = rayOrigin.z + t * rayDirection.z;
-          
-          console.log('Ray-plane intersection:', {
-            x: intersectionPoint.x,
-            z: intersectionPoint.z,
-            t: t
-          });
-          
-          console.log('Difference from orthographic:', {
-            deltaX: intersectionPoint.x - rippleX,
-            deltaZ: intersectionPoint.z - rippleZ
-          });
-          
-          // Find closest particle to the raycast intersection
-          let rayClosestDist = Infinity;
-          let rayClosestParticle = null;
-          for (let ix = 0; ix < AMOUNTX; ix++) {
-            for (let iy = 0; iy < AMOUNTY; iy++) {
-              const px = ix * SEPARATION - HALF_GRID_X;
-              const pz = iy * SEPARATION - HALF_GRID_Y;
-              const dist = Math.sqrt(
-                (px - intersectionPoint.x) * (px - intersectionPoint.x) + 
-                (pz - intersectionPoint.z) * (pz - intersectionPoint.z)
-              );
-              if (dist < rayClosestDist) {
-                rayClosestDist = dist;
-                rayClosestParticle = { ix, iy, px, pz };
-              }
-            }
+          // Calculate the actual intersection point
+          if (t > 0) {  // Ensure we're looking forward, not backward
+            rippleX = rayOrigin.x + t * rayDirection.x;
+            rippleZ = rayOrigin.z + t * rayDirection.z;
+          } else {
+            // Fallback to orthographic if ray doesn't intersect properly
+            rippleX = normalizedX * HALF_GRID_X;
+            rippleZ = normalizedY * HALF_GRID_Y;
           }
-          console.log('Closest particle (raycast method):', rayClosestParticle);
-          console.log('Distance to closest (raycast):', rayClosestDist);
+        } else {
+          // Fallback to orthographic calculation if camera not available
+          rippleX = normalizedX * HALF_GRID_X;
+          rippleZ = normalizedY * HALF_GRID_Y;
         }
-        
-        // Check if particles exist at this position (original orthographic method)
-        if (particles && particles.geometry && particles.geometry.attributes.position) {
-          // Find closest particle to click position
-          let closestDist = Infinity;
-          let closestParticle = null;
-          for (let ix = 0; ix < AMOUNTX; ix++) {
-            for (let iy = 0; iy < AMOUNTY; iy++) {
-              const px = ix * SEPARATION - HALF_GRID_X;
-              const pz = iy * SEPARATION - HALF_GRID_Y;
-              const dist = Math.sqrt((px - rippleX) * (px - rippleX) + (pz - rippleZ) * (pz - rippleZ));
-              if (dist < closestDist) {
-                closestDist = dist;
-                closestParticle = { ix, iy, px, pz };
-              }
-            }
-          }
-          console.log('Closest particle (orthographic method):', closestParticle);
-          console.log('Distance to closest (orthographic):', closestDist);
-        }
-        
-        console.groupEnd();
         
         // Update pointer position immediately for accurate ripple placement
         pointer.targetX = normalizedX;
