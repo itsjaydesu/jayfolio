@@ -3,75 +3,77 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAdminFetch } from '@/components/admin-session-context';
 import { FIELD_DEFAULT_BASE, FIELD_DEFAULT_INFLUENCES } from '@/lib/fieldDefaults';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { t } from '@/lib/translations';
 
 const FIELD_BASE_CONTROLS = [
-  { id: 'amplitude', label: 'Amplitude', min: 30, max: 140, step: 1 },
-  { id: 'waveXFrequency', label: 'Frequency X', min: 0.05, max: 0.45, step: 0.005 },
-  { id: 'waveYFrequency', label: 'Frequency Y', min: 0.05, max: 0.45, step: 0.005 },
-  { id: 'swirlStrength', label: 'Swirl Strength', min: 0, max: 3, step: 0.01 },
-  { id: 'swirlFrequency', label: 'Swirl Scale', min: 0.001, max: 0.02, step: 0.0005 },
-  { id: 'animationSpeed', label: 'Flow Speed', min: 0.05, max: 1.2, step: 0.01 },
-  { id: 'pointSize', label: 'Point Scale', min: 6, max: 32, step: 0.5 },
-  { id: 'mouseInfluence', label: 'Pointer Warp', min: 0.001, max: 0.02, step: 0.0005 },
-  { id: 'rippleStrength', label: 'Ripple Strength', min: 10, max: 120, step: 1 },
-  { id: 'rippleSpeed', label: 'Ripple Speed', min: 120, max: 520, step: 5 },
-  { id: 'rippleWidth', label: 'Ripple Width', min: 8, max: 40, step: 0.1 },
-  { id: 'rippleDecay', label: 'Ripple Fade', min: 0.0005, max: 0.01, step: 0.0001 },
-  { id: 'opacity', label: 'Glow', min: 0.3, max: 1, step: 0.01 },
-  { id: 'brightness', label: 'Brightness', min: 0.1, max: 0.6, step: 0.01 },
-  { id: 'contrast', label: 'Contrast', min: 0.6, max: 2.5, step: 0.05 },
-  { id: 'fogDensity', label: 'Fog Density', min: 0.0002, max: 0.003, step: 0.0001 }
+  { id: 'amplitude', labelKey: 'field.amplitude', min: 30, max: 140, step: 1 },
+  { id: 'waveXFrequency', labelKey: 'field.frequency.x', min: 0.05, max: 0.45, step: 0.005 },
+  { id: 'waveYFrequency', labelKey: 'field.frequency.y', min: 0.05, max: 0.45, step: 0.005 },
+  { id: 'swirlStrength', labelKey: 'field.swirl.strength', min: 0, max: 3, step: 0.01 },
+  { id: 'swirlFrequency', labelKey: 'field.swirl.scale', min: 0.001, max: 0.02, step: 0.0005 },
+  { id: 'animationSpeed', labelKey: 'field.flow.speed', min: 0.05, max: 1.2, step: 0.01 },
+  { id: 'pointSize', labelKey: 'field.point.scale', min: 6, max: 32, step: 0.5 },
+  { id: 'mouseInfluence', labelKey: 'field.pointer.warp', min: 0.001, max: 0.02, step: 0.0005 },
+  { id: 'rippleStrength', labelKey: 'field.ripple.strength', min: 10, max: 120, step: 1 },
+  { id: 'rippleSpeed', labelKey: 'field.ripple.speed', min: 120, max: 520, step: 5 },
+  { id: 'rippleWidth', labelKey: 'field.ripple.width', min: 8, max: 40, step: 0.1 },
+  { id: 'rippleDecay', labelKey: 'field.ripple.fade', min: 0.0005, max: 0.01, step: 0.0001 },
+  { id: 'opacity', labelKey: 'field.glow', min: 0.3, max: 1, step: 0.01 },
+  { id: 'brightness', labelKey: 'field.brightness', min: 0.1, max: 0.6, step: 0.01 },
+  { id: 'contrast', labelKey: 'field.contrast', min: 0.6, max: 2.5, step: 0.05 },
+  { id: 'fogDensity', labelKey: 'field.fog.density', min: 0.0002, max: 0.003, step: 0.0001 }
 ];
 
 const FIELD_BOOLEAN_CONTROLS = [
-  { id: 'autoRotate', label: 'Auto Rotate' },
-  { id: 'showStats', label: 'Show Stats' }
+  { id: 'autoRotate', labelKey: 'field.auto.rotate' },
+  { id: 'showStats', labelKey: 'field.show.stats' }
 ];
 
 const FIELD_INFLUENCE_GROUPS = [
   {
     id: 'about',
-    label: 'About Channel',
+    labelKey: 'field.about.channel',
     fields: [
-      { id: 'mouseInfluence', label: 'Pointer Warp', min: 0.001, max: 0.02, step: 0.0005 },
-      { id: 'animationSpeed', label: 'Flow Speed', min: 0.05, max: 1.2, step: 0.01 },
-      { id: 'brightness', label: 'Brightness', min: 0.1, max: 0.6, step: 0.01 }
+      { id: 'mouseInfluence', labelKey: 'field.pointer.warp', min: 0.001, max: 0.02, step: 0.0005 },
+      { id: 'animationSpeed', labelKey: 'field.flow.speed', min: 0.05, max: 1.2, step: 0.01 },
+      { id: 'brightness', labelKey: 'field.brightness', min: 0.1, max: 0.6, step: 0.01 }
     ]
   },
   {
     id: 'projects',
-    label: 'Projects Channel',
+    labelKey: 'field.projects.channel',
     fields: [
-      { id: 'animationSpeed', label: 'Flow Speed', min: 0.05, max: 1.2, step: 0.01 },
-      { id: 'swirlStrength', label: 'Swirl Strength', min: 0, max: 3, step: 0.01 },
-      { id: 'pointSize', label: 'Point Scale', min: 6, max: 32, step: 0.5 }
+      { id: 'animationSpeed', labelKey: 'field.flow.speed', min: 0.05, max: 1.2, step: 0.01 },
+      { id: 'swirlStrength', labelKey: 'field.swirl.strength', min: 0, max: 3, step: 0.01 },
+      { id: 'pointSize', labelKey: 'field.point.scale', min: 6, max: 32, step: 0.5 }
     ]
   },
   {
     id: 'content',
-    label: 'Content Channel',
+    labelKey: 'field.content.channel',
     fields: [
-      { id: 'animationSpeed', label: 'Flow Speed', min: 0.05, max: 1.2, step: 0.01 },
-      { id: 'rippleWidth', label: 'Ripple Width', min: 8, max: 40, step: 0.1 },
-      { id: 'contrast', label: 'Contrast', min: 0.6, max: 2.5, step: 0.05 }
+      { id: 'animationSpeed', labelKey: 'field.flow.speed', min: 0.05, max: 1.2, step: 0.01 },
+      { id: 'rippleWidth', labelKey: 'field.ripple.width', min: 8, max: 40, step: 0.1 },
+      { id: 'contrast', labelKey: 'field.contrast', min: 0.6, max: 2.5, step: 0.05 }
     ]
   },
   {
     id: 'sounds',
-    label: 'Sounds Channel',
+    labelKey: 'field.sounds.channel',
     fields: [
-      { id: 'rippleStrength', label: 'Ripple Strength', min: 10, max: 120, step: 1 },
-      { id: 'rippleDecay', label: 'Ripple Fade', min: 0.0005, max: 0.01, step: 0.0001 },
-      { id: 'mouseInfluence', label: 'Pointer Warp', min: 0.001, max: 0.02, step: 0.0005 }
+      { id: 'rippleStrength', labelKey: 'field.ripple.strength', min: 10, max: 120, step: 1 },
+      { id: 'rippleDecay', labelKey: 'field.ripple.fade', min: 0.0005, max: 0.01, step: 0.0001 },
+      { id: 'mouseInfluence', labelKey: 'field.pointer.warp', min: 0.001, max: 0.02, step: 0.0005 }
     ]
   },
   {
     id: 'art',
-    label: 'Art Channel',
+    labelKey: 'field.art.channel',
     fields: [
-      { id: 'rippleStrength', label: 'Ripple Strength', min: 10, max: 120, step: 1 },
-      { id: 'rippleDecay', label: 'Ripple Fade', min: 0.0005, max: 0.01, step: 0.0001 },
-      { id: 'mouseInfluence', label: 'Pointer Warp', min: 0.001, max: 0.02, step: 0.0005 }
+      { id: 'rippleStrength', labelKey: 'field.ripple.strength', min: 10, max: 120, step: 1 },
+      { id: 'rippleDecay', labelKey: 'field.ripple.fade', min: 0.0005, max: 0.01, step: 0.0001 },
+      { id: 'mouseInfluence', labelKey: 'field.pointer.warp', min: 0.001, max: 0.02, step: 0.0005 }
     ]
   }
 ];
@@ -88,6 +90,7 @@ function buildDefaultFieldSettings() {
 
 export default function FieldSettingsPage() {
   const adminFetch = useAdminFetch();
+  const { language } = useLanguage();
   const [fieldSettings, setFieldSettings] = useState(null);
   const [isSavingField, setIsSavingField] = useState(false);
   const [fieldStatus, setFieldStatus] = useState('');
@@ -142,8 +145,8 @@ export default function FieldSettingsPage() {
 
   const handleFieldReset = useCallback(() => {
     setFieldSettings(buildDefaultFieldSettings());
-    setFieldStatus('Reset to defaults (unsaved)');
-  }, []);
+    setFieldStatus(t('field.reset.notice', language));
+  }, [language]);
 
   const handleFieldSave = useCallback(async () => {
     if (!fieldSettings) return;
@@ -188,14 +191,14 @@ export default function FieldSettingsPage() {
           return acc;
         }, {})
       });
-      setFieldStatus('Saved');
+      setFieldStatus(t('field.saved', language));
     } catch (error) {
       console.error(error);
       setFieldStatus(error.message);
     } finally {
       setIsSavingField(false);
     }
-  }, [adminFetch, fieldSettings]);
+  }, [adminFetch, fieldSettings, language]);
 
   useEffect(() => {
     let ignore = false;
@@ -233,8 +236,8 @@ export default function FieldSettingsPage() {
     <div className="admin-shell">
       <header className="admin-shell__header">
         <div>
-          <h1>Field Settings</h1>
-          <p>Adjust the dotfield baseline and per-channel overrides.</p>
+          <h1>{t('field.settings.title', language)}</h1>
+          <p>{t('field.settings.description', language)}</p>
         </div>
       </header>
       <section className="admin-editor-panel admin-editor-panel--field">
@@ -244,13 +247,13 @@ export default function FieldSettingsPage() {
           <div className="field-settings">
             <section className="field-settings__section">
               <header className="field-settings__header">
-                <h2>Base Field Mood</h2>
-                <p>These values load with every visit.</p>
+                <h2>{t('field.base.mood', language)}</h2>
+                <p>{t('field.base.description', language)}</p>
               </header>
               <div className="field-settings__grid">
                 {FIELD_BASE_CONTROLS.map((control) => (
                   <div key={control.id} className="admin-field field-settings__field">
-                    <label htmlFor={`field-base-${control.id}`}>{control.label}</label>
+                    <label htmlFor={`field-base-${control.id}`}>{t(control.labelKey, language)}</label>
                     <input
                       id={`field-base-${control.id}`}
                       type="number"
@@ -271,7 +274,7 @@ export default function FieldSettingsPage() {
                       checked={!!fieldSettings.base?.[control.id]}
                       onChange={(event) => handleFieldBooleanChange(control.id, event.target.checked)}
                     />
-                    <span>{control.label}</span>
+                    <span>{t(control.labelKey, language)}</span>
                   </label>
                 ))}
               </div>
@@ -280,13 +283,13 @@ export default function FieldSettingsPage() {
             {FIELD_INFLUENCE_GROUPS.map((group) => (
               <section key={group.id} className="field-settings__section">
                 <header className="field-settings__header">
-                  <h3>{group.label}</h3>
-                  <p>Overrides applied when visitors open this channel.</p>
+                  <h3>{t(group.labelKey, language)}</h3>
+                  <p>{t('field.overrides.description', language)}</p>
                 </header>
                 <div className="field-settings__grid field-settings__grid--influence">
                   {group.fields.map((control) => (
                     <div key={`${group.id}-${control.id}`} className="admin-field field-settings__field">
-                      <label htmlFor={`field-${group.id}-${control.id}`}>{control.label}</label>
+                      <label htmlFor={`field-${group.id}-${control.id}`}>{t(control.labelKey, language)}</label>
                       <input
                         id={`field-${group.id}-${control.id}`}
                         type="number"
@@ -306,7 +309,7 @@ export default function FieldSettingsPage() {
               {fieldStatus && <span className="admin-status">{fieldStatus}</span>}
               <div className="admin-actions__buttons">
                 <button type="button" className="admin-ghost" onClick={handleFieldReset}>
-                  Reset Defaults
+                  {t('field.reset.defaults', language)}
                 </button>
                 <button
                   type="button"
@@ -314,7 +317,7 @@ export default function FieldSettingsPage() {
                   onClick={handleFieldSave}
                   disabled={isSavingField}
                 >
-                  {isSavingField ? 'Saving…' : 'Save Settings'}
+                  {isSavingField ? t('field.saving', language) : t('field.save.settings', language)}
                 </button>
               </div>
             </div>

@@ -7,11 +7,14 @@ import { useRouter } from 'next/navigation';
 import { formatDisplayDate } from '../lib/formatters';
 import { storeEntryReturnTarget } from '../lib/entryReturn';
 import TabbedAudioPlayer from './TabbedAudioPlayer';
+import { useLanguage } from '../contexts/LanguageContext';
+import { t } from '../lib/translations';
 
 const TRANSITION_DURATION_MS = 480;
 
 export default function EntryDetail({ type, entry, isAdmin = false }) {
   const router = useRouter();
+  const { language } = useLanguage();
   const [stageState, setStageState] = useState('idle');
   const stageRef = useRef(null);
   const leaveTimeoutRef = useRef();
@@ -177,12 +180,8 @@ export default function EntryDetail({ type, entry, isAdmin = false }) {
   const stageClasses = ['detail-stage'];
   // Capitalize and format the type label properly
   const typeLabel = type ? `${type.charAt(0).toUpperCase()}${type.slice(1)}` : '';
-  // Create a proper display name for the back button
-  const backButtonLabel = type === 'content' ? 'Content' : 
-                          type === 'projects' ? 'Projects' : 
-                          type === 'sounds' ? 'Sounds' : 
-                          type === 'art' ? 'Art' : 
-                          type;
+  // Get the localized back button label
+  const backButtonLabel = t(`nav.${type}`, language);
 
   if (stageState === 'entering') {
     stageClasses.push('is-fading-in');
@@ -205,12 +204,12 @@ export default function EntryDetail({ type, entry, isAdmin = false }) {
             className="detail-view__back"
             onClick={(event) => handleNavigateAway(event, `/${type}`)}
           >
-            Back to {backButtonLabel}
+            {t('back.to', language, { section: backButtonLabel })}
           </Link>
           <div className="detail-view__stamps">
             {dateLabel && (
               <div className="detail-view__published">
-                <span className="detail-view__published-label">Published</span>
+                <span className="detail-view__published-label">{t('published.date', language)}</span>
                 <span className="detail-view__published-date">{dateLabel}</span>
               </div>
             )}
@@ -224,7 +223,7 @@ export default function EntryDetail({ type, entry, isAdmin = false }) {
               <h1 className="detail-view__title">{title}</h1>
               {isAdmin && editHref ? (
                 <Link href={editHref} className="detail-view__edit-btn">
-                  Edit entry
+                  {t('edit.entry', language)}
                 </Link>
               ) : null}
             </div>

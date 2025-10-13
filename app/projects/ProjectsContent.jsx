@@ -3,6 +3,8 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import PostCard from '../../components/PostCard';
+import { useLanguage } from '../../contexts/LanguageContext';
+import { t } from '../../lib/translations';
 
 const PROJECT_TONES = {
   'signal-grid': 'cyan',
@@ -10,13 +12,21 @@ const PROJECT_TONES = {
   'signal-bloom': 'magenta'
 };
 
-const CATEGORIES = ['All', 'Useful Tools', 'Fun', 'Events', 'Startups'];
-
 export default function ProjectsContent({ entries, hero, isAdmin = false }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const containerRef = useRef(null);
+  const { language } = useLanguage();
+  
+  // Define categories with translation keys
+  const CATEGORIES = [
+    { id: 'All', key: 'projects.all' },
+    { id: 'Useful Tools', key: 'projects.useful-tools' },
+    { id: 'Fun', key: 'projects.fun' },
+    { id: 'Events', key: 'projects.events' },
+    { id: 'Startups', key: 'projects.startups' }
+  ];
   
   // Get initial category from URL or default to 'All'
   const initialCategory = searchParams.get('category') || 'All';
@@ -133,15 +143,15 @@ export default function ProjectsContent({ entries, hero, isAdmin = false }) {
         <div className="channel__categories">
           {CATEGORIES.map(category => (
             <button
-              key={category}
-              className={`channel__category-btn ${selectedCategory === category ? 'channel__category-btn--active' : ''}`}
-              onClick={() => handleCategoryChange(category)}
-              aria-pressed={selectedCategory === category}
+              key={category.id}
+              className={`channel__category-btn ${selectedCategory === category.id ? 'channel__category-btn--active' : ''}`}
+              onClick={() => handleCategoryChange(category.id)}
+              aria-pressed={selectedCategory === category.id}
             >
-              {category}
-              {category !== 'All' && (
+              {t(category.key, language)}
+              {category.id !== 'All' && (
                 <span className="channel__category-count">
-                  {categorizedEntries.filter(e => e.category === category).length}
+                  {categorizedEntries.filter(e => e.category === category.id).length}
                 </span>
               )}
             </button>
@@ -150,7 +160,7 @@ export default function ProjectsContent({ entries, hero, isAdmin = false }) {
       </header>
 
       {filteredEntries.length === 0 ? (
-        <p className="channel__empty">No {selectedCategory.toLowerCase()} projects found.</p>
+        <p className="channel__empty">{t('projects.empty', language, { category: selectedCategory.toLowerCase() })}</p>
       ) : (
         <div className="channel__grid" key={selectedCategory} data-category={selectedCategory}>
           {filteredEntries.map((entry) => {
