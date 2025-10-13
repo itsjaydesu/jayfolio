@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { CONTENT_TYPES, readEntry, upsertEntry } from '../../../../../lib/contentStore';
+import { getLocalizedContent } from '../../../../../lib/translations';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,10 +37,21 @@ export async function POST(request, { params }) {
     })();
 
     const now = new Date().toISOString();
+    const baseTitle = getLocalizedContent(original.title, 'en') || original.slug || 'Untitled';
+    let titleCopy;
+    if (original.title && typeof original.title === 'object' && !Array.isArray(original.title)) {
+      titleCopy = {
+        ...original.title,
+        en: `${baseTitle} (Copy)`
+      };
+    } else {
+      titleCopy = `${baseTitle} (Copy)`;
+    }
+
     const copy = {
       ...original,
       slug: copySlug,
-      title: `${original.title} (Copy)`,
+      title: titleCopy,
       status: 'draft',
       updatedAt: now,
       createdAt: now

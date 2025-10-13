@@ -4,6 +4,7 @@ import { hasAdminSession } from '../lib/adminSession';
 import { generateMetadata as getMetadata, generateStructuredData, generateViewportData } from '../lib/metadata';
 import { LanguageProvider } from '../contexts/LanguageContext';
 import HtmlHead from '../components/HtmlHead';
+import { Analytics } from '@vercel/analytics/react';
 
 export async function generateMetadata() {
   return await getMetadata('home');
@@ -33,6 +34,7 @@ export default async function RootLayout({ children }) {
           <HtmlHead />
           <SiteShell isAdmin={isAdmin}>{children}</SiteShell>
         </LanguageProvider>
+        <Analytics />
         <noscript>
           <style>{`
             :root {

@@ -8,7 +8,7 @@ import { formatDisplayDate } from '../lib/formatters';
 import { storeEntryReturnTarget } from '../lib/entryReturn';
 import TabbedAudioPlayer from './TabbedAudioPlayer';
 import { useLanguage } from '../contexts/LanguageContext';
-import { t, getLocalizedContent } from '../lib/translations';
+import { t, getLocalizedContent, getLocalizedTags } from '../lib/translations';
 
 const TRANSITION_DURATION_MS = 480;
 
@@ -22,6 +22,8 @@ export default function EntryDetail({ type, entry, isAdmin = false }) {
   const stageStateRef = useRef('idle');
 
   const localizedContent = useMemo(() => getLocalizedContent(entry?.content, language) || '', [entry?.content, language]);
+  const localizedTags = useMemo(() => getLocalizedTags(entry?.tags, language), [entry?.tags, language]);
+  const englishTags = useMemo(() => getLocalizedTags(entry?.tags, 'en'), [entry?.tags]);
 
   const logLayoutMetrics = useCallback(
     (label, stateOverride) => {
@@ -240,13 +242,32 @@ export default function EntryDetail({ type, entry, isAdmin = false }) {
           <figure className="detail-view__media">
             <Image
               src={coverImage.url}
-              alt={coverImage.alt || `${localizedTitle} cover image`}
+              alt={getLocalizedContent(coverImage.alt, language) || `${localizedTitle} cover image`}
               fill
               sizes="(max-width: 900px) 100vw, 960px"
               className="detail-view__media-image"
             />
           </figure>
         ) : null}
+
+        {localizedTags.length > 0 && (
+          <aside className="detail-view__meta">
+            <div className="detail-view__meta-item">
+              <span className="detail-view__meta-label">{t('tags.label', language)}</span>
+              <ul className="detail-view__meta-tags">
+                {localizedTags.map((tag, index) => {
+                  const englishTag = englishTags[index] || englishTags.find((value) => value?.toLowerCase() === tag?.toLowerCase());
+                  return (
+                    <li key={`${entry.slug}-tag-${index}`}>
+                      <strong>{tag}</strong>
+                      {language !== 'en' && englishTag && englishTag !== tag ? <em>{englishTag}</em> : null}
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          </aside>
+        )}
 
         {audioData && (
           <TabbedAudioPlayer

@@ -4,7 +4,7 @@ import { formatDisplayDate } from '../lib/formatters';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useLanguage } from '../contexts/LanguageContext';
-import { getCategoryName, getLocalizedContent, t } from '../lib/translations';
+import { getCategoryName, getLocalizedContent, getLocalizedTags, t } from '../lib/translations';
 
 /**
  * PostCard - A consistent, reusable card component for all content types
@@ -37,6 +37,8 @@ export default function PostCard({
   const localizedSummary = getLocalizedContent(entry.summary, language) || entry.summary;
   const formattedDate = entry.createdAt ? formatDisplayDate(entry.createdAt, language) : '';
   const displayDate = language === 'en' ? formattedDate.toUpperCase() : formattedDate;
+  const localizedTags = getLocalizedTags(entry.tags, language);
+  const coverAlt = entry.coverImage ? getLocalizedContent(entry.coverImage.alt, language) : '';
   
   // Determine figure aspect ratio based on type
   const getFigureClass = () => {
@@ -78,7 +80,7 @@ export default function PostCard({
         <div className="project-entry__content">
           {/* Date and Category Header */}
           <div className="project-entry__header">
-            {entry.createdAt && (
+          {entry.createdAt && (
               <time className="project-entry__date" dateTime={entry.createdAt}>
                 {displayDate}
               </time>
@@ -110,6 +112,9 @@ export default function PostCard({
             {localizedSummary && (
               <p className="project-entry__summary">{localizedSummary}</p>
             )}
+          {localizedTags.length > 0 && (
+            <p className="project-entry__tags">{localizedTags.join(' • ')}</p>
+          )}
           </div>
         </div>
 
@@ -118,7 +123,7 @@ export default function PostCard({
           {entry.coverImage?.url && type === 'projects' ? (
             <Image
               src={entry.coverImage.url}
-              alt={entry.coverImage.alt || `${entry.title} cover image`}
+            alt={coverAlt || `${localizedTitle} cover image`}
               fill
               sizes="(max-width: 900px) 100vw, 420px"
               className="project-entry__image"

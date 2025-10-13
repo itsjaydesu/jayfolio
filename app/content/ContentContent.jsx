@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import PostCard from '../../components/PostCard';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { t, getCategoryName, getLocalizedContent } from '../../lib/translations';
+import { t, getCategoryName, getLocalizedContent, getLocalizedTags } from '../../lib/translations';
 
 const CONTENT_TONES = {
   'slow-scan-memo': 'violet',
@@ -33,7 +33,7 @@ export default function ContentContent({ entries, hero, isAdmin = false }) {
     return entries.map(entry => {
       let category = 'blog';
       
-      const lowerTags = entry.tags?.map(t => t.toLowerCase()) || [];
+      const lowerTags = getLocalizedTags(entry.tags, 'en').map((tag) => tag.toLowerCase());
       const titleEn = getLocalizedContent(entry.title, 'en') || '';
       const contentEn = getLocalizedContent(entry.content, 'en') || '';
       const lowerTitle = titleEn.toLowerCase();

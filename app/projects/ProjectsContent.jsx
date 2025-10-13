@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import PostCard from '../../components/PostCard';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { t, getLocalizedContent } from '../../lib/translations';
+import { t, getLocalizedContent, getLocalizedTags } from '../../lib/translations';
 
 const PROJECT_TONES = {
   'signal-grid': 'cyan',
@@ -84,7 +84,7 @@ export default function ProjectsContent({ entries, hero, isAdmin = false }) {
       const titleEn = getLocalizedContent(entry.title, 'en') || '';
       const contentEn = getLocalizedContent(entry.content, 'en') || '';
       const lowerTitle = titleEn.toLowerCase();
-      const lowerTags = entry.tags?.map(t => t.toLowerCase()) || [];
+      const lowerTags = getLocalizedTags(entry.tags, 'en').map((tag) => tag.toLowerCase());
       const lowerContent = contentEn.toLowerCase();
       
       // Check for Startups

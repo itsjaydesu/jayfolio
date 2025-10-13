@@ -5,6 +5,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { useAdminFetch } from '@/components/admin-session-context';
 import { ChevronDoubleDownIcon, ChevronDoubleUpIcon } from '@/components/icons';
+import { getLocalizedContent } from '@/lib/translations';
 
 // Dynamically import heavy editor components to reduce admin bundle size
 const RichTextEditor = dynamic(() => import('@/components/rich-text-editor'), {
@@ -22,6 +23,11 @@ const TYPE_OPTIONS = [
   { id: 'content', label: 'Content' },
   { id: 'sounds', label: 'Sounds' },
   { id: 'art', label: 'Art' }
+];
+
+const LANGUAGE_OPTIONS = [
+  { id: 'en', label: 'English' },
+  { id: 'ja', label: '日本語' }
 ];
 
 const INITIAL_CONTENT = '<p></p>';
@@ -60,18 +66,118 @@ function formatListMeta(entry) {
   return `${dateLabel} • ${statusLabel}`;
 }
 
+function ensureLocalizedField(value, defaultEn = '') {
+  if (typeof value === 'string') {
+    return { en: value, ja: '' };
+  }
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    return {
+      en: typeof value.en === 'string' ? value.en : defaultEn,
+      ja: typeof value.ja === 'string' ? value.ja : ''
+    };
+  }
+  return { en: defaultEn, ja: '' };
+}
+
+function ensureLocalizedRichText(value) {
+  const base = ensureLocalizedField(value, '');
+  return {
+    en: base.en || INITIAL_CONTENT,
+    ja: base.ja || INITIAL_CONTENT
+  };
+}
+
+function ensureLocalizedTags(value) {
+  const toString = (input) => {
+    if (Array.isArray(input)) {
+      return input.join(', ');
+    }
+    if (typeof input === 'string') {
+      return input;
+    }
+    return '';
+  };
+
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    return {
+      en: toString(value.en),
+      ja: toString(value.ja)
+    };
+  }
+
+  return { en: toString(value), ja: '' };
+}
+
+function prepareLocalizedField(field) {
+  if (typeof field === 'string') {
+    return field.trim();
+  }
+  if (!field || typeof field !== 'object') {
+    return '';
+  }
+
+  const result = {};
+  for (const { id } of LANGUAGE_OPTIONS) {
+    const value = typeof field[id] === 'string' ? field[id].trim() : '';
+    if (value) {
+      result[id] = value;
+    }
+  }
+
+  const keys = Object.keys(result);
+  if (!keys.length) {
+    return '';
+  }
+  if (keys.length === 1 && keys[0] === 'en') {
+    return result.en;
+  }
+  return result;
+}
+
+function prepareLocalizedTags(field) {
+  if (!field || typeof field !== 'object') {
+    return parseTags(field);
+  }
+  const result = {};
+  for (const { id } of LANGUAGE_OPTIONS) {
+    const tags = parseTags(field[id]);
+    if (tags.length) {
+      result[id] = tags;
+    }
+  }
+  const keys = Object.keys(result);
+  if (!keys.length) {
+    return [];
+  }
+  if (keys.length === 1 && keys[0] === 'en') {
+    return result.en;
+  }
+  return result;
+}
+
+function hasFieldValue(value) {
+  if (!value) return false;
+  if (typeof value === 'string') {
+    return value.trim().length > 0;
+  }
+  if (typeof value === 'object') {
+    return Object.values(value).some((entry) => typeof entry === 'string' && entry.trim().length > 0);
+  }
+  return false;
+}
+
 function buildInitialForm() {
   const today = new Date().toISOString().slice(0, 10);
   return {
-    title: '',
+    title: { en: '', ja: '' },
     slug: '',
-    summary: '',
-    tagsText: '',
+    summary: { en: '', ja: '' },
+    tagsText: { en: '', ja: '' },
     status: 'draft',
     coverImageUrl: '',
-    coverImageAlt: '',
+    coverImageAlt: { en: '', ja: '' },
     createdAt: today,
-    content: INITIAL_CONTENT
+    content: { en: INITIAL_CONTENT, ja: INITIAL_CONTENT }
   };
 }
 
@@ -93,6 +199,7 @@ export default function AdminPage() {
   const [activeType, setActiveType] = useState(initialType);
   const [entries, setEntries] = useState([]);
   const [form, setForm] = useState(buildInitialForm);
+  const [activeLanguage, setActiveLanguage] = useState('en');
   const [selectedSlug, setSelectedSlug] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
@@ -153,17 +260,18 @@ export default function AdminPage() {
   }, [activeType, refreshEntries]);
 
   const handleSelect = useCallback((entry) => {
+    const fallbackTitle = getLocalizedContent(entry.title, 'en') || entry.title || '';
     setSelectedSlug(entry.slug);
     setForm({
-      title: entry.title,
+      title: ensureLocalizedField(entry.title, fallbackTitle),
       slug: entry.slug,
-      summary: entry.summary ?? '',
-      tagsText: (entry.tags ?? []).join(', '),
+      summary: ensureLocalizedField(entry.summary, ''),
+      tagsText: ensureLocalizedTags(entry.tags),
       status: entry.status || 'draft',
       coverImageUrl: entry.coverImage?.url || '',
-      coverImageAlt: entry.coverImage?.alt || '',
+      coverImageAlt: ensureLocalizedField(entry.coverImage?.alt, ''),
       createdAt: formatDateValue(entry.createdAt),
-      content: entry.content || INITIAL_CONTENT
+      content: ensureLocalizedRichText(entry.content || INITIAL_CONTENT)
     });
     setStatusMessage('');
     updateUrlState(activeType, entry.slug);
@@ -174,6 +282,7 @@ export default function AdminPage() {
     setForm(buildInitialForm());
     setStatusMessage('');
     updateUrlState(activeType, null);
+    setActiveLanguage('en');
   }, [activeType, updateUrlState]);
 
   useEffect(() => {
@@ -195,12 +304,18 @@ export default function AdminPage() {
     }
   }, [entries, slugParam, selectedSlug, handleSelect, handleNew]);
 
-  const handleFieldChange = useCallback(
-    (field, value) => {
+  const handleFieldChange = useCallback((field, value) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+  }, []);
+
+  const handleLocalizedFieldChange = useCallback(
+    (field, language, value) => {
       setForm((prev) => {
-        const next = { ...prev, [field]: value };
-        if (field === 'title' && !selectedSlug) {
-          next.slug = slugify(value);
+        const current = prev[field] && typeof prev[field] === 'object' ? prev[field] : { en: '', ja: '' };
+        const nextField = { ...current, [language]: value };
+        const next = { ...prev, [field]: nextField };
+        if (field === 'title' && language === 'en' && !selectedSlug) {
+          next.slug = slugify(value || '');
         }
         return next;
       });
@@ -213,8 +328,19 @@ export default function AdminPage() {
   }, []);
 
   const handleCoverChange = useCallback(({ url, alt }) => {
-    setForm((prev) => ({ ...prev, coverImageUrl: url || '', coverImageAlt: alt || '' }));
-  }, []);
+    setForm((prev) => {
+      const existingAlt = ensureLocalizedField(prev.coverImageAlt, '');
+      const nextAlt = url
+        ? { ...existingAlt, [activeLanguage]: alt || '' }
+        : { en: '', ja: '' };
+
+      return {
+        ...prev,
+        coverImageUrl: url || '',
+        coverImageAlt: nextAlt
+      };
+    });
+  }, [activeLanguage]);
 
   const toggleEntryPanel = useCallback(() => {
     setIsEntryPanelCollapsed((prev) => !prev);
@@ -229,19 +355,22 @@ export default function AdminPage() {
       setIsSaving(true);
       setStatusMessage('');
       const payload = {
-        title: form.title.trim(),
+        title: prepareLocalizedField(form.title),
         slug: form.slug.trim(),
-        summary: form.summary.trim(),
-        content: form.content,
-        tags: parseTags(form.tagsText),
+        summary: prepareLocalizedField(form.summary),
+        content: prepareLocalizedField(form.content),
+        tags: prepareLocalizedTags(form.tagsText),
         status: form.status === 'published' ? 'published' : 'draft',
         coverImage: form.coverImageUrl
-          ? { url: form.coverImageUrl.trim(), alt: form.coverImageAlt.trim() }
+          ? {
+              url: form.coverImageUrl.trim(),
+              alt: prepareLocalizedField(form.coverImageAlt)
+            }
           : null,
         createdAt: formatDateValue(form.createdAt) || new Date().toISOString().slice(0, 10)
       };
 
-      if (!payload.title || !payload.slug) {
+      if (!hasFieldValue(payload.title) || !payload.slug) {
         throw new Error('Title and slug are required');
       }
 
@@ -311,143 +440,130 @@ export default function AdminPage() {
   }, [activeType, adminFetch, refreshEntries, selectedSlug]);
 
   const isEditingExisting = useMemo(() => Boolean(selectedSlug), [selectedSlug]);
+  const titleValue = form.title?.[activeLanguage] ?? '';
+  const summaryValue = form.summary?.[activeLanguage] ?? '';
+  const tagsValue = form.tagsText?.[activeLanguage] ?? '';
+  const coverAltValue = form.coverImageAlt?.[activeLanguage] ?? '';
+  const contentValue = form.content?.[activeLanguage] ?? INITIAL_CONTENT;
 
   return (
-    <div className="admin-shell">
-      <header className="admin-shell__header">
-        <div>
-          <h1>Content Console</h1>
-          <p>Create and maintain projects, words, and sounds in one focused surface.</p>
-        </div>
-        <nav className="admin-shell__types" aria-label="Content types">
-          {TYPE_OPTIONS.map((option) => (
-            <button
-              key={option.id}
-              type="button"
-              className={`admin-type${activeType === option.id ? ' is-active' : ''}`}
-            onClick={() => {
-              if (activeType === option.id) return;
-              setActiveType(option.id);
-              updateUrlState(option.id, null);
-              setSelectedSlug(null);
-              setForm(buildInitialForm());
-            }}
-            >
-              {option.label}
-            </button>
-          ))}
-        </nav>
-      </header>
-
-      <section
-        className={`admin-layout${
-          isEntryPanelCollapsed ? ' admin-layout--panel-collapsed' : ''
-        }${isEditorFullscreen ? ' admin-layout--editor-fullscreen' : ''}`}
+    <div className="admin-console">
+      <aside
+        className={`admin-console__drawer${isEntryPanelCollapsed ? ' admin-console__drawer--collapsed' : ''}`}
+        aria-label="Entries"
+        role="region"
       >
-        <div
-          className={`admin-drawer admin-drawer--top${isEntryPanelCollapsed ? ' is-collapsed' : ''}`}
-          aria-label="Entries"
-          role="region"
-        >
-          <div className="admin-drawer__top">
-            <button
-              type="button"
-              className="admin-icon-button"
-              onClick={toggleEntryPanel}
-              aria-label={isEntryPanelCollapsed ? 'Expand entry panel' : 'Collapse entry panel'}
-            >
-              <span aria-hidden="true" className="admin-icon-button__icon">
-                {isEntryPanelCollapsed ? <ChevronDoubleDownIcon /> : <ChevronDoubleUpIcon />}
-              </span>
-            </button>
-            <button type="button" className="admin-ghost" onClick={handleNew}>
-              New Entry
-            </button>
-          </div>
-          <div className="admin-drawer__scroller">
-            <ul className="admin-drawer__list">
-              {entries.map((entry) => {
-                const isActive = selectedSlug === entry.slug;
-                return (
-                  <li key={entry.slug}>
-                    <button
-                      type="button"
-                      className={`admin-drawer__item${isActive ? ' is-selected' : ''}`}
-                      onClick={() => handleSelect(entry)}
-                    >
-                      <span className="admin-drawer__item-title">{entry.title || 'Untitled entry'}</span>
-                      <span className="admin-drawer__item-meta">{formatListMeta(entry)}</span>
-                    </button>
-                  </li>
-                );
-              })}
-              {!entries.length && <li className="admin-drawer__empty">No entries yet</li>}
-            </ul>
-          </div>
+        <div className="admin-console__drawer-top">
+          <button
+            type="button"
+            className="admin-console__collapse"
+            onClick={toggleEntryPanel}
+            aria-label={isEntryPanelCollapsed ? 'Expand entry panel' : 'Collapse entry panel'}
+          >
+            <span aria-hidden="true" className="admin-console__collapse-icon">
+              {isEntryPanelCollapsed ? <ChevronDoubleDownIcon /> : <ChevronDoubleUpIcon />}
+            </span>
+          </button>
+          <button type="button" className="admin-console__new" onClick={handleNew}>
+            New Entry
+          </button>
         </div>
+        <div className="admin-console__list">
+          <ul>
+            {entries.map((entry) => {
+              const isActive = selectedSlug === entry.slug;
+              const displayTitle = getLocalizedContent(entry.title, 'en') || 'Untitled entry';
+              return (
+                <li key={entry.slug}>
+                  <button
+                    type="button"
+                    className={`admin-console__list-item${isActive ? ' is-selected' : ''}`}
+                    onClick={() => handleSelect(entry)}
+                  >
+                    <span className="admin-console__list-title">{displayTitle}</span>
+                    <span className="admin-console__list-meta">{formatListMeta(entry)}</span>
+                  </button>
+                </li>
+              );
+            })}
+            {!entries.length && <li className="admin-console__empty">No entries yet</li>}
+          </ul>
+        </div>
+      </aside>
 
-        <div className="admin-workspace">
-        <div className="admin-workspace__header">
-          <div className="admin-workspace__status" role="status" aria-live="polite">
-            {statusMessage ? <span className="admin-status">{statusMessage}</span> : null}
-          </div>
-          <div className="admin-actions">
-            <div className="admin-actions__buttons">
-              {isEditingExisting && (
-                <button type="button" className="admin-ghost" onClick={handleDuplicate}>
-                  Duplicate
-                </button>
-              )}
-              {isEditingExisting && (
-                <button type="button" className="admin-danger" onClick={handleDelete}>
-                  Delete
-                </button>
-              )}
-              <button type="button" className="admin-primary" onClick={handleSave} disabled={isSaving}>
-                {isSaving ? 'Saving…' : 'Save'}
+      <div className="admin-console__canvas">
+        <header className="editor-toolbar">
+          <div className="editor-toolbar__types" aria-label="Content types">
+            {TYPE_OPTIONS.map((option) => (
+              <button
+                key={option.id}
+                type="button"
+                className={`editor-toolbar__type${activeType === option.id ? ' is-active' : ''}`}
+                onClick={() => {
+                  if (activeType === option.id) return;
+                  setActiveType(option.id);
+                  updateUrlState(option.id, null);
+                  setSelectedSlug(null);
+                  setForm(buildInitialForm());
+                  setActiveLanguage('en');
+                }}
+              >
+                {option.label}
               </button>
-            </div>
+            ))}
           </div>
-        </div>
+          <div className="editor-toolbar__languages" role="radiogroup" aria-label="Language">
+            {LANGUAGE_OPTIONS.map((option) => (
+              <button
+                key={option.id}
+                type="button"
+                className={`editor-toolbar__language${activeLanguage === option.id ? ' is-active' : ''}`}
+                onClick={() => setActiveLanguage(option.id)}
+                aria-pressed={activeLanguage === option.id}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </header>
 
-        <div className="admin-workspace__grid">
-          <section className="admin-editor-card">
-            <div className="admin-field admin-field--title">
-              <label htmlFor="title">Title</label>
-              <input
-                id="title"
-                type="text"
-                value={form.title}
-                placeholder="Give this entry a title"
-                onChange={(event) => handleFieldChange('title', event.target.value)}
+        <section className={`editor-stage${isEditorFullscreen ? ' editor-stage--fullscreen' : ''}`}>
+          <div className="editor-stage__title">
+            <label htmlFor="entry-title" className="editor-stage__label">Title</label>
+            <input
+              id="entry-title"
+              type="text"
+              className="editor-stage__title-input"
+              value={titleValue}
+              placeholder="Give this entry a title"
+              onChange={(event) => handleLocalizedFieldChange('title', activeLanguage, event.target.value)}
+            />
+          </div>
+
+          <div className="editor-stage__richtext">
+            <Suspense fallback={<div className="editor-loading">Loading editor...</div>}>
+              <RichTextEditor
+                value={contentValue}
+                initialContent={INITIAL_CONTENT}
+                onChange={(value) => handleLocalizedFieldChange('content', activeLanguage, value)}
+                isFullscreen={isEditorFullscreen}
+                onToggleFullscreen={toggleEditorFullscreen}
               />
-            </div>
+            </Suspense>
+          </div>
 
-            <div className="admin-editor-card__body">
-              <Suspense fallback={<div className="editor-loading">Loading editor...</div>}>
-                <RichTextEditor
-                  value={form.content}
-                  initialContent={INITIAL_CONTENT}
-                  onChange={(value) => handleFieldChange('content', value)}
-                  isFullscreen={isEditorFullscreen}
-                  onToggleFullscreen={toggleEditorFullscreen}
-                />
-              </Suspense>
-            </div>
-          </section>
-
-          <aside className="admin-sidebar" aria-label="Entry meta">
-            <section className="admin-panel">
-              <header className="admin-panel__header">
+          <div className="editor-stage__meta">
+            <section className="editor-card">
+              <header className="editor-card__header">
                 <h2>Publishing</h2>
               </header>
-              <div className="admin-panel__body admin-panel__body--grid">
-                <div className="admin-field admin-field--status">
-                  <span>Status</span>
-                  <div className="admin-status-group" role="radiogroup" aria-label="Entry status">
+              <div className="editor-card__grid">
+                <div className="editor-field editor-field--status">
+                  <span className="editor-field__label">Status</span>
+                  <div className="editor-status" role="radiogroup" aria-label="Entry status">
                     <button
                       type="button"
-                      className={`admin-status-pill${form.status !== 'published' ? ' is-active' : ''}`}
+                      className={`editor-status__pill${form.status !== 'published' ? ' is-active' : ''}`}
                       onClick={() => handleStatusChange('draft')}
                       aria-pressed={form.status !== 'published'}
                     >
@@ -455,7 +571,7 @@ export default function AdminPage() {
                     </button>
                     <button
                       type="button"
-                      className={`admin-status-pill${form.status === 'published' ? ' is-active' : ''}`}
+                      className={`editor-status__pill${form.status === 'published' ? ' is-active' : ''}`}
                       onClick={() => handleStatusChange('published')}
                       aria-pressed={form.status === 'published'}
                     >
@@ -463,11 +579,12 @@ export default function AdminPage() {
                     </button>
                   </div>
                 </div>
-                <div className="admin-field">
-                  <label htmlFor="createdAt">Publish date</label>
+                <div className="editor-field">
+                  <label htmlFor="entry-created" className="editor-field__label">Publish date</label>
                   <input
-                    id="createdAt"
+                    id="entry-created"
                     type="date"
+                    className="editor-input"
                     value={form.createdAt}
                     onChange={(event) => handleFieldChange('createdAt', event.target.value)}
                   />
@@ -475,74 +592,102 @@ export default function AdminPage() {
               </div>
             </section>
 
-            <section className="admin-panel">
-              <header className="admin-panel__header">
+            <section className="editor-card">
+              <header className="editor-card__header">
                 <h2>Metadata</h2>
               </header>
-              <div className="admin-panel__body admin-panel__body--grid">
-                <div className="admin-field">
-                  <label htmlFor="slug">Slug</label>
+              <div className="editor-card__grid">
+                <div className="editor-field">
+                  <label htmlFor="entry-slug" className="editor-field__label">Slug</label>
                   <input
-                    id="slug"
+                    id="entry-slug"
                     type="text"
+                    className="editor-input"
                     value={form.slug}
                     onChange={(event) => handleFieldChange('slug', event.target.value)}
                   />
                 </div>
-                <div className="admin-field">
-                  <label htmlFor="tags">Tags</label>
+                <div className="editor-field">
+                  <label htmlFor="entry-tags" className="editor-field__label">Tags</label>
                   <input
-                    id="tags"
+                    id="entry-tags"
                     type="text"
+                    className="editor-input"
                     placeholder="ambient, installation"
-                    value={form.tagsText}
-                    onChange={(event) => handleFieldChange('tagsText', event.target.value)}
+                    value={tagsValue}
+                    onChange={(event) => handleLocalizedFieldChange('tagsText', activeLanguage, event.target.value)}
                   />
                 </div>
               </div>
-              <div className="admin-field">
-                <label htmlFor="summary">Summary</label>
+              <div className="editor-field">
+                <label htmlFor="entry-summary" className="editor-field__label">Summary</label>
                 <textarea
-                  id="summary"
+                  id="entry-summary"
+                  className="editor-textarea"
                   rows={4}
-                  value={form.summary}
-                  onChange={(event) => handleFieldChange('summary', event.target.value)}
+                  value={summaryValue}
+                  onChange={(event) => handleLocalizedFieldChange('summary', activeLanguage, event.target.value)}
                 />
               </div>
             </section>
 
-            <section className="admin-panel">
-              <header className="admin-panel__header">
+            <section className="editor-card">
+              <header className="editor-card__header">
                 <h2>Media</h2>
               </header>
-              <div className="admin-panel__body">
-                <div className="admin-field admin-field--cover">
-                  <span>Cover image</span>
+              <div className="editor-card__body">
+                <div className="editor-field editor-field--cover">
+                  <span className="editor-field__label">Cover image</span>
                   <Suspense fallback={<div className="uploader-loading">Loading uploader...</div>}>
                     <CoverImageUploader
                       value={form.coverImageUrl}
-                      alt={form.coverImageAlt}
+                      alt={coverAltValue}
                       onChange={handleCoverChange}
                     />
                   </Suspense>
                 </div>
-                <div className="admin-field">
-                  <label htmlFor="coverAlt">Cover alt text</label>
+                <div className="editor-field">
+                  <label htmlFor="entry-cover-alt" className="editor-field__label">Cover alt text</label>
                   <input
-                    id="coverAlt"
+                    id="entry-cover-alt"
                     type="text"
-                    value={form.coverImageAlt}
-                    onChange={(event) => handleFieldChange('coverImageAlt', event.target.value)}
-                    placeholder="Describe the cover image for accessibility"
+                    className="editor-input"
+                    value={coverAltValue}
+                    onChange={(event) => handleLocalizedFieldChange('coverImageAlt', activeLanguage, event.target.value)}
+                    placeholder="Describe the cover image"
                   />
                 </div>
               </div>
             </section>
-          </aside>
-        </div>
-        </div>
-      </section>
+          </div>
+        </section>
 
+        <footer className="editor-footer">
+          <div className="editor-footer__status" role="status" aria-live="polite">
+            {statusMessage ? <span>{statusMessage}</span> : null}
+          </div>
+          <div className="editor-footer__actions">
+            {isEditingExisting && (
+              <button type="button" className="editor-footer__button" onClick={handleDuplicate}>
+                Duplicate
+              </button>
+            )}
+            {isEditingExisting && (
+              <button type="button" className="editor-footer__button editor-footer__button--danger" onClick={handleDelete}>
+                Delete
+              </button>
+            )}
+            <button
+              type="button"
+              className="editor-footer__button editor-footer__button--primary"
+              onClick={handleSave}
+              disabled={isSaving}
+            >
+              {isSaving ? 'Saving…' : 'Save'}
+            </button>
+          </div>
+        </footer>
+      </div>
     </div>
   );
 }
