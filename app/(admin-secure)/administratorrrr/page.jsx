@@ -203,7 +203,7 @@ export default function AdminPage() {
   const [selectedSlug, setSelectedSlug] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
-  const [isEntryPanelCollapsed, setIsEntryPanelCollapsed] = useState(false);
+  const [isEntryPanelCollapsed, setIsEntryPanelCollapsed] = useState(() => !slugParam);
   const [isEditorFullscreen, setIsEditorFullscreen] = useState(false);
   const prevSlugParamRef = useRef(slugParam);
   const pendingSlugRef = useRef(slugParam);
