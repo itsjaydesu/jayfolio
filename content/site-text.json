@@ -14,10 +14,10 @@
       "description": "Stuff I ① made ② am making ③ did"
     },
     {
-      "id": "words",
-      "label": "Words",
-      "route": "/words",
-      "description": "Some of my words for you"
+      "id": "content",
+      "label": "Content",
+      "route": "/content",
+      "description": "Essays, blog posts, and comedy pieces exploring technology, culture, and the absurdity of modern life."
     },
     {
       "id": "sounds",

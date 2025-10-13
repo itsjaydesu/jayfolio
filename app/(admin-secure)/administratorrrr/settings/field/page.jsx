@@ -48,8 +48,8 @@ const FIELD_INFLUENCE_GROUPS = [
     ]
   },
   {
-    id: 'words',
-    label: 'Words Channel',
+    id: 'content',
+    label: 'Content Channel',
     fields: [
       { id: 'animationSpeed', label: 'Flow Speed', min: 0.05, max: 1.2, step: 0.01 },
       { id: 'rippleWidth', label: 'Ripple Width', min: 8, max: 40, step: 0.1 },

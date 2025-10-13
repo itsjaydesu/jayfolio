@@ -1,9 +1,9 @@
 import ChannelContentEditor from '@/components/channel-content-editor';
 
-export default function ChannelWordsSettingsPage() {
+export default function ChannelContentSettingsPage() {
   return (
     <div className="admin-shell">
-      <ChannelContentEditor sections={['words']} />
+      <ChannelContentEditor sections={['content']} />
     </div>
   );
 }

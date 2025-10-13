@@ -50,7 +50,7 @@ export default function SiteShell({ children, isAdmin = false }) {
   // Check if current route should stop animation
   const shouldStopAnimation = primarySegment === 'about' || 
                               primarySegment === 'projects' || 
-                              primarySegment === 'words' || 
+                              primarySegment === 'content' || 
                               primarySegment === 'sounds' || 
                               primarySegment === 'art';
   const showAdminControls = isAdminActive && isHome;

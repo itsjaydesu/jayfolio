@@ -12,9 +12,9 @@ const CHANNEL_LINKS = [
     description: 'Update the projects hero title and lead text.'
   },
   {
-    href: '/administratorrrr/settings/channel/words',
-    title: 'Words Hero Copy',
-    description: 'Tune the words hero headline and descriptive lead.'
+    href: '/administratorrrr/settings/channel/content',
+    title: 'Content Hero Copy',
+    description: 'Tune the content hero headline and descriptive lead.'
   },
   {
     href: '/administratorrrr/settings/channel/sounds',

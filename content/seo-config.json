@@ -76,8 +76,8 @@
       ],
       "image": "/og-projects.jpg"
     },
-    "words": {
-      "title": "Words",
+    "content": {
+      "title": "Content",
       "description": "Process notes, essays on spatial computing, and glossaries for future signal-bearers.",
       "keywords": [
         "writing",
@@ -130,8 +130,8 @@
       "descriptionTemplate": "Project: %s",
       "type": "article"
     },
-    "words": {
-      "titleTemplate": "%s - Words | jay winder",
+    "content": {
+      "titleTemplate": "%s - Content | jay winder",
       "descriptionTemplate": "%s",
       "type": "article"
     },

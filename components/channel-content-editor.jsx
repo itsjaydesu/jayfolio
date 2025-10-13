@@ -7,7 +7,7 @@ import { useAdminFetch } from './admin-session-context';
 const SECTION_LABELS = {
   about: 'About',
   projects: 'Projects',
-  words: 'Words',
+  content: 'Content',
   sounds: 'Sounds',
   art: 'Art'
 };
@@ -69,7 +69,7 @@ function resetContent(previous, sections) {
   return next;
 }
 
-export default function ChannelContentEditor({ sections = ['about', 'projects', 'words', 'sounds', 'art'] }) {
+export default function ChannelContentEditor({ sections = ['about', 'projects', 'content', 'sounds', 'art'] }) {
   const uniqueSections = useMemo(() => Array.from(new Set(sections)), [sections]);
   const adminFetch = useAdminFetch();
   const [content, setContent] = useState(createInitialState);

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useAdminFetch } from '@/components/admin-session-context';
 
-const DEFAULT_PAGE_NAMES = ['home', 'about', 'projects', 'words', 'sounds', 'art'];
+const DEFAULT_PAGE_NAMES = ['home', 'about', 'projects', 'content', 'sounds', 'art'];
 
 function parseKeywordInput(value) {
   if (typeof value !== 'string') return [];
@@ -658,37 +658,37 @@ export default function SeoSettingsPage() {
             </div>
 
             <div className="admin-section">
-              <h3>Words Template</h3>
+              <h3>Content Template</h3>
               <div className="admin-panel__body admin-panel__body--grid">
                 <div className="admin-field admin-field--full">
-                  <label htmlFor="wordsTitleTemplate">Title Template</label>
+                  <label htmlFor="contentTitleTemplate">Title Template</label>
                   <input
-                    id="wordsTitleTemplate"
+                    id="contentTitleTemplate"
                     type="text"
-                    value={config.contentTemplates?.words?.titleTemplate || ''}
-                    onChange={(e) => handleTemplateChange('words', 'titleTemplate', e.target.value)}
-                    placeholder="%s - Writing | Site Name"
+                    value={config.contentTemplates?.content?.titleTemplate || ''}
+                    onChange={(e) => handleTemplateChange('content', 'titleTemplate', e.target.value)}
+                    placeholder="%s - Content | Site Name"
                   />
                 </div>
 
                 <div className="admin-field admin-field--full">
-                  <label htmlFor="wordsDescTemplate">Description Template</label>
+                  <label htmlFor="contentDescTemplate">Description Template</label>
                   <input
-                    id="wordsDescTemplate"
+                    id="contentDescTemplate"
                     type="text"
-                    value={config.contentTemplates?.words?.descriptionTemplate || ''}
-                    onChange={(e) => handleTemplateChange('words', 'descriptionTemplate', e.target.value)}
+                    value={config.contentTemplates?.content?.descriptionTemplate || ''}
+                    onChange={(e) => handleTemplateChange('content', 'descriptionTemplate', e.target.value)}
                     placeholder="%s"
                   />
                 </div>
 
                 <div className="admin-field">
-                  <label htmlFor="wordsType">OG Type</label>
+                  <label htmlFor="contentType">OG Type</label>
                   <input
-                    id="wordsType"
+                    id="contentType"
                     type="text"
-                    value={config.contentTemplates?.words?.type || ''}
-                    onChange={(e) => handleTemplateChange('words', 'type', e.target.value)}
+                    value={config.contentTemplates?.content?.type || ''}
+                    onChange={(e) => handleTemplateChange('content', 'type', e.target.value)}
                     placeholder="article"
                   />
                 </div>

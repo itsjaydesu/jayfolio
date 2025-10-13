@@ -1,7 +1,7 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-The Next.js app lives under `app/`, with route groups for `about`, `projects`, `words`, `sounds`, and `admin`. Shared UI and layout primitives sit in `components/` (for example, `RetroMenu.jsx`, `SiteShell.jsx`, and the `SceneCanvas` helpers). Domain logic, field config, and CMS defaults belong in `lib/`; mirror any schema changes by updating the paired content seeds in `content/`. Static assets, favicons, and media uploads live in `public/`, while global styling is centralized in `app/globals.css`.
+The Next.js app lives under `app/`, with route groups for `about`, `projects`, `content`, `sounds`, and `admin`. Shared UI and layout primitives sit in `components/` (for example, `RetroMenu.jsx`, `SiteShell.jsx`, and the `SceneCanvas` helpers). Domain logic, field config, and CMS defaults belong in `lib/`; mirror any schema changes by updating the paired content seeds in `content/`. Static assets, favicons, and media uploads live in `public/`, while global styling is centralized in `app/globals.css`.
 
 ## Build, Test, and Development Commands
 - `pnpm install` — install dependencies and sync the lockfile.

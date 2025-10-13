@@ -51,7 +51,7 @@ Reuse the existing `@vercel/blob` integration; the goal is to stop writing to th
 ## 3. Respect Publishing Status (P0)
 
 1. Filter `readEntries` to return only `status === 'published'` unless the caller explicitly opts into drafts (admin views).
-2. In detail routes (`projects/[slug]`, `words/[slug]`, `sounds/[slug]`) return `404` for unpublished entries.
+2. In detail routes (`projects/[slug]`, `content/[slug]`, `sounds/[slug]`) return `404` for unpublished entries.
 3. Update sitemap/feeds to skip drafts.
 
 ---
