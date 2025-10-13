@@ -230,18 +230,6 @@ export default function EntryDetail({ type, entry, isAdmin = false }) {
             </div>
             {summary ? <p className="detail-view__summary">{summary}</p> : null}
           </div>
-          {tags?.length ? (
-            <div className="detail-view__meta" aria-label="Entry metadata">
-              <div className="detail-view__meta-item">
-                <span className="detail-view__meta-label">Tags</span>
-                <ul className="detail-view__meta-tags">
-                  {tags.map((tag) => (
-                    <li key={tag}>{tag}</li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          ) : null}
         </header>
 
         {coverImage?.url && !audioData ? (
