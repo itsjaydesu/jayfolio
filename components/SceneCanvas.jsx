@@ -284,6 +284,148 @@ const SceneCanvas = forwardRef(function SceneCanvas(
       const easeOutQuint = (t) => 1 - Math.pow(1 - t, 5);
       const easeInOutQuart = (t) => t < 0.5 ? 8 * t * t * t * t : 1 - Math.pow(-2 * t + 2, 4) / 2;
       
+      // Create a 4x slower version of the ripple effect for right-clicks
+      const enqueueRippleSlowMotion = (x, z, strength = 1) => {
+        // Create more shimmer waves for luxurious effect - optimized for 32s lifetime (4x slower)
+        for (let i = 0; i < 5; i++) {
+          createShimmerWave(x, z, i * 0.8);  // Slower timing for 32s window
+        }
+        
+        // Ultra-ultra-slow, beautiful multi-layer ripple system - 4x slower than normal click
+        
+        // 1. Initial glow - soft, expanding luminescence
+        const glowRipple = { 
+          x, 
+          z, 
+          start: elapsedTime, 
+          strength: strength * 1.6,
+          type: 'glow_initial',
+          speedMultiplier: 0.01,  // 4x slower than 0.04
+          widthMultiplier: 4.0,
+          color: 1.8,
+          decayMultiplier: 0.02,  // 4x slower decay
+          easing: 'easeInOutSine',
+          frequency: 0.02,  // 4x slower frequency
+          isSlowMotion: true,  // Mark as slow-motion for special handling
+          maxAge: 32  // 4x longer lifetime
+        };
+        ripples.push(glowRipple);
+        
+        // 2. Primary wave - the main beautiful ripple
+        ripples.push({ 
+          x, 
+          z, 
+          start: elapsedTime + 0.4,  // 4x slower succession
+          strength: strength * 1.3,
+          type: 'primary',
+          speedMultiplier: 0.00875,  // 4x slower than 0.035
+          widthMultiplier: 3.5,
+          color: 1.5,
+          decayMultiplier: 0.025,  // 4x slower decay
+          easing: 'easeOutQuint',
+          frequency: 0.025,  // 4x slower frequency
+          isSlowMotion: true,
+          maxAge: 32
+        });
+        
+        // 3. Harmonic resonance - creates beautiful interference
+        ripples.push({ 
+          x, 
+          z, 
+          start: elapsedTime + 1.2,  // 4x slower timing
+          strength: strength * 1.0,
+          type: 'harmonic',
+          speedMultiplier: 0.01,  // 4x slower
+          widthMultiplier: 5.0,
+          color: 1.2,
+          frequency: 0.0175,  // 4x slower frequency
+          decayMultiplier: 0.03,  // 4x slower decay
+          easing: 'easeOutQuart',
+          phase: Math.PI * 0.25,
+          isSlowMotion: true,
+          maxAge: 32
+        });
+        
+        // 4. Secondary silk wave - smooth follow-up
+        ripples.push({ 
+          x, 
+          z, 
+          start: elapsedTime + 2.4,  // 4x slower timing
+          strength: strength * 0.8,
+          type: 'secondary',
+          speedMultiplier: 0.0095,  // 4x slower
+          widthMultiplier: 6.0,
+          color: 1.0,
+          decayMultiplier: 0.0375,  // 4x slower decay
+          easing: 'easeInOutQuart',
+          frequency: 0.0225,  // 4x slower frequency
+          isSlowMotion: true,
+          maxAge: 32
+        });
+        
+        // 5. Ambient glow - wide, persistent outer beauty
+        ripples.push({ 
+          x, 
+          z, 
+          start: elapsedTime + 4.0,  // 4x slower timing
+          strength: strength * 0.5,
+          type: 'ambient',
+          speedMultiplier: 0.00625,  // 4x slower
+          widthMultiplier: 8.0,
+          color: 0.7,
+          decayMultiplier: 0.045,  // 4x slower decay
+          easing: 'easeInOutSine',
+          frequency: 0.015,  // 4x slower frequency
+          isSlowMotion: true,
+          maxAge: 32
+        });
+        
+        // 6. Luxury echo waves - fewer, much slower echoes
+        for (let i = 0; i < 3; i++) {
+          const delay = 6.0 + (i * 3.2);  // 4x slower timing
+          const echoStrength = strength * (0.3 - i * 0.08);
+          
+          ripples.push({ 
+            x, 
+            z, 
+            start: elapsedTime + delay, 
+            strength: echoStrength,
+            type: 'echo',
+            speedMultiplier: 0.0075 - (i * 0.00125),  // 4x slower
+            widthMultiplier: 7.0 + (i * 1.5),
+            color: 0.6 - (i * 0.1),
+            decayMultiplier: 0.05,  // 4x slower decay
+            easing: 'easeInOutSine',
+            frequency: 0.0125 - (i * 0.002),  // 4x slower frequencies
+            phase: Math.PI * i * 0.5,
+            isSlowMotion: true,
+            maxAge: 32
+          });
+        }
+        
+        // 7. Final resonance - subtle ending within 32 seconds
+        ripples.push({ 
+          x, 
+          z, 
+          start: elapsedTime + 14.0,  // 4x slower timing
+          strength: strength * 0.25,
+          type: 'deep_resonance',
+          speedMultiplier: 0.00375,  // 4x slower
+          widthMultiplier: 15.0,
+          color: 0.4,
+          decayMultiplier: 0.0625,  // 4x slower decay
+          easing: 'easeInOutSine',
+          frequency: 0.0075,  // 4x slower frequency
+          isSlowMotion: true,
+          maxAge: 32
+        });
+        
+        // Keep ripple count reasonable but allow more for complex effects
+        while (ripples.length > 80) {
+          ripples.shift();
+        }
+      };
+      
       const enqueueRipple = (x, z, strength = 1, isClick = false) => {
         // Create a beautiful multi-layered ripple effect with smooth animations
         if (isClick) {
@@ -1325,6 +1467,67 @@ const SceneCanvas = forwardRef(function SceneCanvas(
         pointer.energy = THREE.MathUtils.lerp(pointer.energy, targetEnergy, 0.3);
       }
 
+      function onContextMenu(event) {
+        // Handle right-click with 4x slower ripple effect
+        event.preventDefault(); // Prevent the context menu from appearing
+
+        // Calculate normalized coordinates
+        const normalizedX = (event.clientX / window.innerWidth) * 2 - 1;
+        const normalizedY = (event.clientY / window.innerHeight) * 2 - 1;
+
+        let rippleX, rippleZ;
+        
+        // Use raycasting for accurate world position calculation with perspective camera
+        if (camera && renderer) {
+          // Create a raycaster to project the click into 3D space
+          const raycaster = new THREE.Raycaster();
+          const mouse = new THREE.Vector2(normalizedX, -normalizedY); // Three.js uses inverted Y
+          
+          // Set up the ray from camera through mouse position
+          raycaster.setFromCamera(mouse, camera);
+          
+          // The particle grid sits at Y = 0 (base plane)
+          const planeY = 0;
+          
+          // Calculate intersection with Y=0 plane
+          const rayDirection = raycaster.ray.direction;
+          const rayOrigin = raycaster.ray.origin;
+          
+          // Solve for t where: rayOrigin.y + t * rayDirection.y = planeY
+          const t = (planeY - rayOrigin.y) / rayDirection.y;
+          
+          // Calculate the actual intersection point
+          if (t > 0) {  // Ensure we're looking forward, not backward
+            rippleX = rayOrigin.x + t * rayDirection.x;
+            rippleZ = rayOrigin.z + t * rayDirection.z;
+          } else {
+            // Fallback to orthographic if ray doesn't intersect properly
+            rippleX = normalizedX * HALF_GRID_X;
+            rippleZ = normalizedY * HALF_GRID_Y;
+          }
+        } else {
+          // Fallback to orthographic calculation if camera not available
+          rippleX = normalizedX * HALF_GRID_X;
+          rippleZ = normalizedY * HALF_GRID_Y;
+        }
+        
+        // Update pointer position immediately for accurate ripple placement
+        pointer.targetX = normalizedX;
+        pointer.targetY = normalizedY;
+        pointer.targetWorldX = rippleX;
+        pointer.targetWorldZ = rippleZ;
+
+        // Create beautiful click ripple with 4x slower speed
+        enqueueRippleSlowMotion(rippleX, rippleZ, 1.0); // Custom function for ultra-slow ripples
+        
+        // Add instant "burst" effect at click point for immediate feedback
+        createClickBurst(rippleX, rippleZ);
+
+        // More noticeable energy boost on click
+        const targetEnergy = Math.min(pointer.energy + 0.4, 1.2);
+        pointer.energy = THREE.MathUtils.lerp(pointer.energy, targetEnergy, 0.7);
+      }
+
       function onPointerDown(event) {
         if (!event.isPrimary) return;
 
@@ -1708,18 +1911,8 @@ const SceneCanvas = forwardRef(function SceneCanvas(
               const ripple = ripples[r];
               const age = elapsedTime - ripple.start;
               
-              // Different max ages for different ripple types - 8 second lifetime
-              let maxAge = 8;
-              switch(ripple.type) {
-                case 'glow_initial': maxAge = 8; break;
-                case 'primary': maxAge = 8; break;
-                case 'harmonic': maxAge = 8; break;
-                case 'secondary': maxAge = 8; break;
-                case 'ambient': maxAge = 8; break;
-                case 'echo': maxAge = 8; break;
-                case 'deep_resonance': maxAge = 8; break;
-                default: maxAge = 8;
-              }
+              // Use custom maxAge if provided, otherwise default to 8 seconds
+              const maxAge = ripple.maxAge || 8;
               
               if (age > maxAge) {
                 ripples.splice(r, 1);
@@ -1728,7 +1921,19 @@ const SceneCanvas = forwardRef(function SceneCanvas(
               
               const dist = Math.sqrt((px - ripple.x) * (px - ripple.x) + (pz - ripple.z) * (pz - ripple.z)) + 0.0001;
               const speedMult = ripple.speedMultiplier || 1.0;
-              const wavefront = age * settings.rippleSpeed * speedMult;
+              
+              // For slow-motion ripples, use a completely different speed calculation
+              // to achieve true 4x slower motion
+              let wavefront;
+              if (ripple.isSlowMotion) {
+                // For slow-motion, divide the normal speed by 4
+                // This gives us exactly 4x slower expansion
+                const slowSpeed = settings.rippleSpeed / 4.0;
+                wavefront = age * slowSpeed;  // Don't use speedMult for slow-motion
+              } else {
+                // Normal ripples use the settings speed
+                wavefront = age * settings.rippleSpeed * speedMult;
+              }
               
               // Advanced easing functions
               const ageNormalized = THREE.MathUtils.clamp(age / maxAge, 0, 1);
@@ -2059,6 +2264,7 @@ const SceneCanvas = forwardRef(function SceneCanvas(
         container.addEventListener('pointermove', onPointerMove);
         container.addEventListener('pointerdown', onPointerDown);
         container.addEventListener('pointerleave', onPointerLeave);
+        container.addEventListener('contextmenu', onContextMenu);
 
         window.addEventListener('resize', onWindowResize);
       }
@@ -2129,6 +2335,7 @@ const SceneCanvas = forwardRef(function SceneCanvas(
         container.removeEventListener('pointermove', onPointerMove);
         container.removeEventListener('pointerdown', onPointerDown);
         container.removeEventListener('pointerleave', onPointerLeave);
+        container.removeEventListener('contextmenu', onContextMenu);
         detachViewportListener();
         destroyGui();
 
