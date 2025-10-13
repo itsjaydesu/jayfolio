@@ -4973,6 +4973,7 @@ a {
 .project-entry__surface:has(.project-entry__overlay:hover) {
   transform: translateY(-6px);
   box-shadow: 0 45px 70px rgba(0, 0, 0, 0.62), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  cursor: pointer; /* Show pointer on entire surface hover */
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -5000,8 +5001,8 @@ a {
   font-size: clamp(1rem, 2.5vw, 1.4rem);
 }
 .project-entry__surface--compact .project-entry__summary {
-  font-size: 0.8rem;
-  line-height: 1.4;
+  font-size: 0.925rem; /* Increased from 0.8rem for better readability */
+  line-height: 1.5; /* Slightly increased for better spacing */
 }
 .project-entry__surface--compact .project-entry__figure {
   max-height: 120px;
@@ -5034,6 +5035,7 @@ a {
   display: block;
   z-index: 1;
   text-decoration: none;
+  cursor: pointer; /* Ensure pointer cursor on entire card */
 }
 
 .project-entry__overlay:focus-visible {
@@ -5094,9 +5096,18 @@ a {
   color: rgba(238, 246, 250, 0.92);
 }
 
+/* Prevent wrapping on larger screens where space is available */
+@media (min-width: 768px) {
+  .project-entry__title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* Show ellipsis only if absolutely necessary */
+  }
+}
+
 .project-entry__summary {
   margin: 0;
-  font-size: 0.875rem;
+  font-size: 1rem; /* Increased from 0.875rem for better readability */
   line-height: 1.6;
   color: rgba(214, 228, 234, 0.86);
 }

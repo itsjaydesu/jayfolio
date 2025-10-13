@@ -256,7 +256,7 @@ export default function RetroMenu({
     >
       <div className="retro-menu__titlebar">
         <span>
-          <span className="indicator" aria-hidden="true" /> Jay Winder
+          <span className="indicator" aria-hidden="true" /> jayfolio
         </span>
         <div className="retro-menu__title-actions">
           <div className="retro-menu__settings-wrapper">
