@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState, Suspense } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, Suspense } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { useAdminFetch } from '@/components/admin-session-context';
@@ -205,6 +205,9 @@ export default function AdminPage() {
   const [statusMessage, setStatusMessage] = useState('');
   const [isEntryPanelCollapsed, setIsEntryPanelCollapsed] = useState(false);
   const [isEditorFullscreen, setIsEditorFullscreen] = useState(false);
+  const prevSlugParamRef = useRef(slugParam);
+  const pendingSlugRef = useRef(slugParam);
+  const skipSlugSyncRef = useRef(false);
 
   const updateUrlState = useCallback(
     (nextType, nextSlug) => {
@@ -261,6 +264,8 @@ export default function AdminPage() {
 
   const handleSelect = useCallback((entry) => {
     const fallbackTitle = getLocalizedContent(entry.title, 'en') || entry.title || '';
+    pendingSlugRef.current = entry.slug;
+    skipSlugSyncRef.current = false;
     setSelectedSlug(entry.slug);
     setForm({
       title: ensureLocalizedField(entry.title, fallbackTitle),
@@ -278,6 +283,8 @@ export default function AdminPage() {
   }, [activeType, updateUrlState]);
 
   const handleNew = useCallback(() => {
+    pendingSlugRef.current = null;
+    skipSlugSyncRef.current = true;
     setSelectedSlug(null);
     setForm(buildInitialForm());
     setStatusMessage('');
@@ -286,9 +293,29 @@ export default function AdminPage() {
   }, [activeType, updateUrlState]);
 
   useEffect(() => {
+    const previousSlug = prevSlugParamRef.current;
+    prevSlugParamRef.current = slugParam;
+    const pendingSlug = pendingSlugRef.current;
+
+    if (pendingSlug !== slugParam) {
+      if (pendingSlug !== previousSlug) {
+        return;
+      }
+    }
+
+    if (skipSlugSyncRef.current && slugParam === previousSlug) {
+      pendingSlugRef.current = slugParam;
+      skipSlugSyncRef.current = false;
+      return;
+    }
+
+    skipSlugSyncRef.current = false;
+    pendingSlugRef.current = slugParam;
+
     if (!entries.length) {
       return;
     }
+
     if (slugParam) {
       if (selectedSlug === slugParam) {
         return;
@@ -299,7 +326,8 @@ export default function AdminPage() {
       }
       return;
     }
-    if (selectedSlug) {
+
+    if (previousSlug) {
       handleNew();
     }
   }, [entries, slugParam, selectedSlug, handleSelect, handleNew]);
@@ -447,7 +475,10 @@ export default function AdminPage() {
   const contentValue = form.content?.[activeLanguage] ?? INITIAL_CONTENT;
 
   return (
-    <div className="admin-console">
+    <div
+      className={`admin-console${isEntryPanelCollapsed ? ' admin-console--panel-collapsed' : ''}`}
+      data-panel-collapsed={isEntryPanelCollapsed ? 'true' : 'false'}
+    >
       <aside
         className={`admin-console__drawer${isEntryPanelCollapsed ? ' admin-console__drawer--collapsed' : ''}`}
         aria-label="Entries"
@@ -459,6 +490,7 @@ export default function AdminPage() {
             className="admin-console__collapse"
             onClick={toggleEntryPanel}
             aria-label={isEntryPanelCollapsed ? 'Expand entry panel' : 'Collapse entry panel'}
+            aria-expanded={!isEntryPanelCollapsed}
           >
             <span aria-hidden="true" className="admin-console__collapse-icon">
               {isEntryPanelCollapsed ? <ChevronDoubleDownIcon /> : <ChevronDoubleUpIcon />}
@@ -491,7 +523,18 @@ export default function AdminPage() {
         </div>
       </aside>
 
-      <div className="admin-console__canvas">
+      <div className="admin-console__canvas" data-panel-collapsed={isEntryPanelCollapsed ? 'true' : 'false'}>
+        <div className="admin-console__inline-toggle">
+          <button
+            type="button"
+            className="admin-console__inline-toggle-btn"
+            onClick={toggleEntryPanel}
+            aria-label={isEntryPanelCollapsed ? 'Show entry list' : 'Hide entry list'}
+            aria-expanded={!isEntryPanelCollapsed}
+          >
+            {isEntryPanelCollapsed ? 'Open Entry List' : 'Hide Entry List'}
+          </button>
+        </div>
         <header className="editor-toolbar">
           <div className="editor-toolbar__types" aria-label="Content types">
             {TYPE_OPTIONS.map((option) => (

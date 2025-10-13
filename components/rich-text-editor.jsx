@@ -231,7 +231,8 @@ export default function RichTextEditor({
       StarterKit.configure({
         heading: { levels: [2, 3, 4] },
         bulletList: { keepMarks: true, keepAttributes: true },
-        orderedList: { keepMarks: true, keepAttributes: true }
+        orderedList: { keepMarks: true, keepAttributes: true },
+        link: false
       }),
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
       Table.configure({

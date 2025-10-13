@@ -1512,6 +1512,54 @@ a {
   }
 }
 
+@media (max-width: 720px) {
+  .detail-stage {
+    padding: clamp(1.25rem, 6vw, 1.75rem) clamp(1rem, 6vw, 1.5rem);
+    align-items: stretch;
+  }
+
+  .detail-view {
+    gap: clamp(1.1rem, 4vw, 1.6rem);
+  }
+
+  .detail-view__nav {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .detail-view__stamps {
+    width: 100%;
+    justify-content: flex-start;
+    gap: 0.75rem;
+  }
+
+  .detail-view__title-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.6rem;
+  }
+
+  .detail-view__title {
+    font-size: clamp(2rem, 7.25vw, 2.6rem);
+  }
+
+  .detail-view__summary {
+    font-size: 1.05rem;
+    line-height: 1.65;
+  }
+
+  .detail-view__media {
+    height: clamp(220px, 68vw, 340px);
+    border-radius: 24px;
+  }
+
+  .detail-view__content p {
+    font-size: 1.05rem;
+    line-height: 1.7;
+  }
+}
+
 .admin-stage {
   position: relative;
   min-height: 100vh;
@@ -1631,7 +1679,7 @@ a {
 .detail-view__title-row {
   display: flex;
   align-items: flex-start;
-  gap: 1rem;
+  gap: clamp(0.75rem, 2vw, 1rem);
   flex-wrap: wrap;
 }
 
@@ -1641,10 +1689,16 @@ a {
   line-height: 1.12;
   letter-spacing: -0.01em;
   text-transform: none;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 /* Prevent unnecessary title wrapping on larger screens */
 @media (min-width: 768px) {
+  .detail-view__title-row {
+    flex-wrap: nowrap;
+  }
+
   .detail-view__title {
     white-space: normal; /* Allow natural breaks but optimize space usage */
     word-break: normal;
@@ -1768,6 +1822,11 @@ a {
   min-height: calc(100vh - 7rem);
   background: radial-gradient(circle at top left, rgba(24, 54, 72, 0.18), transparent 55%),
     radial-gradient(circle at bottom right, rgba(12, 26, 34, 0.28), transparent 50%);
+  transition: grid-template-columns 0.28s cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.admin-console--panel-collapsed {
+  grid-template-columns: 0 1fr;
 }
 
 .admin-console__drawer {
@@ -1784,10 +1843,52 @@ a {
 .admin-console__drawer--collapsed {
   max-height: 4.5rem;
   overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  padding: 0;
+  border: 0;
 }
 
 .admin-console__drawer--collapsed .admin-console__list {
   display: none;
+}
+
+.admin-console__inline-toggle {
+  display: none;
+}
+
+.admin-console__inline-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1.4rem;
+  border-radius: 999px;
+  border: 1px solid rgba(138, 248, 255, 0.28);
+  background: rgba(4, 24, 32, 0.52);
+  color: rgba(220, 244, 248, 0.92);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-size: 0.68rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.admin-console__inline-toggle-btn:hover,
+.admin-console__inline-toggle-btn:focus-visible {
+  outline: none;
+  transform: translateY(-2px);
+  border-color: rgba(138, 248, 255, 0.52);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.32);
+}
+
+.admin-console__inline-toggle-btn:active {
+  transform: translateY(0);
+}
+
+.admin-console--panel-collapsed .admin-console__inline-toggle {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 1rem;
 }
 
 .admin-console__drawer-top {
@@ -5418,6 +5519,12 @@ a {
   gap: clamp(2rem, 5vw, 3.5rem);
 }
 
+@media (max-width: 720px) {
+  .channel__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 .is-return-focus {
   position: relative;
   animation: return-focus-breathe 1.8s cubic-bezier(0.22, 1, 0.32, 1);
@@ -5695,6 +5802,38 @@ a {
 .project-entry__surface--compact .project-entry__figure--sounds,
 .project-entry__surface--compact .project-entry__figure--art {
   aspect-ratio: 16 / 9;
+}
+
+@media (max-width: 720px) {
+  .project-entry__surface {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .project-entry__surface:not(.project-entry__surface--compact) {
+    padding: clamp(1.1rem, 4.5vw, 1.6rem);
+  }
+
+  .project-entry__surface--compact {
+    padding: clamp(0.75rem, 4vw, 1rem) clamp(0.9rem, 5vw, 1.2rem);
+  }
+
+  .project-entry__figure {
+    order: -1;
+    aspect-ratio: 16 / 10;
+    margin-bottom: clamp(0.6rem, 3vw, 0.9rem);
+  }
+
+  .project-entry__figure--about {
+    max-width: none;
+  }
+
+  .project-entry__title {
+    white-space: normal;
+  }
+
+  .project-entry__summary {
+    font-size: 0.97rem;
+  }
 }
 
 @media (min-width: 900px) {
