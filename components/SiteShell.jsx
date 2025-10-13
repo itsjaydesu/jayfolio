@@ -30,16 +30,27 @@ function getLocalizedMenuItems(lang = 'en') {
   }));
 }
 
-// Helper function to get localized status
-function getLocalizedStatus(lang = 'en') {
+// Helper function to get localized waiting status data
+function getWaitingStatus(lang = 'en') {
   return {
     title: t('status.waiting', lang),
-    description: t('status.waiting-desc', lang),
-    mode: "waiting for your selection",
+    description: t('status.waiting-desc', lang)
   };
 }
 
-const DEFAULT_STATUS = getLocalizedStatus();
+function createStatusPayload(statusData, language = 'en', modeKey = 'waiting') {
+  const safeStatus = statusData || {};
+  const title = safeStatus.title ?? '';
+  const description = safeStatus.description ?? '';
+  const resolvedMode = modeKey ?? 'waiting';
+
+  return {
+    title,
+    description,
+    modeKey: resolvedMode,
+    mode: t(`status.mode.${resolvedMode}`, language)
+  };
+}
 
 export default function SiteShell({ children, isAdmin = false }) {
   const pathname = usePathname();
@@ -125,7 +136,17 @@ export default function SiteShell({ children, isAdmin = false }) {
       }
     }
   }
-  const [status, setStatus] = useState(getLocalizedStatus(language));
+  const createStatus = useCallback(
+    (statusData, modeKey = 'waiting') => createStatusPayload(statusData, language, modeKey),
+    [language]
+  );
+
+  const waitingStatus = useMemo(
+    () => createStatus(getWaitingStatus(language), 'waiting'),
+    [createStatus, language]
+  );
+
+  const [status, setStatus] = useState(waitingStatus);
   // navReady is always true to avoid hydration mismatches
   // Animation will still work via CSS transitions
   const navReady = true;
@@ -141,11 +162,12 @@ export default function SiteShell({ children, isAdmin = false }) {
   const activeSection = activeItem?.id ?? null;
   const isDetailView = pathSegments.length > 1 && Boolean(activeItem);
 
-  const activeStatus = useMemo(
-    () =>
-      activeItem ? { ...activeItem.status, mode: "active" } : DEFAULT_STATUS,
-    [activeItem]
-  );
+  const activeStatus = useMemo(() => {
+    if (activeItem) {
+      return createStatus(activeItem.status, 'active');
+    }
+    return waitingStatus;
+  }, [activeItem, createStatus, waitingStatus]);
   
   // Update status when active item changes or language changes
   useEffect(() => {
@@ -610,10 +632,11 @@ export default function SiteShell({ children, isAdmin = false }) {
     scene.setControlsVisible(showAdminControls);
   }, [showAdminControls]);
 
-  const handleStatusChange = (next) => {
+  const handleStatusChange = useCallback((next) => {
     if (!next) return;
-    setStatus(next);
-  };
+    const modeKey = next.modeKey ?? 'preview';
+    setStatus(createStatus(next, modeKey));
+  }, [createStatus]);
 
   const handleMenuReset = () => {
     setStatus(activeStatus);
@@ -621,7 +644,7 @@ export default function SiteShell({ children, isAdmin = false }) {
 
   const handlePreview = (item, isActive) => {
     if (!item) return;
-    setStatus({ ...item.status, mode: isActive ? "active" : "preview" });
+    setStatus(createStatus(item.status, isActive ? 'active' : 'preview'));
   };
 
   const handleReset = () => {
@@ -654,14 +677,14 @@ export default function SiteShell({ children, isAdmin = false }) {
       };
       
       const effectNames = {
-        spiralFlow: 'Spiral',
-        riverFlow: 'Quake',
-        mandelbrotZoom: 'Hop',
-        reactionDiffusionBloom: 'Bloom',
-        harmonicPendulum: 'Blink',
-        starfield: 'Stars',
-        zenMode: 'Zen',
-        jitter: 'Jitter',
+        spiralFlow: t('effects.spiralFlow', language),
+        riverFlow: t('effects.riverFlow', language),
+        mandelbrotZoom: t('effects.mandelbrotZoom', language),
+        reactionDiffusionBloom: t('effects.reactionDiffusionBloom', language),
+        harmonicPendulum: t('effects.harmonicPendulum', language),
+        starfield: t('effects.starfield', language),
+        zenMode: t('effects.calmReset', language),
+        jitter: t('effects.jitter', language),
       };
       
       setActiveEffectInfo({
@@ -673,7 +696,7 @@ export default function SiteShell({ children, isAdmin = false }) {
     } else {
       setActiveEffectInfo(null);
     }
-  }, []);
+  }, [language]);
 
   const handleFieldEffect = (effectType) => {
     if (!sceneRef.current) return;
@@ -704,7 +727,7 @@ export default function SiteShell({ children, isAdmin = false }) {
         // Swirl pulse is a temporary active effect
         setHasActiveEffect(true);
         setActiveEffectInfo({
-          name: 'Swirl',
+          name: t('effects.swirlPulse', language),
           type: 'swirlPulse',
           startTime: Date.now(),
           duration: 15  // Standardized duration
@@ -728,7 +751,7 @@ export default function SiteShell({ children, isAdmin = false }) {
           if (sceneRef.current.triggerEffect('zenMode')) {
             setHasActiveEffect(true);
             setActiveEffectInfo({
-              name: 'Zen',
+              name: t('effects.calmReset', language),
               type: 'zenMode',
               startTime: Date.now(),
               duration: null  // Zen mode has no duration
@@ -943,7 +966,7 @@ export default function SiteShell({ children, isAdmin = false }) {
             </header>
           ) : null}
           <p className="sr-only" aria-live="polite">
-            {status.title}: {status.description}
+            {status.title}: {status.description} ({status.mode})
           </p>
           <main
             key={pathname}

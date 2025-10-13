@@ -4,7 +4,7 @@ import { formatDisplayDate } from '../lib/formatters';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useLanguage } from '../contexts/LanguageContext';
-import { getCategoryName } from '../lib/translations';
+import { getCategoryName, getLocalizedContent, t } from '../lib/translations';
 
 /**
  * PostCard - A consistent, reusable card component for all content types
@@ -32,6 +32,11 @@ export default function PostCard({
 
   const href = `/${type}/${entry.slug}`;
   const editHref = `/administratorrrr?type=${type}&slug=${encodeURIComponent(entry.slug)}`;
+
+  const localizedTitle = getLocalizedContent(entry.title, language) || entry.title;
+  const localizedSummary = getLocalizedContent(entry.summary, language) || entry.summary;
+  const formattedDate = entry.createdAt ? formatDisplayDate(entry.createdAt, language) : '';
+  const displayDate = language === 'en' ? formattedDate.toUpperCase() : formattedDate;
   
   // Determine figure aspect ratio based on type
   const getFigureClass = () => {
@@ -75,7 +80,7 @@ export default function PostCard({
           <div className="project-entry__header">
             {entry.createdAt && (
               <time className="project-entry__date" dateTime={entry.createdAt}>
-                {formatDisplayDate(entry.createdAt).toUpperCase()}
+                {displayDate}
               </time>
             )}
             {category && (
@@ -88,22 +93,22 @@ export default function PostCard({
           {/* Main Content Body */}
           <div className="project-entry__body">
             <div className="project-entry__title-row">
-              <h2 className="project-entry__title">{entry.title}</h2>
+              <h2 className="project-entry__title">{localizedTitle}</h2>
               {isAdmin && (
                 <Link
                   href={editHref}
                   className="project-entry__edit-btn"
-                  aria-label={`Edit ${entry.title}`}
+                  aria-label={`${t('admin.edit', language)} ${localizedTitle}`}
                   // Prevent edit button click from triggering card navigation
                   onClick={(e) => e.stopPropagation()}
                 >
-                  Edit
+                  {t('admin.edit', language)}
                 </Link>
               )}
             </div>
             
-            {entry.summary && (
-              <p className="project-entry__summary">{entry.summary}</p>
+            {localizedSummary && (
+              <p className="project-entry__summary">{localizedSummary}</p>
             )}
           </div>
         </div>
@@ -134,7 +139,7 @@ export default function PostCard({
         <Link
           href={href}
           className="project-entry__overlay"
-          aria-label={`View ${entry.title}`}
+          aria-label={t('post.view', language, { title: localizedTitle })}
           onClick={handleCardClick}
         />
       </div>

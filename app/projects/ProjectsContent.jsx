@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import PostCard from '../../components/PostCard';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { t } from '../../lib/translations';
+import { t, getLocalizedContent } from '../../lib/translations';
 
 const PROJECT_TONES = {
   'signal-grid': 'cyan',
@@ -19,17 +19,18 @@ export default function ProjectsContent({ entries, hero, isAdmin = false }) {
   const containerRef = useRef(null);
   const { language } = useLanguage();
   
-  // Define categories with translation keys
-  const CATEGORIES = [
-    { id: 'All', key: 'projects.all' },
-    { id: 'Useful Tools', key: 'projects.useful-tools' },
-    { id: 'Fun', key: 'projects.fun' },
-    { id: 'Events', key: 'projects.events' },
-    { id: 'Startups', key: 'projects.startups' }
-  ];
+  const CATEGORIES = useMemo(() => (
+    [
+      { id: 'all', key: 'projects.all' },
+      { id: 'useful-tools', key: 'projects.useful-tools' },
+      { id: 'fun', key: 'projects.fun' },
+      { id: 'events', key: 'projects.events' },
+      { id: 'startups', key: 'projects.startups' }
+    ]
+  ), []);
   
   // Get initial category from URL or default to 'All'
-  const initialCategory = searchParams.get('category') || 'All';
+  const initialCategory = (searchParams.get('category') || 'all').toLowerCase();
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   
   // Restore scroll position when coming back
@@ -39,6 +40,15 @@ export default function ProjectsContent({ entries, hero, isAdmin = false }) {
       window.scrollTo(0, parseInt(scrollPos, 10));
       sessionStorage.removeItem('projectsScrollPosition');
     }
+    const storedCategory = sessionStorage.getItem('projectsSelectedCategory');
+    if (storedCategory && storedCategory !== selectedCategory) {
+      const normalized = storedCategory.toLowerCase();
+      if (CATEGORIES.some((item) => item.id === normalized)) {
+        setSelectedCategory(normalized);
+      }
+    }
+    sessionStorage.removeItem('projectsSelectedCategory');
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   
   // Update URL when category changes
@@ -51,7 +61,7 @@ export default function ProjectsContent({ entries, hero, isAdmin = false }) {
     }
     setSelectedCategory(category);
     const params = new URLSearchParams(searchParams);
-    if (category === 'All') {
+    if (category === 'all') {
       params.delete('category');
     } else {
       params.set('category', category);
@@ -69,11 +79,13 @@ export default function ProjectsContent({ entries, hero, isAdmin = false }) {
   // Auto-categorize entries based on tags, title, or content
   const categorizedEntries = useMemo(() => {
     return entries.map(entry => {
-      let category = 'Useful Tools'; // Default
-      
-      const lowerTitle = entry.title?.toLowerCase() || '';
+      let category = 'useful-tools'; // Default
+
+      const titleEn = getLocalizedContent(entry.title, 'en') || '';
+      const contentEn = getLocalizedContent(entry.content, 'en') || '';
+      const lowerTitle = titleEn.toLowerCase();
       const lowerTags = entry.tags?.map(t => t.toLowerCase()) || [];
-      const lowerContent = entry.content?.toLowerCase() || '';
+      const lowerContent = contentEn.toLowerCase();
       
       // Check for Startups
       if (lowerTags.includes('saas') || 
@@ -82,7 +94,7 @@ export default function ProjectsContent({ entries, hero, isAdmin = false }) {
           lowerContent.includes('bootstrapped') ||
           lowerContent.includes('company') ||
           lowerContent.includes('platform')) {
-        category = 'Startups';
+        category = 'startups';
       }
       // Check for Fun projects
       else if (lowerTags.includes('game') || 
@@ -92,14 +104,14 @@ export default function ProjectsContent({ entries, hero, isAdmin = false }) {
                lowerTitle.includes('simulator') ||
                lowerContent.includes('game') ||
                lowerContent.includes('play')) {
-        category = 'Fun';
+        category = 'fun';
       }
       // Check for Events
       else if (lowerTags.includes('event') || 
                lowerTags.includes('conference') ||
                lowerContent.includes('event') ||
                lowerContent.includes('conference')) {
-        category = 'Events';
+        category = 'events';
       }
       // Check for Useful Tools
       else if (lowerTags.includes('tool') || 
@@ -108,7 +120,7 @@ export default function ProjectsContent({ entries, hero, isAdmin = false }) {
                lowerTitle.includes('generator') ||
                lowerTitle.includes('builder') ||
                lowerContent.includes('tool')) {
-        category = 'Useful Tools';
+        category = 'useful-tools';
       }
       
       return {
@@ -119,7 +131,7 @@ export default function ProjectsContent({ entries, hero, isAdmin = false }) {
   }, [entries]);
 
   const filteredEntries = useMemo(() => {
-    if (selectedCategory === 'All') return categorizedEntries;
+    if (selectedCategory === 'all') return categorizedEntries;
     return categorizedEntries.filter(entry => entry.category === selectedCategory);
   }, [categorizedEntries, selectedCategory]);
 
@@ -137,8 +149,8 @@ export default function ProjectsContent({ entries, hero, isAdmin = false }) {
   return (
     <section className="channel channel--projects" ref={containerRef}>
       <header className="channel__intro">
-        <h1 className="channel__title">{hero.title}</h1>
-        <p className="channel__lead">{hero.lead}</p>
+        <h1 className="channel__title">{getLocalizedContent(hero.title, language) || t('projects.title', language)}</h1>
+        <p className="channel__lead">{getLocalizedContent(hero.lead, language)}</p>
         
         <div className="channel__categories">
           {CATEGORIES.map(category => (
@@ -149,7 +161,7 @@ export default function ProjectsContent({ entries, hero, isAdmin = false }) {
               aria-pressed={selectedCategory === category.id}
             >
               {t(category.key, language)}
-              {category.id !== 'All' && (
+              {category.id !== 'all' && (
                 <span className="channel__category-count">
                   {categorizedEntries.filter(e => e.category === category.id).length}
                 </span>
@@ -160,7 +172,11 @@ export default function ProjectsContent({ entries, hero, isAdmin = false }) {
       </header>
 
       {filteredEntries.length === 0 ? (
-        <p className="channel__empty">{t('projects.empty', language, { category: selectedCategory.toLowerCase() })}</p>
+        <p className="channel__empty">
+          {t('projects.empty', language, {
+            category: t(CATEGORIES.find((item) => item.id === selectedCategory)?.key || 'projects.all', language)
+          })}
+        </p>
       ) : (
         <div className="channel__grid" key={selectedCategory} data-category={selectedCategory}>
           {filteredEntries.map((entry) => {

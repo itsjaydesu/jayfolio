@@ -5,31 +5,46 @@
       "id": "about",
       "label": "About",
       "route": "/about",
-      "description": "How about that?"
+      "description": {
+        "en": "Jay Winder curates lucid audiovisual experiments, shaping hypnotic interfaces that oscillate between nostalgia and the hyperreal.",
+        "ja": "Jay Winderは、ノスタルジーとハイパーリアリズムの狭間で揺らぐ没入型インターフェースを編み上げる視覚と音の実験をキュレーションしています。"
+      }
     },
     {
       "id": "projects",
       "label": "Projects",
       "route": "/projects",
-      "description": "Stuff I ① made ② am making ③ did"
+      "description": {
+        "en": "Browse kinetic WebGL fields, performance-driven installations, and tactile tools built with collaborators.",
+        "ja": "動的なWebGLフィールド、パフォーマンス連動のインスタレーション、コラボレーターと磨き上げた触覚ツールを紹介します。"
+      }
     },
     {
       "id": "content",
       "label": "Content",
       "route": "/content",
-      "description": "Videos, essays, blogs and comedy."
+      "description": {
+        "en": "Essays, blog posts, and comedy riffs unpacking technology, culture, and modern absurdism.",
+        "ja": "テクノロジー、文化、そして現代の滑稽さを解きほぐすエッセイやブログ、コメディを収録しています。"
+      }
     },
     {
       "id": "sounds",
       "label": "Sounds",
       "route": "/sounds",
-      "description": "\"Art is how we decorate space; \nmusic is how we decorate time\""
+      "description": {
+        "en": "Ambient loops, chromatic drones, and responsive sketches tuned for late-night wanderers.",
+        "ja": "深夜の旅人に寄り添うアンビエントループとドローン、応答型のサウンドスケッチをアーカイブ。"
+      }
     },
     {
       "id": "art",
       "label": "Art",
       "route": "/art",
-      "description": "Shader studies and dot field experiments that bend the grid into galleries."
+      "description": {
+        "en": "Shader-driven studies and dot field installations that bend the grid into gallery-scale motion.",
+        "ja": "シェーダーを駆使したスタディとドットフィールドのインスタレーションで、グリッドをギャラリー規模の動きへ変換します。"
+      }
     }
   ]
 }

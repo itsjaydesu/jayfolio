@@ -31,15 +31,17 @@ export default function ContentContent({ entries, hero, isAdmin = false }) {
   // Auto-categorize entries based on tags or content
   const categorizedEntries = useMemo(() => {
     return entries.map(entry => {
-      let category = 'Blog'; // Default
+      let category = 'blog';
       
       const lowerTags = entry.tags?.map(t => t.toLowerCase()) || [];
-      const lowerTitle = entry.title?.toLowerCase() || '';
-      const lowerContent = entry.content?.toLowerCase() || '';
+      const titleEn = getLocalizedContent(entry.title, 'en') || '';
+      const contentEn = getLocalizedContent(entry.content, 'en') || '';
+      const lowerTitle = titleEn.toLowerCase();
+      const lowerContent = contentEn.toLowerCase();
       
       // Check for essay
       if (lowerTags.includes('essay') || 
-          entry.content?.length > 1500 ||
+          contentEn.length > 1500 ||
           lowerTitle.includes('essay') ||
           lowerTitle.includes('elites')) {
         category = 'essays';
@@ -101,8 +103,8 @@ export default function ContentContent({ entries, hero, isAdmin = false }) {
         <p className="channel__empty">
           {t('content.empty', language, { 
             category: selectedCategory === 'all' 
-              ? t('content.all', language).toLowerCase()
-              : getCategoryName(selectedCategory, language).toLowerCase()
+              ? t('content.all', language)
+              : getCategoryName(selectedCategory, language)
           })}
         </p>
       ) : (

@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { useLanguage } from "../contexts/LanguageContext";
+import { t } from "../lib/translations";
 
 export default function RetroMenu({
   id,
@@ -35,6 +36,51 @@ export default function RetroMenu({
 
   // Language context
   const { language, changeLanguage } = useLanguage();
+
+  const fieldEffectsLabel = useMemo(
+    () => t('menu.field-effects', language),
+    [language]
+  );
+
+  const effectLabels = useMemo(
+    () => ({
+      calmReset: t('effects.calmReset', language),
+      jitter: t('effects.jitter', language),
+      swirlPulse: t('effects.swirlPulse', language),
+      spiralFlow: t('effects.spiralFlow', language),
+      riverFlow: t('effects.riverFlow', language),
+      mandelbrotZoom: t('effects.mandelbrotZoom', language),
+      reactionDiffusionBloom: t('effects.reactionDiffusionBloom', language),
+      harmonicPendulum: t('effects.harmonicPendulum', language),
+      starfield: t('effects.starfield', language),
+      zenMode: t('effects.calmReset', language),
+    }),
+    [language]
+  );
+
+  const effectTooltips = useMemo(
+    () => ({
+      calmReset: t('effects.calmReset.tooltip', language),
+      jitter: t('effects.jitter.tooltip', language),
+      swirlPulse: t('effects.swirlPulse.tooltip', language),
+      spiralFlow: t('effects.spiralFlow.tooltip', language),
+      riverFlow: t('effects.riverFlow.tooltip', language),
+      mandelbrotZoom: t('effects.mandelbrotZoom.tooltip', language),
+      reactionDiffusionBloom: t('effects.reactionDiffusionBloom.tooltip', language),
+      harmonicPendulum: t('effects.harmonicPendulum.tooltip', language),
+      starfield: t('effects.starfield.tooltip', language),
+      zenMode: t('effects.calmReset.tooltip', language),
+    }),
+    [language]
+  );
+
+  const languageToggleTooltip = language === 'en'
+    ? t('language.toggle.tooltip.en', language)
+    : t('language.toggle.tooltip.ja', language);
+
+  const languageToggleAria = language === 'en'
+    ? t('language.toggle.aria.en', language)
+    : t('language.toggle.aria.ja', language);
 
   // Check for reduced motion preference
   const prefersReducedMotion = useRef(
@@ -281,8 +327,8 @@ export default function RetroMenu({
                 onRipple(x, z, strength);
               }
             }}
-            aria-label={language === 'en' ? 'Switch to Japanese' : 'Switch to English'}
-            title={`Language: ${language.toUpperCase()}`}
+            aria-label={languageToggleAria}
+            title={languageToggleTooltip}
           >
             <svg
               viewBox="0 0 20 20"
@@ -334,8 +380,8 @@ export default function RetroMenu({
               }}
               onMouseLeave={() => setTooltipVisible(false)}
               aria-expanded={panelState === "opening" || panelState === "open"}
-              aria-label="Toggle field effects settings"
-              title={!tooltipVisible ? "Field Effects" : undefined}
+              aria-label={fieldEffectsLabel}
+              title={!tooltipVisible ? fieldEffectsLabel : undefined}
             >
               <svg
                 viewBox="0 0 20 20"
@@ -359,16 +405,18 @@ export default function RetroMenu({
               >
                 <div className="retro-menu__tooltip-content">
                   <div className="retro-menu__tooltip-effect">
-                    {activeEffectInfo.name} Active
+                    {t('menu.tooltip.effect-active', language, {
+                      effect: effectLabels[activeEffectInfo.type] || activeEffectInfo.name
+                    })}
                   </div>
                   {activeEffectInfo.duration && remainingTime !== null && (
                     <div className="retro-menu__tooltip-timer">
-                      Resets in {remainingTime}s
+                      {t('menu.tooltip.reset-timer', language, { seconds: remainingTime })}
                     </div>
                   )}
                   {!activeEffectInfo.duration && (
                     <div className="retro-menu__tooltip-info">
-                      No auto-reset
+                      {t('menu.tooltip.no-auto-reset', language)}
                     </div>
                   )}
                 </div>
@@ -380,7 +428,7 @@ export default function RetroMenu({
             target="_blank"
             rel="noreferrer noopener"
             className="retro-menu__social"
-            aria-label="Open Jay Winder's X profile"
+            aria-label={t('menu.social.aria', language)}
           >
             <svg viewBox="0 0 20 20" aria-hidden="true">
               <path d="M15.95 1h-1.62l-3.58 4.31L7.79 1H3.25l5.32 7.16L3.25 19h1.62l3.92-4.78L12.21 19h4.54l-5.58-7.4zM11.6 11.52 8.46 7.27l1.6-1.92 4.63 6.17z" />
@@ -392,7 +440,7 @@ export default function RetroMenu({
             className="retro-menu__dismiss"
             onClick={handleDismiss}
           >
-            Close
+            {t('menu.close', language)}
           </button>
         </div>
       </div>
@@ -404,7 +452,7 @@ export default function RetroMenu({
               if (!onStatusChange) return;
               onStatusChange({
                 ...item.status,
-                mode: isActive ? "active" : "preview",
+                modeKey: isActive ? 'active' : 'preview',
               });
             };
 
@@ -466,7 +514,7 @@ export default function RetroMenu({
             }}
           >
             <div className="retro-menu__settings-header">
-              <span>Field Effects</span>
+              <span>{fieldEffectsLabel}</span>
             </div>
             <div className="retro-menu__settings-content">
               <button
@@ -477,9 +525,9 @@ export default function RetroMenu({
                   onFieldEffect("calmReset");
                   closePanel();
                 }}
-                title="Reset to default state"
+                title={effectTooltips.calmReset}
               >
-                <span>Zen</span>
+                <span>{effectLabels.calmReset}</span>
               </button>
               <button
                 type="button"
@@ -488,9 +536,9 @@ export default function RetroMenu({
                   onFieldEffect("jitter");
                   closePanel();
                 }}
-                title="Trigger rapid ripple bursts"
+                title={effectTooltips.jitter}
               >
-                <span>Jitter</span>
+                <span>{effectLabels.jitter}</span>
               </button>
               <button
                 type="button"
@@ -499,9 +547,9 @@ export default function RetroMenu({
                   onFieldEffect("swirlPulse");
                   closePanel();
                 }}
-                title="Enhance swirl motion"
+                title={effectTooltips.swirlPulse}
               >
-                <span>Swirl</span>
+                <span>{effectLabels.swirlPulse}</span>
               </button>
               <button
                 type="button"
@@ -510,9 +558,9 @@ export default function RetroMenu({
                   onFieldEffect("spiralFlow");
                   closePanel();
                 }}
-                title="Unfurl logarithmic spiral currents"
+                title={effectTooltips.spiralFlow}
               >
-                <span>Spiral</span>
+                <span>{effectLabels.spiralFlow}</span>
               </button>
               <button
                 type="button"
@@ -521,9 +569,9 @@ export default function RetroMenu({
                   onFieldEffect("riverFlow");
                   closePanel();
                 }}
-                title="Seismic waves ripple through the field"
+                title={effectTooltips.riverFlow}
               >
-                <span>Quake</span>
+                <span>{effectLabels.riverFlow}</span>
               </button>
               <button
                 type="button"
@@ -532,9 +580,9 @@ export default function RetroMenu({
                   onFieldEffect("mandelbrotZoom");
                   closePanel();
                 }}
-                title="Dive through a Julia set zoom"
+                title={effectTooltips.mandelbrotZoom}
               >
-                <span>Hop</span>
+                <span>{effectLabels.mandelbrotZoom}</span>
               </button>
               <button
                 type="button"
@@ -543,9 +591,9 @@ export default function RetroMenu({
                   onFieldEffect("reactionDiffusionBloom");
                   closePanel();
                 }}
-                title="Grow Gray-Scott bloom patterns"
+                title={effectTooltips.reactionDiffusionBloom}
               >
-                <span>Bloom</span>
+                <span>{effectLabels.reactionDiffusionBloom}</span>
               </button>
               <button
                 type="button"
@@ -554,9 +602,9 @@ export default function RetroMenu({
                   onFieldEffect("harmonicPendulum");
                   closePanel();
                 }}
-                title="Trace chaotic harmonic pendulums"
+                title={effectTooltips.harmonicPendulum}
               >
-                <span>Blink</span>
+                <span>{effectLabels.harmonicPendulum}</span>
               </button>
               <button
                 type="button"
@@ -565,9 +613,9 @@ export default function RetroMenu({
                   onFieldEffect("starfield");
                   closePanel();
                 }}
-                title="Bloom into a drifting starfield"
+                title={effectTooltips.starfield}
               >
-                <span>Stars</span>
+                <span>{effectLabels.starfield}</span>
               </button>
             </div>
           </div>,

@@ -1,6 +1,7 @@
 'use client';
 
 import { useLanguage } from '../contexts/LanguageContext';
+import { t } from '../lib/translations';
 
 export default function HomeLanguageSwitcher() {
   const { language, changeLanguage } = useLanguage();
@@ -10,12 +11,15 @@ export default function HomeLanguageSwitcher() {
     changeLanguage(newLang);
   };
 
+  const tooltipKey = language === 'en' ? 'language.toggle.tooltip.en' : 'language.toggle.tooltip.ja';
+  const ariaKey = language === 'en' ? 'language.toggle.aria.en' : 'language.toggle.aria.ja';
+
   return (
     <button
       onClick={handleToggle}
       className="home-language-toggle"
-      aria-label={language === 'en' ? 'Switch to Japanese' : 'Switch to English'}
-      title={language === 'en' ? 'Switch to Japanese' : 'Switch to English'}
+      aria-label={t(ariaKey, language)}
+      title={t(tooltipKey, language)}
     >
       <svg
         className="home-language-icon"
@@ -63,7 +67,7 @@ export default function HomeLanguageSwitcher() {
         />
       </svg>
       <span className="home-language-label">
-        {language === 'en' ? 'EN' : '日本語'}
+        {language === 'en' ? 'EN' : 'JA'}
       </span>
     </button>
   );

@@ -8,7 +8,7 @@ import { formatDisplayDate } from '../lib/formatters';
 import { storeEntryReturnTarget } from '../lib/entryReturn';
 import TabbedAudioPlayer from './TabbedAudioPlayer';
 import { useLanguage } from '../contexts/LanguageContext';
-import { t } from '../lib/translations';
+import { t, getLocalizedContent } from '../lib/translations';
 
 const TRANSITION_DURATION_MS = 480;
 
@@ -20,6 +20,8 @@ export default function EntryDetail({ type, entry, isAdmin = false }) {
   const leaveTimeoutRef = useRef();
   const enterTimeoutRef = useRef();
   const stageStateRef = useRef('idle');
+
+  const localizedContent = useMemo(() => getLocalizedContent(entry?.content, language) || '', [entry?.content, language]);
 
   const logLayoutMetrics = useCallback(
     (label, stateOverride) => {
@@ -121,11 +123,11 @@ export default function EntryDetail({ type, entry, isAdmin = false }) {
 
   // Extract audio URLs from content for sound posts
   const audioData = useMemo(() => {
-    if (type !== 'sounds' || !entry?.content) return null;
+    if (type !== 'sounds' || !localizedContent) return null;
     
     // Parse the HTML content to find audio sources
     const parser = new DOMParser();
-    const doc = parser.parseFromString(entry.content, 'text/html');
+    const doc = parser.parseFromString(localizedContent, 'text/html');
     const audioElements = doc.querySelectorAll('audio');
     
     let mp3Url = null;
@@ -147,22 +149,22 @@ export default function EntryDetail({ type, entry, isAdmin = false }) {
       return {
         mp3Url,
         losslessUrl,
-        title: entry.title,
+        title: getLocalizedContent(entry?.title, language) || entry?.title || '',
         artist: 'Jay Winder', // You can make this configurable
         coverImage: entry.coverImage
       };
     }
     
     return null;
-  }, [type, entry]);
+  }, [entry?.title, entry?.coverImage, language, localizedContent, type]);
 
   // Process content to remove audio elements if we're using the tabbed player
   const processedContent = useMemo(() => {
-    if (!audioData || !entry?.content) return entry?.content;
+    if (!audioData || !localizedContent) return localizedContent || entry?.content;
     
     // Remove the audio figure elements from content
     const parser = new DOMParser();
-    const doc = parser.parseFromString(entry.content, 'text/html');
+    const doc = parser.parseFromString(localizedContent, 'text/html');
     const audioFigures = doc.querySelectorAll('figure.sound-player');
     
     audioFigures.forEach(figure => {
@@ -170,18 +172,21 @@ export default function EntryDetail({ type, entry, isAdmin = false }) {
     });
     
     return doc.body.innerHTML;
-  }, [audioData, entry?.content]);
+  }, [audioData, localizedContent, entry?.content]);
 
   if (!entry) return null;
 
-  const { title, summary, content, createdAt, coverImage } = entry;
+  const { createdAt, coverImage } = entry;
+  const localizedTitle = getLocalizedContent(entry.title, language) || entry.title;
+  const localizedSummary = getLocalizedContent(entry.summary, language) || entry.summary;
+  const dateLabel = createdAt ? formatDisplayDate(createdAt, language) : '';
   const editHref = entry?.slug ? `/administratorrrr?type=${type}&slug=${encodeURIComponent(entry.slug)}` : null;
-  const dateLabel = createdAt ? formatDisplayDate(createdAt) : '';
   const stageClasses = ['detail-stage'];
-  // Capitalize and format the type label properly
-  const typeLabel = type ? `${type.charAt(0).toUpperCase()}${type.slice(1)}` : '';
+  // Determine navigation label based on type
+  const navTypeKey = type === 'words' ? 'content' : type;
+  const typeLabel = navTypeKey ? t(`nav.${navTypeKey}`, language) : '';
   // Get the localized back button label
-  const backButtonLabel = t(`nav.${type}`, language);
+  const backButtonLabel = navTypeKey ? t(`nav.${navTypeKey}`, language) : '';
 
   if (stageState === 'entering') {
     stageClasses.push('is-fading-in');
@@ -220,14 +225,14 @@ export default function EntryDetail({ type, entry, isAdmin = false }) {
         <header className="detail-view__header">
           <div className="detail-view__title-group">
             <div className="detail-view__title-row">
-              <h1 className="detail-view__title">{title}</h1>
+              <h1 className="detail-view__title">{localizedTitle}</h1>
               {isAdmin && editHref ? (
                 <Link href={editHref} className="detail-view__edit-btn">
                   {t('edit.entry', language)}
                 </Link>
               ) : null}
             </div>
-            {summary ? <p className="detail-view__summary">{summary}</p> : null}
+            {localizedSummary ? <p className="detail-view__summary">{localizedSummary}</p> : null}
           </div>
         </header>
 
@@ -235,7 +240,7 @@ export default function EntryDetail({ type, entry, isAdmin = false }) {
           <figure className="detail-view__media">
             <Image
               src={coverImage.url}
-              alt={coverImage.alt || `${title} cover image`}
+              alt={coverImage.alt || `${localizedTitle} cover image`}
               fill
               sizes="(max-width: 900px) 100vw, 960px"
               className="detail-view__media-image"
@@ -255,7 +260,7 @@ export default function EntryDetail({ type, entry, isAdmin = false }) {
         )}
 
         <article className="detail-view__body">
-          <div className="detail-view__content" dangerouslySetInnerHTML={{ __html: processedContent || content }} />
+          <div className="detail-view__content" dangerouslySetInnerHTML={{ __html: processedContent || localizedContent || '' }} />
         </article>
       </div>
     </div>

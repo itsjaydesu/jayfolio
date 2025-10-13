@@ -74,8 +74,14 @@
     ]
   },
   "projects": {
-    "title": "Selected Builds",
-    "lead": "Explore interactive commissions, touring installations, and responsive tooling. Choose any dossier to open a full breakdown with media, credits, and embedded documentation."
+    "title": {
+      "en": "Selected Builds",
+      "ja": "セレクト作品"
+    },
+    "lead": {
+      "en": "Explore interactive commissions, touring installations, and responsive tooling. Choose any dossier to open a full breakdown with media, credits, and embedded documentation.",
+      "ja": "インタラクティブな受託案件、ツアー用インスタレーション、応答型ツール群を横断してご紹介。気になるプロジェクトを開くと、メディア・クレジット・資料までまとまった詳細を確認できます。"
+    }
   },
   "content": {
     "title": {
@@ -88,11 +94,23 @@
     }
   },
   "sounds": {
-    "title": "Sound Experiments",
-    "lead": "Loops, drone suites, and live performance sketches. Dive into each archive entry to access liner notes and embedded media players."
+    "title": {
+      "en": "Sound Experiments",
+      "ja": "サウンド実験室"
+    },
+    "lead": {
+      "en": "Loops, drone suites, and live performance sketches. Dive into each archive entry to access liner notes and embedded media players.",
+      "ja": "ループ、ドローン、ライブスケッチを収めたサウンドアーカイブ。各エントリーにはライナーノーツと埋め込みプレイヤーを用意しました。"
+    }
   },
   "art": {
-    "title": "Dot Field Studies",
-    "lead": "Generative sequences that document how the homepage dot field bends, glitches, and blooms across its interactive modes."
+    "title": {
+      "en": "Dot Field Studies",
+      "ja": "ドットフィールド研究"
+    },
+    "lead": {
+      "en": "Generative sequences that document how the homepage dot field bends, glitches, and blooms across its interactive modes.",
+      "ja": "ホームのドットフィールドが各モードでどのように歪み、滲み、咲き誇るのかを記録したジェネレーティブなシーケンス集です。"
+    }
   }
 }
