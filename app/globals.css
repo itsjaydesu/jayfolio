@@ -4960,6 +4960,7 @@ a {
   color: inherit;
   overflow: hidden;
   isolation: isolate;
+  cursor: pointer; /* Ensure entire surface shows pointer cursor */
   transition: transform 0.35s cubic-bezier(0.33, 1, 0.68, 1),
     box-shadow 0.35s cubic-bezier(0.33, 1, 0.68, 1);
 }
@@ -5043,6 +5044,12 @@ a {
   gap: clamp(0.7rem, 1.8vw, 1.4rem);
   align-content: start;
   z-index: 2;
+  pointer-events: none; /* Allow clicks to pass through to overlay */
+}
+
+/* Re-enable pointer events for interactive elements */
+.project-entry__edit-btn {
+  pointer-events: auto;
 }
 
 .project-entry__overlay {

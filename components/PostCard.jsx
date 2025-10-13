@@ -68,15 +68,12 @@ export default function PostCard({
     >
       <div className="project-entry__surface project-entry__surface--compact">
         <div className="project-entry__content">
-          {/* Date, Tags and Category Header */}
+          {/* Date and Category Header */}
           <div className="project-entry__header">
             {entry.createdAt && (
               <time className="project-entry__date" dateTime={entry.createdAt}>
                 {formatDisplayDate(entry.createdAt).toUpperCase()}
               </time>
-            )}
-            {entry.tags?.length > 0 && (
-              <span className="project-entry__tags">{entry.tags.join(' • ')}</span>
             )}
             {category && (
               <span className="project-entry__category">{category}</span>
