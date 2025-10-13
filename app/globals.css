@@ -4628,7 +4628,7 @@ a {
 .channel__intro {
   display: grid;
   gap: clamp(0.8rem, 2vw, 1.4rem);
-  max-width: 620px;
+  max-width: 900px; /* Increased from 620px to use more available width */
 }
 
 .channel__eyebrow {
@@ -4645,6 +4645,14 @@ a {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   font-family: "IBM Plex Mono", "Lucida Console", "Courier New", monospace;
+  white-space: nowrap; /* Prevent wrapping when space is available */
+}
+
+/* Allow wrapping on smaller screens */
+@media (max-width: 640px) {
+  .channel__title {
+    white-space: normal;
+  }
 }
 
 .channel__lead {
@@ -4652,6 +4660,15 @@ a {
   line-height: 1.8;
   font-size: 1.08rem;
   color: rgba(218, 232, 238, 0.86);
+  max-width: 100%; /* Use full available width */
+}
+
+/* Prevent unnecessary wrapping on larger screens */
+@media (min-width: 1024px) {
+  .channel__lead {
+    white-space: normal; /* Allow natural breaks but optimize space */
+    word-break: normal; /* Prevent aggressive word breaking */
+  }
 }
 
 /* Simplified channel layout for about page */
@@ -5070,6 +5087,7 @@ a {
   letter-spacing: 0.3em;
   text-transform: uppercase;
   color: rgba(182, 224, 236, 0.7);
+  display: inline-block; /* Keep inline with date */
 }
 
 .project-entry__category {
