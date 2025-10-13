@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
+import { useLanguage } from "../contexts/LanguageContext";
 
 export default function RetroMenu({
   id,
@@ -17,6 +18,7 @@ export default function RetroMenu({
   onFieldEffect,
   hasActiveEffect = false,
   activeEffectInfo = null,
+  onRipple,
 }) {
 
   // Panel transition states: 'closed' | 'fading' | 'opening' | 'open' | 'closing'
@@ -30,6 +32,9 @@ export default function RetroMenu({
   const [remainingTime, setRemainingTime] = useState(null);
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
   const tooltipTimerRef = useRef(null);
+
+  // Language context
+  const { language, changeLanguage } = useLanguage();
 
   // Check for reduced motion preference
   const prefersReducedMotion = useRef(
@@ -259,6 +264,54 @@ export default function RetroMenu({
           <span className="indicator" aria-hidden="true" /> jayfolio
         </span>
         <div className="retro-menu__title-actions">
+          <button
+            type="button"
+            className="retro-menu__language-toggle"
+            onClick={() => {
+              const newLang = language === 'en' ? 'ja' : 'en';
+              changeLanguage(newLang);
+              
+              // Trigger a localized ripple animation at the menu position
+              // This creates a ripple effect without changing the field effect state
+              if (onRipple) {
+                // Random position near center for variety
+                const x = (Math.random() - 0.5) * 0.3;
+                const z = (Math.random() - 0.5) * 0.3;
+                const strength = 0.7; // Moderate strength ripple
+                onRipple(x, z, strength);
+              }
+            }}
+            aria-label={language === 'en' ? 'Switch to Japanese' : 'Switch to English'}
+            title={`Language: ${language.toUpperCase()}`}
+          >
+            <svg
+              viewBox="0 0 20 20"
+              aria-hidden="true"
+              fill="currentColor"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              {/* Earth circle */}
+              <circle cx="10" cy="10" r="7" fill="none" />
+              
+              {/* Continents/landmasses - simplified Earth-like shapes */}
+              {/* Europe/Africa */}
+              <path d="M 10 5 Q 11 6 10.5 8 T 11 10 Q 10 11 10.5 12" fill="none" strokeWidth="1.2" />
+              
+              {/* Americas */}
+              <path d="M 6 7 Q 7 8 6.5 9 T 7 11" fill="none" strokeWidth="1.2" />
+              
+              {/* Asia/Pacific */}
+              <path d="M 13 8 Q 14 9 13.5 10" fill="none" strokeWidth="1.2" />
+              
+              {/* Latitude lines */}
+              <ellipse cx="10" cy="10" rx="7" ry="2.5" fill="none" strokeWidth="0.8" opacity="0.4" />
+              <ellipse cx="10" cy="10" rx="5" ry="1.8" fill="none" strokeWidth="0.8" opacity="0.3" transform="translate(0,-3)" />
+              <ellipse cx="10" cy="10" rx="5" ry="1.8" fill="none" strokeWidth="0.8" opacity="0.3" transform="translate(0,3)" />
+            </svg>
+          </button>
           <div className="retro-menu__settings-wrapper">
             <button
               ref={toggleRef}

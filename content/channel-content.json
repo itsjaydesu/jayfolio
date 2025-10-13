@@ -78,8 +78,14 @@
     "lead": "Explore interactive commissions, touring installations, and responsive tooling. Choose any dossier to open a full breakdown with media, credits, and embedded documentation."
   },
   "content": {
-    "title": "Content & Writing",
-    "lead": "Essays, blog posts, and comedy pieces exploring technology, culture, and the absurdity of modern life. Open any piece to read the full entry with embedded media and references."
+    "title": {
+      "en": "Content & Writing",
+      "ja": "コンテンツ＆ライティング"
+    },
+    "lead": {
+      "en": "Essays, blog posts, and comedy pieces exploring technology, culture, and the absurdity of modern life. Open any piece to read the full entry with embedded media and references.",
+      "ja": "テクノロジー、文化、そして現代の不条理を探求するエッセイ、ブログ、コメディ作品。どの作品を開いても、埋め込みメディアと参考文献付きで全文をお読みいただけます。"
+    }
   },
   "sounds": {
     "title": "Sound Experiments",

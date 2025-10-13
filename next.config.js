@@ -24,7 +24,7 @@ const nextConfig = {
         ]
       },
       {
-        source: '/index.html',
+        source: '/field-demo.html',
         headers: [
           {
             key: 'Cache-Control',

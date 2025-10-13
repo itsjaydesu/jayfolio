@@ -3496,6 +3496,73 @@ a {
   opacity: 0.6;
 }
 
+/* Language Toggle Button - Ensure Always Visible */
+.retro-menu__language-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  margin: 0 0.25rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  color: #daf3f4;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  /* Ensure visibility */
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: none !important;
+  position: relative;
+  z-index: 10;
+}
+
+.retro-menu__language-toggle svg {
+  width: 14px;
+  height: 14px;
+  display: block;
+  /* Force stroke color to be visible */
+  stroke: currentColor !important;
+  opacity: 1 !important;
+}
+
+/* Ensure SVG paths are styled correctly for Earth icon */
+.retro-menu__language-toggle svg path {
+  stroke: currentColor !important;
+  fill: none !important;
+  opacity: 1 !important;
+}
+
+.retro-menu__language-toggle svg circle {
+  stroke: currentColor !important;
+  fill: none !important;
+  opacity: 1 !important;
+}
+
+.retro-menu__language-toggle svg ellipse {
+  stroke: currentColor !important;
+  fill: none !important;
+}
+
+.retro-menu__language-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  line-height: 1;
+}
+
+.retro-menu__language-toggle:hover,
+.retro-menu__language-toggle:focus-visible {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #00f0f8;
+  transform: scale(1.05);
+}
+
+
+
 .retro-menu__settings-toggle {
   display: inline-flex;
   align-items: center;
@@ -3780,8 +3847,15 @@ a {
   opacity: 0.44;
 }
 
-.retro-menu[data-panel-active="true"] .retro-menu__title-actions > *:not(.retro-menu__settings-toggle) {
+.retro-menu[data-panel-active="true"] .retro-menu__title-actions > *:not(.retro-menu__settings-toggle):not(.retro-menu__language-toggle) {
   opacity: 0.44;
+}
+
+/* Keep language toggle visible in all states */
+.retro-menu[data-panel-active="true"] .retro-menu__language-toggle,
+.retro-menu[data-effect-active="true"] .retro-menu__language-toggle {
+  opacity: 1 !important;
+  color: #daf3f4;
 }
 
 .retro-menu[data-panel-active="true"] .retro-menu__settings-toggle {
@@ -3925,6 +3999,21 @@ a {
     justify-content: flex-end;
   }
 
+  .retro-menu__language-toggle {
+    width: 28px;
+    height: 28px;
+    margin: 0 0.25rem;
+    /* Ensure visibility on mobile too */
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  .retro-menu__language-toggle svg {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor !important;
+  }
+
   .retro-menu__settings-toggle {
     width: 28px;
     height: 28px;
@@ -3978,8 +4067,14 @@ a {
     opacity: 0.44;
   }
 
-  .retro-menu[data-panel-active="true"] .retro-menu__title-actions > *:not(.retro-menu__settings-toggle) {
+  .retro-menu[data-panel-active="true"] .retro-menu__title-actions > *:not(.retro-menu__settings-toggle):not(.retro-menu__language-toggle) {
     opacity: 0.44;
+  }
+  
+  /* Keep language toggle visible in all states on mobile */
+  .retro-menu[data-panel-active="true"] .retro-menu__language-toggle,
+  .retro-menu[data-effect-active="true"] .retro-menu__language-toggle {
+    opacity: 1 !important;
   }
 
   .retro-menu[data-panel-active="true"] .retro-menu__settings-toggle {
@@ -7014,3 +7109,221 @@ body.qr-intro-active .site-shell__social {
 .tabbed-audio-player__backward:disabled {
   animation: pulse 1.5s ease-in-out infinite;
 }
+
+/* Language Switcher Styles */
+.language-switcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  background: transparent;
+  margin: 0.5rem 0;
+}
+
+.language-switcher__btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.25rem 0;
+  cursor: pointer;
+  transition: color 0.2s ease, background-color 0.2s ease;
+  border-radius: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.language-switcher__btn:hover {
+  color: var(--text-primary);
+  background: var(--accent-soft);
+}
+
+.language-switcher__btn--active {
+  color: var(--text-primary);
+  font-weight: 600;
+  background: var(--accent-strong);
+}
+
+.language-switcher__separator {
+  color: var(--text-tertiary);
+  font-size: 0.75rem;
+  margin: 0 0.125rem;
+  user-select: none;
+}
+
+/* Position language switcher in site shell */
+.site-shell__language-switcher {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 100;
+  background: var(--surface-elevated);
+  border: 1px solid var(--border-soft);
+  border-radius: 4px;
+  padding: 0.25rem;
+  backdrop-filter: blur(8px);
+}
+
+/* On home page, integrate with navigation nicely */
+.menu-overlay.is-visible + .site__shell .site-shell__language-switcher {
+  position: absolute;
+  top: auto;
+  right: 2rem;
+  bottom: 2rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .language-switcher__btn {
+    font-size: 0.6875rem;
+  }
+  
+  .site-shell__language-switcher {
+    top: 0.5rem;
+    right: 0.5rem;
+    padding: 0.1875rem;
+  }
+}
+
+
+/* Home Page Language Switcher (Fixed Position) */
+.home-language-toggle {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  background: rgba(14, 14, 14, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: #f2f2f2;
+  font-family: "Inter", "Segoe UI", sans-serif;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1000;
+  backdrop-filter: blur(8px);
+}
+
+.home-language-toggle:hover {
+  background: rgba(34, 34, 34, 0.92);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.home-language-toggle:active {
+  transform: translateY(0);
+}
+
+.home-language-icon {
+  width: 20px;
+  height: 20px;
+  color: #00c8d0;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.home-language-toggle:hover .home-language-icon {
+  transform: rotate(180deg);
+}
+
+.home-language-label {
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #f2f2f2;
+  font-weight: 600;
+}
+
+/* Adjust position when lil-gui is present */
+.lil-gui.root ~ * .home-language-toggle {
+  right: 290px;
+}
+
+@media (max-width: 768px) {
+  .home-language-toggle {
+    top: 16px;
+    right: 16px;
+    padding: 8px 12px;
+    gap: 8px;
+  }
+
+  .home-language-icon {
+    width: 18px;
+    height: 18px;
+  }
+
+  .home-language-label {
+    font-size: 0.8125rem;
+  }
+}
+
+/* Compact Language Switcher for Header Navigation */
+.language-switcher-compact {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: transparent;
+  border: 1px solid var(--border-soft);
+  border-radius: 4px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-left: 8px;
+  text-decoration: none;
+}
+
+.language-switcher-compact:hover {
+  color: var(--text-primary);
+  background: var(--accent-soft);
+  border-color: var(--border-strong);
+}
+
+.earth-icon-compact {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+}
+
+.language-indicator {
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* Header-specific styling */
+.site-shell__header-language-toggle {
+  opacity: 0;
+  transform: translateY(var(--nav-item-initial-offset, 8px));
+  transition: all 0.3s ease;
+}
+
+.site-shell__header[data-nav-ready="true"] .site-shell__header-language-toggle {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 360ms;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .language-switcher-compact {
+    padding: 3px 6px;
+    margin-left: 4px;
+  }
+  
+  .earth-icon-compact {
+    width: 12px;
+    height: 12px;
+  }
+  
+  .language-indicator {
+    font-size: 0.5625rem;
+  }
+}
+

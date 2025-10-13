@@ -2,6 +2,8 @@
 
 import { useState, useMemo } from 'react';
 import PostCard from '../../components/PostCard';
+import { useLanguage } from '../../contexts/LanguageContext';
+import { t, getCategoryName, getLocalizedContent } from '../../lib/translations';
 
 const CONTENT_TONES = {
   'slow-scan-memo': 'violet',
@@ -11,10 +13,20 @@ const CONTENT_TONES = {
   'blog-thoughts': 'cyan'
 };
 
-const CATEGORIES = ['All', 'Essays', 'Blog', 'Comedy'];
+// Get localized categories based on language
+function getLocalizedCategories(language = 'en') {
+  return [
+    { key: 'all', label: t('content.all', language) },
+    { key: 'essays', label: t('content.essays', language) },
+    { key: 'blog', label: t('content.blog', language) },
+    { key: 'comedy', label: t('content.comedy', language) }
+  ];
+}
 
 export default function ContentContent({ entries, hero, isAdmin = false }) {
-  const [selectedCategory, setSelectedCategory] = useState('All');
+  const { language } = useLanguage();
+  const localizedCategories = useMemo(() => getLocalizedCategories(language), [language]);
+  const [selectedCategory, setSelectedCategory] = useState(localizedCategories[0].key);
 
   // Auto-categorize entries based on tags or content
   const categorizedEntries = useMemo(() => {
@@ -30,7 +42,7 @@ export default function ContentContent({ entries, hero, isAdmin = false }) {
           entry.content?.length > 1500 ||
           lowerTitle.includes('essay') ||
           lowerTitle.includes('elites')) {
-        category = 'Essays';
+        category = 'essays';
       }
       // Check for comedy
       else if (lowerTags.includes('comedy') || 
@@ -39,7 +51,7 @@ export default function ContentContent({ entries, hero, isAdmin = false }) {
                lowerTitle.includes('comedy') ||
                lowerTitle.includes('funny') ||
                lowerContent.includes('joke')) {
-        category = 'Comedy';
+        category = 'comedy';
       }
       // Everything else is Blog
       
@@ -51,37 +63,48 @@ export default function ContentContent({ entries, hero, isAdmin = false }) {
   }, [entries]);
 
   const filteredEntries = useMemo(() => {
-    if (selectedCategory === 'All') return categorizedEntries;
+    if (selectedCategory === 'all') return categorizedEntries;
     return categorizedEntries.filter(entry => entry.category === selectedCategory);
   }, [categorizedEntries, selectedCategory]);
 
   return (
     <section className="channel channel--words">
       <header className="channel__intro">
-        <h1 className="channel__title">{hero.title}</h1>
-        <p className="channel__lead">{hero.lead}</p>
+        <h1 className="channel__title">{getLocalizedContent(hero.title, language) || t('content.title', language)}</h1>
+        <p className="channel__lead">{getLocalizedContent(hero.lead, language) || t('content.lead', language)}</p>
         
         <div className="channel__categories">
-          {CATEGORIES.map(category => (
-            <button
-              key={category}
-              className={`channel__category-btn ${selectedCategory === category ? 'channel__category-btn--active' : ''}`}
-              onClick={() => setSelectedCategory(category)}
-              aria-pressed={selectedCategory === category}
-            >
-              {category}
-              {category !== 'All' && (
-                <span className="channel__category-count">
-                  {categorizedEntries.filter(e => e.category === category).length}
-                </span>
-              )}
-            </button>
-          ))}
+          {localizedCategories.map(category => {
+            const isAll = category.key === 'all';
+            const count = isAll ? 0 : categorizedEntries.filter(e => e.category === category.key).length;
+            
+            return (
+              <button
+                key={category.key}
+                className={`channel__category-btn ${selectedCategory === category.key ? 'channel__category-btn--active' : ''}`}
+                onClick={() => setSelectedCategory(category.key)}
+                aria-pressed={selectedCategory === category.key}
+              >
+                {category.label}
+                {!isAll && (
+                  <span className="channel__category-count">
+                    {t('content.category-count', language, { count })}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
       </header>
 
       {filteredEntries.length === 0 ? (
-        <p className="channel__empty">No {selectedCategory.toLowerCase()} entries found.</p>
+        <p className="channel__empty">
+          {t('content.empty', language, { 
+            category: selectedCategory === 'all' 
+              ? t('content.all', language).toLowerCase()
+              : getCategoryName(selectedCategory, language).toLowerCase()
+          })}
+        </p>
       ) : (
         <div className="channel__grid" key={selectedCategory} data-category={selectedCategory}>
           {filteredEntries.map((entry) => {

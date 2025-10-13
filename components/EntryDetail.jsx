@@ -171,7 +171,7 @@ export default function EntryDetail({ type, entry, isAdmin = false }) {
 
   if (!entry) return null;
 
-  const { title, summary, content, tags, createdAt, coverImage } = entry;
+  const { title, summary, content, createdAt, coverImage } = entry;
   const editHref = entry?.slug ? `/administratorrrr?type=${type}&slug=${encodeURIComponent(entry.slug)}` : null;
   const dateLabel = createdAt ? formatDisplayDate(createdAt) : '';
   const stageClasses = ['detail-stage'];

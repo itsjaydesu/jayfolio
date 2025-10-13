@@ -5,8 +5,11 @@ import { useEffect, useMemo, useRef, useState, useCallback, Suspense } from "rea
 import { usePathname, useRouter } from "next/navigation";
 import dynamic from 'next/dynamic';
 import RetroMenu from "./RetroMenu";
+import LanguageSwitcher from "./LanguageSwitcher";
 import { SITE_TEXT_DEFAULTS } from "../lib/siteTextDefaults";
 import { useAdminStatus } from "../lib/useAdminStatus";
+import { useLanguage } from "../contexts/LanguageContext";
+import { t, getLocalizedContent } from "../lib/translations";
 
 // Dynamically import SceneCanvas to reduce initial bundle size
 const SceneCanvas = dynamic(() => import('./SceneCanvas'), {
@@ -14,23 +17,35 @@ const SceneCanvas = dynamic(() => import('./SceneCanvas'), {
   ssr: false // Disable SSR for Three.js component
 });
 
-const DEFAULT_MENU_ITEMS = SITE_TEXT_DEFAULTS.primaryMenu.map((i) => ({
-  id: i.id,
-  label: i.label,
-  href: i.route,
-  status: { title: i.label, description: i.description },
-}));
+// Helper function to get localized menu items
+function getLocalizedMenuItems(lang = 'en') {
+  return SITE_TEXT_DEFAULTS.primaryMenu.map((i) => ({
+    id: i.id,
+    label: t(`nav.${i.id}`, lang),
+    href: i.route,
+    status: { 
+      title: t(`nav.${i.id}`, lang), 
+      description: getLocalizedContent(i.description, lang) 
+    },
+  }));
+}
 
-const DEFAULT_STATUS = {
-  title: "Hello",
-  description: "Please select a channel that interests you",
-  mode: "waiting for your selection",
-};
+// Helper function to get localized status
+function getLocalizedStatus(lang = 'en') {
+  return {
+    title: t('status.waiting', lang),
+    description: t('status.waiting-desc', lang),
+    mode: "waiting for your selection",
+  };
+}
+
+const DEFAULT_STATUS = getLocalizedStatus();
 
 export default function SiteShell({ children, isAdmin = false }) {
   const pathname = usePathname();
   const router = useRouter();
   const sceneRef = useRef(null);
+  const { language } = useLanguage();
   const returnTimerRef = useRef(null);
   const menuLeaveTimerRef = useRef(null); // Timer for menu fade-out animation
   const headerLeaveTimerRef = useRef(null); // Timer for header fade-out animation
@@ -73,8 +88,8 @@ export default function SiteShell({ children, isAdmin = false }) {
   const fadeTimeoutRef = useRef(null);
   
   // Navigation and UI state
-  const [brand, setBrand] = useState(SITE_TEXT_DEFAULTS.brand);
-  const [menuItems, setMenuItems] = useState(DEFAULT_MENU_ITEMS);
+  const [brand, setBrand] = useState(t('brand.name', language));
+  const [menuItems, setMenuItems] = useState(getLocalizedMenuItems(language));
   const [isReturningHome, setIsReturningHome] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
   const [menuLeaving, setMenuLeaving] = useState(false); // Track menu fade-out state
@@ -110,7 +125,7 @@ export default function SiteShell({ children, isAdmin = false }) {
       }
     }
   }
-  const [status, setStatus] = useState(DEFAULT_STATUS);
+  const [status, setStatus] = useState(getLocalizedStatus(language));
   // navReady is always true to avoid hydration mismatches
   // Animation will still work via CSS transitions
   const navReady = true;
@@ -132,10 +147,16 @@ export default function SiteShell({ children, isAdmin = false }) {
     [activeItem]
   );
   
-  // Update status when active item changes
+  // Update status when active item changes or language changes
   useEffect(() => {
     setStatus(activeStatus);
   }, [activeStatus]);
+
+  // Update localized content when language changes
+  useEffect(() => {
+    setBrand(t('brand.name', language));
+    setMenuItems(getLocalizedMenuItems(language));
+  }, [language]);
 
   // ===== DATA FETCHING =====
   // Load site text and menu items
@@ -147,14 +168,22 @@ export default function SiteShell({ children, isAdmin = false }) {
         const data = await res.json();
         if (!res.ok) throw new Error(data?.error || "Failed to load site text");
         if (ignore) return;
-        const items = (data.primaryMenu || []).map((i) => ({
-          id: i.id,
-          label: i.label,
-          href: i.route,
-          status: { title: i.label, description: i.description },
-        }));
-        setBrand(data.brand || SITE_TEXT_DEFAULTS.brand);
-        setMenuItems(items.length ? items : DEFAULT_MENU_ITEMS);
+        
+        // Localize menu items
+        const items = (data.primaryMenu || []).map((i) => {
+          const localizedLabel = i.id ? t(`nav.${i.id}`, language) : i.label;
+          const localizedDesc = i.id ? getLocalizedContent(i.description, language) : i.description;
+          
+          return {
+            id: i.id,
+            label: localizedLabel,
+            href: i.route,
+            status: { title: localizedLabel, description: localizedDesc },
+          };
+        });
+        
+        setBrand(t('brand.name', language));
+        setMenuItems(items.length ? items : getLocalizedMenuItems(language));
       } catch (e) {
         void e; // fallback silently
       }
@@ -162,7 +191,7 @@ export default function SiteShell({ children, isAdmin = false }) {
     return () => {
       ignore = true;
     };
-  }, []);
+  }, [language]); // Add language as dependency
   
   // ===== ROUTER SETUP =====
   // Prefetch home route and cleanup
@@ -782,6 +811,10 @@ export default function SiteShell({ children, isAdmin = false }) {
             onFieldEffect={handleFieldEffect}
             hasActiveEffect={hasActiveEffect}
             activeEffectInfo={activeEffectInfo}
+            onRipple={(x, z, strength) => {
+              // Trigger a ripple without changing field effect state
+              sceneRef.current?.addRipple?.(x, z, strength);
+            }}
             isOpen
             variant="centerpiece"
           />
@@ -906,6 +939,7 @@ export default function SiteShell({ children, isAdmin = false }) {
               >
                 @itsjaydesu
               </Link>
+              <LanguageSwitcher className="site-shell__header-language-toggle" />
             </header>
           ) : null}
           <p className="sr-only" aria-live="polite">

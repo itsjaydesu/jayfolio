@@ -143,6 +143,264 @@
       border: 1px solid rgba(0, 40, 36, 0.8);
     }
 
+    .titlebar-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .language-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      margin-top: 12px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 4px;
+      color: #f4faff;
+      font-size: 0.75rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      opacity: 0.7;
+    }
+
+    .language-toggle:hover {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.3);
+      opacity: 1;
+    }
+
+    .menu-language-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 3px;
+      color: #f4faff;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .menu-language-toggle:hover {
+      background: rgba(255, 255, 255, 0.2);
+      border-color: rgba(255, 255, 255, 0.4);
+    }
+
+    .earth-icon {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+    }
+
+    .earth-icon-small {
+      width: 12px;
+      height: 12px;
+      fill: currentColor;
+    }
+
+    .lang-text {
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    /* Enhanced UI Overlay Styles */
+    .ui-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.75rem;
+      gap: 1rem;
+    }
+
+    .ui-title {
+      font-size: 0.92rem;
+      margin: 0 0 0.35rem;
+      letter-spacing: 0.2em;
+      font-weight: 600;
+      background: linear-gradient(45deg, #00ffcc, #00ccff, #0099ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 0 8px rgba(0, 255, 204, 0.3));
+    }
+
+    .ui-controls {
+      flex-shrink: 0;
+    }
+
+    .language-button {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      color: #daf3f4;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      backdrop-filter: blur(10px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .language-button:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 255, 204, 0.2);
+    }
+
+    .language-button:active {
+      transform: translateY(0);
+    }
+
+    .earth-container {
+      position: relative;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .earth-icon {
+      width: 20px;
+      height: 20px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .orbit-ring {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 32px;
+      height: 8px;
+      border: 1px solid rgba(0, 255, 204, 0.3);
+      border-radius: 50%;
+      transform: translate(-50%, -50%) rotateX(75deg);
+      transition: all 0.6s ease;
+    }
+
+    .language-button:hover .orbit-ring {
+      border-color: rgba(0, 255, 204, 0.6);
+      transform: translate(-50%, -50%) rotateX(75deg) rotateZ(360deg);
+    }
+
+    .earth-glow {
+      animation: earthPulse 3s ease-in-out infinite;
+    }
+
+    @keyframes earthPulse {
+      0%, 100% { opacity: 0.3; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(1.05); }
+    }
+
+    .lang-indicator {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #00ffcc;
+      text-shadow: 0 0 4px rgba(0, 255, 204, 0.4);
+    }
+
+    /* Enhanced Retro Menu Language Toggle */
+    .retro-language-toggle {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 6px;
+      color: #f4faff;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .retro-language-toggle:hover {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.3);
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(0, 255, 204, 0.3);
+    }
+
+    .retro-language-toggle::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(0, 255, 204, 0.2), transparent);
+      transition: left 0.6s ease;
+    }
+
+    .retro-language-toggle:hover::before {
+      left: 100%;
+    }
+
+    .retro-earth-container {
+      position: relative;
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .retro-earth-icon {
+      width: 16px;
+      height: 16px;
+      position: relative;
+      z-index: 2;
+      filter: drop-shadow(0 0 2px rgba(0, 255, 204, 0.4));
+    }
+
+    .retro-earth-grid {
+      animation: retroGridRotate 20s linear infinite;
+    }
+
+    @keyframes retroGridRotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .retro-orbit-ring {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 28px;
+      height: 6px;
+      border: 1px solid rgba(0, 255, 204, 0.4);
+      border-radius: 50%;
+      transform: translate(-50%, -50%) rotateX(75deg);
+      transition: all 0.4s ease;
+    }
+
+    .retro-language-toggle:hover .retro-orbit-ring {
+      border-color: rgba(0, 255, 204, 0.8);
+      transform: translate(-50%, -50%) rotateX(75deg) rotateZ(180deg);
+    }
+
+    .retro-lang-label {
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #00ffcc;
+      text-shadow: 0 0 3px rgba(0, 255, 204, 0.5);
+    }
+
     .retro-menu__body {
       padding: 14px 0 0;
       display: flex;
@@ -419,6 +677,31 @@
         font-size: 0.75rem;
       }
 
+      .ui-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+
+      .language-button {
+        padding: 6px 10px;
+      }
+
+      .earth-container {
+        width: 20px;
+        height: 20px;
+      }
+
+      .earth-icon {
+        width: 16px;
+        height: 16px;
+      }
+
+      .orbit-ring {
+        width: 26px;
+        height: 6px;
+      }
+
       .lil-gui.root {
         right: auto;
         left: 50%;
@@ -440,15 +723,60 @@
 <body>
   <div class="scene-container"></div>
   <div class="ui-overlay">
-    <h1>Hypnotic Field</h1>
-    <p>
+    <div class="ui-header">
+      <h1 class="ui-title">Hypnotic Field</h1>
+      <div class="ui-controls">
+        <button class="language-button" onclick="toggleLanguage()" title="Switch Language / 言語を切り替える" aria-label="Language toggle">
+          <div class="earth-container">
+            <svg class="earth-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <defs>
+                <linearGradient id="earthGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style="stop-color:#00d4ff;stop-opacity:1" />
+                  <stop offset="100%" style="stop-color:#0099cc;stop-opacity:1" />
+                </linearGradient>
+              </defs>
+              <path fill="url(#earthGradient)" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+              <g class="earth-glow">
+                <circle cx="12" cy="12" r="11" fill="none" stroke="rgba(0, 212, 255, 0.3)" stroke-width="0.5"/>
+              </g>
+            </svg>
+            <div class="orbit-ring"></div>
+          </div>
+          <span class="lang-indicator">EN</span>
+        </button>
+      </div>
+    </div>
+    <p class="ui-description">
       Glide to tilt the waves. Click or tap for gentle ripples. Tune, randomize, or export every setting.
     </p>
   </div>
   <div class="retro-menu" aria-label="Main navigation">
     <div class="retro-menu__titlebar">
       <span><div class="indicator" aria-hidden="true"></div> Jay Winder</span>
-      <small>v4.1</small>
+      <div class="titlebar-controls">
+        <button class="retro-language-toggle" onclick="toggleLanguage()" title="Switch Language / 言語を切り替える" aria-label="Language toggle">
+          <div class="retro-earth-container">
+            <svg class="retro-earth-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <defs>
+                <linearGradient id="retroEarthGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style="stop-color:#00ffcc;stop-opacity:1" />
+                  <stop offset="50%" style="stop-color:#00ccff;stop-opacity:1" />
+                  <stop offset="100%" style="stop-color:#0099ff;stop-opacity:1" />
+                </linearGradient>
+              </defs>
+              <path fill="url(#retroEarthGradient)" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.80 3.97-2.1 5.39z"/>
+              <g class="retro-earth-grid">
+                <circle cx="12" cy="12" r="11" fill="none" stroke="rgba(0, 255, 204, 0.2)" stroke-width="0.5" stroke-dasharray="2,2"/>
+                <path d="M1,12 Q6,10 12,12 T23,12" fill="none" stroke="rgba(0, 204, 255, 0.2)" stroke-width="0.3"/>
+                <path d="M12,1 Q10,6 12,12 T12,23" fill="none" stroke="rgba(0, 153, 255, 0.2)" stroke-width="0.3"/>
+              </g>
+            </svg>
+            <div class="retro-orbit-ring"></div>
+          </div>
+          <span class="retro-lang-label">EN</span>
+        </button>
+        <small>v4.1</small>
+      </div>
     </div>
     <div class="retro-menu__body">
       <ul class="retro-menu__list">
@@ -475,6 +803,75 @@
     import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.157/build/three.module.js";
     import Stats from "https://threejs.org/examples/jsm/libs/stats.module.js";
     import GUI from "https://cdn.jsdelivr.net/npm/lil-gui@0.19/+esm";
+
+    // Language toggle function
+    function toggleLanguage() {
+      // Check current language and toggle
+      const currentLang = localStorage.getItem('index-page-language') || 'en';
+      const newLang = currentLang === 'en' ? 'ja' : 'en';
+      
+      // Save preference
+      localStorage.setItem('index-page-language', newLang);
+      
+      // Update all language toggle buttons
+      updateLanguageUI(newLang);
+    }
+
+    function updateLanguageUI(language) {
+      // Update language indicators on all toggle buttons
+      const langIndicators = document.querySelectorAll('.lang-indicator, .retro-lang-label');
+      langIndicators.forEach(text => {
+        text.textContent = language === 'ja' ? '日本語' : 'EN';
+      });
+      
+      // Update HTML lang attribute
+      document.documentElement.lang = language;
+      
+      // Update UI text
+      const uiOverlay = document.querySelector('.ui-overlay');
+      if (uiOverlay) {
+        const uiTitle = uiOverlay.querySelector('.ui-title');
+        const uiDescription = uiOverlay.querySelector('.ui-description');
+        
+        if (language === 'ja') {
+          if (uiTitle) {
+            uiTitle.textContent = '催眠フィールド';
+            // Update gradient colors for Japanese
+            uiTitle.style.background = 'linear-gradient(45deg, #ff00cc, #cc00ff, #9900ff)';
+          }
+          if (uiDescription) uiDescription.textContent = 'グライドして波を傾ける。クリックまたはタップで優しい波紋を。すべての設定を調整、ランダム化、またはエクスポート。';
+        } else {
+          if (uiTitle) {
+            uiTitle.textContent = 'Hypnotic Field';
+            // Reset gradient colors for English
+            uiTitle.style.background = 'linear-gradient(45deg, #00ffcc, #00ccff, #0099ff)';
+          }
+          if (uiDescription) uiDescription.textContent = 'Glide to tilt the waves. Click or tap for gentle ripples. Tune, randomize, or export every setting.';
+        }
+      }
+      
+      // Update menu items
+      const menuItems = [
+        { selector: '[data-section="about"] button', en: 'About', ja: 'について' },
+        { selector: '[data-section="projects"] button', en: 'Projects', ja: 'プロジェクト' },
+        { selector: '[data-section="words"] button', en: 'Content', ja: 'コンテンツ' },
+        { selector: '[data-section="sounds"] button', en: 'Sounds', ja: 'サウンド' },
+        { selector: '[data-section="art"] button', en: 'Art', ja: 'アート' }
+      ];
+      
+      menuItems.forEach(item => {
+        const button = document.querySelector(item.selector);
+        if (button) {
+          button.textContent = item[language];
+        }
+      });
+    }
+
+    // Initialize language on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      const savedLang = localStorage.getItem('index-page-language') || 'en';
+      updateLanguageUI(savedLang);
+    });
 
     const SEPARATION = 90;
     const AMOUNTX = 70;

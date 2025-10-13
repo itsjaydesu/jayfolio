@@ -3,6 +3,8 @@
 import { formatDisplayDate } from '../lib/formatters';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useLanguage } from '../contexts/LanguageContext';
+import { getCategoryName } from '../lib/translations';
 
 /**
  * PostCard - A consistent, reusable card component for all content types
@@ -21,6 +23,7 @@ export default function PostCard({
   category = null,
   onClick = null
 }) {
+  const { language } = useLanguage();
   // Validate required entry data
   if (!entry || !entry.slug) {
     console.error('[PostCard] Invalid entry data:', entry);
@@ -76,7 +79,9 @@ export default function PostCard({
               </time>
             )}
             {category && (
-              <span className="project-entry__category">{category}</span>
+              <span className="project-entry__category">
+                {getCategoryName(category, language)}
+              </span>
             )}
           </div>
 
