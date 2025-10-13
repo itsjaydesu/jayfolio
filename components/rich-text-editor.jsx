@@ -1,9 +1,10 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
+import { mergeAttributes, Node } from '@tiptap/core';
 import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
 import { TextStyle } from '@tiptap/extension-text-style';
@@ -44,6 +45,7 @@ import {
   UploadIcon
 } from './icons';
 import { useAdminFetch } from './admin-session-context';
+import { useUploader } from './use-uploader';
 
 // Mirrors the server-side default document so we never render an empty editor root.
 const DEFAULT_EMPTY_DOC = '<p></p>';
@@ -71,6 +73,101 @@ const BLOCK_OPTIONS = [
   { label: 'Quote', value: 'blockquote' },
   { label: 'Code Block', value: 'codeBlock' }
 ];
+
+const INITIAL_EDITOR_UI_STATE = {
+  status: 'idle',
+  error: null,
+  pickerOpen: false,
+  pending: 0,
+  completed: 0,
+  duplicates: [],
+  rejected: [],
+  limited: 0,
+  lastInserted: null
+};
+
+function toErrorMessage(error, fallback = 'Upload failed.') {
+  if (!error) return fallback;
+  if (typeof error === 'string') return error;
+  if (error instanceof Error && error.message) return error.message;
+  if (typeof error === 'object' && typeof error.message === 'string') {
+    return error.message;
+  }
+  return fallback;
+}
+
+function editorUiReducer(state, action) {
+  switch (action.type) {
+    case 'OPEN_PICKER':
+      return { ...state, pickerOpen: true, error: null };
+    case 'CLOSE_PICKER':
+      return { ...state, pickerOpen: false };
+    case 'QUEUE_FILES':
+      return action.count
+        ? {
+            ...state,
+            status: 'queued',
+            pending: 0,
+            completed: 0,
+            duplicates: [],
+            rejected: [],
+            limited: 0,
+            error: null
+          }
+        : {
+            ...state,
+            status: 'idle',
+            pending: 0,
+            completed: 0,
+            duplicates: [],
+            rejected: [],
+            limited: 0,
+            error: null
+          };
+    case 'FILE_START':
+      return { ...state, status: 'uploading', pending: state.pending + 1 };
+    case 'FILE_SUCCESS':
+      return {
+        ...state,
+        pending: Math.max(state.pending - 1, 0),
+        completed: state.completed + 1,
+        lastInserted: action.payload || null
+      };
+    case 'FILE_ERROR':
+      return {
+        ...state,
+        pending: Math.max(state.pending - 1, 0),
+        status: 'error',
+        error: toErrorMessage(action.error)
+      };
+    case 'FILE_CANCELLED':
+      return {
+        ...state,
+        pending: Math.max(state.pending - 1, 0)
+      };
+    case 'UPLOAD_BATCH_COMPLETE': {
+      const nextStatus = state.error ? 'error' : 'idle';
+      return {
+        ...state,
+        status: state.pending > 0 ? state.status : nextStatus,
+        duplicates: action.duplicates || [],
+        rejected: action.rejected || [],
+        limited: action.limited || 0,
+        pickerOpen: false
+      };
+    }
+    case 'RESET_ERROR':
+      return {
+        ...state,
+        error: null,
+        status: state.pending > 0 ? state.status : 'idle'
+      };
+    case 'CLEAR_WARNINGS':
+      return { ...state, duplicates: [], rejected: [], limited: 0 };
+    default:
+      return state;
+  }
+}
 
 function escapeAttribute(value) {
   const raw = String(value ?? '');
@@ -116,8 +213,8 @@ function getSelectedText(editor) {
   return state.doc.textBetween(from, to, '\n');
 }
 
-function buildHtmlForFile({ file, url, editor }) {
-  const safeUrl = escapeAttribute(url);
+function buildHtmlForFile({ file, response, editor }) {
+  const safeUrl = escapeAttribute(response?.url || '');
   const altText = escapeAttribute(file?.name || 'attachment');
 
   if (file?.type?.startsWith('image/')) {
@@ -201,12 +298,9 @@ export default function RichTextEditor({
   const adminFetch = useAdminFetch();
   const fileInputRef = useRef(null);
   const uploadFilesRef = useRef(null);
-  const abortControllersRef = useRef(new Set());
-  const isMountedRef = useRef(true);
   const lastSyncedHtmlRef = useRef('');
 
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadError, setUploadError] = useState(null);
+  const [uiState, dispatchUi] = useReducer(editorUiReducer, INITIAL_EDITOR_UI_STATE);
   const [textColor, setTextColor] = useState('#86deff');
   const [highlightColor, setHighlightColor] = useState('#15343c');
   const [snapshot, setSnapshot] = useState(null);
@@ -334,133 +428,141 @@ export default function RichTextEditor({
 
   const validateFile = useCallback((file) => {
     if (!(file instanceof File)) {
-      return new Error('Only file uploads are supported.');
+      return 'Only file uploads are supported.';
     }
     if (file.size > MAX_FILE_SIZE_BYTES) {
       const sizeMb = (MAX_FILE_SIZE_BYTES / (1024 * 1024)).toFixed(0);
-      return new Error(`"${file.name}" exceeds the ${sizeMb}MB upload limit.`);
+      return `"${file.name}" exceeds the ${sizeMb}MB upload limit.`;
     }
     if (!isAllowedFile(file)) {
-      return new Error(`"${file.name}" is not an accepted file type.`);
+      return `"${file.name}" is not an accepted file type.`;
     }
     return null;
   }, []);
 
   const insertUploadedFile = useCallback(
-    (file, url) => {
+    (file, response) => {
       if (!editor || editor.isDestroyed) {
         throw new Error('Editor is not ready.');
       }
-      const html = buildHtmlForFile({ file, url, editor });
+      if (!response?.url) {
+        throw new Error('Upload completed without a file URL.');
+      }
+      const html = buildHtmlForFile({ file, response, editor });
       editor.chain().focus().insertContent(html).run();
     },
     [editor]
   );
 
-  const uploadSingleFile = useCallback(
-    async (file) => {
-      const validationError = validateFile(file);
-      if (validationError) {
-        throw validationError;
-      }
+  const requestUpload = useCallback(
+    async ({ file, signal }) => {
+      const body = new FormData();
+      body.append('file', file);
 
-      const controller = new AbortController();
-      abortControllersRef.current.add(controller);
+      const response = await adminFetch('/api/upload', {
+        method: 'POST',
+        body,
+        signal
+      });
 
+      let result;
       try {
-        const body = new FormData();
-        body.append('file', file);
-
-        const response = await adminFetch('/api/upload', {
-          method: 'POST',
-          body,
-          signal: controller.signal
-        });
-
-        let result;
-        try {
-          result = await response.json();
-        } catch {
-          result = null;
-        }
-
-        if (!response.ok) {
-          const message = result?.error || `Upload failed with status ${response.status}`;
-          throw new Error(message);
-        }
-
-        if (!result?.url) {
-          throw new Error('Upload completed without a file URL.');
-        }
-
-        insertUploadedFile(file, result.url);
-      } finally {
-        abortControllersRef.current.delete(controller);
+        result = await response.json();
+      } catch (parseError) {
+        result = null;
       }
+
+      if (!response.ok) {
+        const message = result?.error || `Upload failed with status ${response.status}`;
+        throw new Error(message);
+      }
+
+      if (!result?.url) {
+        throw new Error('Upload completed without a file URL.');
+      }
+
+      return result;
     },
-    [adminFetch, insertUploadedFile, validateFile]
+    [adminFetch]
   );
 
-  const uploadFiles = useCallback(
+  const { uploadFiles: enqueueUploads, cancelAll: cancelUploads, clearWarnings } = useUploader({
+    maxFileSize: MAX_FILE_SIZE_BYTES,
+    maxFilesPerBatch: MAX_FILES_PER_BATCH,
+    acceptedMimePrefixes: ALLOWED_MIME_PREFIXES,
+    acceptedMimeTypes: ALLOWED_MIME_TYPES,
+    acceptedExtensions: ALLOWED_EXTENSIONS,
+    validateFile,
+    requestUpload,
+    normalizeResponse: (record, file) => ({
+      url: record?.url || '',
+      pathname: record?.pathname || '',
+      meta: {
+        name: file?.name || '',
+        type: record?.type || file?.type || '',
+        size: record?.size ?? file?.size ?? 0
+      }
+    }),
+    onFileStart: () => {
+      dispatchUi({ type: 'FILE_START' });
+    },
+    onFileSuccess: (payload, file) => {
+      try {
+        insertUploadedFile(file, payload);
+        dispatchUi({ type: 'FILE_SUCCESS', payload });
+      } catch (error) {
+        dispatchUi({ type: 'FILE_ERROR', error });
+      }
+    },
+    onFileError: (error) => {
+      dispatchUi({ type: 'FILE_ERROR', error });
+    },
+    onFileCancel: () => {
+      dispatchUi({ type: 'FILE_CANCELLED' });
+    }
+  });
+
+  const processUploads = useCallback(
     async (candidates) => {
-      if (!editor || editor.isDestroyed) return;
+      if (!editor || editor.isDestroyed) {
+        dispatchUi({ type: 'FILE_ERROR', error: 'Editor is not ready.' });
+        return;
+      }
 
       const files = Array.from(candidates ?? []).filter(Boolean);
-      if (!files.length) return;
+      clearWarnings();
+      dispatchUi({ type: 'QUEUE_FILES', count: files.length });
 
-      const limitedFiles = files.slice(0, MAX_FILES_PER_BATCH);
-      const skippedCount = files.length - limitedFiles.length;
-
-      setUploadError(null);
-      setIsUploading(true);
+      if (!files.length) {
+        dispatchUi({ type: 'UPLOAD_BATCH_COMPLETE', duplicates: [], rejected: [], limited: 0 });
+        return;
+      }
 
       try {
-        for (const file of limitedFiles) {
-          try {
-            await uploadSingleFile(file);
-          } catch (error) {
-            if (error?.name === 'AbortError') {
-              return;
-            }
-            console.error('[rich-text-editor] upload failure', error);
-            if (isMountedRef.current) {
-              setUploadError((previous) => previous ?? (error?.message || 'Upload failed.'));
-            }
-          }
-        }
-      } finally {
-        if (isMountedRef.current) {
-          setIsUploading(false);
-          if (skippedCount > 0) {
-            setUploadError((previous) =>
-              previous ?? `Only the first ${limitedFiles.length} file(s) were uploaded to keep the queue responsive.`
-            );
-          }
-        }
+        const result = await enqueueUploads(files);
+        dispatchUi({
+          type: 'UPLOAD_BATCH_COMPLETE',
+          duplicates: result?.duplicates || [],
+          rejected: result?.rejected || [],
+          limited: result?.limited || 0
+        });
+      } catch (error) {
+        dispatchUi({ type: 'FILE_ERROR', error });
       }
     },
-    [editor, uploadSingleFile]
+    [clearWarnings, dispatchUi, editor, enqueueUploads]
   );
 
   useEffect(() => {
-    uploadFilesRef.current = uploadFiles;
-  }, [uploadFiles]);
+    uploadFilesRef.current = processUploads;
+  }, [processUploads]);
 
-  useEffect(() => {
-    const controllerSet = abortControllersRef.current;
-    return () => {
-      isMountedRef.current = false;
-      const controllers = Array.from(controllerSet);
-      controllers.forEach((controller) => {
-        try {
-          controller.abort();
-        } catch (abortError) {
-          console.warn('[rich-text-editor] abort failed', abortError);
-        }
-      });
-      controllerSet.clear();
-    };
-  }, []);
+  useEffect(
+    () => () => {
+      cancelUploads();
+    },
+    [cancelUploads]
+  );
 
   useEffect(() => {
     if (!editor || editor.isDestroyed) return;
@@ -481,18 +583,22 @@ export default function RichTextEditor({
   );
 
   const handleFileButtonClick = useCallback(() => {
+    dispatchUi({ type: 'RESET_ERROR' });
+    dispatchUi({ type: 'OPEN_PICKER' });
     fileInputRef.current?.click();
-  }, []);
+  }, [dispatchUi]);
 
   const handleFileChange = useCallback(
-    (event) => {
+    async (event) => {
       const fileList = Array.from(event.target.files ?? []);
-      if (fileList.length) {
-        uploadFiles(fileList);
-      }
       event.target.value = '';
+      try {
+        await processUploads(fileList);
+      } finally {
+        dispatchUi({ type: 'CLOSE_PICKER' });
+      }
     },
-    [uploadFiles]
+    [dispatchUi, processUploads]
   );
 
   const toggleQuote = useCallback(() => {
@@ -612,6 +718,52 @@ export default function RichTextEditor({
   const snapshotTimestamp = snapshot?.createdAt
     ? new Date(snapshot.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     : null;
+  const isUploaderBusy = uiState.status === 'uploading' || uiState.status === 'queued';
+  const pendingUploads = uiState.pending;
+  const uploadErrorMessage = uiState.error;
+  const { duplicates, rejected, limited } = uiState;
+  const uploadButtonLabel = isUploaderBusy
+    ? pendingUploads > 1
+      ? `Uploading (${pendingUploads})`
+      : 'Uploading…'
+    : 'Upload files';
+
+  const uploadMessages = useMemo(() => {
+    const messages = [];
+
+    if (uploadErrorMessage) {
+      messages.push({ variant: 'error', text: uploadErrorMessage });
+    } else if (isUploaderBusy && pendingUploads > 0) {
+      const uploadingText =
+        pendingUploads === 1 ? 'Uploading 1 file…' : `Uploading ${pendingUploads} files…`;
+      messages.push({ variant: 'hint', text: uploadingText });
+    }
+
+    if (limited > 0) {
+      messages.push({
+        variant: 'hint',
+        text: `Skipped ${limited} file${limited === 1 ? '' : 's'} to keep the queue responsive.`
+      });
+    }
+
+    if (duplicates.length) {
+      messages.push({
+        variant: 'hint',
+        text: `${duplicates.length} duplicate file${duplicates.length === 1 ? '' : 's'} skipped.`
+      });
+    }
+
+    if (rejected.length) {
+      const firstReason = rejected[0]?.reason || 'Unsupported file type.';
+      const text =
+        rejected.length === 1
+          ? firstReason
+          : `${rejected.length} file(s) rejected. ${firstReason}`;
+      messages.push({ variant: 'error', text });
+    }
+
+    return messages;
+  }, [duplicates, isUploaderBusy, limited, pendingUploads, rejected, uploadErrorMessage]);
 
   const editorClassName = `admin-editor${isFullscreen ? ' admin-editor--fullscreen' : ''}`;
 
@@ -830,11 +982,11 @@ export default function RichTextEditor({
 
         <ToolbarGroup className="admin-toolbar__group--upload">
           <ToolbarButton
-            label={isUploading ? 'Uploading…' : 'Upload files'}
+            label={uploadButtonLabel}
             icon={<UploadIcon />}
             onClick={handleFileButtonClick}
-            disabled={isUploading}
-            ariaLabel="Upload files"
+            disabled={isUploaderBusy}
+            ariaLabel={uploadButtonLabel}
           />
           <input
             ref={fileInputRef}
@@ -862,11 +1014,15 @@ export default function RichTextEditor({
           Snapshot saved at {snapshotTimestamp}.
         </p>
       ) : null}
-      {uploadError ? (
-        <p className="admin-status admin-status--error" role="alert">
-          {uploadError}
+      {uploadMessages.map((message, index) => (
+        <p
+          key={`upload-message-${index}`}
+          className={`admin-status admin-status--${message.variant === 'error' ? 'error' : 'hint'}`}
+          role={message.variant === 'error' ? 'alert' : undefined}
+        >
+          {message.text}
         </p>
-      ) : null}
+      ))}
       <EditorContent editor={editor} />
     </div>
   );

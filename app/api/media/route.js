@@ -4,10 +4,35 @@ import { del } from '@vercel/blob';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const limitParam = Number.parseInt(searchParams.get('limit') || '24', 10);
+    const offsetParam = Number.parseInt(searchParams.get('offset') || '0', 10);
+    const searchTerm = (searchParams.get('search') || '').trim().toLowerCase();
+
+    const limit = Number.isFinite(limitParam) ? Math.min(Math.max(limitParam, 1), 60) : 24;
+    const offset = Number.isFinite(offsetParam) ? Math.max(offsetParam, 0) : 0;
+
     const { files } = await readMediaIndex();
-    return NextResponse.json({ files });
+    const filtered = searchTerm
+      ? files.filter((file) => {
+          const haystack = `${file.title || ''} ${file.alt || ''} ${file.pathname || ''}`.toLowerCase();
+          return haystack.includes(searchTerm);
+        })
+      : files;
+
+    const slice = filtered.slice(offset, offset + limit);
+    const nextOffset = offset + slice.length;
+    const total = filtered.length;
+    const hasMore = nextOffset < total;
+
+    return NextResponse.json({
+      files: slice,
+      total,
+      hasMore,
+      nextOffset: hasMore ? nextOffset : null
+    });
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

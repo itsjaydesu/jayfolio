@@ -1,46 +1,73 @@
 # Rich Text Workflow v3.0 Plan
 
 ## 1. Layout & Responsiveness
-- [ ] Expand the admin editor card so the rich text surface spans the full width when the entry list is collapsed.
-- [ ] Adjust flex/grid rules in `app/globals.css` so the toolbar and editor share one column while keeping generous padding on wide screens and collapsing gracefully under 720 px.
-- [ ] Allow the editor to stretch vertically with `flex: 1` while keeping sensible minimum heights for short drafts.
+- [x] Expand the admin editor canvas to span the full width whenever the entry list is collapsed.  
+  <!-- Keeps the TipTap surface roomy when authors hide the drawer while still permitting quick toggles back. -->
+- [x] Adjust flex/grid rules in `app/globals.css` so the toolbar and editor share a single column above 720 px and gracefully stack below that breakpoint.  
+  <!-- Maintains consistent padding on wide displays without forcing horizontal scroll on tablets. -->
+- [x] Allow the editor stage to stretch vertically with `flex: 1` plus sensible `min-height` guards.  
+  <!-- Prevents short drafts from collapsing while letting long sessions fill the viewport. -->
 
 ## 2. Modular State & Upload Pipeline
-- [ ] Introduce a reducer-based state machine in `components/rich-text-editor.jsx` to manage file selection, cropping, placement, and error states.
-- [ ] Extract a reusable `useUploader` hook that validates MIME/size, limits batch uploads, supports abort signals, and surfaces progress updates.
-- [ ] Normalise upload responses so downstream components receive consistent `{ url, pathname, meta }` payloads.
+- [x] Introduce a reducer-driven state machine inside `components/rich-text-editor.jsx` to track selection, pending uploads, modal visibility, and error states.  
+  <!-- Centralizes transitions (idle → selecting → uploading → inserting) for predictable behaviour. -->
+- [x] Extract a reusable `useUploader` hook that enforces MIME/size rules, limits batch size, dedupes files, supports abort signals, and emits progress.  
+  <!-- Shares validation between cover uploader and inline media while keeping concurrency bounded. -->
+- [x] Normalize upload responses to `{ url, pathname, meta }` before insertion.  
+  <!-- Guarantees downstream consumers receive the same payload shape regardless of API quirks. -->
 
 ## 3. Cover Image Uploader v3 Integration
-- [ ] Refactor `components/cover-image-uploader.jsx` into a shared component providing:
-  - [ ] Drag/drop support with keyboard triggers and hover feedback.
-  - [ ] Cropping modal backed by `react-image-crop`, including zoom, aspect toggle (3:2 & 1:1), and live resolution readouts.
-  - [ ] Inline alt-text editor with character count and validation.
-  - [ ] Existing-media selector with search, pagination, and lazy fetching to avoid long render queues.
-- [ ] Export helper utilities (alt sanitisation, blob creation) for inline media insertion flows.
+- [x] Refactor `components/cover-image-uploader.jsx` to supply a shared drag/drop zone with keyboard triggers, hover affordances, and MIME guards.  
+  <!-- Ensures accessible upload entry points across cover and inline flows. -->
+- [x] Upgrade the cropper with zoom controls, 3:2 / 1:1 aspect toggles, live resolution readouts, and a minimum crop guard (≥200×200).  
+  <!-- Prevents undersized crops and gives authors precise aspect control. -->
+- [x] Add an inline alt-text editor with character counter and non-empty validation prior to completion.  
+  <!-- Encourages accessible descriptions without needing a separate modal. -->
+- [x] Lazily fetch existing media with search + pagination to avoid rendering massive lists.  
+  <!-- Reduces initial payload size and keeps the panel responsive. -->
+- [x] Export helper utilities (alt sanitisation, blob creation) for other uploader consumers.  
+  <!-- Allows inline media insertion to reuse the same sanitisation primitives. -->
 
 ## 4. Inline Media Placement
-- [ ] Extend the TipTap configuration with custom image node attributes (`data-alignment`, `data-width`, optional captions).
-- [ ] Provide toolbar controls so authors can insert images via the new uploader, toggle alignment (left/center/right), choose width presets (25%, 50%, 100%), and edit captions inline.
-- [ ] Ensure pasted/dropped files use the same pipeline, surfacing actionable error messages for unsupported formats.
+- [ ] Extend TipTap with a custom inline media node carrying `alignment`, `width`, `caption`, `alt`, `src`, and `pathname` attributes.  
+  <!-- Stores rich metadata in the document schema instead of relying on DOM queries. -->
+- [ ] Add toolbar actions for inserting via uploader, alignment toggles (left/center/right), width presets (25/50/100 %), and inline caption editing.  
+  <!-- Gives authors deterministic layout controls from the toolbar. -->
+- [ ] Route drag/drop & paste events through the uploader pipeline, showing actionable errors for unsupported files.  
+  <!-- Keeps every entry point consistent while surfacing clear feedback. -->
 
 ## 5. Styling & Accessibility
-- [ ] Add `.editor-media` CSS classes for floated alignment, max-width constraints, mobile stacking, and dark-mode-friendly shadows.
-- [ ] Supply `@supports` fallbacks to preserve spacing on browsers without float-gap support.
-- [ ] Harden focus states so toolbar buttons, modals, and media thumbnails remain keyboard accessible; maintain `aria-modal`, focus trapping, and ESC handling in overlays.
+- [ ] Create `.editor-media` utility classes to manage floats, max-widths, mobile stacking, and dark-mode shadows.  
+  <!-- Normalizes presentation across admin preview and public renderers. -->
+- [ ] Provide `@supports` fallbacks where `float-gap` is unavailable, falling back to margin spacing.  
+  <!-- Preserves layout integrity on legacy browsers. -->
+- [ ] Reinforce focus states, `aria-modal`, focus trapping, and ESC behaviour for overlays and toolbar buttons.  
+  <!-- Ensures keyboard-only and screen-reader users can operate all controls. -->
 
 ## 6. Error Handling & Edge Cases
-- [ ] Recover gracefully from cancelled uploads, network failures, and server validation errors with clear retry options.
-- [ ] Guard the cropper against tiny selections (minimum 200×200) and warn about significant upscaling.
-- [ ] Prevent duplicate uploads by comparing file signatures and surface reuse notifications.
-- [ ] Ensure removing inline media cleans up wrapper markup without orphaned nodes.
+- [ ] Present retryable error banners covering cancellations, network failures, and server validation errors.  
+  <!-- Prevents silent failure by guiding authors toward recovery actions. -->
+- [ ] Block completion when crops fall below 200×200 and warn when upscaling exceeds 150 %.  
+  <!-- Protects media quality and sets user expectations. -->
+- [ ] Skip duplicate uploads using file signatures and highlight reuse opportunities.  
+  <!-- Avoids redundant storage and keeps the media index tidy. -->
+- [ ] Remove inline media nodes atomically so no orphan wrappers remain after deletion.  
+  <!-- Maintains a valid TipTap document tree and clean markup. -->
 
 ## 7. Testing & Verification
-- [ ] Add unit tests for uploader utilities and crop conversions; expand integration coverage for drag/drop and alignment controls.
-- [ ] Perform manual smoke tests (multi-image uploads, varied alignments, narrow viewport wraps, keyboard-only modal navigation).
-- [ ] Run `pnpm lint` and document manual verification results before merging.
+- [ ] Add targeted unit tests for uploader utilities (signatures, validation) and crop dimension guards.  
+  <!-- Locks down critical logic without needing a full test harness yet. -->
+- [ ] Perform manual smoke tests covering multi-image uploads, alignment toggles, narrow viewports, and keyboard navigation.  
+  <!-- Satisfies repository guidelines given the absence of automated E2E coverage. -->
+- [ ] Run `pnpm lint` and capture manual verification notes before completion.  
+  <!-- Ensures code quality gates are respected prior to merging. -->
 
 ## 8. About Section Enhancements
-- [ ] Audit current About page data model to confirm required fields for English/Japanese content.
-- [ ] Ensure `/administratorrrr` surfaces editable fields for About (title, subtitles, rich content, cards, tags) with localisation support.
-- [ ] Update About page rendering to respect new admin-managed content while preserving existing design.
-- [ ] Add validation and previews in the admin console so editors can confirm layout before publishing.
+- [ ] Audit the About data model to confirm required English/Japanese fields and note any gaps.  
+  <!-- Keeps localisation parity across admin and public surfaces. -->
+- [ ] Ensure `/administratorrrr` surfaces editable About fields (title, subtitles, rich content, cards, tags) with language tabs.  
+  <!-- Gives authors full control inside the admin console. -->
+- [ ] Update the About page rendering to consume the new admin-managed content while preserving design.  
+  <!-- Applies dynamic content without sacrificing existing layout polish. -->
+- [ ] Add validation and preview flows so editors can verify layout before publishing.  
+  <!-- Reduces the risk of broken content going live. -->
