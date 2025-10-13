@@ -9,33 +9,33 @@ export const revalidate = 3600;
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
-  const entry = await readEntry('words', slug);
+  const entry = await readEntry('content', slug);
   
   if (!entry) {
     return {};
   }
   
-  return await getMetadata('words', entry, 'words');
+  return await getMetadata('content', entry, 'content');
 }
 
 export async function generateViewport({ params }) {
   const { slug } = await params;
-  const entry = await readEntry('words', slug);
+  const entry = await readEntry('content', slug);
   if (!entry) {
-    return await generateViewportData('words');
+    return await generateViewportData('content');
   }
-  return await generateViewportData('words', entry, 'words');
+  return await generateViewportData('content', entry, 'content');
 }
 
-export default async function WordDetailPage({ params }) {
+export default async function ContentDetailPage({ params }) {
   const { slug } = await params;
   const [entry, isAdmin] = await Promise.all([
-    readEntry('words', slug),
+    readEntry('content', slug),
     hasAdminSession()
   ]);
   if (!entry) {
     notFound();
   }
 
-  return <EntryDetail type="words" entry={entry} isAdmin={isAdmin} />;
+  return <EntryDetail type="content" entry={entry} isAdmin={isAdmin} />;
 }

@@ -175,7 +175,14 @@ export default function EntryDetail({ type, entry, isAdmin = false }) {
   const editHref = entry?.slug ? `/administratorrrr?type=${type}&slug=${encodeURIComponent(entry.slug)}` : null;
   const dateLabel = createdAt ? formatDisplayDate(createdAt) : '';
   const stageClasses = ['detail-stage'];
+  // Capitalize and format the type label properly
   const typeLabel = type ? `${type.charAt(0).toUpperCase()}${type.slice(1)}` : '';
+  // Create a proper display name for the back button
+  const backButtonLabel = type === 'content' ? 'Content' : 
+                          type === 'projects' ? 'Projects' : 
+                          type === 'sounds' ? 'Sounds' : 
+                          type === 'art' ? 'Art' : 
+                          type;
 
   if (stageState === 'entering') {
     stageClasses.push('is-fading-in');
@@ -198,7 +205,7 @@ export default function EntryDetail({ type, entry, isAdmin = false }) {
             className="detail-view__back"
             onClick={(event) => handleNavigateAway(event, `/${type}`)}
           >
-            Back to {type}
+            Back to {backButtonLabel}
           </Link>
           <div className="detail-view__stamps">
             {typeLabel && <span>{typeLabel}</span>}
