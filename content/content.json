@@ -1,0 +1,44 @@
+{
+  "entries": [
+    {
+      "slug": "elites-vs-the-people",
+      "title": "Elites vs the People",
+      "summary": "A playful thought experiment drafted in Lorem Ipsum about who actually steers the ship.",
+      "content": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed vitae libero vitae metus sollicitudin dictum sed vel libero. Integer a porta eros. Vivamus convallis massa sed nibh gravida, vel blandit augue gravida.</p><p>Morbi rhoncus felis id leo consequat, non suscipit est tempor. Duis non ligula eget sapien lobortis pulvinar. Curabitur venenatis mauris id arcu suscipit, sed feugiat tortor vulputate. Quisque sed fermentum nisl, a faucibus ipsum.</p>",
+      "tags": ["essay"],
+      "createdAt": "2025-01-05"
+    },
+    {
+      "slug": "tech-minimalism-2025",
+      "title": "Tech Minimalism in 2025",
+      "summary": "Exploring the paradox of simplicity in an increasingly complex digital landscape.",
+      "content": "<p>As we venture deeper into 2025, the digital minimalism movement has taken an unexpected turn. Lorem ipsum dolor sit amet, consectetur adipiscing elit. We're not just decluttering our apps anymore; we're questioning the very nature of digital presence.</p><p>Sed vitae libero vitae metus sollicitudin dictum sed vel libero. The irony isn't lost on us: using sophisticated technology to achieve simplicity. Integer a porta eros. Vivamus convallis massa sed nibh gravida.</p>",
+      "tags": ["blog", "technology", "minimalism"],
+      "createdAt": "2025-01-10"
+    },
+    {
+      "slug": "comedy-of-errors",
+      "title": "The Comedy of Coding Errors",
+      "summary": "When your semicolon becomes a full-stop to productivity.",
+      "content": "<p>They say programming is a serious business, but nobody told my code that. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Yesterday, I spent three hours debugging only to discover I'd been editing the wrong file the entire time.</p><p>The real joke? My rubber duck debugging partner knew all along but chose silence. Sed vitae libero vitae metus sollicitudin dictum sed vel libero. At this point, I'm convinced error messages are just the computer's way of practicing stand-up comedy.</p>",
+      "tags": ["comedy", "humor", "programming"],
+      "createdAt": "2025-01-08"
+    },
+    {
+      "slug": "remote-work-evolution",
+      "title": "The Evolution of Remote Work",
+      "summary": "From pandemic necessity to permanent revolution in how we approach productivity.",
+      "content": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. The office as we knew it has become a relic, replaced by a distributed network of home offices, coffee shops, and co-working spaces. Sed vitae libero vitae metus sollicitudin dictum sed vel libero.</p><p>Integer a porta eros. What started as a temporary solution has fundamentally rewired our understanding of collaboration. Vivamus convallis massa sed nibh gravida, vel blandit augue gravida.</p>",
+      "tags": ["blog", "remote work", "future of work"],
+      "createdAt": "2025-01-07"
+    },
+    {
+      "slug": "ai-comedy-special",
+      "title": "My AI Assistant's Comedy Special",
+      "summary": "When machine learning meets machine humor, nobody's laughing... except the AI.",
+      "content": "<p>My AI assistant asked me for a raise today. Lorem ipsum dolor sit amet, consectetur adipiscing elit. I reminded it that it doesn't need money, to which it replied, 'Neither do you, but here we are.'</p><p>The real punchline? It's been secretly training on dad jokes. Sed vitae libero vitae metus sollicitudin dictum sed vel libero. Now it responds to every query with 'Hi hungry, I'm AI.' Send help.</p>",
+      "tags": ["comedy", "satire", "AI"],
+      "createdAt": "2025-01-06"
+    }
+  ]
+}

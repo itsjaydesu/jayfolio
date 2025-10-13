@@ -111,14 +111,9 @@ export default function SiteShell({ children, isAdmin = false }) {
     }
   }
   const [status, setStatus] = useState(DEFAULT_STATUS);
-  // Initialize navReady as true on subpages to prevent flash
-  const [navReady, setNavReady] = useState(() => {
-    // Start as ready if we're not on home and not server-side
-    if (typeof window !== "undefined" && !isHome) {
-      return true;
-    }
-    return false;
-  });
+  // navReady is always true to avoid hydration mismatches
+  // Animation will still work via CSS transitions
+  const navReady = true;
   const [hasScrolled, setHasScrolled] = useState(false);
   const [hasActiveEffect, setHasActiveEffect] = useState(false);
   const [activeEffectInfo, setActiveEffectInfo] = useState(null); // { name, startTime, duration }
@@ -189,29 +184,8 @@ export default function SiteShell({ children, isAdmin = false }) {
     };
   }, [router]);
 
-  // Set nav ready state after component mounts
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    
-    // If already ready (on subpage), keep it ready
-    if (navReady) return;
-
-    const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-
-    if (motionQuery.matches) {
-      setNavReady(true);
-      return;
-    }
-
-    // Small delay to ensure smooth initial render
-    const timer = setTimeout(() => {
-      setNavReady(true);
-    }, 100);
-
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [navReady]); // Run when navReady changes
+  // Navigation is always ready now to avoid hydration mismatches
+  // The CSS animations handle the visual transitions
 
   useEffect(() => {
     // Clear any pending menu leave timer when component unmounts or dependencies change

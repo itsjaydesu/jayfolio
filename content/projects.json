@@ -121,6 +121,34 @@
       "coverImage": null,
       "status": "published",
       "createdAt": "2024-01-01"
+    },
+    {
+      "slug": "tokyo-tech-summit-2024",
+      "title": "Tokyo Tech Summit 2024",
+      "summary": "Leading a workshop on cross-cultural product development at Japan's premier tech conference.",
+      "content": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. The Tokyo Tech Summit brought together over 5,000 developers, designers, and entrepreneurs from across Asia-Pacific. Sed vitae libero vitae metus sollicitudin dictum sed vel libero.</p><p>My workshop focused on bridging Eastern and Western design philosophies in product development. Integer a porta eros. We explored case studies from successful cross-cultural launches and common pitfalls to avoid. Vivamus convallis massa sed nibh gravida, vel blandit augue gravida.</p>",
+      "tags": [
+        "event",
+        "conference",
+        "speaking"
+      ],
+      "coverImage": null,
+      "status": "published",
+      "createdAt": "2024-10-15"
+    },
+    {
+      "slug": "creative-coding-workshop-london",
+      "title": "Creative Coding Workshop London",
+      "summary": "Two-day intensive workshop on generative art and interactive installations.",
+      "content": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. This hands-on workshop introduced artists and designers to creative coding using Processing and p5.js. Sed vitae libero vitae metus sollicitudin dictum sed vel libero.</p><p>Participants created their own generative art pieces and learned to build interactive installations. Integer a porta eros. The workshop culminated in a public exhibition at the venue. Vivamus convallis massa sed nibh gravida, vel blandit augue gravida.</p>",
+      "tags": [
+        "event",
+        "workshop",
+        "creative coding"
+      ],
+      "coverImage": null,
+      "status": "published",
+      "createdAt": "2024-09-20"
     }
   ]
 }

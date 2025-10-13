@@ -15,7 +15,7 @@ import Image from 'next/image';
  */
 export default function PostCard({ 
   entry, 
-  type = 'projects', // 'words', 'projects', 'sounds'
+  type = 'projects', // 'content', 'projects', 'sounds', 'art'
   tone = 'neutral',
   isAdmin = false,
   category = null,
@@ -34,10 +34,13 @@ export default function PostCard({
   const getFigureClass = () => {
     const baseClass = 'project-entry__figure';
     switch(type) {
-      case 'words':
+      case 'content':
+      case 'words': // Keep for backward compatibility
         return `${baseClass} project-entry__figure--words`;
       case 'sounds':
         return `${baseClass} project-entry__figure--sounds`;
+      case 'art':
+        return `${baseClass} project-entry__figure--art`;
       default:
         return baseClass;
     }
@@ -54,9 +57,12 @@ export default function PostCard({
     }
   };
 
+  // Map content type to words for CSS classes (backward compatibility)
+  const cssType = type === 'content' ? 'words' : type;
+
   return (
     <article
-      className={`project-entry project-entry--${type}`}
+      className={`project-entry project-entry--${cssType}`}
       data-tone={tone}
       data-entry-slug={entry.slug}
     >

@@ -3,28 +3,49 @@
 import { useState, useMemo } from 'react';
 import PostCard from '../../components/PostCard';
 
-const WORD_TONES = {
+const CONTENT_TONES = {
   'slow-scan-memo': 'violet',
   'field-lexicon': 'teal',
-  'dispatch-09': 'magenta'
+  'dispatch-09': 'magenta',
+  'comedy-special': 'amber',
+  'blog-thoughts': 'cyan'
 };
 
-const CATEGORIES = ['All', 'Blog', 'Essays'];
+const CATEGORIES = ['All', 'Essays', 'Blog', 'Comedy'];
 
-export default function WordsContent({ entries, hero, isAdmin = false }) {
+export default function ContentContent({ entries, hero, isAdmin = false }) {
   const [selectedCategory, setSelectedCategory] = useState('All');
 
   // Auto-categorize entries based on tags or content
   const categorizedEntries = useMemo(() => {
     return entries.map(entry => {
-      // Check for essay tag or longer content
-      const isEssay = entry.tags?.includes('essay') || 
-                     entry.content?.length > 1500 ||
-                     entry.title?.toLowerCase().includes('essay');
+      let category = 'Blog'; // Default
+      
+      const lowerTags = entry.tags?.map(t => t.toLowerCase()) || [];
+      const lowerTitle = entry.title?.toLowerCase() || '';
+      const lowerContent = entry.content?.toLowerCase() || '';
+      
+      // Check for essay
+      if (lowerTags.includes('essay') || 
+          entry.content?.length > 1500 ||
+          lowerTitle.includes('essay') ||
+          lowerTitle.includes('elites')) {
+        category = 'Essays';
+      }
+      // Check for comedy
+      else if (lowerTags.includes('comedy') || 
+               lowerTags.includes('satire') ||
+               lowerTags.includes('humor') ||
+               lowerTitle.includes('comedy') ||
+               lowerTitle.includes('funny') ||
+               lowerContent.includes('joke')) {
+        category = 'Comedy';
+      }
+      // Everything else is Blog
       
       return {
         ...entry,
-        category: isEssay ? 'Essays' : 'Blog'
+        category
       };
     });
   }, [entries]);
@@ -64,12 +85,12 @@ export default function WordsContent({ entries, hero, isAdmin = false }) {
       ) : (
         <div className="channel__grid" key={selectedCategory} data-category={selectedCategory}>
           {filteredEntries.map((entry) => {
-            const tone = WORD_TONES[entry.slug] ?? 'neutral';
+            const tone = CONTENT_TONES[entry.slug] ?? 'neutral';
             return (
               <PostCard
                 key={entry.slug}
                 entry={entry}
-                type="words"
+                type="content"
                 tone={tone}
                 isAdmin={isAdmin}
                 category={entry.category}

@@ -77,9 +77,13 @@
     "title": "Selected Builds",
     "lead": "Explore interactive commissions, touring installations, and responsive tooling. Choose any dossier to open a full breakdown with media, credits, and embedded documentation."
   },
+  "content": {
+    "title": "Content & Writing",
+    "lead": "Essays, blog posts, and comedy pieces exploring technology, culture, and the absurdity of modern life. Open any piece to read the full entry with embedded media and references."
+  },
   "words": {
-    "title": "Words & Essays",
-    "lead": "Essays, dispatches, and glossaries documenting the studio process. Open any log to read the full rich-text entry with embedded media and references."
+    "title": "Content & Writing",
+    "lead": "Essays, blog posts, and comedy pieces exploring technology, culture, and the absurdity of modern life. Open any piece to read the full entry with embedded media and references."
   },
   "sounds": {
     "title": "Sound Experiments",

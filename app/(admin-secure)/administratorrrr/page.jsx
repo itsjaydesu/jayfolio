@@ -19,7 +19,7 @@ const CoverImageUploader = dynamic(() => import('@/components/cover-image-upload
 
 const TYPE_OPTIONS = [
   { id: 'projects', label: 'Projects' },
-  { id: 'words', label: 'Words' },
+  { id: 'content', label: 'Content' },
   { id: 'sounds', label: 'Sounds' },
   { id: 'art', label: 'Art' }
 ];

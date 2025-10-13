@@ -38,7 +38,7 @@ export default async function sitemap() {
       priority: 0.9,
     },
     {
-      url: `${baseUrl}/words`,
+      url: `${baseUrl}/content`,
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 0.7,
@@ -62,7 +62,7 @@ export default async function sitemap() {
   
   try {
     // Load all content types
-    const contentTypes = ['projects', 'words', 'sounds', 'art'];
+    const contentTypes = ['projects', 'content', 'sounds', 'art'];
     
     for (const type of contentTypes) {
       const content = await loadContentEntries(type);

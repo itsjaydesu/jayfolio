@@ -12,7 +12,7 @@ export default function HomePage() {
         <h3>Navigation Map</h3>
         <p>
           The menu mirrors a workstation switcher: About introduces the operator, Projects highlights installations,
-          Words curates essays, Sounds archives auditory experiments, and Art documents the dot field gallery. Cycle
+          Content curates essays and writings, Sounds archives auditory experiments, and Art documents the dot field gallery. Cycle
           through them to see the background waves remix in real-time.
         </p>
       </section>
