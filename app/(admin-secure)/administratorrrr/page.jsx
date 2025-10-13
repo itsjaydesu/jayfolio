@@ -553,89 +553,99 @@ export default function AdminPage() {
           </div>
 
           <div className="editor-stage__meta">
-            <section className="editor-card">
-              <header className="editor-card__header">
-                <h2>Publishing</h2>
-              </header>
-              <div className="editor-card__grid">
-                <div className="editor-field editor-field--status">
-                  <span className="editor-field__label">Status</span>
-                  <div className="editor-status" role="radiogroup" aria-label="Entry status">
-                    <button
-                      type="button"
-                      className={`editor-status__pill${form.status !== 'published' ? ' is-active' : ''}`}
-                      onClick={() => handleStatusChange('draft')}
-                      aria-pressed={form.status !== 'published'}
-                    >
-                      Draft
-                    </button>
-                    <button
-                      type="button"
-                      className={`editor-status__pill${form.status === 'published' ? ' is-active' : ''}`}
-                      onClick={() => handleStatusChange('published')}
-                      aria-pressed={form.status === 'published'}
-                    >
-                      Published
-                    </button>
+            <div className="editor-meta-grid">
+              <section className="editor-panel">
+                <header className="editor-panel__header">
+                  <h2>Publishing</h2>
+                </header>
+                <div className="editor-panel__grid">
+                  <div className="editor-field editor-field--status">
+                    <span className="editor-field__label">Status</span>
+                    <div className="editor-status" role="radiogroup" aria-label="Entry status">
+                      <button
+                        type="button"
+                        className={`editor-status__pill${form.status !== 'published' ? ' is-active' : ''}`}
+                        onClick={() => handleStatusChange('draft')}
+                        aria-pressed={form.status !== 'published'}
+                      >
+                        Draft
+                      </button>
+                      <button
+                        type="button"
+                        className={`editor-status__pill${form.status === 'published' ? ' is-active' : ''}`}
+                        onClick={() => handleStatusChange('published')}
+                        aria-pressed={form.status === 'published'}
+                      >
+                        Published
+                      </button>
+                    </div>
+                  </div>
+                  <div className="editor-field">
+                    <label htmlFor="entry-created" className="editor-field__label">Publish date</label>
+                    <input
+                      id="entry-created"
+                      type="date"
+                      className="editor-input"
+                      value={form.createdAt}
+                      onChange={(event) => handleFieldChange('createdAt', event.target.value)}
+                    />
                   </div>
                 </div>
-                <div className="editor-field">
-                  <label htmlFor="entry-created" className="editor-field__label">Publish date</label>
-                  <input
-                    id="entry-created"
-                    type="date"
-                    className="editor-input"
-                    value={form.createdAt}
-                    onChange={(event) => handleFieldChange('createdAt', event.target.value)}
-                  />
-                </div>
-              </div>
-            </section>
+              </section>
 
-            <section className="editor-card">
-              <header className="editor-card__header">
-                <h2>Metadata</h2>
+              <section className="editor-panel">
+                <header className="editor-panel__header">
+                  <h2>Metadata</h2>
+                </header>
+                <div className="editor-panel__grid">
+                  <div className="editor-field">
+                    <label htmlFor="entry-slug" className="editor-field__label">Slug</label>
+                    <input
+                      id="entry-slug"
+                      type="text"
+                      className="editor-input"
+                      value={form.slug}
+                      onChange={(event) => handleFieldChange('slug', event.target.value)}
+                    />
+                  </div>
+                  <div className="editor-field">
+                    <label htmlFor="entry-tags" className="editor-field__label">Tags</label>
+                    <input
+                      id="entry-tags"
+                      type="text"
+                      className="editor-input"
+                      placeholder="ambient, installation"
+                      value={tagsValue}
+                      onChange={(event) => handleLocalizedFieldChange('tagsText', activeLanguage, event.target.value)}
+                    />
+                  </div>
+                </div>
+              </section>
+            </div>
+
+            <section className="editor-panel editor-panel--full">
+              <header className="editor-panel__header">
+                <h2>Summary</h2>
               </header>
-              <div className="editor-card__grid">
-                <div className="editor-field">
-                  <label htmlFor="entry-slug" className="editor-field__label">Slug</label>
-                  <input
-                    id="entry-slug"
-                    type="text"
-                    className="editor-input"
-                    value={form.slug}
-                    onChange={(event) => handleFieldChange('slug', event.target.value)}
-                  />
-                </div>
-                <div className="editor-field">
-                  <label htmlFor="entry-tags" className="editor-field__label">Tags</label>
-                  <input
-                    id="entry-tags"
-                    type="text"
-                    className="editor-input"
-                    placeholder="ambient, installation"
-                    value={tagsValue}
-                    onChange={(event) => handleLocalizedFieldChange('tagsText', activeLanguage, event.target.value)}
-                  />
-                </div>
-              </div>
               <div className="editor-field">
-                <label htmlFor="entry-summary" className="editor-field__label">Summary</label>
+                <label htmlFor="entry-summary" className="editor-field__label sr-only">
+                  Summary
+                </label>
                 <textarea
                   id="entry-summary"
                   className="editor-textarea"
-                  rows={4}
+                  rows={5}
                   value={summaryValue}
                   onChange={(event) => handleLocalizedFieldChange('summary', activeLanguage, event.target.value)}
                 />
               </div>
             </section>
 
-            <section className="editor-card">
-              <header className="editor-card__header">
+            <section className="editor-panel editor-panel--full">
+              <header className="editor-panel__header">
                 <h2>Media</h2>
               </header>
-              <div className="editor-card__body">
+              <div className="editor-panel__grid editor-panel__grid--media">
                 <div className="editor-field editor-field--cover">
                   <span className="editor-field__label">Cover image</span>
                   <Suspense fallback={<div className="uploader-loading">Loading uploader...</div>}>
