@@ -1565,8 +1565,36 @@ a {
 
 .detail-view__stamps {
   display: inline-flex;
-  gap: 0.8rem;
+  align-items: center;
+  gap: 1.5rem;
   flex-wrap: wrap;
+}
+
+.detail-view__published {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.85rem;
+  background: rgba(84, 112, 128, 0.15);
+  border: 1px solid rgba(84, 112, 128, 0.3);
+  border-radius: 6px;
+}
+
+.detail-view__published-label {
+  font-size: 0.625rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: rgba(178, 220, 228, 0.7);
+  font-weight: 600;
+}
+
+.detail-view__published-date {
+  font-size: 0.75rem;
+  color: rgba(234, 242, 244, 0.9);
+  font-weight: 500;
+}
+
+.detail-view__type-label {
   font-size: 0.68rem;
   letter-spacing: 0.28em;
   text-transform: uppercase;

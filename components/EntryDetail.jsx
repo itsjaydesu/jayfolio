@@ -208,7 +208,13 @@ export default function EntryDetail({ type, entry, isAdmin = false }) {
             Back to {backButtonLabel}
           </Link>
           <div className="detail-view__stamps">
-            {typeLabel && <span>{typeLabel}</span>}
+            {dateLabel && (
+              <div className="detail-view__published">
+                <span className="detail-view__published-label">Published</span>
+                <span className="detail-view__published-date">{dateLabel}</span>
+              </div>
+            )}
+            {typeLabel && <span className="detail-view__type-label">{typeLabel}</span>}
           </div>
         </nav>
 
@@ -224,26 +230,18 @@ export default function EntryDetail({ type, entry, isAdmin = false }) {
             </div>
             {summary ? <p className="detail-view__summary">{summary}</p> : null}
           </div>
-          {(dateLabel || tags?.length) && (
+          {tags?.length ? (
             <div className="detail-view__meta" aria-label="Entry metadata">
-              {dateLabel ? (
-                <div className="detail-view__meta-item">
-                  <span className="detail-view__meta-label">Published</span>
-                  <span className="detail-view__meta-value">{dateLabel}</span>
-                </div>
-              ) : null}
-              {tags?.length ? (
-                <div className="detail-view__meta-item">
-                  <span className="detail-view__meta-label">Tags</span>
-                  <ul className="detail-view__meta-tags">
-                    {tags.map((tag) => (
-                      <li key={tag}>{tag}</li>
-                    ))}
-                  </ul>
-                </div>
-              ) : null}
+              <div className="detail-view__meta-item">
+                <span className="detail-view__meta-label">Tags</span>
+                <ul className="detail-view__meta-tags">
+                  {tags.map((tag) => (
+                    <li key={tag}>{tag}</li>
+                  ))}
+                </ul>
+              </div>
             </div>
-          )}
+          ) : null}
         </header>
 
         {coverImage?.url && !audioData ? (
