@@ -7,12 +7,18 @@ import { t } from '../lib/translations';
 // Animation configuration
 const TRANSITION_DURATION_MS = 600; // Smooth transition duration
 const TRANSITION_EASING = 'cubic-bezier(0.4, 0.0, 0.2, 1)'; // Smooth easing
+const DEBUG = false; // Disable debug logging
 
 export default function BrandWordmark({ className = '' }) {
   const { language } = useLanguage();
   const englishLabel = useMemo(() => t('brand.name', 'en'), []);
   const japaneseLabel = useMemo(() => t('brand.name', 'ja'), []);
   const activeLabel = t('brand.name', language);
+  
+  // Debug tracking
+  const componentId = useRef(`bw-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`);
+  const renderCount = useRef(0);
+  const previousLanguageRef = useRef(language);
   
   // Refs for DOM elements - needed for forcing reflow
   const enLayerRef = useRef(null);
@@ -39,19 +45,97 @@ export default function BrandWordmark({ className = '' }) {
   // Track if we should apply transitions (not on first render)
   const [shouldTransition, setShouldTransition] = useState(false);
   
+  // Debug: Log every render
+  renderCount.current++;
+  if (DEBUG) {
+    console.log(`🎨 [${componentId.current}] RENDER #${renderCount.current}`, {
+      language,
+      previousLanguage: previousLanguageRef.current,
+      shouldTransition,
+      enState: { opacity: enState.opacity, zIndex: enState.zIndex },
+      jaState: { opacity: jaState.opacity, zIndex: jaState.zIndex },
+      timestamp: Date.now()
+    });
+  }
+  
   // Handle cleanup on unmount
   useEffect(() => {
+    const id = componentId.current;
+    if (DEBUG) {
+      console.log(`🚀 [${id}] MOUNTED`, {
+        language,
+        timestamp: Date.now()
+      });
+    }
     return () => {
       isMountedRef.current = false;
+      if (DEBUG) {
+        console.log(`💥 [${id}] UNMOUNTED`, {
+          timestamp: Date.now()
+        });
+      }
     };
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   
   // Use useLayoutEffect to update styles before browser paint
   useLayoutEffect(() => {
+    const isFirstRender = !shouldTransition;
+    const languageChanged = previousLanguageRef.current !== language;
+    
+    if (DEBUG) {
+      console.log(`⚡ [${componentId.current}] useLayoutEffect fired`, {
+        isFirstRender,
+        shouldTransition,
+        languageChanged,
+        previousLanguage: previousLanguageRef.current,
+        currentLanguage: language,
+        timestamp: Date.now()
+      });
+    }
+    
     // Skip first render
-    if (!shouldTransition) {
+    if (isFirstRender) {
+      if (DEBUG) {
+        console.log(`⏭️ [${componentId.current}] Skipping transition (first render)`, {
+          settingShouldTransition: true
+        });
+      }
       setShouldTransition(true);
+      previousLanguageRef.current = language;
       return;
+    }
+    
+    // Check if language actually changed
+    if (!languageChanged) {
+      if (DEBUG) {
+        console.log(`🔄 [${componentId.current}] No language change, skipping update`);
+      }
+      return;
+    }
+    
+    if (DEBUG) {
+      console.log(`🎬 [${componentId.current}] Starting transition`, {
+        from: previousLanguageRef.current,
+        to: language
+      });
+      
+      // Log current computed styles BEFORE changes
+      if (enLayerRef.current && jaLayerRef.current) {
+        const enStyles = window.getComputedStyle(enLayerRef.current);
+        const jaStyles = window.getComputedStyle(jaLayerRef.current);
+        console.log(`📊 [${componentId.current}] Computed styles BEFORE:`, {
+          en: {
+            opacity: enStyles.opacity,
+            transform: enStyles.transform,
+            transition: enStyles.transition
+          },
+          ja: {
+            opacity: jaStyles.opacity,
+            transform: jaStyles.transform,
+            transition: jaStyles.transition
+          }
+        });
+      }
     }
     
     // Force browser reflow to ensure transition is recognized
@@ -68,6 +152,15 @@ export default function BrandWordmark({ className = '' }) {
     requestAnimationFrame(() => {
       if (!isMountedRef.current) return;
       
+      if (DEBUG) {
+        console.log(`🎯 [${componentId.current}] Applying new states in RAF`, {
+          language,
+          timestamp: Date.now()
+        });
+      }
+      
+      // Batch state updates using React 18's automatic batching
+      // This prevents multiple re-renders
       if (language === 'en') {
         // English becomes active, Japanese fades out
         setEnState({
@@ -97,13 +190,106 @@ export default function BrandWordmark({ className = '' }) {
           zIndex: 1
         });
       }
+      
+      previousLanguageRef.current = language;
+      
+      // Check computed styles AFTER state change
+      setTimeout(() => {
+        if (DEBUG && enLayerRef.current && jaLayerRef.current) {
+          const enStyles = window.getComputedStyle(enLayerRef.current);
+          const jaStyles = window.getComputedStyle(jaLayerRef.current);
+          console.log(`📊 [${componentId.current}] Computed styles AFTER (100ms):`, {
+            en: {
+              opacity: enStyles.opacity,
+              transform: enStyles.transform,
+              transition: enStyles.transition
+            },
+            ja: {
+              opacity: jaStyles.opacity,
+              transform: jaStyles.transform,
+              transition: jaStyles.transition
+            }
+          });
+        }
+      }, 100);
     });
   }, [language, shouldTransition]);
 
-  // Build transition style string
-  const transitionStyle = shouldTransition 
-    ? `opacity ${TRANSITION_DURATION_MS}ms ${TRANSITION_EASING}, transform ${TRANSITION_DURATION_MS}ms ${TRANSITION_EASING}, filter ${TRANSITION_DURATION_MS}ms ${TRANSITION_EASING}`
-    : 'none';
+  // Build transition style string - memoized to prevent re-renders
+  const transitionStyle = useMemo(() => 
+    shouldTransition 
+      ? `opacity ${TRANSITION_DURATION_MS}ms ${TRANSITION_EASING}, transform ${TRANSITION_DURATION_MS}ms ${TRANSITION_EASING}, filter ${TRANSITION_DURATION_MS}ms ${TRANSITION_EASING}`
+      : 'none',
+    [shouldTransition]
+  );
+
+  // Memoize style objects to prevent unnecessary re-renders
+  const enStyleObject = useMemo(() => ({
+    opacity: enState.opacity,
+    transform: enState.transform,
+    filter: enState.filter,
+    zIndex: enState.zIndex,
+    transition: transitionStyle,
+    willChange: shouldTransition ? 'opacity, transform, filter' : 'auto'
+  }), [enState, transitionStyle, shouldTransition]);
+
+  const jaStyleObject = useMemo(() => ({
+    opacity: jaState.opacity,
+    transform: jaState.transform,
+    filter: jaState.filter,
+    zIndex: jaState.zIndex,
+    transition: transitionStyle,
+    willChange: shouldTransition ? 'opacity, transform, filter' : 'auto'
+  }), [jaState, transitionStyle, shouldTransition]);
+
+  if (DEBUG) {
+    console.log(`🎭 [${componentId.current}] Transition style:`, {
+      shouldTransition,
+      transitionStyle: transitionStyle.substring(0, 50) + '...',
+      timestamp: Date.now()
+    });
+  }
+
+  // Debug: Check actual DOM styles after render - only on language change
+  useEffect(() => {
+    const id = componentId.current;
+    const shouldTrans = shouldTransition;
+    const transStyle = transitionStyle;
+    
+    if (DEBUG && enLayerRef.current && jaLayerRef.current) {
+      // Use setTimeout to check after React has updated the DOM
+      const timeoutId = setTimeout(() => {
+        if (!enLayerRef.current || !jaLayerRef.current) return;
+        const enStyles = window.getComputedStyle(enLayerRef.current);
+        const jaStyles = window.getComputedStyle(jaLayerRef.current);
+        console.log(`🔍 [${id}] ACTUAL DOM STYLES:`, {
+          en: {
+            opacity: enStyles.opacity,
+            transition: enStyles.transition ? enStyles.transition.substring(0, 100) + '...' : 'none',
+            transform: enStyles.transform
+          },
+          ja: {
+            opacity: jaStyles.opacity,
+            transition: jaStyles.transition ? jaStyles.transition.substring(0, 100) + '...' : 'none',
+            transform: jaStyles.transform
+          },
+          shouldTransition: shouldTrans,
+          transitionStyleApplied: transStyle.substring(0, 50) + '...'
+        });
+        
+        // Check if transition is actually "none" when it shouldn't be
+        if (shouldTrans && (enStyles.transition === 'none 0s ease 0s' || jaStyles.transition === 'none 0s ease 0s')) {
+          console.error(`❌ [${id}] TRANSITION NOT APPLIED!`, {
+            shouldTransition: shouldTrans,
+            enTransition: enStyles.transition,
+            jaTransition: jaStyles.transition
+          });
+        }
+      }, 0);
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [language, shouldTransition, transitionStyle]); // Added missing deps
 
   return (
     <span
@@ -116,15 +302,7 @@ export default function BrandWordmark({ className = '' }) {
         ref={enLayerRef}
         className="brand-wordmark__layer brand-wordmark__layer--en"
         aria-hidden="true"
-        style={{
-          opacity: enState.opacity,
-          transform: enState.transform,
-          filter: enState.filter,
-          zIndex: enState.zIndex,
-          transition: transitionStyle,
-          // Ensure GPU acceleration
-          willChange: shouldTransition ? 'opacity, transform, filter' : 'auto'
-        }}
+        style={enStyleObject}
       >
         {englishLabel}
       </span>
@@ -134,15 +312,7 @@ export default function BrandWordmark({ className = '' }) {
         ref={jaLayerRef}
         className="brand-wordmark__layer brand-wordmark__layer--ja"
         aria-hidden="true"
-        style={{
-          opacity: jaState.opacity,
-          transform: jaState.transform,
-          filter: jaState.filter,
-          zIndex: jaState.zIndex,
-          transition: transitionStyle,
-          // Ensure GPU acceleration
-          willChange: shouldTransition ? 'opacity, transform, filter' : 'auto'
-        }}
+        style={jaStyleObject}
       >
         {japaneseLabel}
       </span>
