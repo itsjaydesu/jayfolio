@@ -225,22 +225,25 @@ export default function AdminPage() {
 
   const updateUrlState = useCallback(
     (nextType, nextSlug, panelState) => {
-      const params = new URLSearchParams();
-      const resolvedType = nextType && TYPE_OPTIONS.some((option) => option.id === nextType)
-        ? nextType
-        : activeType;
-      if (resolvedType) {
-        params.set('type', resolvedType);
-      }
-      if (nextSlug) {
-        params.set('slug', nextSlug);
-      }
-      const shouldCollapse = typeof panelState === 'boolean' ? panelState : isEntryPanelCollapsed;
-      if (shouldCollapse) {
-        params.set('panel', 'collapsed');
-      }
-      const nextUrl = params.size ? `${pathname}?${params.toString()}` : pathname;
-      router.replace(nextUrl, { scroll: false });
+      // Defer the URL update to avoid updating Router during render
+      setTimeout(() => {
+        const params = new URLSearchParams();
+        const resolvedType = nextType && TYPE_OPTIONS.some((option) => option.id === nextType)
+          ? nextType
+          : activeType;
+        if (resolvedType) {
+          params.set('type', resolvedType);
+        }
+        if (nextSlug) {
+          params.set('slug', nextSlug);
+        }
+        const shouldCollapse = typeof panelState === 'boolean' ? panelState : isEntryPanelCollapsed;
+        if (shouldCollapse) {
+          params.set('panel', 'collapsed');
+        }
+        const nextUrl = params.size ? `${pathname}?${params.toString()}` : pathname;
+        router.replace(nextUrl, { scroll: false });
+      }, 0);
     },
     [activeType, isEntryPanelCollapsed, pathname, router]
   );
