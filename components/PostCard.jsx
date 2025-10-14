@@ -78,22 +78,20 @@ export default function PostCard({
     >
       <div className="project-entry__surface project-entry__surface--compact">
         <div className="project-entry__content">
-          {/* Date and Category Header */}
-          <div className="project-entry__header">
-          {entry.createdAt && (
-              <time className="project-entry__date" dateTime={entry.createdAt}>
-                {displayDate}
-              </time>
-            )}
-            {category && (
-              <span className="project-entry__category">
-                {getCategoryName(category, language)}
-              </span>
-            )}
-          </div>
+          <header className="project-entry__header">
+            <div className="project-entry__meta">
+              {entry.createdAt && (
+                <time className="project-entry__date" dateTime={entry.createdAt}>
+                  {displayDate}
+                </time>
+              )}
+              {category && (
+                <span className="project-entry__category">
+                  {getCategoryName(category, language)}
+                </span>
+              )}
+            </div>
 
-          {/* Main Content Body */}
-          <div className="project-entry__body">
             <div className="project-entry__title-row">
               <h2 className="project-entry__title">{localizedTitle}</h2>
               {isAdmin && (
@@ -101,21 +99,25 @@ export default function PostCard({
                   href={editHref}
                   className="project-entry__edit-btn"
                   aria-label={`${t('admin.edit', language)} ${localizedTitle}`}
-                  // Prevent edit button click from triggering card navigation
                   onClick={(e) => e.stopPropagation()}
                 >
                   {t('admin.edit', language)}
                 </Link>
               )}
             </div>
-            
-            {localizedSummary && (
-              <p className="project-entry__summary">{localizedSummary}</p>
-            )}
-          {localizedTags.length > 0 && (
-            <p className="project-entry__tags">{localizedTags.join(' • ')}</p>
+          </header>
+
+          {localizedSummary && (
+            <p className="project-entry__summary">{localizedSummary}</p>
           )}
-          </div>
+
+          {localizedTags.length > 0 && (
+            <ul className="project-entry__tags">
+              {localizedTags.map((tag, index) => (
+                <li key={`${entry.slug}-tag-${index}`}>{tag}</li>
+              ))}
+            </ul>
+          )}
         </div>
 
         {/* Visual/Figure Section */}

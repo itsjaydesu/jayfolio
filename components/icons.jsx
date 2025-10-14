@@ -18,6 +18,32 @@ export function CalendarIcon({ className }) {
   );
 }
 
+export function DotfieldIcon({ className }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      className={['icon', className].filter(Boolean).join(' ')}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M4 6h.01" />
+      <path d="M10 6h.01" />
+      <path d="M16 6h.01" />
+      <path d="M7 12h.01" />
+      <path d="M13 12h.01" />
+      <path d="M19 12h.01" />
+      <path d="M4 18h.01" />
+      <path d="M10 18h.01" />
+      <path d="M16 18h.01" />
+      <rect x="2.5" y="4.5" width="19" height="15" rx="4" />
+    </svg>
+  );
+}
+
 export function XLogoIcon({ className }) {
   return (
     <svg

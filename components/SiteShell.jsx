@@ -6,12 +6,25 @@ import { usePathname, useRouter } from "next/navigation";
 import dynamic from 'next/dynamic';
 import RetroMenu from "./RetroMenu";
 import LanguageSwitcher from "./LanguageSwitcher";
-import { XLogoIcon } from "./icons";
+import { DotfieldIcon, XLogoIcon } from "./icons";
 import SiteFooter from "./SiteFooter";
 import { SITE_TEXT_DEFAULTS } from "../lib/siteTextDefaults";
 import { useAdminStatus } from "../lib/useAdminStatus";
 import { useLanguage } from "../contexts/LanguageContext";
 import { t, getLocalizedContent } from "../lib/translations";
+
+const DOTFIELD_OVERLAY_FADE_MS = 520;
+const DOTFIELD_EFFECT_SEQUENCE = [
+  'calmReset',
+  'jitter',
+  'swirlPulse',
+  'spiralFlow',
+  'riverFlow',
+  'mandelbrotZoom',
+  'reactionDiffusionBloom',
+  'harmonicPendulum',
+  'starfield'
+];
 
 // Dynamically import SceneCanvas to reduce initial bundle size
 const SceneCanvas = dynamic(() => import('./SceneCanvas'), {
@@ -58,6 +71,7 @@ export default function SiteShell({ children, isAdmin = false }) {
   const pathname = usePathname();
   const router = useRouter();
   const sceneRef = useRef(null);
+  const overlaySceneRef = useRef(null);
   const { language } = useLanguage();
   const returnTimerRef = useRef(null);
   const menuLeaveTimerRef = useRef(null); // Timer for menu fade-out animation
@@ -114,6 +128,13 @@ export default function SiteShell({ children, isAdmin = false }) {
   const [prevIsHome, setPrevIsHome] = useState(isHome);
   // Track if we're currently animating out - this persists through re-renders
   const [isAnimatingOut, setIsAnimatingOut] = useState(false);
+  const [isDotfieldOverlayOpen, setIsDotfieldOverlayOpen] = useState(false);
+  const [isDotfieldOverlayMounted, setIsDotfieldOverlayMounted] = useState(false);
+  const [isDotfieldOverlayLeaving, setIsDotfieldOverlayLeaving] = useState(false);
+  const [isDotfieldFieldPanelOpen, setIsDotfieldFieldPanelOpen] = useState(false);
+  const overlayFadeTimeoutRef = useRef(null);
+  const overlayAnimationFrameRef = useRef(null);
+  const lastPathnameRef = useRef(pathname);
   
   // Compute if we should keep header mounted - check animation flag first
   const shouldKeepHeaderMounted = 
@@ -149,6 +170,107 @@ export default function SiteShell({ children, isAdmin = false }) {
     [createStatus, language]
   );
 
+  const fieldEffectsLabel = useMemo(
+    () => t('menu.field-effects', language),
+    [language]
+  );
+
+  const overlayEffectLabels = useMemo(
+    () => ({
+      calmReset: t('effects.calmReset', language),
+      jitter: t('effects.jitter', language),
+      swirlPulse: t('effects.swirlPulse', language),
+      spiralFlow: t('effects.spiralFlow', language),
+      riverFlow: t('effects.riverFlow', language),
+      mandelbrotZoom: t('effects.mandelbrotZoom', language),
+      reactionDiffusionBloom: t('effects.reactionDiffusionBloom', language),
+      harmonicPendulum: t('effects.harmonicPendulum', language),
+      starfield: t('effects.starfield', language),
+    }),
+    [language]
+  );
+
+  const overlayEffectTooltips = useMemo(
+    () => ({
+      calmReset: t('effects.calmReset.tooltip', language),
+      jitter: t('effects.jitter.tooltip', language),
+      swirlPulse: t('effects.swirlPulse.tooltip', language),
+      spiralFlow: t('effects.spiralFlow.tooltip', language),
+      riverFlow: t('effects.riverFlow.tooltip', language),
+      mandelbrotZoom: t('effects.mandelbrotZoom.tooltip', language),
+      reactionDiffusionBloom: t('effects.reactionDiffusionBloom.tooltip', language),
+      harmonicPendulum: t('effects.harmonicPendulum.tooltip', language),
+      starfield: t('effects.starfield.tooltip', language),
+    }),
+    [language]
+  );
+
+  const openDotfieldOverlay = useCallback(() => {
+    if (overlayFadeTimeoutRef.current && typeof window !== "undefined") {
+      window.clearTimeout(overlayFadeTimeoutRef.current);
+      overlayFadeTimeoutRef.current = null;
+    }
+    setIsDotfieldOverlayLeaving(false);
+    if (!isDotfieldOverlayMounted) {
+      setIsDotfieldOverlayMounted(true);
+      if (typeof window !== "undefined") {
+        overlayAnimationFrameRef.current = window.requestAnimationFrame(() => {
+          setIsDotfieldOverlayOpen(true);
+          overlayAnimationFrameRef.current = null;
+        });
+      } else {
+        setIsDotfieldOverlayOpen(true);
+      }
+    } else {
+      setIsDotfieldOverlayOpen(true);
+    }
+  }, [isDotfieldOverlayMounted]);
+
+  const closeDotfieldOverlay = useCallback(() => {
+    if (overlayAnimationFrameRef.current && typeof window !== "undefined") {
+      window.cancelAnimationFrame(overlayAnimationFrameRef.current);
+      overlayAnimationFrameRef.current = null;
+    }
+    if (!isDotfieldOverlayMounted && !isDotfieldOverlayOpen) {
+      return;
+    }
+    setIsDotfieldOverlayOpen(false);
+    setIsDotfieldOverlayLeaving(true);
+    setIsDotfieldFieldPanelOpen(false);
+    if (overlayFadeTimeoutRef.current && typeof window !== "undefined") {
+      window.clearTimeout(overlayFadeTimeoutRef.current);
+      overlayFadeTimeoutRef.current = null;
+    }
+    if (typeof window !== "undefined") {
+      overlayFadeTimeoutRef.current = window.setTimeout(() => {
+        setIsDotfieldOverlayMounted(false);
+        setIsDotfieldOverlayLeaving(false);
+        overlaySceneRef.current = null;
+        overlayFadeTimeoutRef.current = null;
+      }, DOTFIELD_OVERLAY_FADE_MS);
+    } else {
+      setIsDotfieldOverlayMounted(false);
+      setIsDotfieldOverlayLeaving(false);
+      overlaySceneRef.current = null;
+    }
+  }, [isDotfieldOverlayMounted, isDotfieldOverlayOpen]);
+
+  const toggleDotfieldOverlay = useCallback(() => {
+    if (isDotfieldOverlayOpen) {
+      closeDotfieldOverlay();
+    } else {
+      openDotfieldOverlay();
+    }
+  }, [isDotfieldOverlayOpen, openDotfieldOverlay, closeDotfieldOverlay]);
+
+  const handleDotfieldClose = useCallback(() => {
+    closeDotfieldOverlay();
+  }, [closeDotfieldOverlay]);
+
+  const toggleDotfieldFieldPanel = useCallback(() => {
+    setIsDotfieldFieldPanelOpen((prev) => !prev);
+  }, []);
+
   const [status, setStatus] = useState(waitingStatus);
   // navReady is always true to avoid hydration mismatches
   // Animation will still work via CSS transitions
@@ -176,6 +298,79 @@ export default function SiteShell({ children, isAdmin = false }) {
   useEffect(() => {
     setStatus(activeStatus);
   }, [activeStatus]);
+
+  useEffect(() => {
+    if (!isDotfieldOverlayOpen) return;
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        closeDotfieldOverlay();
+      }
+    };
+
+    const originalOverflow = typeof document !== "undefined" ? document.body.style.overflow : undefined;
+    if (typeof document !== "undefined") {
+      document.body.style.overflow = "hidden";
+    }
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("keydown", handleKeyDown);
+    }
+
+    return () => {
+      if (typeof window !== "undefined") {
+        window.removeEventListener("keydown", handleKeyDown);
+      }
+      if (typeof document !== "undefined") {
+        document.body.style.overflow = originalOverflow ?? "";
+      }
+    };
+  }, [isDotfieldOverlayOpen, closeDotfieldOverlay]);
+
+  useEffect(() => {
+    if (lastPathnameRef.current === pathname) {
+      return;
+    }
+
+    lastPathnameRef.current = pathname;
+
+    if (isDotfieldOverlayOpen || isDotfieldOverlayMounted || isDotfieldOverlayLeaving) {
+      closeDotfieldOverlay();
+    }
+  }, [pathname, isDotfieldOverlayOpen, isDotfieldOverlayMounted, isDotfieldOverlayLeaving, closeDotfieldOverlay]);
+
+  useEffect(() => {
+    if (!isDotfieldFieldPanelOpen) return;
+    if (typeof document === "undefined") {
+      return undefined;
+    }
+
+    const handlePointerDown = (event) => {
+      if (
+        !event.target.closest?.(".dotfield-overlay__panel") &&
+        !event.target.closest?.(".dotfield-overlay__control--icon")
+      ) {
+        setIsDotfieldFieldPanelOpen(false);
+      }
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+    };
+  }, [isDotfieldFieldPanelOpen]);
+
+  useEffect(() => {
+    return () => {
+      if (overlayFadeTimeoutRef.current && typeof window !== "undefined") {
+        window.clearTimeout(overlayFadeTimeoutRef.current);
+      }
+      if (overlayAnimationFrameRef.current && typeof window !== "undefined") {
+        window.cancelAnimationFrame(overlayAnimationFrameRef.current);
+      }
+    };
+  }, []);
 
   // Update localized content when language changes
   useEffect(() => {
@@ -702,62 +897,79 @@ export default function SiteShell({ children, isAdmin = false }) {
   }, [language]);
 
   const handleFieldEffect = (effectType) => {
-    if (!sceneRef.current) return;
-    
+    const targets = [];
+    if (sceneRef.current) targets.push(sceneRef.current);
+    if (overlaySceneRef.current) targets.push(overlaySceneRef.current);
+
+    if (!targets.length) {
+      return;
+    }
+
     switch (effectType) {
       case 'jitter':
-        // Activate the jitter effect with smooth easing
-        sceneRef.current.triggerEffect('jitter');
+        targets.forEach((instance) => {
+          instance?.triggerEffect?.('jitter');
+        });
         break;
       case 'spiralFlow':
       case 'riverFlow':
       case 'mandelbrotZoom':
       case 'reactionDiffusionBloom':
       case 'harmonicPendulum':
-      case 'starfield':
-        if (!sceneRef.current.triggerEffect(effectType)) {
+      case 'starfield': {
+        let success = false;
+        targets.forEach((instance) => {
+          if (instance?.triggerEffect?.(effectType)) {
+            success = true;
+          }
+        });
+        if (!success) {
           console.warn(`[SiteShell] Failed to trigger effect "${effectType}"`);
         }
         break;
-      case 'swirlPulse':
-        // Enhance swirl effect with smooth transitions
-        sceneRef.current.applySettings({
-          swirlStrength: 2.5,
-          swirlFrequency: 0.008,
-          animationSpeed: 1.8,
-          amplitude: 60
+      }
+      case 'swirlPulse': {
+        targets.forEach((instance) => {
+          instance?.applySettings?.({
+            swirlStrength: 2.5,
+            swirlFrequency: 0.008,
+            animationSpeed: 1.8,
+            amplitude: 60
+          });
         });
-        // Swirl pulse is a temporary active effect
         setHasActiveEffect(true);
         setActiveEffectInfo({
           name: t('effects.swirlPulse', language),
           type: 'swirlPulse',
           startTime: Date.now(),
-          duration: 15  // Standardized duration
+          duration: 15
         });
-        // Auto-reset after 15 seconds
         setTimeout(() => {
-          sceneRef.current.resetToDefaults();
+          targets.forEach((instance) => instance?.resetToDefaults?.());
           setHasActiveEffect(false);
           setActiveEffectInfo(null);
         }, 15000);
         break;
+      }
       case 'calmReset':
-        // If an effect is active, reset to defaults
-        // If no effect is active, trigger the zen mode for ultra-calm state
         if (hasActiveEffect) {
-          sceneRef.current.resetToDefaults();
+          targets.forEach((instance) => instance?.resetToDefaults?.());
           setHasActiveEffect(false);
           setActiveEffectInfo(null);
         } else {
-          // Trigger zen mode for a very flat, calm sea
-          if (sceneRef.current.triggerEffect('zenMode')) {
+          let triggered = false;
+          targets.forEach((instance) => {
+            if (instance?.triggerEffect?.('zenMode')) {
+              triggered = true;
+            }
+          });
+          if (triggered) {
             setHasActiveEffect(true);
             setActiveEffectInfo({
               name: t('effects.calmReset', language),
               type: 'zenMode',
               startTime: Date.now(),
-              duration: null  // Zen mode has no duration
+              duration: null
             });
           }
         }
@@ -810,9 +1022,89 @@ export default function SiteShell({ children, isAdmin = false }) {
   const activeSectionForCanvas = activeSection ?? "about";
   const showCanvas = !isDetailView;
 
+  const dotfieldOverlay = isDotfieldOverlayMounted ? (
+    <div
+      className={`dotfield-overlay${isDotfieldOverlayOpen ? " is-visible" : ""}${isDotfieldOverlayLeaving ? " is-leaving" : ""}`}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Dotfield exploration"
+    >
+      <div className="dotfield-overlay__controls">
+        <button
+          type="button"
+          className="dotfield-overlay__control dotfield-overlay__control--primary"
+          onClick={handleDotfieldClose}
+        >
+          {t('return.home', language)}
+        </button>
+        <div className="dotfield-overlay__control-group">
+          <button
+            type="button"
+            className={`dotfield-overlay__control dotfield-overlay__control--icon${isDotfieldFieldPanelOpen ? " is-active" : ""}`}
+            onClick={toggleDotfieldFieldPanel}
+            aria-expanded={isDotfieldFieldPanelOpen}
+            aria-controls="dotfield-overlay-panel"
+            aria-label={fieldEffectsLabel}
+            title={fieldEffectsLabel}
+          >
+            <svg
+              viewBox="0 0 20 20"
+              aria-hidden="true"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+            >
+              <circle cx="10" cy="10" r="3" />
+              <path d="M10 3.5v-1m0 15v-1m6.5-6.5h1m-15 0h1" />
+              <path d="M14.5 5.5l.7-.7m-10.4 10.4l.7-.7m0-9.4l-.7-.7m10.4 10.4l-.7-.7" />
+            </svg>
+          </button>
+          {isDotfieldFieldPanelOpen ? (
+            <div className="dotfield-overlay__panel" id="dotfield-overlay-panel" role="menu">
+              <div className="dotfield-overlay__panel-header">
+                <span>{fieldEffectsLabel}</span>
+                {hasActiveEffect && activeEffectInfo ? (
+                  <span>{t('menu.tooltip.effect-active', language, { effect: activeEffectInfo.name })}</span>
+                ) : null}
+              </div>
+              <div className="dotfield-overlay__panel-grid">
+                {DOTFIELD_EFFECT_SEQUENCE.map((effectKey) => (
+                  <button
+                    key={effectKey}
+                    type="button"
+                    className="dotfield-overlay__panel-btn"
+                    onClick={() => handleFieldEffect(effectKey)}
+                    title={overlayEffectTooltips[effectKey]}
+                  >
+                    <span>{overlayEffectLabels[effectKey]}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
+        </div>
+      </div>
+      <div className="dotfield-overlay__canvas" aria-hidden="true">
+        <Suspense fallback={<div className="canvas-placeholder" aria-label="Loading dotfield" />}>
+          <SceneCanvas
+            activeSection={activeSectionForCanvas}
+            isPaused={false}
+            onEffectChange={handleEffectChange}
+            isHomeScene
+            showControls={false}
+            ref={(instance) => {
+              overlaySceneRef.current = instance;
+            }}
+          />
+        </Suspense>
+      </div>
+    </div>
+  ) : null;
+
   if (isHome) {
     return (
       <>
+        {dotfieldOverlay}
         <div className="scene-wrapper">
           <Suspense fallback={<div className="canvas-placeholder" aria-label="Loading visualization" />}>
             <SceneCanvas 
@@ -861,6 +1153,7 @@ export default function SiteShell({ children, isAdmin = false }) {
 
   return (
     <>
+      {dotfieldOverlay}
       {showCanvas ? (
         <div 
           className={sceneWrapperClasses}
@@ -948,26 +1241,47 @@ export default function SiteShell({ children, isAdmin = false }) {
                   );
                 })}
               </nav>
-              <Link
-                href="https://x.com/itsjaydesu"
-                className="site-shell__social"
-                target="_blank"
-                rel="noreferrer noopener"
-                aria-label={t('menu.social.aria', language)}
-                title={t('menu.social.aria', language)}
-                style={
-                  navReady
-                    ? undefined
-                    : {
-                        opacity: "var(--nav-item-initial-opacity, 0)",
-                        transform:
-                          "translateY(var(--nav-item-initial-offset, 8px))",
-                      }
-                }
-              >
-                <XLogoIcon className="site-shell__social-icon" />
-              </Link>
-              <LanguageSwitcher className="site-shell__header-language-toggle" />
+              <div className="site-shell__icon-group">
+                <button
+                  type="button"
+                  className={`site-shell__icon-button site-shell__icon-button--action${(isDotfieldOverlayOpen || isDotfieldOverlayMounted) ? " is-active" : ""}`}
+                  onClick={toggleDotfieldOverlay}
+                  aria-pressed={isDotfieldOverlayOpen}
+                  aria-label={t('dotfield.open', language)}
+                  title={t('dotfield.open', language)}
+                  style={
+                    navReady
+                      ? undefined
+                      : {
+                          opacity: "var(--nav-item-initial-opacity, 0)",
+                          transform:
+                            "translateY(var(--nav-item-initial-offset, 8px))",
+                        }
+                  }
+                >
+                  <DotfieldIcon className="site-shell__icon-svg" />
+                </button>
+                <Link
+                  href="https://x.com/itsjaydesu"
+                  className="site-shell__icon-button site-shell__icon-button--link"
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  aria-label={t('menu.social.aria', language)}
+                  title={t('menu.social.aria', language)}
+                  style={
+                    navReady
+                      ? undefined
+                      : {
+                          opacity: "var(--nav-item-initial-opacity, 0)",
+                          transform:
+                            "translateY(var(--nav-item-initial-offset, 8px))",
+                        }
+                  }
+                >
+                  <XLogoIcon className="site-shell__icon-svg" />
+                </Link>
+                <LanguageSwitcher className="site-shell__icon-button site-shell__header-language-toggle" />
+              </div>
             </header>
           ) : null}
           <p className="sr-only" aria-live="polite">
