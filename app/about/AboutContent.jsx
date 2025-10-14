@@ -1,13 +1,16 @@
 
 'use client';
 
+import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useAdminStatus } from '../../lib/useAdminStatus';
 import { getLocalizedContent, getLocalizedTags } from '../../lib/translations';
 
 export default function AboutContent({ initialContent }) {
   const [isLoaded, setIsLoaded] = useState(false);
   const { language } = useLanguage();
+  const { isAdmin } = useAdminStatus();
 
   useEffect(() => {
     setIsLoaded(true);
@@ -28,6 +31,8 @@ export default function AboutContent({ initialContent }) {
     : [];
   const tags = getLocalizedTags(initialContent.aboutTags, language);
 
+  const editHref = '/administratorrrr/settings/channel/about';
+
   return (
     <section className={`clean-about-page ${isLoaded ? 'is-loaded' : ''}`}>
       <div className="clean-about-page__background">
@@ -36,8 +41,17 @@ export default function AboutContent({ initialContent }) {
       
       <div className="clean-about-page__container">
         <header className="clean-about-page__header">
-          <h1 className="clean-about-page__title">{title}</h1>
-          <p className="clean-about-page__subtitle">{subtitle}</p>
+          <div className="clean-about-page__header-row">
+            <div className="clean-about-page__heading">
+              <h1 className="clean-about-page__title">{title}</h1>
+              <p className="clean-about-page__subtitle">{subtitle}</p>
+            </div>
+            {isAdmin ? (
+              <Link href={editHref} className="clean-about-page__edit-btn">
+                Edit About
+              </Link>
+            ) : null}
+          </div>
         </header>
         
         <main className="clean-about-page__main">

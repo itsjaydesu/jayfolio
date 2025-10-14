@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import dynamic from 'next/dynamic';
 import RetroMenu from "./RetroMenu";
 import LanguageSwitcher from "./LanguageSwitcher";
+import SiteFooter from "./SiteFooter";
 import { SITE_TEXT_DEFAULTS } from "../lib/siteTextDefaults";
 import { useAdminStatus } from "../lib/useAdminStatus";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -976,6 +977,7 @@ export default function SiteShell({ children, isAdmin = false }) {
           >
             {children}
           </main>
+          {!isDetailView ? <SiteFooter /> : null}
         </div>
       </div>
     </>
