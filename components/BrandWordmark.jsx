@@ -123,7 +123,9 @@ export default function BrandWordmark({ className = '' }) {
     if (DEBUG) {
       console.log(`🎬 [${componentId.current}] Starting transition`, {
         from: previousLanguageRef.current,
-        to: language
+        to: language,
+        shouldTransition,
+        transitionsEnabled: shouldTransition ? 'YES ✅' : 'NO ❌'
       });
       
       // Log current computed styles BEFORE changes
@@ -140,8 +142,14 @@ export default function BrandWordmark({ className = '' }) {
             opacity: jaStyles.opacity,
             transform: jaStyles.transform,
             transition: jaStyles.transition
-          }
+          },
+          transitionsEnabled: shouldTransition ? 'YES ✅' : 'NO ❌'
         });
+        
+        // Critical check: Are transitions active?
+        if (!shouldTransition) {
+          console.error(`❌❌❌ [${componentId.current}] CRITICAL: Transitions NOT enabled during language change!`);
+        }
       }
     }
     
