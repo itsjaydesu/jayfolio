@@ -9236,3 +9236,151 @@ body.qr-intro-active .site-shell__icon-button {
   }
 }
 
+/* Language Toggle Transitions */
+/* Apply smooth fade transition to all text content when language changes */
+[data-language-transitioning="true"] {
+  /* Prevent layout shifts during transition */
+  position: relative;
+}
+
+/* Smooth crossfade for language changes on all text elements */
+.retro-menu__titlebar span,
+.retro-menu__list,
+.retro-menu__status,
+.channel__title,
+.channel__lead,
+.channel__empty,
+.site-shell__nav-link,
+.site-shell__brand,
+.post-card__title,
+.post-card__meta,
+.post-card__excerpt,
+.entry-detail__title,
+.entry-detail__meta,
+.site-footer__heading,
+.site-footer__link,
+.site-footer__description,
+button,
+label,
+h1, h2, h3, h4, h5, h6,
+p, span, em, strong, a {
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: opacity, transform;
+}
+
+/* Create a two-phase transition effect */
+[data-language-transitioning="true"] .retro-menu__titlebar span,
+[data-language-transitioning="true"] .retro-menu__list,
+[data-language-transitioning="true"] .retro-menu__status,
+[data-language-transitioning="true"] .channel__title,
+[data-language-transitioning="true"] .channel__lead,
+[data-language-transitioning="true"] .channel__empty,
+[data-language-transitioning="true"] .site-shell__nav-link,
+[data-language-transitioning="true"] .site-shell__brand,
+[data-language-transitioning="true"] .post-card__title,
+[data-language-transitioning="true"] .post-card__meta,
+[data-language-transitioning="true"] .post-card__excerpt,
+[data-language-transitioning="true"] .entry-detail__title,
+[data-language-transitioning="true"] .entry-detail__meta,
+[data-language-transitioning="true"] .site-footer__heading,
+[data-language-transitioning="true"] .site-footer__link,
+[data-language-transitioning="true"] .site-footer__description,
+[data-language-transitioning="true"] button,
+[data-language-transitioning="true"] label,
+[data-language-transitioning="true"] h1,
+[data-language-transitioning="true"] h2,
+[data-language-transitioning="true"] h3,
+[data-language-transitioning="true"] h4,
+[data-language-transitioning="true"] h5,
+[data-language-transitioning="true"] h6,
+[data-language-transitioning="true"] p,
+[data-language-transitioning="true"] span,
+[data-language-transitioning="true"] em,
+[data-language-transitioning="true"] strong,
+[data-language-transitioning="true"] a {
+  opacity: 0.4;
+  transform: translateY(2px);
+}
+
+/* Stagger the transition for visual interest */
+[data-language-transitioning="true"] .site-shell__nav-link {
+  transition-delay: 0.05s;
+}
+
+[data-language-transitioning="true"] .channel__title {
+  transition-delay: 0.1s;
+}
+
+[data-language-transitioning="true"] .channel__lead {
+  transition-delay: 0.15s;
+}
+
+[data-language-transitioning="true"] .post-card {
+  transition-delay: calc(0.2s + var(--card-index, 0) * 0.02s);
+}
+
+/* Special handling for the retro menu brand text to keep on one line */
+.retro-menu__titlebar span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Ensure Japanese text doesn't wrap in titles */
+[lang="ja"] .channel__title,
+[lang="ja"] .retro-menu__titlebar span {
+  white-space: nowrap;
+  word-break: keep-all;
+}
+
+/* Allow wrapping on very small screens if needed */
+@media (max-width: 360px) {
+  [lang="ja"] .channel__title,
+  [lang="ja"] .retro-menu__titlebar span {
+    white-space: normal;
+    word-break: auto;
+  }
+}
+
+/* Smooth icon rotation for language toggle button */
+.retro-menu__language-toggle svg {
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.retro-menu__language-toggle:hover svg {
+  transform: rotate(15deg);
+}
+
+.retro-menu__language-toggle:active svg {
+  transform: rotate(180deg);
+}
+
+/* Preserve reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .retro-menu__titlebar span,
+  .retro-menu__list,
+  .retro-menu__status,
+  .channel__title,
+  .channel__lead,
+  .channel__empty,
+  .site-shell__nav-link,
+  .site-shell__brand,
+  .post-card__title,
+  .post-card__meta,
+  .post-card__excerpt,
+  .entry-detail__title,
+  .entry-detail__meta,
+  .site-footer__heading,
+  .site-footer__link,
+  .site-footer__description,
+  button,
+  label,
+  h1, h2, h3, h4, h5, h6,
+  p, span, em, strong, a,
+  .retro-menu__language-toggle svg {
+    transition: none;
+    animation: none;
+  }
+}
+

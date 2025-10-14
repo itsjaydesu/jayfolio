@@ -14,13 +14,35 @@ export function LanguageProvider({ children }) {
     setIsClient(true);
     const detectedLanguage = detectLanguage();
     setLanguage(detectedLanguage);
+    // Set the lang attribute on the HTML element
+    if (typeof window !== 'undefined') {
+      document.documentElement.lang = detectedLanguage;
+    }
   }, []);
 
-  // Change language with persistence
+  // Change language with persistence and transition effect
   const changeLanguage = (newLanguage) => {
     if (SUPPORTED_LANGUAGES[newLanguage]) {
-      setLanguage(newLanguage);
-      saveLanguagePreference(newLanguage);
+      // Add transition state to body for fade effect
+      if (typeof window !== 'undefined') {
+        document.body.setAttribute('data-language-transitioning', 'true');
+        
+        // First phase: fade out current text
+        setTimeout(() => {
+          setLanguage(newLanguage);
+          saveLanguagePreference(newLanguage);
+          document.documentElement.lang = newLanguage;
+          
+          // Second phase: fade in new text
+          setTimeout(() => {
+            document.body.removeAttribute('data-language-transitioning');
+          }, 50);
+        }, 300);
+      } else {
+        // Fallback for server-side
+        setLanguage(newLanguage);
+        saveLanguagePreference(newLanguage);
+      }
     }
   };
 
