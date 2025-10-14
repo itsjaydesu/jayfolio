@@ -5,12 +5,13 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { t } from '../lib/translations';
 
 const TRANSITION_MS = 600; // Longer for seamless crossfade
-const DEBUG = true; // Enable debug logging
+const DEBUG = false; // Disable debug logging for production
 
 export default function BrandWordmark({ className = '' }) {
   const { language } = useLanguage();
   const previousLanguageRef = useRef(language);
   const [leavingLanguage, setLeavingLanguage] = useState(null);
+  const [enteringLanguage, setEnteringLanguage] = useState(null);
   const renderCountRef = useRef(0);
   const enLayerRef = useRef(null);
   const jaLayerRef = useRef(null);
@@ -65,10 +66,18 @@ export default function BrandWordmark({ className = '' }) {
       });
     }
 
+    // Start the staged transition
     setLeavingLanguage(previousLanguage);
+    setEnteringLanguage(language);
     previousLanguageRef.current = language;
+    
+    // Small delay before making new language fully active
+    const activateTimeout = window.setTimeout(() => {
+      setEnteringLanguage(null); // Now it becomes fully active
+    }, 80); // Small overlap period
 
-    const timeoutId = window.setTimeout(() => {
+    // Clear leaving language after transition completes
+    const clearTimeout = window.setTimeout(() => {
       if (DEBUG) {
         console.log('⏰ BrandWordmark: Clearing leaving language', {
           wasLeaving: previousLanguage,
@@ -79,7 +88,8 @@ export default function BrandWordmark({ className = '' }) {
     }, TRANSITION_MS);
 
     return () => {
-      window.clearTimeout(timeoutId);
+      window.clearTimeout(activateTimeout);
+      window.clearTimeout(clearTimeout);
     };
   }, [language]);
 
@@ -87,8 +97,11 @@ export default function BrandWordmark({ className = '' }) {
   const japaneseLabel = useMemo(() => t('brand.name', 'ja'), []);
   const activeLabel = t('brand.name', language);
 
-  const isEnglishActive = language === 'en';
-  const isJapaneseActive = language === 'ja';
+  // Three-state transition: leaving -> entering -> active
+  const isEnglishActive = language === 'en' && enteringLanguage !== 'en';
+  const isJapaneseActive = language === 'ja' && enteringLanguage !== 'ja';
+  const isEnglishEntering = enteringLanguage === 'en';
+  const isJapaneseEntering = enteringLanguage === 'ja';
   const isEnglishLeaving = leavingLanguage === 'en';
   const isJapaneseLeaving = leavingLanguage === 'ja';
 
@@ -117,10 +130,11 @@ export default function BrandWordmark({ className = '' }) {
         ref={enLayerRef}
         className={`brand-wordmark__layer brand-wordmark__layer--en${
           isEnglishActive ? ' is-active' : ''
+        }${isEnglishEntering ? ' is-entering' : ''
         }${isEnglishLeaving ? ' is-leaving' : ''}`}
         aria-hidden="true"
-        data-debug-state={`active:${isEnglishActive} leaving:${isEnglishLeaving}`}
-        style={DEBUG ? { border: isEnglishActive ? '1px solid green' : isEnglishLeaving ? '1px solid red' : 'none' } : undefined}
+        data-debug-state={`active:${isEnglishActive} entering:${isEnglishEntering} leaving:${isEnglishLeaving}`}
+        style={DEBUG ? { border: isEnglishActive ? '1px solid green' : isEnglishEntering ? '1px solid yellow' : isEnglishLeaving ? '1px solid red' : 'none' } : undefined}
       >
         {englishLabel}
       </span>
@@ -128,10 +142,11 @@ export default function BrandWordmark({ className = '' }) {
         ref={jaLayerRef}
         className={`brand-wordmark__layer brand-wordmark__layer--ja${
           isJapaneseActive ? ' is-active' : ''
+        }${isJapaneseEntering ? ' is-entering' : ''
         }${isJapaneseLeaving ? ' is-leaving' : ''}`}
         aria-hidden="true"
-        data-debug-state={`active:${isJapaneseActive} leaving:${isJapaneseLeaving}`}
-        style={DEBUG ? { border: isJapaneseActive ? '1px solid green' : isJapaneseLeaving ? '1px solid red' : 'none' } : undefined}
+        data-debug-state={`active:${isJapaneseActive} entering:${isJapaneseEntering} leaving:${isJapaneseLeaving}`}
+        style={DEBUG ? { border: isJapaneseActive ? '1px solid green' : isJapaneseEntering ? '1px solid yellow' : isJapaneseLeaving ? '1px solid red' : 'none' } : undefined}
       >
         {japaneseLabel}
       </span>
