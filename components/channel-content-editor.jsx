@@ -437,7 +437,7 @@ export default function ChannelContentEditor({ sections = ['about', 'projects', 
                   <CoverImageUploader
                     value={about.aboutBackgroundImage || ''}
                     alt="About page background"
-                    onChange={(url) => handleAboutField('aboutBackgroundImage', url)}
+                    onChange={(data) => handleAboutField('aboutBackgroundImage', typeof data === 'string' ? data : data?.url || '')}
                   />
                 </Suspense>
                 <small>Upload a background image that will fade into the footer</small>
@@ -769,7 +769,7 @@ export default function ChannelContentEditor({ sections = ['about', 'projects', 
                   <CoverImageUploader
                     value={content[section].backgroundImage || ''}
                     alt={`${label} page background`}
-                    onChange={(url) => handleChannelHero(section, 'backgroundImage', url)}
+                    onChange={(data) => handleChannelHero(section, 'backgroundImage', typeof data === 'string' ? data : data?.url || '')}
                   />
                 </Suspense>
                 <small>Upload a background image that will fade into the footer</small>

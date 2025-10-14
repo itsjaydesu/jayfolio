@@ -71,7 +71,9 @@ export default function CoverImageUploader({ value, alt, onChange }) {
   const [mediaError, setMediaError] = useState("");
   const [hasLoadedMedia, setHasLoadedMedia] = useState(false);
 
-  const hasValue = Boolean(value && value.trim());
+  // Handle value as string or object with url property
+  const imageUrl = typeof value === 'string' ? value : (value?.url || '');
+  const hasValue = Boolean(imageUrl && typeof imageUrl === 'string' && imageUrl.trim());
 
   const resetCropState = useCallback(() => {
     setIsCropping(false);
@@ -436,11 +438,11 @@ export default function CoverImageUploader({ value, alt, onChange }) {
       const nextValue = event.target.value.slice(0, ALT_MAX_LENGTH);
       setAltValue(nextValue);
       altRef.current = nextValue;
-      if (value) {
-        onChange?.({ url: value, alt: nextValue });
+      if (imageUrl) {
+        onChange?.({ url: imageUrl, alt: nextValue });
       }
     },
-    [onChange, value]
+    [onChange, imageUrl]
   );
 
   const fetchMedia = useCallback(
@@ -770,9 +772,9 @@ export default function CoverImageUploader({ value, alt, onChange }) {
         onDrop={handleDrop}
         aria-label={hasValue ? "Change cover image" : "Upload cover image"}
       >
-        {hasValue && value ? (
+        {hasValue ? (
           <Image
-            src={value}
+            src={imageUrl}
             alt={altValue || "Cover image"}
             fill
             sizes="(max-width: 900px) 100vw, 420px"
