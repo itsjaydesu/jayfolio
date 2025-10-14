@@ -2520,7 +2520,6 @@ a {
   position: fixed;
   top: clamp(1.4rem, 4vh, 2.4rem);
   left: 50%;
-  transform: translateX(-50%);
   width: min(1180px, calc(100% - 2 * var(--shell-inline-pad)));
   display: flex;
   align-items: center;
@@ -5358,7 +5357,7 @@ a {
 
 .site-shell__header {
   position: fixed;
-  top: clamp(1.5rem, 4vh, 2.5rem);
+  top: clamp(1.4rem, 4vh, 2.4rem);
   left: 50%;
   transform: translateX(-50%);
   width: min(1180px, calc(100% - 2 * var(--shell-inline-pad)));
@@ -5366,19 +5365,30 @@ a {
   align-items: center;
   justify-content: space-between;
   gap: clamp(1rem, 5vw, 3rem);
-  padding: 0;
-  background: transparent;
-  border: 0;
-  border-radius: 0;
-  box-shadow: none;
+  padding: clamp(0.85rem, 2vw, 1.1rem) clamp(1.5rem, 4vw, 2.3rem);
+  border-radius: clamp(2.2rem, 6vw, 3.4rem);
+  border: 1px solid rgba(120, 210, 226, 0);
+  background: rgba(6, 18, 26, 0);
+  box-shadow: 0 0 0 rgba(0, 0, 0, 0);
   backdrop-filter: none;
-  z-index: 8;
+  z-index: 18;
   opacity: 0;
   transform: translate(-50%, -18px);
   pointer-events: none;
+  isolation: isolate;
   transition: opacity 0.6s cubic-bezier(0.33, 1, 0.68, 1),
-    transform 0.6s cubic-bezier(0.33, 1, 0.68, 1);
+    transform 0.6s cubic-bezier(0.33, 1, 0.68, 1),
+    background 0.36s cubic-bezier(0.33, 1, 0.68, 1),
+    border-color 0.36s cubic-bezier(0.33, 1, 0.68, 1),
+    box-shadow 0.36s cubic-bezier(0.33, 1, 0.68, 1),
+    backdrop-filter 0.36s cubic-bezier(0.33, 1, 0.68, 1);
   will-change: opacity, transform;
+}
+.site-shell__header-sentinel {
+  position: relative;
+  width: 100%;
+  height: 1px;
+  pointer-events: none;
 }
 
 .site-shell__header[data-nav-ready="true"]:not(.is-leaving) {

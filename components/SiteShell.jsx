@@ -26,6 +26,7 @@ const DOTFIELD_EFFECT_SEQUENCE = [
   'harmonicPendulum',
   'starfield'
 ];
+const HEADER_OBSERVER_ROOT_MARGIN = "-120px 0px 0px 0px";
 
 // Dynamically import SceneCanvas to reduce initial bundle size
 const SceneCanvas = dynamic(() => import('./SceneCanvas'), {
@@ -136,6 +137,7 @@ export default function SiteShell({ children, isAdmin = false }) {
   const overlayFadeTimeoutRef = useRef(null);
   const overlayAnimationFrameRef = useRef(null);
   const lastPathnameRef = useRef(pathname);
+  const headerSentinelRef = useRef(null);
   
   // Compute if we should keep header mounted - check animation flag first
   const shouldKeepHeaderMounted = 
@@ -144,7 +146,7 @@ export default function SiteShell({ children, isAdmin = false }) {
     headerVisible || 
     headerLeaving || 
     headerLeavingRef.current;
-  
+
   // Handle route changes - but DON'T update prevIsHome immediately if animating
   if (prevIsHome !== isHome && !isAnimatingOut) {
     // If transitioning to home with visible header, start animation sequence
@@ -297,6 +299,13 @@ export default function SiteShell({ children, isAdmin = false }) {
   useEffect(() => {
     setStatus(activeStatus);
   }, [activeStatus]);
+
+  const headerClassName = useMemo(() => {
+    const leaving = headerLeaving || headerLeavingRef.current;
+    return `site-shell__header${
+      hasScrolled ? " site-shell__header--shaded" : ""
+    }${leaving ? " is-leaving" : ""}`;
+  }, [hasScrolled, headerLeaving]);
 
   useEffect(() => {
     if (!isDotfieldOverlayOpen) return;
@@ -580,9 +589,29 @@ export default function SiteShell({ children, isAdmin = false }) {
   }, [isHome, isAnimatingOut, headerVisible, headerLeaving]); // Include animation state in dependencies
 
   useEffect(() => {
-    if (isDetailView || typeof window === "undefined") {
+    if (typeof window === "undefined") {
+      return undefined;
+    }
+
+    if (isDetailView) {
       setHasScrolled(false);
-      return;
+      return undefined;
+    }
+
+    const sentinel = headerSentinelRef.current;
+    const supportsObserver = typeof window.IntersectionObserver === "function";
+
+    if (sentinel && supportsObserver) {
+      const observer = new IntersectionObserver(([entry]) => {
+        const next = entry ? !entry.isIntersecting : false;
+        setHasScrolled((prev) => (prev === next ? prev : next));
+      }, { rootMargin: HEADER_OBSERVER_ROOT_MARGIN, threshold: 0 });
+
+      observer.observe(sentinel);
+
+      return () => {
+        observer.disconnect();
+      };
     }
 
     const SCROLL_TRIGGER_PX = 12;
@@ -1196,12 +1225,17 @@ export default function SiteShell({ children, isAdmin = false }) {
       ) : null}
       <div className={`site-shell${isDetailView ? " site-shell--detail" : ""}`}>
         <div className="site-shell__container">
+          {!isDetailView ? (
+            <div
+              ref={headerSentinelRef}
+              className="site-shell__header-sentinel"
+              aria-hidden="true"
+            />
+          ) : null}
           {/* Keep header mounted based on computed value */}
           {!isDetailView && shouldKeepHeaderMounted ? (
             <header
-              className={`site-shell__header${
-                hasScrolled ? " site-shell__header--shaded" : ""
-              }${headerLeaving || headerLeavingRef.current ? " is-leaving" : ""}`}
+              className={headerClassName}
               data-nav-ready={navReady ? "true" : "false"}
               data-returning-home={isReturningHome ? "true" : "false"}
 
