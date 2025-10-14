@@ -5583,9 +5583,6 @@ a {
 }
 
 .brand-wordmark__layer.is-entering {
-  opacity: 0;
-  transform: translate3d(0, 4%, 0) scale(0.98);
-  filter: blur(0.8px) saturate(1.05);
   animation: brandEntering 0.5s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
 }
 
@@ -5596,9 +5593,9 @@ a {
     filter: blur(0.8px) saturate(1.05);
   }
   to {
-    opacity: 0.9;
-    transform: translate3d(0, 0.5%, 0) scale(0.998);
-    filter: blur(0.1px) saturate(1.02);
+    opacity: 1;  /* Go to full opacity */
+    transform: translate3d(0, 0, 0) scale(1);  /* Final position */
+    filter: blur(0) saturate(1);  /* Clear filter */
   }
 }
 
@@ -5609,7 +5606,7 @@ a {
 }
 
 .brand-wordmark__layer.is-leaving {
-  animation: brandLeaving 0.45s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+  animation: brandLeaving 0.5s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
 }
 
 @keyframes brandLeaving {
