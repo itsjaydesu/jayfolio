@@ -9343,16 +9343,19 @@ p, span, em, strong, a {
   }
 }
 
-/* Smooth icon rotation for language toggle button */
-.retro-menu__language-toggle svg {
+/* Smooth icon rotation for language toggle buttons */
+.retro-menu__language-toggle svg,
+.earth-icon-compact {
   transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.retro-menu__language-toggle:hover svg {
+.retro-menu__language-toggle:hover svg,
+.language-switcher-compact:hover .earth-icon-compact {
   transform: rotate(15deg);
 }
 
-.retro-menu__language-toggle:active svg {
+.retro-menu__language-toggle:active svg,
+.language-switcher-compact:active .earth-icon-compact {
   transform: rotate(180deg);
 }
 
