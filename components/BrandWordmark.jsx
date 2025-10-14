@@ -91,7 +91,7 @@ export default function BrandWordmark({ className = '' }) {
       window.clearTimeout(activateTimeout);
       window.clearTimeout(clearTimeout);
     };
-  }, [language]);
+  }, [language]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const englishLabel = useMemo(() => t('brand.name', 'en'), []);
   const japaneseLabel = useMemo(() => t('brand.name', 'ja'), []);
