@@ -98,7 +98,7 @@ export default function CoverImageUploader({ value, alt, onChange }) {
       let result;
       try {
         result = await response.json();
-      } catch (parseError) {
+      } catch {
         result = null;
       }
 

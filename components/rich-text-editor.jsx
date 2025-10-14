@@ -47,6 +47,7 @@ import {
 import { useAdminFetch } from './admin-session-context';
 import { useUploader } from './use-uploader';
 import { sanitizeAlt } from './uploader-utils';
+import ImagePreprocessorDialog from './image-preprocessor-dialog';
 
 // Mirrors the server-side default document so we never render an empty editor root.
 const DEFAULT_EMPTY_DOC = '<p></p>';
@@ -107,7 +108,10 @@ const InlineMedia = Node.create({
     return [{ tag: 'figure[data-inline-media]' }];
   },
   renderHTML({ HTMLAttributes }) {
-    const { src, alt, pathname, alignment, width, caption, style, class: className, ...rest } = HTMLAttributes;
+    const { src, alt, pathname, alignment, width, caption, ...rest } = HTMLAttributes;
+    const safeAttributes = { ...rest };
+    delete safeAttributes.style;
+    delete safeAttributes.class;
     const mediaAlignment = alignment || 'center';
     const mediaWidth = width || '100';
     const figureAttributes = mergeAttributes(
@@ -119,7 +123,7 @@ const InlineMedia = Node.create({
         class: `editor-media editor-media--${mediaAlignment}`,
         style: `--editor-media-width:${mediaWidth};`
       },
-      rest
+      safeAttributes
     );
 
     const children = [
@@ -402,6 +406,8 @@ export default function RichTextEditor({
   const inlineImageInputRef = useRef(null);
   const uploadFilesRef = useRef(null);
   const lastSyncedHtmlRef = useRef('');
+  const imageProcessorPromiseRef = useRef(null);
+  const [imageProcessorState, setImageProcessorState] = useState({ open: false, file: null, token: '' });
 
   const [uiState, dispatchUi] = useReducer(editorUiReducer, INITIAL_EDITOR_UI_STATE);
   const [textColor, setTextColor] = useState('#86deff');
@@ -619,7 +625,7 @@ export default function RichTextEditor({
       let result;
       try {
         result = await response.json();
-      } catch (parseError) {
+      } catch {
         result = null;
       }
 
@@ -673,6 +679,74 @@ export default function RichTextEditor({
     }
   });
 
+  const closeImageProcessor = useCallback(() => {
+    setImageProcessorState({ open: false, file: null, token: '' });
+  }, [setImageProcessorState]);
+
+  const openImageProcessor = useCallback(
+    (file) =>
+      new Promise((resolve, reject) => {
+        const token =
+          typeof crypto !== 'undefined' && crypto.randomUUID
+            ? crypto.randomUUID()
+            : `${Date.now().toString(36)}-${Math.random().toString(16).slice(2)}`;
+        imageProcessorPromiseRef.current = { resolve, reject };
+        setImageProcessorState({ open: true, file, token });
+      }),
+    [imageProcessorPromiseRef, setImageProcessorState]
+  );
+
+  const handleProcessorComplete = useCallback(
+    (nextFile) => {
+      const pending = imageProcessorPromiseRef.current;
+      if (pending) {
+        pending.resolve(nextFile);
+        imageProcessorPromiseRef.current = null;
+      }
+      closeImageProcessor();
+    },
+    [closeImageProcessor, imageProcessorPromiseRef]
+  );
+
+  const handleProcessorSkip = useCallback(
+    (originalFile) => {
+      const pending = imageProcessorPromiseRef.current;
+      if (pending) {
+        pending.resolve(originalFile);
+        imageProcessorPromiseRef.current = null;
+      }
+      closeImageProcessor();
+    },
+    [closeImageProcessor, imageProcessorPromiseRef]
+  );
+
+  const handleProcessorCancel = useCallback(() => {
+    const pending = imageProcessorPromiseRef.current;
+    if (pending) {
+      pending.reject(new Error('cancelled'));
+      imageProcessorPromiseRef.current = null;
+    }
+    closeImageProcessor();
+  }, [closeImageProcessor, imageProcessorPromiseRef]);
+
+  const preprocessFiles = useCallback(
+    async (files) => {
+      const prepared = [];
+      for (const file of files) {
+        if (file?.type?.startsWith('image/')) {
+          const processed = await openImageProcessor(file);
+          if (processed) {
+            prepared.push(processed);
+          }
+        } else {
+          prepared.push(file);
+        }
+      }
+      return prepared;
+    },
+    [openImageProcessor]
+  );
+
   const processUploads = useCallback(
     async (candidates) => {
       if (!editor || editor.isDestroyed) {
@@ -680,17 +754,39 @@ export default function RichTextEditor({
         return;
       }
 
+      if (imageProcessorState.open) {
+        dispatchUi({ type: 'FILE_ERROR', error: 'Finish adjusting the current image before uploading more files.' });
+        return;
+      }
+
       const files = Array.from(candidates ?? []).filter(Boolean);
       clearWarnings();
-      dispatchUi({ type: 'QUEUE_FILES', count: files.length });
 
       if (!files.length) {
+        dispatchUi({ type: 'QUEUE_FILES', count: 0 });
+        dispatchUi({ type: 'UPLOAD_BATCH_COMPLETE', duplicates: [], rejected: [], limited: 0 });
+        return;
+      }
+
+      dispatchUi({ type: 'QUEUE_FILES', count: files.length });
+
+      let preparedFiles;
+      try {
+        preparedFiles = await preprocessFiles(files);
+      } catch (preprocessError) {
+        const message = preprocessError?.message === 'cancelled' ? 'Upload cancelled.' : preprocessError;
+        dispatchUi({ type: 'FILE_ERROR', error: message });
+        dispatchUi({ type: 'UPLOAD_BATCH_COMPLETE', duplicates: [], rejected: [], limited: 0 });
+        return;
+      }
+
+      if (!preparedFiles?.length) {
         dispatchUi({ type: 'UPLOAD_BATCH_COMPLETE', duplicates: [], rejected: [], limited: 0 });
         return;
       }
 
       try {
-        const result = await enqueueUploads(files);
+        const result = await enqueueUploads(preparedFiles);
         dispatchUi({
           type: 'UPLOAD_BATCH_COMPLETE',
           duplicates: result?.duplicates || [],
@@ -701,7 +797,7 @@ export default function RichTextEditor({
         dispatchUi({ type: 'FILE_ERROR', error });
       }
     },
-    [clearWarnings, dispatchUi, editor, enqueueUploads]
+    [clearWarnings, dispatchUi, editor, enqueueUploads, imageProcessorState.open, preprocessFiles]
   );
 
   useEffect(() => {
@@ -908,18 +1004,25 @@ export default function RichTextEditor({
     };
   }, [isFullscreen]);
 
+  const isProcessingImages = imageProcessorState.open;
   const isUploaderBusy = uiState.status === 'uploading' || uiState.status === 'queued';
   const pendingUploads = uiState.pending;
   const uploadErrorMessage = uiState.error;
   const { duplicates, rejected, limited } = uiState;
-  const uploadButtonLabel = isUploaderBusy
-    ? pendingUploads > 1
-      ? `Uploading (${pendingUploads})`
-      : 'Uploading…'
-    : 'Upload files';
+  const uploadButtonLabel = isProcessingImages
+    ? 'Preparing…'
+    : isUploaderBusy
+      ? pendingUploads > 1
+        ? `Uploading (${pendingUploads})`
+        : 'Uploading…'
+      : 'Upload files';
 
   const uploadMessages = useMemo(() => {
     const messages = [];
+
+    if (isProcessingImages) {
+      messages.push({ variant: 'hint', text: 'Adjusting image before upload…' });
+    }
 
     if (uploadErrorMessage) {
       messages.push({
@@ -961,7 +1064,16 @@ export default function RichTextEditor({
     }
 
     return messages;
-  }, [duplicates, handleRetryUpload, isUploaderBusy, limited, pendingUploads, rejected, uploadErrorMessage]);
+  }, [
+    duplicates,
+    handleRetryUpload,
+    isProcessingImages,
+    isUploaderBusy,
+    limited,
+    pendingUploads,
+    rejected,
+    uploadErrorMessage
+  ]);
 
   if (!editor) {
     return <div className={`admin-editor${isFullscreen ? ' admin-editor--fullscreen' : ''}`}>Loading editor…</div>;
@@ -1197,15 +1309,15 @@ export default function RichTextEditor({
           <ToolbarButton
             label="Insert image"
             icon={<UploadIcon />}
-            onClick={handleInlineImageButtonClick}
-            disabled={isUploaderBusy}
+          onClick={handleInlineImageButtonClick}
+          disabled={isUploaderBusy || imageProcessorState.open}
             ariaLabel="Insert image"
           />
           <ToolbarButton
             label={uploadButtonLabel}
             icon={<UploadIcon />}
-            onClick={handleFileButtonClick}
-            disabled={isUploaderBusy}
+          onClick={handleFileButtonClick}
+          disabled={isUploaderBusy || imageProcessorState.open}
             ariaLabel={uploadButtonLabel}
           />
           <input
@@ -1294,6 +1406,15 @@ export default function RichTextEditor({
         </div>
       ))}
       <EditorContent editor={editor} />
+      {imageProcessorState.open && imageProcessorState.file ? (
+        <ImagePreprocessorDialog
+          key={imageProcessorState.token}
+          file={imageProcessorState.file}
+          onConfirm={handleProcessorComplete}
+          onSkip={handleProcessorSkip}
+          onCancel={handleProcessorCancel}
+        />
+      ) : null}
     </div>
   );
 }

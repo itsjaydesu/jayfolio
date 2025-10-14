@@ -47,7 +47,7 @@ export function computeCropResolution(crop, image) {
   return { width, height };
 }
 
-export async function createCroppedBlob(image, crop, fileType, quality = 0.92) {
+export async function createCroppedBlob(image, crop, fileType, quality = 0.92, options = {}) {
   if (!crop || !image) {
     throw new Error('Missing crop or image reference.');
   }
@@ -63,11 +63,34 @@ export async function createCroppedBlob(image, crop, fileType, quality = 0.92) {
   const scaleY = image.naturalHeight / image.height;
   const pixelRatio = window.devicePixelRatio || 1;
 
-  const outputWidth = Math.floor(crop.width * scaleX);
-  const outputHeight = Math.floor(crop.height * scaleY);
+  const baseWidth = Math.max(1, Math.floor(crop.width * scaleX));
+  const baseHeight = Math.max(1, Math.floor(crop.height * scaleY));
 
-  canvas.width = Math.max(1, Math.floor(outputWidth * pixelRatio));
-  canvas.height = Math.max(1, Math.floor(outputHeight * pixelRatio));
+  let targetWidth = baseWidth;
+  let targetHeight = baseHeight;
+
+  if (options?.maxWidth && Number.isFinite(options.maxWidth) && options.maxWidth > 0) {
+    if (targetWidth > options.maxWidth) {
+      const ratio = targetHeight / targetWidth;
+      targetWidth = Math.floor(options.maxWidth);
+      targetHeight = Math.max(1, Math.floor(targetWidth * ratio));
+    }
+  }
+
+  if (options?.maxHeight && Number.isFinite(options.maxHeight) && options.maxHeight > 0) {
+    if (targetHeight > options.maxHeight) {
+      const ratio = targetWidth / targetHeight;
+      targetHeight = Math.floor(options.maxHeight);
+      targetWidth = Math.max(1, Math.floor(targetHeight * ratio));
+    }
+  }
+
+  const mimeType = typeof options?.mimeType === 'string' && options.mimeType.length
+    ? options.mimeType
+    : fileType || 'image/jpeg';
+
+  canvas.width = Math.max(1, Math.floor(targetWidth * pixelRatio));
+  canvas.height = Math.max(1, Math.floor(targetHeight * pixelRatio));
 
   ctx.scale(pixelRatio, pixelRatio);
   ctx.imageSmoothingQuality = 'high';
@@ -83,8 +106,8 @@ export async function createCroppedBlob(image, crop, fileType, quality = 0.92) {
     crop.height * scaleY,
     0,
     0,
-    outputWidth,
-    outputHeight
+    targetWidth,
+    targetHeight
   );
 
   return new Promise((resolve, reject) => {
@@ -96,7 +119,7 @@ export async function createCroppedBlob(image, crop, fileType, quality = 0.92) {
         }
         resolve(blob);
       },
-      fileType || 'image/jpeg',
+      mimeType,
       quality
     );
   });
