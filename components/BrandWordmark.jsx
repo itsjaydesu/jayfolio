@@ -7,7 +7,7 @@ import { t } from '../lib/translations';
 // Animation configuration
 const TRANSITION_DURATION_MS = 600; // Smooth transition duration
 const TRANSITION_EASING = 'cubic-bezier(0.4, 0.0, 0.2, 1)'; // Smooth easing
-const DEBUG = false; // Disable debug logging
+const DEBUG = true; // Enable debug logging to verify fix
 
 export default function BrandWordmark({ className = '' }) {
   const { language } = useLanguage();
@@ -58,7 +58,7 @@ export default function BrandWordmark({ className = '' }) {
     });
   }
   
-  // Handle cleanup on unmount
+  // Handle cleanup on unmount AND enable transitions after mount
   useEffect(() => {
     const id = componentId.current;
     if (DEBUG) {
@@ -67,7 +67,18 @@ export default function BrandWordmark({ className = '' }) {
         timestamp: Date.now()
       });
     }
+    
+    // Enable transitions after a small delay to avoid initial animation
+    // This ensures transitions are ready BEFORE any language changes
+    const enableTransitionsTimeout = setTimeout(() => {
+      if (DEBUG) {
+        console.log(`✅ [${id}] Enabling transitions after mount`);
+      }
+      setShouldTransition(true);
+    }, 50); // Small delay to ensure no initial animation
+    
     return () => {
+      clearTimeout(enableTransitionsTimeout);
       isMountedRef.current = false;
       if (DEBUG) {
         console.log(`💥 [${id}] UNMOUNTED`, {
@@ -79,12 +90,10 @@ export default function BrandWordmark({ className = '' }) {
   
   // Use useLayoutEffect to update styles before browser paint
   useLayoutEffect(() => {
-    const isFirstRender = !shouldTransition;
     const languageChanged = previousLanguageRef.current !== language;
     
     if (DEBUG) {
       console.log(`⚡ [${componentId.current}] useLayoutEffect fired`, {
-        isFirstRender,
         shouldTransition,
         languageChanged,
         previousLanguage: previousLanguageRef.current,
@@ -93,23 +102,21 @@ export default function BrandWordmark({ className = '' }) {
       });
     }
     
-    // Skip first render
-    if (isFirstRender) {
-      if (DEBUG) {
-        console.log(`⏭️ [${componentId.current}] Skipping transition (first render)`, {
-          settingShouldTransition: true
-        });
-      }
-      setShouldTransition(true);
-      previousLanguageRef.current = language;
-      return;
-    }
-    
     // Check if language actually changed
     if (!languageChanged) {
       if (DEBUG) {
         console.log(`🔄 [${componentId.current}] No language change, skipping update`);
       }
+      return;
+    }
+    
+    // Skip if this is the initial render (before transitions are enabled)
+    // This prevents the initial state from animating
+    if (!shouldTransition && previousLanguageRef.current === language) {
+      if (DEBUG) {
+        console.log(`⏭️ [${componentId.current}] Skipping initial render`);
+      }
+      previousLanguageRef.current = language;
       return;
     }
     
