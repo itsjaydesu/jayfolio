@@ -5553,20 +5553,15 @@ a {
   align-items: center;
   justify-content: center;
   color: rgba(242, 252, 255, 0.98);
-  opacity: 0;
+  /* Initial state handled by JavaScript */
   transform-origin: 50% 50%;
-  transform: translate3d(0, 0, 0) scale(1);
-  filter: blur(0) saturate(1);
   white-space: nowrap; /* Ensure no wrapping */
-  transition:
-    opacity 0.45s cubic-bezier(0.4, 0.0, 0.2, 1),
-    transform 0.5s cubic-bezier(0.4, 0.0, 0.2, 1),
-    filter 0.45s cubic-bezier(0.4, 0.0, 0.2, 1);
-  will-change: opacity, transform, filter;
   pointer-events: none;
   -webkit-font-smoothing: antialiased;
   backface-visibility: hidden;
   perspective: 1000px;
+  /* Hardware acceleration */
+  transform: translateZ(0);
 }
 
 .brand-wordmark__layer--en {
@@ -5582,45 +5577,8 @@ a {
   letter-spacing: 0.12em; /* Better spacing for Japanese */
 }
 
-.brand-wordmark__layer.is-entering {
-  animation: brandEntering 0.5s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
-}
-
-@keyframes brandEntering {
-  from {
-    opacity: 0;
-    transform: translate3d(0, 4%, 0) scale(0.98);
-    filter: blur(0.8px) saturate(1.05);
-  }
-  to {
-    opacity: 1;  /* Go to full opacity */
-    transform: translate3d(0, 0, 0) scale(1);  /* Final position */
-    filter: blur(0) saturate(1);  /* Clear filter */
-  }
-}
-
-.brand-wordmark__layer.is-active {
-  opacity: 1;
-  transform: translate3d(0, 0, 0) scale(1);
-  filter: blur(0) saturate(1);
-}
-
-.brand-wordmark__layer.is-leaving {
-  animation: brandLeaving 0.5s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
-}
-
-@keyframes brandLeaving {
-  from {
-    opacity: 1;
-    transform: translate3d(0, 0, 0) scale(1);
-    filter: blur(0) saturate(1);
-  }
-  to {
-    opacity: 0;
-    transform: translate3d(0, -4%, 0) scale(0.98);
-    filter: blur(0.8px) saturate(0.95);
-  }
-}
+/* Animation classes removed - handled by inline styles in JavaScript */
+/* This ensures smooth, reliable transitions without conflicts */
 
 .site-shell__nav {
   display: flex;
