@@ -7,7 +7,7 @@ import { t } from '../lib/translations';
 // Animation configuration
 const TRANSITION_DURATION_MS = 600; // Smooth transition duration
 const TRANSITION_EASING = 'cubic-bezier(0.4, 0.0, 0.2, 1)'; // Smooth easing
-const DEBUG = true; // Enable debug logging to verify fix
+const DEBUG = false; // Debug logging disabled - fix verified
 
 export default function BrandWordmark({ className = '' }) {
   const { language } = useLanguage();
