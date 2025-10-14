@@ -1,27 +1,61 @@
 {
   "about": {
-    "aboutTitle": "the jayFolio",
-    "aboutSubtitle": "thanks for coming",
-    "aboutContent": "Here's a website designed to explain some things, in an attempt to <a href=\"https://x.com/theJayAlto/status/1974598773776187798\">die empty</a>.\n\nOk so",
+    "aboutTitle": {
+      "en": "the jayFolio",
+      "ja": "プロフィール"
+    },
+    "aboutSubtitle": {
+      "en": "thanks for coming",
+      "ja": "クリエイティブ・テクノロジスト"
+    },
+    "aboutContent": {
+      "en": "Here's a website designed to explain some things, in an attempt to <a href=\"https://x.com/theJayAlto/status/1974598773776187798\">die empty</a>.\n\nOk so",
+      "ja": "クリエイティブ・テクノロジストとして、アンビエントOSや展示向けツール、シネマティックなサウンドスケープを設計しています。このドシエではスタジオの思想、コラボレーター、そして各プロジェクトを導くシグナルを紹介します。"
+    },
     "aboutDetailCards": [
       {
-        "title": "Help me improve something",
-        "text": "Cinematic UI systems, immersive spatial audio, sensor-driven choreography, and collaborative design research."
+        "title": {
+          "en": "Help me improve something",
+          "ja": "実践ベクトル"
+        },
+        "text": {
+          "en": "Cinematic UI systems, immersive spatial audio, sensor-driven choreography, and collaborative design research.",
+          "ja": "シネマティックなUIシステム、没入型の空間オーディオ、センサー連動の振付、そして協働型リサーチを行っています。"
+        }
       },
       {
-        "title": "Work with me",
-        "text": "I have literally hundreds of ideas waiting to be burned through. Most of them are terrible. Some, I assume, are good ideas."
+        "title": {
+          "en": "Work with me",
+          "ja": "運営ポリシー"
+        },
+        "text": {
+          "en": "I have literally hundreds of ideas waiting to be burned through. Most of them are terrible. Some, I assume, are good ideas.",
+          "ja": "まず耳を傾け、オープンに試作し、どのサーフェスにも温度を宿す。プロジェクトはコードと同じ精度で空気感を整えます。"
+        }
       },
       {
-        "title": "Stay in Touch",
-        "text": "Building responsive worlds where light, audio, and interface gestures share the same pulse through WebGL and realtime systems."
+        "title": {
+          "en": "Stay in Touch",
+          "ja": "現在のフォーカス"
+        },
+        "text": {
+          "en": "Building responsive worlds where light, audio, and interface gestures share the same pulse through WebGL and realtime systems.",
+          "ja": "WebGLとリアルタイムシステムを通じて、光・音・インターフェイスが同じ鼓動で呼吸する空間を構築しています。"
+        }
       }
     ],
-    "aboutTags": [
-      "these",
-      "are",
-      "tags"
-    ],
+    "aboutTags": {
+      "en": [
+        "these",
+        "are",
+        "tags"
+      ],
+      "ja": [
+        "デザイナー",
+        "コンポーザー",
+        "システムアーティスト"
+      ]
+    },
     "title": "",
     "lead": "Creative technologist guiding teams through ambient operating systems, tactile exhibition tooling, and cinematic web soundscapes. This dossier carries the studio ethos, collaborators, and signals shaping each commission. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
     "statusDate": "2024-11-01",
