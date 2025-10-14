@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import dynamic from 'next/dynamic';
 import RetroMenu from "./RetroMenu";
 import LanguageSwitcher from "./LanguageSwitcher";
+import BrandWordmark from "./BrandWordmark";
 import { DotfieldIcon, XLogoIcon } from "./icons";
 import SiteFooter from "./SiteFooter";
 import { SITE_TEXT_DEFAULTS } from "../lib/siteTextDefaults";
@@ -272,9 +273,7 @@ export default function SiteShell({ children, isAdmin = false }) {
   }, []);
 
   const [status, setStatus] = useState(waitingStatus);
-  // navReady is always true to avoid hydration mismatches
-  // Animation will still work via CSS transitions
-  const navReady = true;
+  const [navReady, setNavReady] = useState(false);
   const [hasScrolled, setHasScrolled] = useState(false);
   const [hasActiveEffect, setHasActiveEffect] = useState(false);
   const [activeEffectInfo, setActiveEffectInfo] = useState(null); // { name, startTime, duration }
@@ -338,6 +337,30 @@ export default function SiteShell({ children, isAdmin = false }) {
       closeDotfieldOverlay();
     }
   }, [pathname, isDotfieldOverlayOpen, isDotfieldOverlayMounted, isDotfieldOverlayLeaving, closeDotfieldOverlay]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      setNavReady(true);
+      return;
+    }
+
+    const prefersReducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)");
+
+    if (prefersReducedMotion?.matches) {
+      setNavReady(true);
+      return () => {};
+    }
+
+    let frameId = window.requestAnimationFrame(() => {
+      setNavReady(true);
+    });
+
+    return () => {
+      if (frameId) {
+        window.cancelAnimationFrame(frameId);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (!isDotfieldFieldPanelOpen) return;
@@ -1195,6 +1218,7 @@ export default function SiteShell({ children, isAdmin = false }) {
               <Link
                 href="/"
                 className="site-shell__brand"
+                aria-label={brand}
                 onClick={handleNavigateHome}
                 style={
                   navReady
@@ -1206,7 +1230,7 @@ export default function SiteShell({ children, isAdmin = false }) {
                       }
                 }
               >
-                {brand}
+                <BrandWordmark className="site-shell__brand-wordmark" />
               </Link>
               <nav className="site-shell__nav" aria-label="Primary navigation">
                 {menuItems.map((item, index) => {

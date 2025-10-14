@@ -180,8 +180,14 @@ export default function EntryDetail({ type, entry, isAdmin = false }) {
   const localizedTitle = getLocalizedContent(entry.title, language) || entry.title;
   const localizedSummary = getLocalizedContent(entry.summary, language) || entry.summary;
   const dateLabel = createdAt ? formatDisplayDate(createdAt, language) : '';
-  const editHref = entry?.slug ? `/administratorrrr?type=${type}&slug=${encodeURIComponent(entry.slug)}` : null;
+  const editHref = entry?.slug
+    ? `/administratorrrr?type=${type}&slug=${encodeURIComponent(entry.slug)}&panel=collapsed`
+    : null;
   const stageClasses = ['detail-stage'];
+  const titleGroupClasses = ['detail-view__title-group'];
+  if (isAdmin && editHref) {
+    titleGroupClasses.push('detail-view__title-group--editable');
+  }
   // Determine navigation label based on type
   const navTypeKey = type === 'words' ? 'content' : type;
   const typeLabel = navTypeKey ? t(`nav.${navTypeKey}`, language) : '';
@@ -223,7 +229,7 @@ export default function EntryDetail({ type, entry, isAdmin = false }) {
         </nav>
 
         <header className="detail-view__header">
-          <div className="detail-view__title-group">
+          <div className={titleGroupClasses.join(' ')}>
             <div className="detail-view__title-row">
               <h1 className="detail-view__title">{localizedTitle}</h1>
               {isAdmin && editHref ? (

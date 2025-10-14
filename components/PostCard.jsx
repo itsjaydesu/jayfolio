@@ -31,7 +31,7 @@ export default function PostCard({
   }
 
   const href = `/${type}/${entry.slug}`;
-  const editHref = `/administratorrrr?type=${type}&slug=${encodeURIComponent(entry.slug)}`;
+  const editHref = `/administratorrrr?type=${type}&slug=${encodeURIComponent(entry.slug)}&panel=collapsed`;
 
   const localizedTitle = getLocalizedContent(entry.title, language) || entry.title;
   const localizedSummary = getLocalizedContent(entry.summary, language) || entry.summary;
@@ -70,13 +70,31 @@ export default function PostCard({
   // Map content type to words for CSS classes (backward compatibility)
   const cssType = type === 'content' ? 'words' : type;
 
+  const surfaceClasses = ['project-entry__surface', 'project-entry__surface--compact'];
+  if (isAdmin) {
+    surfaceClasses.push('project-entry__surface--with-edit');
+  }
+
   return (
     <article
       className={`project-entry project-entry--${cssType}`}
       data-tone={tone}
       data-entry-slug={entry.slug}
     >
-      <div className="project-entry__surface project-entry__surface--compact">
+      <div className={surfaceClasses.join(' ')}>
+        {isAdmin ? (
+          <Link
+            href={editHref}
+            prefetch
+            className="project-entry__edit-btn"
+            aria-label={`${t('admin.edit', language)} ${localizedTitle}`}
+            onClick={(event) => {
+              event.stopPropagation();
+            }}
+          >
+            {t('admin.edit', language)}
+          </Link>
+        ) : null}
         <div className="project-entry__content">
           <header className="project-entry__header">
             <div className="project-entry__meta">
@@ -94,16 +112,6 @@ export default function PostCard({
 
             <div className="project-entry__title-row">
               <h2 className="project-entry__title">{localizedTitle}</h2>
-              {isAdmin && (
-                <Link
-                  href={editHref}
-                  className="project-entry__edit-btn"
-                  aria-label={`${t('admin.edit', language)} ${localizedTitle}`}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {t('admin.edit', language)}
-                </Link>
-              )}
             </div>
           </header>
 

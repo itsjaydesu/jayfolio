@@ -33,6 +33,12 @@ export default function AboutContent({ initialContent }) {
 
   const editHref = '/administratorrrr/settings/channel/about';
 
+  const canEdit = Boolean(isAdmin);
+  const headerClassName = ['clean-about-page__header'];
+  if (canEdit) {
+    headerClassName.push('clean-about-page__header--editable');
+  }
+
   return (
     <section className={`clean-about-page ${isLoaded ? 'is-loaded' : ''}`}>
       <div className="clean-about-page__background">
@@ -40,13 +46,13 @@ export default function AboutContent({ initialContent }) {
       </div>
       
       <div className="clean-about-page__container">
-        <header className="clean-about-page__header">
+        <header className={headerClassName.join(' ')}>
           <div className="clean-about-page__header-row">
             <div className="clean-about-page__heading">
               <h1 className="clean-about-page__title">{title}</h1>
               <p className="clean-about-page__subtitle">{subtitle}</p>
             </div>
-            {isAdmin ? (
+            {canEdit ? (
               <Link href={editHref} className="clean-about-page__edit-btn">
                 Edit About
               </Link>

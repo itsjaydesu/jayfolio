@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 720" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="home-sky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#071320" />
+      <stop offset="45%" stop-color="#0b1f32" />
+      <stop offset="100%" stop-color="#041017" />
+    </linearGradient>
+    <radialGradient id="home-glow" cx="50%" cy="20%" r="60%">
+      <stop offset="0%" stop-color="#4ab7ff" stop-opacity="0.45" />
+      <stop offset="60%" stop-color="#04131f" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="home-water" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0b1e28" />
+      <stop offset="100%" stop-color="#020a10" />
+    </linearGradient>
+  </defs>
+  <rect width="1440" height="720" fill="url(#home-sky)" />
+  <ellipse cx="720" cy="220" rx="680" ry="360" fill="url(#home-glow)" />
+  <path d="M0 360 Q 240 280 420 320 T 840 300 T 1220 340 Q 1340 370 1440 330 V 510 H 0 Z" fill="#0c2c36" />
+  <path d="M0 390 Q 280 360 540 370 T 1040 360 T 1440 390 V 540 H 0 Z" fill="#093344" opacity="0.85" />
+  <path d="M0 470 Q 300 420 720 440 T 1440 460 V 720 H 0 Z" fill="url(#home-water)" />
+</svg>

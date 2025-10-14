@@ -1,16 +1,116 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { ArrowUpRightIcon, InstagramIcon, XLogoIcon, YouTubeIcon } from './icons';
 
 function validateEmail(value) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 }
 
+const FOOTER_SCENES = {
+  home: {
+    image: '/images/footer/home.svg',
+    tint: 'rgba(8, 22, 34, 0.82)',
+    glow: 'rgba(126, 242, 255, 0.22)',
+    focus: '50% 38%'
+  },
+  about: {
+    image: '/images/footer/about.svg',
+    tint: 'rgba(12, 16, 28, 0.86)',
+    glow: 'rgba(232, 210, 255, 0.2)',
+    focus: '50% 40%'
+  },
+  projects: {
+    image: '/images/footer/projects.svg',
+    tint: 'rgba(4, 18, 28, 0.88)',
+    glow: 'rgba(126, 248, 210, 0.26)',
+    focus: '48% 42%'
+  },
+  content: {
+    image: '/images/footer/content.svg',
+    tint: 'rgba(6, 14, 24, 0.88)',
+    glow: 'rgba(248, 222, 174, 0.2)',
+    focus: '50% 44%'
+  },
+  sounds: {
+    image: '/images/footer/sounds.svg',
+    tint: 'rgba(4, 12, 24, 0.9)',
+    glow: 'rgba(154, 214, 255, 0.24)',
+    focus: '50% 42%'
+  },
+  art: {
+    image: '/images/footer/art.svg',
+    tint: 'rgba(10, 16, 24, 0.9)',
+    glow: 'rgba(242, 176, 255, 0.24)',
+    focus: '51% 40%'
+  },
+  'work-with-me': {
+    image: '/images/footer/work-with-me.svg',
+    tint: 'rgba(6, 12, 20, 0.9)',
+    glow: 'rgba(124, 255, 206, 0.24)',
+    focus: '48% 43%'
+  },
+  default: {
+    image: '/images/footer/home.svg',
+    tint: 'rgba(6, 18, 26, 0.86)',
+    glow: 'rgba(128, 236, 255, 0.18)',
+    focus: '50% 40%'
+  }
+};
+
 export default function SiteFooter({ className = '' }) {
+  const pathname = usePathname();
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState({ type: 'idle', message: '' });
+  const [isVisible, setIsVisible] = useState(false);
+  const footerRef = useRef(null);
+
+  const sceneKey = useMemo(() => {
+    const segments = pathname?.split('/').filter(Boolean) ?? [];
+    if (!segments.length) return 'home';
+    const first = segments[0];
+    if (FOOTER_SCENES[first]) {
+      return first;
+    }
+    return 'default';
+  }, [pathname]);
+
+  const sceneConfig = FOOTER_SCENES[sceneKey] ?? FOOTER_SCENES.default;
+
+  const footerStyle = useMemo(() => ({
+    '--footer-scene-image': `url(${sceneConfig.image})`,
+    '--footer-scene-tint': sceneConfig.tint,
+    '--footer-scene-glow': sceneConfig.glow,
+    '--footer-scene-focus': sceneConfig.focus
+  }), [sceneConfig]);
+
+  useEffect(() => {
+    const node = footerRef.current;
+    if (!node) {
+      return undefined;
+    }
+
+    if (typeof IntersectionObserver === 'undefined') {
+      setIsVisible(true);
+      return undefined;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        if (entry?.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.35 }
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
 
   const socialLinks = [
     {
@@ -44,8 +144,26 @@ export default function SiteFooter({ className = '' }) {
     setEmail('');
   };
 
+  const footerClasses = ['site-footer'];
+  if (className) footerClasses.push(className);
+  if (isVisible) footerClasses.push('site-footer--visible');
+
+  footerClasses.push(`site-footer--${sceneKey}`);
+
   return (
-    <footer className={['site-footer', className].filter(Boolean).join(' ')} aria-labelledby="site-footer-heading">
+    <footer
+      ref={footerRef}
+      className={footerClasses.join(' ')}
+      aria-labelledby="site-footer-heading"
+      data-footer-scene={sceneKey}
+      style={footerStyle}
+    >
+      <div className="site-footer__backdrop" aria-hidden="true">
+        <div className="site-footer__backdrop-layer site-footer__backdrop-layer--image" />
+        <div className="site-footer__backdrop-layer site-footer__backdrop-layer--tint" />
+        <div className="site-footer__backdrop-layer site-footer__backdrop-layer--mist" />
+        <div className="site-footer__backdrop-layer site-footer__backdrop-layer--glow" />
+      </div>
       <div className="site-footer__container">
         <div className="site-footer__content">
           <h2 id="site-footer-heading" className="site-footer__headline">

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 720" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="about-sky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#110b1c" />
+      <stop offset="60%" stop-color="#1b1630" />
+      <stop offset="100%" stop-color="#070713" />
+    </linearGradient>
+    <radialGradient id="about-glow" cx="60%" cy="30%" r="60%">
+      <stop offset="0%" stop-color="#a88cff" stop-opacity="0.35" />
+      <stop offset="65%" stop-color="#140b24" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="about-water" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1a1630" />
+      <stop offset="100%" stop-color="#090815" />
+    </linearGradient>
+  </defs>
+  <rect width="1440" height="720" fill="url(#about-sky)" />
+  <ellipse cx="840" cy="200" rx="720" ry="380" fill="url(#about-glow)" />
+  <path d="M0 360 Q 160 310 320 340 T 720 300 T 1080 320 T 1440 360 V 560 H 0 Z" fill="#251d3f" opacity="0.85" />
+  <path d="M0 410 Q 340 360 720 380 T 1440 390 V 600 H 0 Z" fill="#2c2352" opacity="0.78" />
+  <path d="M0 500 Q 320 460 720 470 T 1440 480 V 720 H 0 Z" fill="url(#about-water)" />
+</svg>

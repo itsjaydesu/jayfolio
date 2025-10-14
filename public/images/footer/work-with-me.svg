@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 720" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="wwm-sky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#021712" />
+      <stop offset="55%" stop-color="#03231a" />
+      <stop offset="100%" stop-color="#010905" />
+    </linearGradient>
+    <radialGradient id="wwm-glow" cx="52%" cy="24%" r="60%">
+      <stop offset="0%" stop-color="#6cffba" stop-opacity="0.34" />
+      <stop offset="65%" stop-color="#031a13" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="wwm-water" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#063222" />
+      <stop offset="100%" stop-color="#02140d" />
+    </linearGradient>
+  </defs>
+  <rect width="1440" height="720" fill="url(#wwm-sky)" />
+  <ellipse cx="760" cy="210" rx="720" ry="360" fill="url(#wwm-glow)" />
+  <path d="M0 360 Q 280 300 520 330 T 1000 300 T 1440 340 V 560 H 0 Z" fill="#0c3626" opacity="0.82" />
+  <path d="M0 420 Q 320 370 720 380 T 1440 410 V 620 H 0 Z" fill="#0d3e2d" opacity="0.72" />
+  <path d="M0 520 Q 320 470 720 480 T 1440 500 V 720 H 0 Z" fill="url(#wwm-water)" />
+</svg>

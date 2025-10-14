@@ -191,6 +191,7 @@ export default function AdminPage() {
   const searchParams = useSearchParams();
   const typeParam = searchParams.get('type');
   const slugParam = searchParams.get('slug');
+  const panelParam = searchParams.get('panel');
 
   const initialType = useMemo(() => {
     if (typeParam && TYPE_OPTIONS.some((option) => option.id === typeParam)) {
@@ -206,14 +207,24 @@ export default function AdminPage() {
   const [selectedSlug, setSelectedSlug] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
-  const [isEntryPanelCollapsed, setIsEntryPanelCollapsed] = useState(() => !slugParam);
+  const initialPanelCollapsed = useMemo(() => {
+    if (panelParam === 'collapsed') {
+      return true;
+    }
+    if (panelParam === 'open') {
+      return false;
+    }
+    return !slugParam;
+  }, [panelParam, slugParam]);
+
+  const [isEntryPanelCollapsed, setIsEntryPanelCollapsed] = useState(initialPanelCollapsed);
   const [isEditorFullscreen, setIsEditorFullscreen] = useState(false);
   const prevSlugParamRef = useRef(slugParam);
   const pendingSlugRef = useRef(slugParam);
   const skipSlugSyncRef = useRef(false);
 
   const updateUrlState = useCallback(
-    (nextType, nextSlug) => {
+    (nextType, nextSlug, panelState) => {
       const params = new URLSearchParams();
       const resolvedType = nextType && TYPE_OPTIONS.some((option) => option.id === nextType)
         ? nextType
@@ -224,10 +235,14 @@ export default function AdminPage() {
       if (nextSlug) {
         params.set('slug', nextSlug);
       }
+      const shouldCollapse = typeof panelState === 'boolean' ? panelState : isEntryPanelCollapsed;
+      if (shouldCollapse) {
+        params.set('panel', 'collapsed');
+      }
       const nextUrl = params.size ? `${pathname}?${params.toString()}` : pathname;
       router.replace(nextUrl, { scroll: false });
     },
-    [activeType, pathname, router]
+    [activeType, isEntryPanelCollapsed, pathname, router]
   );
 
   useEffect(() => {
@@ -374,8 +389,12 @@ export default function AdminPage() {
   }, [activeLanguage]);
 
   const toggleEntryPanel = useCallback(() => {
-    setIsEntryPanelCollapsed((prev) => !prev);
-  }, []);
+    setIsEntryPanelCollapsed((prev) => {
+      const next = !prev;
+      updateUrlState(activeType, selectedSlug ?? null, next);
+      return next;
+    });
+  }, [activeType, selectedSlug, updateUrlState]);
 
   const toggleEditorFullscreen = useCallback(() => {
     setIsEditorFullscreen((prev) => !prev);

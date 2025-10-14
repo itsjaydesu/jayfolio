@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 720" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="sounds-sky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#030b18" />
+      <stop offset="55%" stop-color="#071429" />
+      <stop offset="100%" stop-color="#01040a" />
+    </linearGradient>
+    <radialGradient id="sounds-glow" cx="52%" cy="22%" r="62%">
+      <stop offset="0%" stop-color="#7ac6ff" stop-opacity="0.38" />
+      <stop offset="65%" stop-color="#021024" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="sounds-water" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#05203a" />
+      <stop offset="100%" stop-color="#010811" />
+    </linearGradient>
+  </defs>
+  <rect width="1440" height="720" fill="url(#sounds-sky)" />
+  <ellipse cx="760" cy="210" rx="720" ry="360" fill="url(#sounds-glow)" />
+  <path d="M0 360 Q 200 300 400 330 T 840 310 T 1200 340 T 1440 320 V 540 H 0 Z" fill="#0d2740" opacity="0.8" />
+  <path d="M0 420 Q 340 370 720 380 T 1440 420 V 600 H 0 Z" fill="#093056" opacity="0.7" />
+  <path d="M0 520 Q 320 470 720 480 T 1440 510 V 720 H 0 Z" fill="url(#sounds-water)" />
+</svg>
