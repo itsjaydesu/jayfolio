@@ -307,6 +307,11 @@ export default function SiteShell({ children, isAdmin = false }) {
     }${leaving ? " is-leaving" : ""}`;
   }, [hasScrolled, headerLeaving]);
 
+  const containerClassName = useMemo(
+    () => `site-shell__container${hasScrolled ? " site-shell__container--shaded" : ""}`,
+    [hasScrolled]
+  );
+
   useEffect(() => {
     if (!isDotfieldOverlayOpen) return;
 
@@ -1224,7 +1229,7 @@ export default function SiteShell({ children, isAdmin = false }) {
         </div>
       ) : null}
       <div className={`site-shell${isDetailView ? " site-shell--detail" : ""}`}>
-        <div className="site-shell__container">
+        <div className={containerClassName}>
           {!isDetailView ? (
             <div
               ref={headerSentinelRef}
