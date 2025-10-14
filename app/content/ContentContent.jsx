@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import PostCard from '../../components/PostCard';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { t, getCategoryName, getLocalizedContent, getLocalizedTags } from '../../lib/translations';
@@ -27,6 +27,13 @@ export default function ContentContent({ entries, hero, isAdmin = false }) {
   const { language } = useLanguage();
   const localizedCategories = useMemo(() => getLocalizedCategories(language), [language]);
   const [selectedCategory, setSelectedCategory] = useState(localizedCategories[0].key);
+  const [isLoaded, setIsLoaded] = useState(false);
+  
+  const backgroundImage = hero.backgroundImage || '';
+  
+  useEffect(() => {
+    setIsLoaded(true);
+  }, []);
 
   // Auto-categorize entries based on tags or content
   const categorizedEntries = useMemo(() => {
@@ -70,7 +77,18 @@ export default function ContentContent({ entries, hero, isAdmin = false }) {
   }, [categorizedEntries, selectedCategory]);
 
   return (
-    <section className="channel channel--words">
+    <section className={`channel channel--words ${isLoaded ? 'is-loaded' : ''} ${backgroundImage ? 'has-background-image' : ''}`}>
+      {backgroundImage && (
+        <div className="channel__background">
+          <img 
+            src={backgroundImage} 
+            alt="" 
+            className="channel__background-image"
+            aria-hidden="true"
+          />
+          <div className="channel__gradient" />
+        </div>
+      )}
       <header className="channel__intro">
         <h1 className="channel__title">{getLocalizedContent(hero.title, language) || t('content.title', language)}</h1>
         <p className="channel__lead">{getLocalizedContent(hero.lead, language) || t('content.lead', language)}</p>
