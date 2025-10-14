@@ -23,6 +23,12 @@ export function LanguageProvider({ children }) {
   // Change language with persistence and smooth crossfade effect
   const changeLanguage = (newLanguage) => {
     if (SUPPORTED_LANGUAGES[newLanguage]) {
+      console.log('🌐 LanguageContext: Starting language change', {
+        from: language,
+        to: newLanguage,
+        timestamp: Date.now()
+      });
+      
       // Immediate language change for smoother transition
       setLanguage(newLanguage);
       saveLanguagePreference(newLanguage);
@@ -31,10 +37,12 @@ export function LanguageProvider({ children }) {
         document.documentElement.lang = newLanguage;
         
         // Add subtle pulse effect during transition
+        console.log('➕ Adding data-language-transitioning attribute', { timestamp: Date.now() });
         document.body.setAttribute('data-language-transitioning', 'true');
         
         // Remove transition state after animation completes
         setTimeout(() => {
+          console.log('➖ Removing data-language-transitioning attribute', { timestamp: Date.now() });
           document.body.removeAttribute('data-language-transitioning');
         }, 650); // Match the longer transition duration
       }
