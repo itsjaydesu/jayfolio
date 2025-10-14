@@ -82,7 +82,23 @@ export async function POST(request) {
 
     return NextResponse.json(record);
   } catch (error) {
-    console.error('[upload] error', error);
-    return NextResponse.json({ error: error.message || 'Upload failed' }, { status: 500 });
+    console.error('[upload] error:', error);
+    
+    // Handle different error types properly
+    let errorMessage = 'Upload failed';
+    
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    } else if (typeof error === 'string') {
+      errorMessage = error;
+    } else if (error && typeof error.toString === 'function') {
+      const errorString = error.toString();
+      // Avoid returning "[object Event]" or similar object representations
+      if (!errorString.startsWith('[object ')) {
+        errorMessage = errorString;
+      }
+    }
+    
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }

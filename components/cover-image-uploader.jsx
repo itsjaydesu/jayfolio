@@ -98,12 +98,23 @@ export default function CoverImageUploader({ value, alt, onChange }) {
       let result;
       try {
         result = await response.json();
-      } catch {
+      } catch (parseError) {
+        console.error("Failed to parse upload response:", parseError);
         result = null;
       }
 
       if (!response.ok) {
-        const message = result?.error || `Upload failed with status ${response.status}`;
+        // Extract error message properly, avoiding [object Event] issues
+        let message = `Upload failed with status ${response.status}`;
+        
+        if (result && result.error) {
+          if (typeof result.error === 'string' && !result.error.startsWith('[object ')) {
+            message = result.error;
+          } else if (result.error.message) {
+            message = result.error.message;
+          }
+        }
+        
         throw new Error(message);
       }
 
@@ -152,7 +163,18 @@ export default function CoverImageUploader({ value, alt, onChange }) {
       resetCropState();
     },
     onFileError: (uploadError) => {
-      setError(uploadError?.message || "Upload failed.");
+      // Handle different error types
+      let errorMessage = "Upload failed.";
+      
+      if (uploadError instanceof Error) {
+        errorMessage = uploadError.message;
+      } else if (typeof uploadError === 'string') {
+        errorMessage = uploadError;
+      } else if (uploadError && uploadError.message) {
+        errorMessage = uploadError.message;
+      }
+      
+      setError(errorMessage);
     },
     onFileCancel: () => {
       setError("Upload cancelled.");
