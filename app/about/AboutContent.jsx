@@ -17,6 +17,7 @@ export default function AboutContent({ initialContent }) {
   }, []);
   
   // Use dynamic data with fallbacks
+  const backgroundImage = initialContent.aboutBackgroundImage || '';
   const title = getLocalizedContent(initialContent.aboutTitle, language) || 'About';
   const subtitle = getLocalizedContent(initialContent.aboutSubtitle, language) || 'Creative Technologist';
   const content =
@@ -40,8 +41,16 @@ export default function AboutContent({ initialContent }) {
   }
 
   return (
-    <section className={`clean-about-page ${isLoaded ? 'is-loaded' : ''}`}>
+    <section className={`clean-about-page ${isLoaded ? 'is-loaded' : ''} ${backgroundImage ? 'has-background-image' : ''}`}>
       <div className="clean-about-page__background">
+        {backgroundImage && (
+          <img 
+            src={backgroundImage} 
+            alt="" 
+            className="clean-about-page__background-image"
+            aria-hidden="true"
+          />
+        )}
         <div className="clean-about-page__gradient" />
       </div>
       

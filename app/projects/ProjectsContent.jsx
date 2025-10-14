@@ -18,6 +18,9 @@ export default function ProjectsContent({ entries, hero, isAdmin = false }) {
   const searchParams = useSearchParams();
   const containerRef = useRef(null);
   const { language } = useLanguage();
+  const [isLoaded, setIsLoaded] = useState(false);
+  
+  const backgroundImage = hero.backgroundImage || '';
   
   const CATEGORIES = useMemo(() => (
     [
@@ -32,6 +35,11 @@ export default function ProjectsContent({ entries, hero, isAdmin = false }) {
   // Get initial category from URL or default to 'All'
   const initialCategory = (searchParams.get('category') || 'all').toLowerCase();
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
+  
+  // Set loaded state on mount
+  useEffect(() => {
+    setIsLoaded(true);
+  }, []);
   
   // Restore scroll position when coming back
   useEffect(() => {
@@ -147,7 +155,18 @@ export default function ProjectsContent({ entries, hero, isAdmin = false }) {
   }, [entries, filteredEntries, selectedCategory]);
 
   return (
-    <section className="channel channel--projects" ref={containerRef}>
+    <section className={`channel channel--projects ${isLoaded ? 'is-loaded' : ''} ${backgroundImage ? 'has-background-image' : ''}`} ref={containerRef}>
+      {backgroundImage && (
+        <div className="channel__background">
+          <img 
+            src={backgroundImage} 
+            alt="" 
+            className="channel__background-image"
+            aria-hidden="true"
+          />
+          <div className="channel__gradient" />
+        </div>
+      )}
       <header className="channel__intro">
         <h1 className="channel__title">{getLocalizedContent(hero.title, language) || t('projects.title', language)}</h1>
         <p className="channel__lead">{getLocalizedContent(hero.lead, language)}</p>
