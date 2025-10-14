@@ -1,6 +1,8 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
+import { ArrowUpRightIcon, InstagramIcon, XLogoIcon, YouTubeIcon } from './icons';
 
 function validateEmail(value) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
@@ -9,6 +11,27 @@ function validateEmail(value) {
 export default function SiteFooter({ className = '' }) {
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState({ type: 'idle', message: '' });
+
+  const socialLinks = [
+    {
+      id: 'x',
+      href: 'https://x.com/itsjaydesu',
+      label: `Follow Jay on X`,
+      icon: XLogoIcon
+    },
+    {
+      id: 'instagram',
+      href: 'https://instagram.com/itsjaydesu',
+      label: `See Jay on Instagram`,
+      icon: InstagramIcon
+    },
+    {
+      id: 'youtube',
+      href: 'https://www.youtube.com/@itsjaydesu',
+      label: `Watch Jay on YouTube`,
+      icon: YouTubeIcon
+    }
+  ];
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -61,6 +84,30 @@ export default function SiteFooter({ className = '' }) {
               {status.message}
             </p>
           </form>
+          <div className="site-footer__links">
+            <nav className="site-footer__social" aria-label="Social links">
+              <ul className="site-footer__social-list">
+                {socialLinks.map(({ id, href, label, icon: Icon }) => (
+                  <li key={id} className="site-footer__social-item">
+                    <a
+                      href={href}
+                      className="site-footer__social-link"
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      aria-label={label}
+                      title={label}
+                    >
+                      <Icon className="site-footer__social-icon" />
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+            <Link href="/work-with-me" className="site-footer__cta">
+              <span className="site-footer__cta-label">Work with me</span>
+              <ArrowUpRightIcon className="site-footer__cta-icon" />
+            </Link>
+          </div>
         </div>
       </div>
     </footer>

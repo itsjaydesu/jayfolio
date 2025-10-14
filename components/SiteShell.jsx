@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import dynamic from 'next/dynamic';
 import RetroMenu from "./RetroMenu";
 import LanguageSwitcher from "./LanguageSwitcher";
+import { XLogoIcon } from "./icons";
 import SiteFooter from "./SiteFooter";
 import { SITE_TEXT_DEFAULTS } from "../lib/siteTextDefaults";
 import { useAdminStatus } from "../lib/useAdminStatus";
@@ -79,7 +80,8 @@ export default function SiteShell({ children, isAdmin = false }) {
                               primarySegment === 'projects' || 
                               primarySegment === 'content' || 
                               primarySegment === 'sounds' || 
-                              primarySegment === 'art';
+                              primarySegment === 'art' ||
+                              primarySegment === 'work-with-me';
   const showAdminControls = isAdminActive && isHome;
   
   // ===== INITIAL STATE SETUP =====
@@ -951,6 +953,8 @@ export default function SiteShell({ children, isAdmin = false }) {
                 className="site-shell__social"
                 target="_blank"
                 rel="noreferrer noopener"
+                aria-label={t('menu.social.aria', language)}
+                title={t('menu.social.aria', language)}
                 style={
                   navReady
                     ? undefined
@@ -961,7 +965,7 @@ export default function SiteShell({ children, isAdmin = false }) {
                       }
                 }
               >
-                @itsjaydesu
+                <XLogoIcon className="site-shell__social-icon" />
               </Link>
               <LanguageSwitcher className="site-shell__header-language-toggle" />
             </header>

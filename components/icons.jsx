@@ -18,6 +18,57 @@ export function CalendarIcon({ className }) {
   );
 }
 
+export function XLogoIcon({ className }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      className={['icon', className].filter(Boolean).join(' ')}
+      fill="currentColor"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path d="M3.13 3h4.74l4.25 5.91 4.9-5.9h3.85l-6.98 8.43L20.87 21h-4.74l-4.53-6.25L6.6 21H2.74l7.2-8.69L3.13 3Z" />
+    </svg>
+  );
+}
+
+export function InstagramIcon({ className }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      className={['icon', className].filter(Boolean).join(' ')}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="3" y="3" width="18" height="18" rx="5" ry="5" />
+      <circle cx="12" cy="12" r="3.5" />
+      <circle cx="17.25" cy="6.75" r="0.75" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+export function YouTubeIcon({ className }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      className={['icon', className].filter(Boolean).join(' ')}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M3.75 7.5c.3-1.79 1.46-2.97 3.24-3.2C8.77 4 12 4 12 4s3.23 0 5.01.3c1.78.23 2.94 1.41 3.24 3.2.32 1.93.32 5.95 0 7.88-.3 1.79-1.46 2.97-3.24 3.2C15.23 18 12 18 12 18s-3.23 0-5.01-.3c-1.78-.23-2.94-1.41-3.24-3.2-.32-1.93-.32-5.95 0-7.88Z" />
+      <path d="m10 15 5-3-5-3v6Z" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
 export function TagIcon({ className }) {
   return (
     <svg
