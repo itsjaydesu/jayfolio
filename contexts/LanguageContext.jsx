@@ -20,28 +20,23 @@ export function LanguageProvider({ children }) {
     }
   }, []);
 
-  // Change language with persistence and transition effect
+  // Change language with persistence and smooth crossfade effect
   const changeLanguage = (newLanguage) => {
     if (SUPPORTED_LANGUAGES[newLanguage]) {
-      // Add transition state to body for fade effect
+      // Immediate language change for smoother transition
+      setLanguage(newLanguage);
+      saveLanguagePreference(newLanguage);
+      
       if (typeof window !== 'undefined') {
+        document.documentElement.lang = newLanguage;
+        
+        // Add subtle pulse effect during transition
         document.body.setAttribute('data-language-transitioning', 'true');
         
-        // First phase: fade out current text
+        // Remove transition state after animation completes
         setTimeout(() => {
-          setLanguage(newLanguage);
-          saveLanguagePreference(newLanguage);
-          document.documentElement.lang = newLanguage;
-          
-          // Second phase: fade in new text
-          setTimeout(() => {
-            document.body.removeAttribute('data-language-transitioning');
-          }, 50);
-        }, 300);
-      } else {
-        // Fallback for server-side
-        setLanguage(newLanguage);
-        saveLanguagePreference(newLanguage);
+          document.body.removeAttribute('data-language-transitioning');
+        }, 450); // Match the animation duration
       }
     }
   };

@@ -5501,8 +5501,8 @@ a {
 }
 
 .site-shell__brand {
-  font-size: clamp(1.1rem, 2.4vw, 1.6rem);
-  letter-spacing: 0.24em;
+  font-size: clamp(0.95rem, 2.2vw, 1.4rem); /* Reduced for better fit */
+  letter-spacing: 0.22em; /* Slightly tighter */
   text-transform: uppercase;
   text-decoration: none;
   font-family: "IBM Plex Mono", "Lucida Console", "Courier New", monospace;
@@ -5511,6 +5511,7 @@ a {
   transform: translateY(8px);
   transition: color 0.2s ease, opacity 0.5s cubic-bezier(0.33, 1, 0.68, 1),
     transform 0.5s cubic-bezier(0.33, 1, 0.68, 1);
+  white-space: nowrap; /* Prevent wrapping */
 }
 
 .site-shell__header[data-nav-ready="true"] .site-shell__brand {
@@ -5528,12 +5529,13 @@ a {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: clamp(7.2rem, 18vw, 9.2rem);
+  min-width: clamp(9rem, 22vw, 12rem); /* Increased for Japanese text */
   padding: 0.12rem 0.35rem;
   letter-spacing: inherit;
   text-transform: inherit;
   overflow: visible;
   pointer-events: none;
+  white-space: nowrap; /* Prevent wrapping */
 }
 
 .site-shell__brand-wordmark {
@@ -5552,10 +5554,11 @@ a {
   transform-origin: 50% 50%;
   transform: translateY(18%) scale(0.9);
   filter: blur(8px) saturate(1.28);
+  white-space: nowrap; /* Ensure no wrapping */
   transition:
-    opacity 0.62s cubic-bezier(0.33, 1, 0.58, 1),
-    transform 0.72s cubic-bezier(0.19, 1, 0.22, 1),
-    filter 0.62s ease;
+    opacity 0.38s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.42s cubic-bezier(0.4, 0, 0.2, 1),
+    filter 0.38s cubic-bezier(0.4, 0, 0.2, 1);
   will-change: opacity, transform, filter;
   pointer-events: none;
 }
@@ -5567,10 +5570,11 @@ a {
 }
 
 .brand-wordmark__layer--ja {
-  transform: translateY(26%) scale(0.9);
+  transform: translateY(20%) scale(0.92);
   text-shadow:
     0 0 14px rgba(204, 160, 255, 0.4),
     0 0 26px rgba(78, 50, 138, 0.28);
+  letter-spacing: 0.12em; /* Better spacing for Japanese */
 }
 
 .brand-wordmark__layer.is-active {
@@ -5581,8 +5585,8 @@ a {
 
 .brand-wordmark__layer.is-leaving {
   opacity: 0;
-  transform: translateY(-22%) scale(0.86);
-  filter: blur(16px) saturate(1.4);
+  transform: translateY(-16%) scale(0.92);
+  filter: blur(6px) saturate(1.2);
 }
 
 .site-shell__nav {
@@ -9237,13 +9241,13 @@ body.qr-intro-active .site-shell__icon-button {
 }
 
 /* Language Toggle Transitions */
-/* Apply smooth fade transition to all text content when language changes */
+/* Apply smooth crossfade to all text content when language changes */
 [data-language-transitioning="true"] {
   /* Prevent layout shifts during transition */
   position: relative;
 }
 
-/* Smooth crossfade for language changes on all text elements */
+/* Smooth crossfade for all text elements */
 .retro-menu__titlebar span,
 .retro-menu__list,
 .retro-menu__status,
@@ -9264,60 +9268,58 @@ button,
 label,
 h1, h2, h3, h4, h5, h6,
 p, span, em, strong, a {
-  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-              transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: opacity, transform;
+  transition: opacity 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+              filter 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: auto;
 }
 
-/* Create a two-phase transition effect */
-[data-language-transitioning="true"] .retro-menu__titlebar span,
-[data-language-transitioning="true"] .retro-menu__list,
-[data-language-transitioning="true"] .retro-menu__status,
+/* Apply subtle pulse animation during language transition */
+@keyframes languageTransitionPulse {
+  0%, 100% {
+    opacity: 1;
+    filter: brightness(1) blur(0);
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    filter: brightness(1.1) blur(0.5px);
+    transform: translateY(0) scale(1.002);
+  }
+}
+
+/* Apply the pulse to transitioning elements */
 [data-language-transitioning="true"] .channel__title,
 [data-language-transitioning="true"] .channel__lead,
-[data-language-transitioning="true"] .channel__empty,
 [data-language-transitioning="true"] .site-shell__nav-link,
-[data-language-transitioning="true"] .site-shell__brand,
 [data-language-transitioning="true"] .post-card__title,
-[data-language-transitioning="true"] .post-card__meta,
 [data-language-transitioning="true"] .post-card__excerpt,
-[data-language-transitioning="true"] .entry-detail__title,
-[data-language-transitioning="true"] .entry-detail__meta,
-[data-language-transitioning="true"] .site-footer__heading,
-[data-language-transitioning="true"] .site-footer__link,
-[data-language-transitioning="true"] .site-footer__description,
-[data-language-transitioning="true"] button,
-[data-language-transitioning="true"] label,
 [data-language-transitioning="true"] h1,
 [data-language-transitioning="true"] h2,
 [data-language-transitioning="true"] h3,
-[data-language-transitioning="true"] h4,
-[data-language-transitioning="true"] h5,
-[data-language-transitioning="true"] h6,
-[data-language-transitioning="true"] p,
-[data-language-transitioning="true"] span,
-[data-language-transitioning="true"] em,
-[data-language-transitioning="true"] strong,
-[data-language-transitioning="true"] a {
-  opacity: 0.4;
-  transform: translateY(2px);
+[data-language-transitioning="true"] p {
+  animation: languageTransitionPulse 0.45s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
-/* Stagger the transition for visual interest */
+/* Staggered animation delays for elegant cascade */
 [data-language-transitioning="true"] .site-shell__nav-link {
-  transition-delay: 0.05s;
+  animation-delay: 0.05s;
 }
 
 [data-language-transitioning="true"] .channel__title {
-  transition-delay: 0.1s;
+  animation-delay: 0.08s;
 }
 
 [data-language-transitioning="true"] .channel__lead {
-  transition-delay: 0.15s;
+  animation-delay: 0.12s;
 }
 
-[data-language-transitioning="true"] .post-card {
-  transition-delay: calc(0.2s + var(--card-index, 0) * 0.02s);
+[data-language-transitioning="true"] .post-card__title {
+  animation-delay: calc(0.15s + var(--card-index, 0) * 0.015s);
+}
+
+[data-language-transitioning="true"] .post-card__excerpt {
+  animation-delay: calc(0.18s + var(--card-index, 0) * 0.015s);
 }
 
 /* Special handling for the retro menu brand text to keep on one line */
@@ -9325,21 +9327,33 @@ p, span, em, strong, a {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  display: inline-block;
+  min-width: 6rem; /* Ensure enough space for Japanese text */
 }
 
 /* Ensure Japanese text doesn't wrap in titles */
 [lang="ja"] .channel__title,
-[lang="ja"] .retro-menu__titlebar span {
+[lang="ja"] .retro-menu__titlebar span,
+[lang="ja"] .brand-wordmark__layer--ja,
+[lang="ja"] .site-shell__brand {
   white-space: nowrap;
   word-break: keep-all;
 }
 
-/* Allow wrapping on very small screens if needed */
-@media (max-width: 360px) {
-  [lang="ja"] .channel__title,
-  [lang="ja"] .retro-menu__titlebar span {
-    white-space: normal;
-    word-break: auto;
+/* Responsive adjustments for small screens */
+@media (max-width: 480px) {
+  .site-shell__brand {
+    font-size: clamp(0.8rem, 2vw, 1.1rem);
+    letter-spacing: 0.16em;
+  }
+  
+  .brand-wordmark {
+    min-width: clamp(7.5rem, 18vw, 9rem);
+  }
+  
+  /* Keep Japanese text from wrapping even on small screens */
+  [lang="ja"] .brand-wordmark__layer--ja {
+    font-size: 0.92em; /* Slightly smaller to fit */
   }
 }
 

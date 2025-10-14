@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { t } from '../lib/translations';
 
-const TRANSITION_MS = 520;
+const TRANSITION_MS = 380; // Reduced for smoother feel
 
 export default function BrandWordmark({ className = '' }) {
   const { language } = useLanguage();
