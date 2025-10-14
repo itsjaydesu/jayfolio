@@ -36,7 +36,7 @@ export function LanguageProvider({ children }) {
         // Remove transition state after animation completes
         setTimeout(() => {
           document.body.removeAttribute('data-language-transitioning');
-        }, 450); // Match the animation duration
+        }, 650); // Match the longer transition duration
       }
     }
   };

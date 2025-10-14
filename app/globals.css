@@ -5536,6 +5536,9 @@ a {
   overflow: visible;
   pointer-events: none;
   white-space: nowrap; /* Prevent wrapping */
+  transform: translate3d(0, 0, 0); /* Force GPU acceleration */
+  backface-visibility: hidden;
+  perspective: 1000px;
 }
 
 .site-shell__brand-wordmark {
@@ -5552,15 +5555,18 @@ a {
   color: rgba(242, 252, 255, 0.98);
   opacity: 0;
   transform-origin: 50% 50%;
-  transform: translateY(18%) scale(0.9);
-  filter: blur(8px) saturate(1.28);
+  transform: translate3d(0, 8%, 0) scale(0.96);
+  filter: blur(2px) saturate(1.1);
   white-space: nowrap; /* Ensure no wrapping */
   transition:
-    opacity 0.38s cubic-bezier(0.4, 0, 0.2, 1),
-    transform 0.42s cubic-bezier(0.4, 0, 0.2, 1),
-    filter 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    transform 0.65s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    filter 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   will-change: opacity, transform, filter;
   pointer-events: none;
+  -webkit-font-smoothing: antialiased;
+  backface-visibility: hidden;
+  perspective: 1000px;
 }
 
 .brand-wordmark__layer--en {
@@ -5570,7 +5576,7 @@ a {
 }
 
 .brand-wordmark__layer--ja {
-  transform: translateY(20%) scale(0.92);
+  transform: translate3d(0, 8%, 0) scale(0.96);
   text-shadow:
     0 0 14px rgba(204, 160, 255, 0.4),
     0 0 26px rgba(78, 50, 138, 0.28);
@@ -5579,14 +5585,16 @@ a {
 
 .brand-wordmark__layer.is-active {
   opacity: 1;
-  transform: translateY(0) scale(1);
+  transform: translate3d(0, 0, 0) scale(1);
   filter: blur(0) saturate(1);
+  transition-delay: 0.08s; /* Slight delay for overlap */
 }
 
 .brand-wordmark__layer.is-leaving {
   opacity: 0;
-  transform: translateY(-16%) scale(0.92);
-  filter: blur(6px) saturate(1.2);
+  transform: translate3d(0, -8%, 0) scale(0.96);
+  filter: blur(2px) saturate(1.05);
+  transition-delay: 0s; /* Leave immediately for smooth crossfade */
 }
 
 .site-shell__nav {
@@ -9247,7 +9255,7 @@ body.qr-intro-active .site-shell__icon-button {
   position: relative;
 }
 
-/* Smooth crossfade for all text elements */
+/* Ultra-smooth crossfade for all text elements */
 .retro-menu__titlebar span,
 .retro-menu__list,
 .retro-menu__status,
@@ -9268,27 +9276,44 @@ button,
 label,
 h1, h2, h3, h4, h5, h6,
 p, span, em, strong, a {
-  transition: opacity 0.45s cubic-bezier(0.4, 0, 0.2, 1),
-              transform 0.45s cubic-bezier(0.4, 0, 0.2, 1),
-              filter 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              transform 0.65s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              filter 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   will-change: auto;
+  -webkit-font-smoothing: antialiased;
+  backface-visibility: hidden;
 }
 
-/* Apply subtle pulse animation during language transition */
-@keyframes languageTransitionPulse {
-  0%, 100% {
+/* Apply ultra-smooth crossfade animation during language transition */
+@keyframes languageTransitionCrossfade {
+  0% {
     opacity: 1;
     filter: brightness(1) blur(0);
-    transform: translateY(0) scale(1);
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  25% {
+    opacity: 0.95;
+    filter: brightness(1.05) blur(0.2px);
+    transform: translate3d(0, 0, 0) scale(1.001);
   }
   50% {
-    opacity: 0.85;
-    filter: brightness(1.1) blur(0.5px);
-    transform: translateY(0) scale(1.002);
+    opacity: 0.92;
+    filter: brightness(1.08) blur(0.3px);
+    transform: translate3d(0, 0, 0) scale(1.002);
+  }
+  75% {
+    opacity: 0.95;
+    filter: brightness(1.05) blur(0.2px);
+    transform: translate3d(0, 0, 0) scale(1.001);
+  }
+  100% {
+    opacity: 1;
+    filter: brightness(1) blur(0);
+    transform: translate3d(0, 0, 0) scale(1);
   }
 }
 
-/* Apply the pulse to transitioning elements */
+/* Apply the crossfade to transitioning elements */
 [data-language-transitioning="true"] .channel__title,
 [data-language-transitioning="true"] .channel__lead,
 [data-language-transitioning="true"] .site-shell__nav-link,
@@ -9298,28 +9323,28 @@ p, span, em, strong, a {
 [data-language-transitioning="true"] h2,
 [data-language-transitioning="true"] h3,
 [data-language-transitioning="true"] p {
-  animation: languageTransitionPulse 0.45s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: languageTransitionCrossfade 0.65s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
 
-/* Staggered animation delays for elegant cascade */
+/* Minimal stagger for smooth unified transition */
 [data-language-transitioning="true"] .site-shell__nav-link {
-  animation-delay: 0.05s;
+  animation-delay: 0.02s;
 }
 
 [data-language-transitioning="true"] .channel__title {
-  animation-delay: 0.08s;
+  animation-delay: 0.03s;
 }
 
 [data-language-transitioning="true"] .channel__lead {
-  animation-delay: 0.12s;
+  animation-delay: 0.04s;
 }
 
 [data-language-transitioning="true"] .post-card__title {
-  animation-delay: calc(0.15s + var(--card-index, 0) * 0.015s);
+  animation-delay: calc(0.05s + var(--card-index, 0) * 0.008s);
 }
 
 [data-language-transitioning="true"] .post-card__excerpt {
-  animation-delay: calc(0.18s + var(--card-index, 0) * 0.015s);
+  animation-delay: calc(0.06s + var(--card-index, 0) * 0.008s);
 }
 
 /* Special handling for the retro menu brand text to keep on one line */
@@ -9338,6 +9363,20 @@ p, span, em, strong, a {
 [lang="ja"] .site-shell__brand {
   white-space: nowrap;
   word-break: keep-all;
+}
+
+/* Special smooth transition for BrandWordmark during language change */
+[data-language-transitioning="true"] .brand-wordmark__layer {
+  transition-duration: 0.8s, 0.85s, 0.8s;
+  transition-timing-function: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+[data-language-transitioning="true"] .brand-wordmark__layer.is-active {
+  transition-delay: 0.12s; /* Ensure overlap */
+}
+
+[data-language-transitioning="true"] .brand-wordmark__layer.is-leaving {
+  transition-delay: 0s; /* Start leaving immediately */
 }
 
 /* Responsive adjustments for small screens */
