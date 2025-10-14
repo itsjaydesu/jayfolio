@@ -1,20 +1,32 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useLanguage } from '../../contexts/LanguageContext';
+import { getLocalizedContent, getLocalizedTags } from '../../lib/translations';
 
 export default function AboutContent({ initialContent }) {
   const [isLoaded, setIsLoaded] = useState(false);
+  const { language } = useLanguage();
 
   useEffect(() => {
     setIsLoaded(true);
   }, []);
   
   // Use dynamic data with fallbacks
-  const title = initialContent.aboutTitle || 'About';
-  const subtitle = initialContent.aboutSubtitle || 'Creative Technologist';
-  const content = initialContent.aboutContent || initialContent.lead;
-  const detailCards = initialContent.aboutDetailCards || [];
-  const tags = initialContent.aboutTags || [];
+  const title = getLocalizedContent(initialContent.aboutTitle, language) || 'About';
+  const subtitle = getLocalizedContent(initialContent.aboutSubtitle, language) || 'Creative Technologist';
+  const content =
+    getLocalizedContent(initialContent.aboutContent, language) || initialContent.lead || '';
+  const detailCards = Array.isArray(initialContent.aboutDetailCards)
+    ? initialContent.aboutDetailCards
+        .map((card) => ({
+          title: getLocalizedContent(card.title, language),
+          text: getLocalizedContent(card.text, language)
+        }))
+        .filter((card) => card.title || card.text)
+    : [];
+  const tags = getLocalizedTags(initialContent.aboutTags, language);
 
   return (
     <section className={`clean-about-page ${isLoaded ? 'is-loaded' : ''}`}>

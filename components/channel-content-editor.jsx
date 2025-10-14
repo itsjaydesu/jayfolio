@@ -12,6 +12,11 @@ const SECTION_LABELS = {
   art: 'Art'
 };
 
+const ABOUT_LANGUAGES = [
+  { id: 'en', label: 'English' },
+  { id: 'ja', label: '日本語' }
+];
+
 function createInitialState() {
   return createChannelContentDefaults();
 }
@@ -76,6 +81,7 @@ export default function ChannelContentEditor({ sections = ['about', 'projects', 
   const [status, setStatus] = useState('');
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [aboutLanguage, setAboutLanguage] = useState('en');
 
   useEffect(() => {
     let ignore = false;
@@ -113,12 +119,55 @@ export default function ChannelContentEditor({ sections = ['about', 'projects', 
     }));
   }, []);
 
-  const handleAboutDetailCard = useCallback((index, field, value) => {
+  const handleAboutLocalizedField = useCallback((field, language, value) => {
+    setContent((prev) => {
+      const current = prev.about[field];
+      const nextField = current && typeof current === 'object' && !Array.isArray(current)
+        ? { ...current, [language]: value }
+        : { en: typeof current === 'string' ? current : '', ja: '', [language]: value };
+
+      return {
+        ...prev,
+        about: {
+          ...prev.about,
+          [field]: nextField
+        }
+      };
+    });
+  }, []);
+
+  const handleAboutTagsChange = useCallback((language, value) => {
+    const parsed = parseCommaSeparatedInput(value);
+    setContent((prev) => {
+      const current = prev.about.aboutTags;
+      const base = current && typeof current === 'object' && !Array.isArray(current)
+        ? current
+        : { en: Array.isArray(current) ? current : [], ja: [] };
+
+      return {
+        ...prev,
+        about: {
+          ...prev.about,
+          aboutTags: {
+            ...base,
+            [language]: parsed.filter(Boolean)
+          }
+        }
+      };
+    });
+  }, []);
+
+  const handleAboutDetailCard = useCallback((index, field, language, value) => {
     setContent((prev) => {
       const cards = [...(prev.about.aboutDetailCards || [])];
-      if (cards[index]) {
-        cards[index] = { ...cards[index], [field]: value };
-      }
+      const currentCard = cards[index] || { title: { en: '', ja: '' }, text: { en: '', ja: '' } };
+      const currentField = currentCard[field];
+      const nextField = currentField && typeof currentField === 'object' && !Array.isArray(currentField)
+        ? { ...currentField, [language]: value }
+        : { en: typeof currentField === 'string' ? currentField : '', ja: '', [language]: value };
+
+      cards[index] = { ...currentCard, [field]: nextField };
+
       return {
         ...prev,
         about: {
@@ -136,7 +185,10 @@ export default function ChannelContentEditor({ sections = ['about', 'projects', 
         ...prev.about,
         aboutDetailCards: [
           ...(prev.about.aboutDetailCards || []),
-          { title: 'New Section', text: '' }
+          {
+            title: { en: 'New Section', ja: '新しいセクション' },
+            text: { en: '', ja: '' }
+          }
         ]
       }
     }));
@@ -286,6 +338,19 @@ export default function ChannelContentEditor({ sections = ['about', 'projects', 
           <div className="admin-panel">
             <header className="admin-panel__header">
               <h2>About — Glassmorphic Page</h2>
+              <div className="admin-language-toggle" role="group" aria-label="About language">
+                {ABOUT_LANGUAGES.map(({ id, label }) => (
+                  <button
+                    key={id}
+                    type="button"
+                    className={`admin-language-toggle__button${aboutLanguage === id ? ' is-active' : ''}`}
+                    onClick={() => setAboutLanguage(id)}
+                    aria-pressed={aboutLanguage === id}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
             </header>
             <div className="admin-panel__body admin-panel__body--grid">
               <div className="admin-field">
@@ -293,8 +358,14 @@ export default function ChannelContentEditor({ sections = ['about', 'projects', 
                 <input
                   id="about-page-title"
                   type="text"
-                  value={about.aboutTitle || 'About'}
-                  onChange={(event) => handleAboutField('aboutTitle', event.target.value)}
+                  value={
+                    about.aboutTitle && typeof about.aboutTitle === 'object'
+                      ? about.aboutTitle[aboutLanguage] || ''
+                      : about.aboutTitle || ''
+                  }
+                  onChange={(event) =>
+                    handleAboutLocalizedField('aboutTitle', aboutLanguage, event.target.value)
+                  }
                 />
               </div>
               <div className="admin-field">
@@ -302,8 +373,14 @@ export default function ChannelContentEditor({ sections = ['about', 'projects', 
                 <input
                   id="about-page-subtitle"
                   type="text"
-                  value={about.aboutSubtitle || 'Creative Technologist'}
-                  onChange={(event) => handleAboutField('aboutSubtitle', event.target.value)}
+                  value={
+                    about.aboutSubtitle && typeof about.aboutSubtitle === 'object'
+                      ? about.aboutSubtitle[aboutLanguage] || ''
+                      : about.aboutSubtitle || ''
+                  }
+                  onChange={(event) =>
+                    handleAboutLocalizedField('aboutSubtitle', aboutLanguage, event.target.value)
+                  }
                 />
               </div>
               <div className="admin-field">
@@ -311,8 +388,14 @@ export default function ChannelContentEditor({ sections = ['about', 'projects', 
                 <textarea
                   id="about-page-content"
                   rows={6}
-                  value={about.aboutContent || about.lead}
-                  onChange={(event) => handleAboutField('aboutContent', event.target.value)}
+                  value={
+                    about.aboutContent && typeof about.aboutContent === 'object'
+                      ? about.aboutContent[aboutLanguage] || ''
+                      : about.aboutContent || ''
+                  }
+                  onChange={(event) =>
+                    handleAboutLocalizedField('aboutContent', aboutLanguage, event.target.value)
+                  }
                 />
               </div>
               <div className="admin-field">
@@ -320,9 +403,21 @@ export default function ChannelContentEditor({ sections = ['about', 'projects', 
                 <input
                   id="about-page-tags"
                   type="text"
-                  value={(about.aboutTags || []).join(', ')}
+                  value={(() => {
+                    const tags = about.aboutTags;
+                    if (tags && typeof tags === 'object' && !Array.isArray(tags)) {
+                      return (tags[aboutLanguage] || []).join(', ');
+                    }
+                    if (Array.isArray(tags)) {
+                      return tags.join(', ');
+                    }
+                    if (typeof tags === 'string') {
+                      return tags;
+                    }
+                    return '';
+                  })()}
                   onChange={(event) =>
-                    handleAboutField('aboutTags', parseCommaSeparatedInput(event.target.value))
+                    handleAboutTagsChange(aboutLanguage, event.target.value)
                   }
                   placeholder="Designer, Composer, Systems Artist"
                 />
@@ -344,8 +439,14 @@ export default function ChannelContentEditor({ sections = ['about', 'projects', 
                       <input
                         id={`detail-card-title-${index}`}
                         type="text"
-                        value={card.title || ''}
-                        onChange={(event) => handleAboutDetailCard(index, 'title', event.target.value)}
+                        value={
+                          card.title && typeof card.title === 'object'
+                            ? card.title[aboutLanguage] || ''
+                            : card.title || ''
+                        }
+                        onChange={(event) =>
+                          handleAboutDetailCard(index, 'title', aboutLanguage, event.target.value)
+                        }
                       />
                     </div>
                     <div className="admin-field">
@@ -353,8 +454,14 @@ export default function ChannelContentEditor({ sections = ['about', 'projects', 
                       <textarea
                         id={`detail-card-text-${index}`}
                         rows={3}
-                        value={card.text || ''}
-                        onChange={(event) => handleAboutDetailCard(index, 'text', event.target.value)}
+                        value={
+                          card.text && typeof card.text === 'object'
+                            ? card.text[aboutLanguage] || ''
+                            : card.text || ''
+                        }
+                        onChange={(event) =>
+                          handleAboutDetailCard(index, 'text', aboutLanguage, event.target.value)
+                        }
                       />
                     </div>
                   </div>

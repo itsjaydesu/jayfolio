@@ -46,6 +46,7 @@ import {
 } from './icons';
 import { useAdminFetch } from './admin-session-context';
 import { useUploader } from './use-uploader';
+import { sanitizeAlt } from './uploader-utils';
 
 // Mirrors the server-side default document so we never render an empty editor root.
 const DEFAULT_EMPTY_DOC = '<p></p>';
@@ -73,6 +74,107 @@ const BLOCK_OPTIONS = [
   { label: 'Quote', value: 'blockquote' },
   { label: 'Code Block', value: 'codeBlock' }
 ];
+
+const INLINE_MEDIA_ALIGNMENT_OPTIONS = [
+  { label: 'Left', value: 'left', icon: AlignLeftIcon },
+  { label: 'Center', value: 'center', icon: AlignCenterIcon },
+  { label: 'Right', value: 'right', icon: AlignRightIcon }
+];
+
+const INLINE_MEDIA_WIDTH_OPTIONS = [
+  { label: '25%', value: '25' },
+  { label: '50%', value: '50' },
+  { label: '100%', value: '100' }
+];
+
+const InlineMedia = Node.create({
+  name: 'inlineMedia',
+  group: 'block',
+  atom: true,
+  selectable: true,
+  draggable: true,
+  addAttributes() {
+    return {
+      src: { default: '' },
+      alt: { default: '' },
+      pathname: { default: '' },
+      alignment: { default: 'center' },
+      width: { default: '100' },
+      caption: { default: '' }
+    };
+  },
+  parseHTML() {
+    return [{ tag: 'figure[data-inline-media]' }];
+  },
+  renderHTML({ HTMLAttributes }) {
+    const { src, alt, pathname, alignment, width, caption, style, class: className, ...rest } = HTMLAttributes;
+    const mediaAlignment = alignment || 'center';
+    const mediaWidth = width || '100';
+    const figureAttributes = mergeAttributes(
+      {
+        'data-inline-media': 'true',
+        'data-alignment': mediaAlignment,
+        'data-width': mediaWidth,
+        ...(pathname ? { 'data-pathname': pathname } : {}),
+        class: `editor-media editor-media--${mediaAlignment}`,
+        style: `--editor-media-width:${mediaWidth};`
+      },
+      rest
+    );
+
+    const children = [
+      ['img', { src: src || '', alt: alt || '', loading: 'lazy' }]
+    ];
+
+    if (caption && caption.length) {
+      children.push(['figcaption', { class: 'editor-media__caption' }, caption]);
+    }
+
+    return ['figure', figureAttributes, ...children];
+  },
+  addCommands() {
+    return {
+      insertInlineMedia:
+        (attrs) =>
+        ({ chain }) =>
+          chain()
+            .focus()
+            .insertContent({
+              type: this.name,
+              attrs: {
+                src: attrs?.src || '',
+                alt: attrs?.alt || '',
+                pathname: attrs?.pathname || '',
+                alignment: attrs?.alignment || 'center',
+                width: attrs?.width || '100',
+                caption: attrs?.caption || ''
+              }
+            })
+            .run(),
+      setInlineMediaAlignment:
+        (alignment) =>
+        ({ chain }) =>
+          chain()
+            .focus()
+            .updateAttributes(this.name, { alignment })
+            .run(),
+      setInlineMediaWidth:
+        (width) =>
+        ({ chain }) =>
+          chain()
+            .focus()
+            .updateAttributes(this.name, { width })
+            .run(),
+      setInlineMediaCaption:
+        (caption) =>
+        ({ chain }) =>
+          chain()
+            .focus()
+            .updateAttributes(this.name, { caption })
+            .run()
+    };
+  }
+});
 
 const INITIAL_EDITOR_UI_STATE = {
   status: 'idle',
@@ -297,6 +399,7 @@ export default function RichTextEditor({
 }) {
   const adminFetch = useAdminFetch();
   const fileInputRef = useRef(null);
+  const inlineImageInputRef = useRef(null);
   const uploadFilesRef = useRef(null);
   const lastSyncedHtmlRef = useRef('');
 
@@ -305,6 +408,14 @@ export default function RichTextEditor({
   const [highlightColor, setHighlightColor] = useState('#15343c');
   const [snapshot, setSnapshot] = useState(null);
   const [toolbarState, setToolbarState] = useState({ block: 'paragraph', align: 'left' });
+  const [inlineMediaState, setInlineMediaState] = useState({
+    isActive: false,
+    alignment: 'center',
+    width: '100',
+    caption: '',
+    alt: '',
+    src: ''
+  });
 
   // Preserve the initial content snapshot for the lifetime of this component instance.
   const initialEditorContentRef = useRef(
@@ -319,6 +430,7 @@ export default function RichTextEditor({
 
   const extensions = useMemo(
     () => [
+      InlineMedia,
       TextStyle,
       Color.configure({ types: ['textStyle'] }),
       Highlight.configure({ multicolor: true }),
@@ -415,6 +527,31 @@ export default function RichTextEditor({
       if (activeHighlight && typeof activeHighlight === 'string') {
         setHighlightColor((current) => (current === activeHighlight ? current : activeHighlight));
       }
+
+      const inlineAttributes = editor.getAttributes('inlineMedia');
+      const inlineActive = editor.isActive('inlineMedia');
+      const nextInlineState = {
+        isActive: inlineActive,
+        alignment: inlineAttributes?.alignment || 'center',
+        width: inlineAttributes?.width || '100',
+        caption: inlineAttributes?.caption || '',
+        alt: inlineAttributes?.alt || '',
+        src: inlineAttributes?.src || ''
+      };
+
+      setInlineMediaState((previous) => {
+        if (
+          previous.isActive === nextInlineState.isActive &&
+          previous.alignment === nextInlineState.alignment &&
+          previous.width === nextInlineState.width &&
+          previous.caption === nextInlineState.caption &&
+          previous.alt === nextInlineState.alt &&
+          previous.src === nextInlineState.src
+        ) {
+          return previous;
+        }
+        return nextInlineState;
+      });
     };
 
     const events = ['selectionUpdate', 'transaction', 'update'];
@@ -448,6 +585,20 @@ export default function RichTextEditor({
       if (!response?.url) {
         throw new Error('Upload completed without a file URL.');
       }
+
+      if (file?.type?.startsWith('image/')) {
+        const derivedAlt = sanitizeAlt(file?.name || response?.meta?.name || '') || 'Inline media';
+        editor.commands.insertInlineMedia({
+          src: response.url,
+          alt: derivedAlt,
+          pathname: response.pathname || '',
+          alignment: 'center',
+          width: '100',
+          caption: ''
+        });
+        return;
+      }
+
       const html = buildHtmlForFile({ file, response, editor });
       editor.chain().focus().insertContent(html).run();
     },
@@ -601,6 +752,59 @@ export default function RichTextEditor({
     [dispatchUi, processUploads]
   );
 
+  const handleInlineImageButtonClick = useCallback(() => {
+    dispatchUi({ type: 'RESET_ERROR' });
+    inlineImageInputRef.current?.click();
+  }, [dispatchUi]);
+
+  const handleInlineImageChange = useCallback(
+    async (event) => {
+      const files = Array.from(event.target.files ?? []).filter((candidate) => candidate.type?.startsWith('image/'));
+      event.target.value = '';
+      if (!files.length) {
+        dispatchUi({ type: 'FILE_ERROR', error: 'Only image uploads are supported for inline media.' });
+        return;
+      }
+      await processUploads(files);
+    },
+    [dispatchUi, processUploads]
+  );
+
+  const handleRetryUpload = useCallback(() => {
+    dispatchUi({ type: 'RESET_ERROR' });
+    fileInputRef.current?.click();
+  }, [dispatchUi]);
+
+  const handleInlineAlignment = useCallback(
+    (alignment) => {
+      if (!editor || editor.isDestroyed) return;
+      editor.commands.setInlineMediaAlignment(alignment);
+    },
+    [editor]
+  );
+
+  const handleInlineWidth = useCallback(
+    (width) => {
+      if (!editor || editor.isDestroyed) return;
+      editor.commands.setInlineMediaWidth(width);
+    },
+    [editor]
+  );
+
+  const handleInlineCaptionEdit = useCallback(() => {
+    if (!editor || editor.isDestroyed) return;
+    const currentCaption = editor.getAttributes('inlineMedia')?.caption || '';
+    const next = window.prompt('Edit media caption', currentCaption);
+    if (next === null) return;
+    editor.commands.setInlineMediaCaption(next.trim());
+  }, [editor]);
+
+  const handleRemoveInlineMedia = useCallback(() => {
+    if (!editor || editor.isDestroyed) return;
+    if (!editor.isActive('inlineMedia')) return;
+    editor.chain().focus().deleteSelection().run();
+  }, [editor]);
+
   const toggleQuote = useCallback(() => {
     applyCommand((chain) => chain.toggleBlockquote().run());
   }, [applyCommand]);
@@ -704,20 +908,6 @@ export default function RichTextEditor({
     };
   }, [isFullscreen]);
 
-  if (!editor) {
-    return <div className={`admin-editor${isFullscreen ? ' admin-editor--fullscreen' : ''}`}>Loading editor…</div>;
-  }
-
-  const canUndo = editor.can().undo?.() ?? false;
-  const canRedo = editor.can().redo?.() ?? false;
-  const canIndent = editor.can().sinkListItem?.('listItem') ?? false;
-  const canOutdent = editor.can().liftListItem?.('listItem') ?? false;
-  const canAddColumn = editor.can().addColumnAfter?.() ?? false;
-  const canAddRow = editor.can().addRowAfter?.() ?? false;
-  const canDeleteTable = editor.can().deleteTable?.() ?? false;
-  const snapshotTimestamp = snapshot?.createdAt
-    ? new Date(snapshot.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    : null;
   const isUploaderBusy = uiState.status === 'uploading' || uiState.status === 'queued';
   const pendingUploads = uiState.pending;
   const uploadErrorMessage = uiState.error;
@@ -732,7 +922,11 @@ export default function RichTextEditor({
     const messages = [];
 
     if (uploadErrorMessage) {
-      messages.push({ variant: 'error', text: uploadErrorMessage });
+      messages.push({
+        variant: 'error',
+        text: uploadErrorMessage,
+        action: { label: 'Retry upload', handler: handleRetryUpload }
+      });
     } else if (isUploaderBusy && pendingUploads > 0) {
       const uploadingText =
         pendingUploads === 1 ? 'Uploading 1 file…' : `Uploading ${pendingUploads} files…`;
@@ -759,11 +953,30 @@ export default function RichTextEditor({
         rejected.length === 1
           ? firstReason
           : `${rejected.length} file(s) rejected. ${firstReason}`;
-      messages.push({ variant: 'error', text });
+      messages.push({
+        variant: 'error',
+        text,
+        action: { label: 'Retry upload', handler: handleRetryUpload }
+      });
     }
 
     return messages;
-  }, [duplicates, isUploaderBusy, limited, pendingUploads, rejected, uploadErrorMessage]);
+  }, [duplicates, handleRetryUpload, isUploaderBusy, limited, pendingUploads, rejected, uploadErrorMessage]);
+
+  if (!editor) {
+    return <div className={`admin-editor${isFullscreen ? ' admin-editor--fullscreen' : ''}`}>Loading editor…</div>;
+  }
+
+  const canUndo = editor.can().undo?.() ?? false;
+  const canRedo = editor.can().redo?.() ?? false;
+  const canIndent = editor.can().sinkListItem?.('listItem') ?? false;
+  const canOutdent = editor.can().liftListItem?.('listItem') ?? false;
+  const canAddColumn = editor.can().addColumnAfter?.() ?? false;
+  const canAddRow = editor.can().addRowAfter?.() ?? false;
+  const canDeleteTable = editor.can().deleteTable?.() ?? false;
+  const snapshotTimestamp = snapshot?.createdAt
+    ? new Date(snapshot.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    : null;
 
   const editorClassName = `admin-editor${isFullscreen ? ' admin-editor--fullscreen' : ''}`;
 
@@ -982,6 +1195,13 @@ export default function RichTextEditor({
 
         <ToolbarGroup className="admin-toolbar__group--upload">
           <ToolbarButton
+            label="Insert image"
+            icon={<UploadIcon />}
+            onClick={handleInlineImageButtonClick}
+            disabled={isUploaderBusy}
+            ariaLabel="Insert image"
+          />
+          <ToolbarButton
             label={uploadButtonLabel}
             icon={<UploadIcon />}
             onClick={handleFileButtonClick}
@@ -996,7 +1216,48 @@ export default function RichTextEditor({
             onChange={handleFileChange}
             accept={ACCEPTED_FILE_TYPES}
           />
+          <input
+            ref={inlineImageInputRef}
+            type="file"
+            accept="image/*"
+            className="admin-toolbar__file"
+            onChange={handleInlineImageChange}
+          />
         </ToolbarGroup>
+
+        {inlineMediaState.isActive ? (
+          <ToolbarGroup>
+            {INLINE_MEDIA_ALIGNMENT_OPTIONS.map(({ label, value, icon: IconComponent }) => (
+              <ToolbarButton
+                key={`inline-align-${value}`}
+                label={`Media ${label.toLowerCase()}`}
+                icon={<IconComponent />}
+                onClick={() => handleInlineAlignment(value)}
+                active={inlineMediaState.alignment === value}
+                ariaLabel={`Align media ${label.toLowerCase()}`}
+              />
+            ))}
+            {INLINE_MEDIA_WIDTH_OPTIONS.map((option) => (
+              <ToolbarButton
+                key={`inline-width-${option.value}`}
+                label={option.label}
+                onClick={() => handleInlineWidth(option.value)}
+                active={inlineMediaState.width === option.value}
+                ariaLabel={`Set media width to ${option.label}`}
+              />
+            ))}
+            <ToolbarButton
+              label="Edit caption"
+              onClick={handleInlineCaptionEdit}
+              ariaLabel="Edit media caption"
+            />
+            <ToolbarButton
+              label="Remove media"
+              onClick={handleRemoveInlineMedia}
+              ariaLabel="Remove media"
+            />
+          </ToolbarGroup>
+        ) : null}
 
         {onToggleFullscreen ? (
           <ToolbarGroup>
@@ -1015,13 +1276,22 @@ export default function RichTextEditor({
         </p>
       ) : null}
       {uploadMessages.map((message, index) => (
-        <p
+        <div
           key={`upload-message-${index}`}
           className={`admin-status admin-status--${message.variant === 'error' ? 'error' : 'hint'}`}
           role={message.variant === 'error' ? 'alert' : undefined}
         >
-          {message.text}
-        </p>
+          <span>{message.text}</span>
+          {message.action ? (
+            <button
+              type="button"
+              className="admin-ghost admin-status__action"
+              onClick={message.action.handler}
+            >
+              {message.action.label}
+            </button>
+          ) : null}
+        </div>
       ))}
       <EditorContent editor={editor} />
     </div>

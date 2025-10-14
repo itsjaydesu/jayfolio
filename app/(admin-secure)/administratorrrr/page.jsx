@@ -48,7 +48,10 @@ function slugify(value) {
 
 function parseTags(value) {
   if (!value) return [];
-  return value
+  if (Array.isArray(value)) {
+    return value.map((tag) => String(tag).trim()).filter(Boolean);
+  }
+  return String(value)
     .split(',')
     .map((tag) => tag.trim())
     .filter(Boolean);
@@ -135,7 +138,7 @@ function prepareLocalizedField(field) {
 }
 
 function prepareLocalizedTags(field) {
-  if (!field || typeof field !== 'object') {
+  if (!field || typeof field !== 'object' || Array.isArray(field)) {
     return parseTags(field);
   }
   const result = {};

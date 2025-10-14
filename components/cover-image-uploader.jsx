@@ -46,6 +46,7 @@ function validateImageFile(file) {
 export default function CoverImageUploader({ value, alt, onChange }) {
   const adminFetch = useAdminFetch();
   const fileInputRef = useRef(null);
+  const dropzoneRef = useRef(null);
   const imgRef = useRef(null);
   const portalTargetRef = useRef(typeof document !== "undefined" ? document.body : null);
   const altRef = useRef(alt || "");
@@ -200,6 +201,35 @@ export default function CoverImageUploader({ value, alt, onChange }) {
       portalTargetRef.current = document.body;
     }
   }, []);
+
+  const closeCropper = useCallback(() => {
+    cancelUploads();
+    resetCropState();
+  }, [cancelUploads, resetCropState]);
+
+  useEffect(() => {
+    if (!isCropping && !isExistingOpen && dropzoneRef.current) {
+      dropzoneRef.current.focus();
+    }
+  }, [isCropping, isExistingOpen]);
+
+  useEffect(() => {
+    if (!isCropping && !isExistingOpen) return;
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        if (isCropping) {
+          closeCropper();
+        } else if (isExistingOpen) {
+          setIsExistingOpen(false);
+        }
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [closeCropper, isCropping, isExistingOpen]);
 
   const handleIncomingFiles = useCallback(async (files) => {
     const selection = Array.from(files).filter(Boolean);
@@ -474,11 +504,6 @@ export default function CoverImageUploader({ value, alt, onChange }) {
     onChange?.({ url: "", alt: "" });
   }, [cancelUploads, onChange, resetCropState]);
 
-  const closeCropper = useCallback(() => {
-    cancelUploads();
-    resetCropState();
-  }, [cancelUploads, resetCropState]);
-
   const renderOverlay = useCallback(
     (node) => {
       if (!node) return null;
@@ -711,6 +736,7 @@ export default function CoverImageUploader({ value, alt, onChange }) {
   return (
     <div className="cover-uploader">
       <div
+        ref={dropzoneRef}
         className={`cover-uploader__dropzone${isDragActive ? " is-drag-over" : ""}${isUploading ? " is-busy" : ""}`}
         role="button"
         tabIndex={0}

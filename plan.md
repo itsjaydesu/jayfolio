@@ -29,33 +29,33 @@
   <!-- Allows inline media insertion to reuse the same sanitisation primitives. -->
 
 ## 4. Inline Media Placement
-- [ ] Extend TipTap with a custom inline media node carrying `alignment`, `width`, `caption`, `alt`, `src`, and `pathname` attributes.  
+- [x] Extend TipTap with a custom inline media node carrying `alignment`, `width`, `caption`, `alt`, `src`, and `pathname` attributes.  
   <!-- Stores rich metadata in the document schema instead of relying on DOM queries. -->
-- [ ] Add toolbar actions for inserting via uploader, alignment toggles (left/center/right), width presets (25/50/100 %), and inline caption editing.  
+- [x] Add toolbar actions for inserting via uploader, alignment toggles (left/center/right), width presets (25/50/100 %), and inline caption editing.  
   <!-- Gives authors deterministic layout controls from the toolbar. -->
-- [ ] Route drag/drop & paste events through the uploader pipeline, showing actionable errors for unsupported files.  
+- [x] Route drag/drop & paste events through the uploader pipeline, showing actionable errors for unsupported files.  
   <!-- Keeps every entry point consistent while surfacing clear feedback. -->
 
 ## 5. Styling & Accessibility
-- [ ] Create `.editor-media` utility classes to manage floats, max-widths, mobile stacking, and dark-mode shadows.  
+- [x] Create `.editor-media` utility classes to manage floats, max-widths, mobile stacking, and dark-mode shadows.  
   <!-- Normalizes presentation across admin preview and public renderers. -->
-- [ ] Provide `@supports` fallbacks where `float-gap` is unavailable, falling back to margin spacing.  
+- [x] Provide `@supports` fallbacks where `float-gap` is unavailable, falling back to margin spacing.  
   <!-- Preserves layout integrity on legacy browsers. -->
-- [ ] Reinforce focus states, `aria-modal`, focus trapping, and ESC behaviour for overlays and toolbar buttons.  
+- [x] Reinforce focus states, `aria-modal`, focus trapping, and ESC behaviour for overlays and toolbar buttons.  
   <!-- Ensures keyboard-only and screen-reader users can operate all controls. -->
 
 ## 6. Error Handling & Edge Cases
-- [ ] Present retryable error banners covering cancellations, network failures, and server validation errors.  
+- [x] Present retryable error banners covering cancellations, network failures, and server validation errors.  
   <!-- Prevents silent failure by guiding authors toward recovery actions. -->
-- [ ] Block completion when crops fall below 200×200 and warn when upscaling exceeds 150 %.  
+- [x] Block completion when crops fall below 200×200 and warn when upscaling exceeds 150 %.  
   <!-- Protects media quality and sets user expectations. -->
-- [ ] Skip duplicate uploads using file signatures and highlight reuse opportunities.  
+- [x] Skip duplicate uploads using file signatures and highlight reuse opportunities.  
   <!-- Avoids redundant storage and keeps the media index tidy. -->
-- [ ] Remove inline media nodes atomically so no orphan wrappers remain after deletion.  
+- [x] Remove inline media nodes atomically so no orphan wrappers remain after deletion.  
   <!-- Maintains a valid TipTap document tree and clean markup. -->
 
 ## 7. Testing & Verification
-- [ ] Add targeted unit tests for uploader utilities (signatures, validation) and crop dimension guards.  
+- [x] Add targeted unit tests for uploader utilities (signatures, validation) and crop dimension guards.  
   <!-- Locks down critical logic without needing a full test harness yet. -->
 - [ ] Perform manual smoke tests covering multi-image uploads, alignment toggles, narrow viewports, and keyboard navigation.  
   <!-- Satisfies repository guidelines given the absence of automated E2E coverage. -->
@@ -63,11 +63,11 @@
   <!-- Ensures code quality gates are respected prior to merging. -->
 
 ## 8. About Section Enhancements
-- [ ] Audit the About data model to confirm required English/Japanese fields and note any gaps.  
+- [x] Audit the About data model to confirm required English/Japanese fields and note any gaps.  
   <!-- Keeps localisation parity across admin and public surfaces. -->
-- [ ] Ensure `/administratorrrr` surfaces editable About fields (title, subtitles, rich content, cards, tags) with language tabs.  
+- [x] Ensure `/administratorrrr` surfaces editable About fields (title, subtitles, rich content, cards, tags) with language tabs.  
   <!-- Gives authors full control inside the admin console. -->
-- [ ] Update the About page rendering to consume the new admin-managed content while preserving design.  
+- [x] Update the About page rendering to consume the new admin-managed content while preserving design.  
   <!-- Applies dynamic content without sacrificing existing layout polish. -->
 - [ ] Add validation and preview flows so editors can verify layout before publishing.  
   <!-- Reduces the risk of broken content going live. -->

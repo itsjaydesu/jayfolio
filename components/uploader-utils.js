@@ -7,6 +7,9 @@ export const UPSCALE_THRESHOLD = 1.5;
 export function sanitizeAlt(value) {
   if (!value) return '';
   const base = String(value)
+    .split('/')
+    .pop()
+    .replace(/\.[^.]+$/, '')
     .replace(/[_-]+/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
