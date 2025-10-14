@@ -5584,9 +5584,9 @@ a {
 }
 
 .brand-wordmark__layer.is-entering {
-  opacity: 0.7; /* Partially visible for crossfade */
-  transform: translate3d(0, 2%, 0) scale(0.98);
-  filter: blur(0.5px) saturate(1.02);
+  opacity: 0.85; /* Higher opacity for better overlap */
+  transform: translate3d(0, 1%, 0) scale(0.995);
+  filter: blur(0.2px) saturate(1.01);
   transition-delay: 0s; /* Start entering immediately */
 }
 
@@ -5599,8 +5599,8 @@ a {
 
 .brand-wordmark__layer.is-leaving {
   opacity: 0;
-  transform: translate3d(0, -2%, 0) scale(0.98);
-  filter: blur(0.5px) saturate(1.02);
+  transform: translate3d(0, -1%, 0) scale(0.995);
+  filter: blur(0.2px) saturate(0.98);
   transition-delay: 0s; /* Leave immediately for smooth crossfade */
 }
 
