@@ -1,5 +1,6 @@
 {
   "about": {
+    "aboutBackgroundImage": "https://irq8pcmcsnz9tzjh.public.blob.vercel-storage.com/bg-about-ydZScV92MmsrudY993M4BeVGYa0PxB.jpg",
     "aboutTitle": {
       "en": "the jayFolio",
       "ja": "プロフィール"
@@ -108,6 +109,7 @@
     ]
   },
   "projects": {
+    "backgroundImage": "",
     "title": {
       "en": "Selected Builds",
       "ja": "セレクト作品"
@@ -118,6 +120,7 @@
     }
   },
   "content": {
+    "backgroundImage": "",
     "title": {
       "en": "Content & Writing",
       "ja": "コンテンツ＆ライティング"
@@ -128,6 +131,7 @@
     }
   },
   "sounds": {
+    "backgroundImage": "",
     "title": {
       "en": "Sound Experiments",
       "ja": "サウンド実験室"
@@ -138,6 +142,7 @@
     }
   },
   "art": {
+    "backgroundImage": "",
     "title": {
       "en": "Dot Field Studies",
       "ja": "ドットフィールド研究"
