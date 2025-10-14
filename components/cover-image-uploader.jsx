@@ -71,7 +71,7 @@ export default function CoverImageUploader({ value, alt, onChange }) {
   const [mediaError, setMediaError] = useState("");
   const [hasLoadedMedia, setHasLoadedMedia] = useState(false);
 
-  const hasValue = Boolean(value);
+  const hasValue = Boolean(value && value.trim());
 
   const resetCropState = useCallback(() => {
     setIsCropping(false);
@@ -748,7 +748,7 @@ export default function CoverImageUploader({ value, alt, onChange }) {
         onDrop={handleDrop}
         aria-label={hasValue ? "Change cover image" : "Upload cover image"}
       >
-        {hasValue ? (
+        {hasValue && value ? (
           <Image
             src={value}
             alt={altValue || "Cover image"}
