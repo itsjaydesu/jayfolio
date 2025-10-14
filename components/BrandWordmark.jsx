@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { t } from '../lib/translations';
 
 const TRANSITION_MS = 600; // Longer for seamless crossfade
-const DEBUG = true; // Enable comprehensive debug logging
+const DEBUG = false; // Disable debug logging after fix
 
 export default function BrandWordmark({ className = '' }) {
   const { language } = useLanguage();
@@ -20,10 +20,13 @@ export default function BrandWordmark({ className = '' }) {
   
   // Track component mount/unmount
   useEffect(() => {
+    const id = componentId.current;
+    const mountTime = mountTimeRef.current;
+    
     if (DEBUG) {
       console.log('🎬 BrandWordmark MOUNTED', {
-        id: componentId.current,
-        mountTime: mountTimeRef.current,
+        id: id,
+        mountTime: mountTime,
         initialLanguage: language
       });
     }
@@ -31,12 +34,12 @@ export default function BrandWordmark({ className = '' }) {
     return () => {
       if (DEBUG) {
         console.log('💥 BrandWordmark UNMOUNTED', {
-          id: componentId.current,
-          lifetime: Date.now() - mountTimeRef.current
+          id: id,
+          lifetime: Date.now() - mountTime
         });
       }
     };
-  }, []); // Empty deps - only run on mount/unmount
+  }, [language]); // Include language dependency
 
   // Log initial computed styles when refs are attached
   useEffect(() => {
@@ -132,7 +135,8 @@ export default function BrandWordmark({ className = '' }) {
     };
   }, [language, leavingLanguage, enteringLanguage]); // Re-run when states change
 
-  useEffect(() => {
+  // Force proper transition initialization with useLayoutEffect
+  useLayoutEffect(() => {
     const previousLanguage = previousLanguageRef.current;
     if (previousLanguage === language) {
       return;
@@ -150,41 +154,45 @@ export default function BrandWordmark({ className = '' }) {
       });
     }
 
-    // Log state changes with precise timing
-    console.log('📍 STATE CHANGE 1: Setting leaving & entering', {
-      timestamp: Date.now(),
-      leaving: previousLanguage,
-      entering: language
-    });
-    
-    // Start the staged transition
+    // Set leaving state for old language
     setLeavingLanguage(previousLanguage);
     setEnteringLanguage(language);
     previousLanguageRef.current = language;
     
-    // Small delay before making new language fully active
-    const activateTimeout = window.setTimeout(() => {
-      console.log('📍 STATE CHANGE 2: Clearing entering (making active)', {
-        timestamp: Date.now(),
-        wasEntering: language
-      });
-      setEnteringLanguage(null); // Now it becomes fully active
-    }, 80); // Small overlap period
+    // Use requestAnimationFrame to ensure DOM is ready with base styles
+    // before adding active classes - this prevents the snap
+    const rafId = requestAnimationFrame(() => {
+      // Small delay to activate entering language
+      const activateTimeout = window.setTimeout(() => {
+        if (DEBUG) {
+          console.log('📍 Making entering language active', {
+            timestamp: Date.now(),
+            wasEntering: language
+          });
+        }
+        setEnteringLanguage(null); // Now it becomes fully active
+      }, 50); // Short overlap for smooth crossfade
 
-    // Clear leaving language after transition completes
-    const clearTimeout = window.setTimeout(() => {
-      if (DEBUG) {
-        console.log('📍 STATE CHANGE 3: Clearing leaving', {
-          wasLeaving: previousLanguage,
-          timestamp: Date.now()
-        });
-      }
-      setLeavingLanguage(null);
-    }, TRANSITION_MS);
+      // Clear leaving language after transition completes
+      const clearTimeout = window.setTimeout(() => {
+        if (DEBUG) {
+          console.log('📍 Clearing leaving state', {
+            wasLeaving: previousLanguage,
+            timestamp: Date.now()
+          });
+        }
+        setLeavingLanguage(null);
+      }, TRANSITION_MS);
+
+      // Store timeouts for cleanup
+      return () => {
+        window.clearTimeout(activateTimeout);
+        window.clearTimeout(clearTimeout);
+      };
+    });
 
     return () => {
-      window.clearTimeout(activateTimeout);
-      window.clearTimeout(clearTimeout);
+      cancelAnimationFrame(rafId);
     };
   }, [language]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -249,12 +257,6 @@ export default function BrandWordmark({ className = '' }) {
         }${isEnglishEntering ? ' is-entering' : ''
         }${isEnglishLeaving ? ' is-leaving' : ''}`}
         aria-hidden="true"
-        data-node-id={`en-${componentId.current}`}
-        data-debug-state={`active:${isEnglishActive} entering:${isEnglishEntering} leaving:${isEnglishLeaving}`}
-        style={DEBUG ? { 
-          border: isEnglishActive ? '2px solid green' : isEnglishEntering ? '2px solid yellow' : isEnglishLeaving ? '2px solid red' : '1px solid gray',
-          borderRadius: '4px'
-        } : undefined}
       >
         {englishLabel}
       </span>
@@ -265,12 +267,6 @@ export default function BrandWordmark({ className = '' }) {
         }${isJapaneseEntering ? ' is-entering' : ''
         }${isJapaneseLeaving ? ' is-leaving' : ''}`}
         aria-hidden="true"
-        data-node-id={`ja-${componentId.current}`}
-        data-debug-state={`active:${isJapaneseActive} entering:${isJapaneseEntering} leaving:${isJapaneseLeaving}`}
-        style={DEBUG ? { 
-          border: isJapaneseActive ? '2px solid green' : isJapaneseEntering ? '2px solid yellow' : isJapaneseLeaving ? '2px solid red' : '1px solid gray',
-          borderRadius: '4px'
-        } : undefined}
       >
         {japaneseLabel}
       </span>
