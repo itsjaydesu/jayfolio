@@ -27,15 +27,17 @@ export default function SiteFooter({ className = '' }) {
   const [status, setStatus] = useState({ type: 'idle', message: '' });
   const [isVisible, setIsVisible] = useState(false);
   const [adminFooterImage, setAdminFooterImage] = useState('');
+  const [fadeSettings, setFadeSettings] = useState(null);
   const footerRef = useRef(null);
 
-  // Fetch page-specific background image
+  // Fetch page-specific background image and fade settings
   useEffect(() => {
     let ignore = false;
     (async () => {
       try {
         const segments = pathname?.split('/').filter(Boolean) ?? [];
         let backgroundImage = '';
+        let settings = null;
         
         // Check if we're on a content/blog post page with a slug
         if (segments.length === 2) {
@@ -51,21 +53,28 @@ export default function SiteFooter({ className = '' }) {
               if (entry?.backgroundImage) {
                 backgroundImage = entry.backgroundImage;
               }
+              // TODO: Add per-post fade settings if needed
             }
           }
         }
         
         // If no content-specific image, check channel backgrounds
-        if (!backgroundImage && segments.length > 0) {
+        if (segments.length > 0) {
           const res = await fetch('/api/channel-content');
           if (res.ok) {
             const data = await res.json();
             const section = segments[0];
             
             if (section === 'about') {
-              backgroundImage = data.content?.about?.aboutBackgroundImage || '';
+              if (!backgroundImage) {
+                backgroundImage = data.content?.about?.aboutBackgroundImage || '';
+              }
+              settings = data.content?.about?.aboutFooterFadeSettings || null;
             } else if (data.content?.[section]) {
-              backgroundImage = data.content[section]?.backgroundImage || '';
+              if (!backgroundImage) {
+                backgroundImage = data.content[section]?.backgroundImage || '';
+              }
+              settings = data.content[section]?.footerFadeSettings || null;
             }
           }
         }
@@ -74,13 +83,13 @@ export default function SiteFooter({ className = '' }) {
           path: pathname,
           segments,
           backgroundImage,
-          hasBackgroundImage: Boolean(backgroundImage)
+          hasBackgroundImage: Boolean(backgroundImage),
+          fadeSettings: settings
         });
         
-        if (!ignore && backgroundImage) {
-          setAdminFooterImage(backgroundImage);
-        } else if (!ignore) {
-          setAdminFooterImage('');
+        if (!ignore) {
+          setAdminFooterImage(backgroundImage || '');
+          setFadeSettings(settings);
         }
       } catch (error) {
         console.error('Failed to load footer background:', error);
@@ -176,15 +185,35 @@ export default function SiteFooter({ className = '' }) {
   if (className) footerClasses.push(className);
   if (isVisible) footerClasses.push('site-footer--visible');
 
+  // Build CSS variables from fade settings
+  const footerStyle = useMemo(() => {
+    const style = {
+      backgroundImage: `url(${backgroundImage})`
+    };
+    
+    if (fadeSettings) {
+      style['--footer-bg-position'] = `${fadeSettings.bgPosition}%`;
+      style['--top-fade-height'] = `${fadeSettings.topFadeHeight}%`;
+      style['--top-fade-start'] = fadeSettings.topFadeOpacity;
+      style['--bottom-fade-height'] = `${fadeSettings.bottomFadeHeight}%`;
+      style['--bottom-fade-start'] = fadeSettings.bottomFadeOpacity;
+      style['--side-fade-width'] = `${fadeSettings.sideFadeWidth}%`;
+      style['--side-fade-start'] = fadeSettings.sideFadeOpacity;
+    }
+    
+    return style;
+  }, [backgroundImage, fadeSettings]);
+
   return (
     <footer
       ref={footerRef}
       className={footerClasses.join(' ')}
       aria-label="Site footer with newsletter signup"
-      style={{
-        backgroundImage: `url(${backgroundImage})`
-      }}
+      style={footerStyle}
     >
+      {/* Side fade gradients for smoother edges */}
+      <div className="site-footer__side-fade site-footer__side-fade--left" />
+      <div className="site-footer__side-fade site-footer__side-fade--right" />
 
       <div className="site-footer__container">
         <div className="site-footer__content">

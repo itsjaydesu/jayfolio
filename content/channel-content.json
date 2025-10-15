@@ -1,6 +1,15 @@
 {
   "about": {
     "aboutBackgroundImage": "https://irq8pcmcsnz9tzjh.public.blob.vercel-storage.com/bg-about-SFgPZz38rSMJbnuXTSKFgH8AKFeTYA.jpg",
+    "aboutFooterFadeSettings": {
+      "bgPosition": "70",
+      "topFadeHeight": "10",
+      "topFadeOpacity": "1",
+      "bottomFadeHeight": "0",
+      "bottomFadeOpacity": "0",
+      "sideFadeWidth": "0",
+      "sideFadeOpacity": "0"
+    },
     "aboutTitle": {
       "en": "the jayFolio",
       "ja": "プロフィール"
@@ -110,6 +119,15 @@
   },
   "projects": {
     "backgroundImage": "",
+    "footerFadeSettings": {
+      "bgPosition": "70",
+      "topFadeHeight": "60",
+      "topFadeOpacity": "1",
+      "bottomFadeHeight": "40",
+      "bottomFadeOpacity": "0.95",
+      "sideFadeWidth": "30",
+      "sideFadeOpacity": "0.8"
+    },
     "title": {
       "en": "Selected Builds",
       "ja": "セレクト作品"
@@ -121,6 +139,15 @@
   },
   "content": {
     "backgroundImage": "",
+    "footerFadeSettings": {
+      "bgPosition": "70",
+      "topFadeHeight": "60",
+      "topFadeOpacity": "1",
+      "bottomFadeHeight": "40",
+      "bottomFadeOpacity": "0.95",
+      "sideFadeWidth": "30",
+      "sideFadeOpacity": "0.8"
+    },
     "title": {
       "en": "Content & Writing",
       "ja": "コンテンツ＆ライティング"
@@ -132,6 +159,15 @@
   },
   "sounds": {
     "backgroundImage": "",
+    "footerFadeSettings": {
+      "bgPosition": "70",
+      "topFadeHeight": "60",
+      "topFadeOpacity": "1",
+      "bottomFadeHeight": "40",
+      "bottomFadeOpacity": "0.95",
+      "sideFadeWidth": "30",
+      "sideFadeOpacity": "0.8"
+    },
     "title": {
       "en": "Sound Experiments",
       "ja": "サウンド実験室"
@@ -143,6 +179,15 @@
   },
   "art": {
     "backgroundImage": "",
+    "footerFadeSettings": {
+      "bgPosition": "70",
+      "topFadeHeight": "60",
+      "topFadeOpacity": "1",
+      "bottomFadeHeight": "40",
+      "bottomFadeOpacity": "0.95",
+      "sideFadeWidth": "30",
+      "sideFadeOpacity": "0.8"
+    },
     "title": {
       "en": "Dot Field Studies",
       "ja": "ドットフィールド研究"

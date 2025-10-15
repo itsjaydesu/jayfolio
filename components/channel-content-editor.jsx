@@ -88,6 +88,33 @@ function resetContent(previous, sections) {
   return next;
 }
 
+// Modern fade control component with visual preview
+function FadeControl({ label, value, onChange, min = 0, max = 100, step = 5, suffix = '%' }) {
+  return (
+    <div className="fade-control">
+      <label className="fade-control__label">
+        <span className="fade-control__name">{label}</span>
+        <span className="fade-control__value">{value}{suffix}</span>
+      </label>
+      <div className="fade-control__slider-container">
+        <input
+          type="range"
+          className="fade-control__slider"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          min={min}
+          max={max}
+          step={step}
+        />
+        <div 
+          className="fade-control__progress" 
+          style={{ width: `${((value - min) / (max - min)) * 100}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
 export default function ChannelContentEditor({ sections = ['about', 'projects', 'content', 'sounds', 'art'] }) {
   const uniqueSections = useMemo(() => Array.from(new Set(sections)), [sections]);
   const adminFetch = useAdminFetch();
@@ -96,6 +123,7 @@ export default function ChannelContentEditor({ sections = ['about', 'projects', 
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [aboutLanguage, setAboutLanguage] = useState('en');
+  const [activeTab, setActiveTab] = useState('content'); // For tabbed interface
 
   useEffect(() => {
     let ignore = false;
@@ -124,6 +152,26 @@ export default function ChannelContentEditor({ sections = ['about', 'projects', 
   const heroSections = uniqueSections.filter((section) => section !== 'about');
   const heading = formatHeading(uniqueSections);
   const description = formatDescription(uniqueSections);
+  
+  // Get current section for single-section editors
+  const currentSection = uniqueSections.length === 1 ? uniqueSections[0] : null;
+  const rawFadeSettings = currentSection === 'about' 
+    ? content.about?.aboutFooterFadeSettings 
+    : content[currentSection]?.footerFadeSettings;
+  
+  // Ensure fade settings are numbers
+  const fadeSettings = useMemo(() => {
+    if (!rawFadeSettings) return null;
+    return {
+      bgPosition: !isNaN(parseFloat(rawFadeSettings.bgPosition)) ? parseFloat(rawFadeSettings.bgPosition) : 70,
+      topFadeHeight: !isNaN(parseFloat(rawFadeSettings.topFadeHeight)) ? parseFloat(rawFadeSettings.topFadeHeight) : 60,
+      topFadeOpacity: !isNaN(parseFloat(rawFadeSettings.topFadeOpacity)) ? parseFloat(rawFadeSettings.topFadeOpacity) : 1,
+      bottomFadeHeight: !isNaN(parseFloat(rawFadeSettings.bottomFadeHeight)) ? parseFloat(rawFadeSettings.bottomFadeHeight) : 40,
+      bottomFadeOpacity: !isNaN(parseFloat(rawFadeSettings.bottomFadeOpacity)) ? parseFloat(rawFadeSettings.bottomFadeOpacity) : 0.95,
+      sideFadeWidth: !isNaN(parseFloat(rawFadeSettings.sideFadeWidth)) ? parseFloat(rawFadeSettings.sideFadeWidth) : 30,
+      sideFadeOpacity: !isNaN(parseFloat(rawFadeSettings.sideFadeOpacity)) ? parseFloat(rawFadeSettings.sideFadeOpacity) : 0.8
+    };
+  }, [rawFadeSettings]);
 
   const handleAboutField = useCallback((field, value) => {
     setContent((prev) => ({
@@ -238,6 +286,35 @@ export default function ChannelContentEditor({ sections = ['about', 'projects', 
     });
   }, []);
 
+  const handleFadeSettings = useCallback((field, value) => {
+    if (!currentSection) return;
+    
+    const fadeField = currentSection === 'about' ? 'aboutFooterFadeSettings' : 'footerFadeSettings';
+    
+    // Get default values from channelContentDefaults
+    const defaultFadeSettings = {
+      bgPosition: '70',
+      topFadeHeight: '60',
+      topFadeOpacity: '1',
+      bottomFadeHeight: '40',
+      bottomFadeOpacity: '0.95',
+      sideFadeWidth: '30',
+      sideFadeOpacity: '0.8'
+    };
+    
+    setContent((prev) => ({
+      ...prev,
+      [currentSection]: {
+        ...prev[currentSection],
+        [fadeField]: {
+          ...defaultFadeSettings,
+          ...(prev[currentSection]?.[fadeField] || {}),
+          [field]: String(value) // Store as string to match defaults
+        }
+      }
+    }));
+  }, [currentSection]);
+
   const handleAboutHistoryChange = useCallback((index, patch) => {
     setContent((prev) => {
       const history = [...prev.about.history];
@@ -317,7 +394,10 @@ export default function ChannelContentEditor({ sections = ['about', 'projects', 
       setSaving(true);
       setStatus('');
       console.log('💾 Saving channel content:', content);
-      console.log('💾 Projects backgroundImage:', content.projects?.backgroundImage);
+      console.log('💾 Current section fade settings:', currentSection, {
+        about: content.about?.aboutFooterFadeSettings,
+        [currentSection]: content[currentSection]?.footerFadeSettings
+      });
       const res = await adminFetch('/api/channel-content', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -326,7 +406,10 @@ export default function ChannelContentEditor({ sections = ['about', 'projects', 
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || 'Save failed');
       console.log('✅ Saved response:', data.content);
-      console.log('✅ Projects backgroundImage after save:', data.content?.projects?.backgroundImage);
+      console.log('✅ Saved fade settings:', currentSection, {
+        about: data.content?.about?.aboutFooterFadeSettings,
+        [currentSection]: data.content?.[currentSection]?.footerFadeSettings
+      });
       setContent(data.content || createInitialState());
       setStatus('Saved');
     } catch (error) {
@@ -334,7 +417,7 @@ export default function ChannelContentEditor({ sections = ['about', 'projects', 
     } finally {
       setSaving(false);
     }
-  }, [adminFetch, content]);
+  }, [adminFetch, content, currentSection]);
 
   if (loading) {
     return (
@@ -350,33 +433,56 @@ export default function ChannelContentEditor({ sections = ['about', 'projects', 
   }
 
   return (
-    <section className="admin-channel">
-      <header className="admin-shell__header">
-        <div>
-          <h2>{heading}</h2>
-          <p>{description}</p>
+    <section className="admin-channel admin-channel--modern">
+      {/* Modern Minimal Header */}
+      <header className="admin-modern-header">
+        <div className="admin-modern-header__content">
+          <h1 className="admin-modern-header__title">{heading}</h1>
+          <p className="admin-modern-header__subtitle">{description}</p>
         </div>
+        
+        {/* Tab Navigation for multi-section views */}
+        {currentSection && (
+          <nav className="admin-tabs">
+            <button 
+              className={`admin-tab ${activeTab === 'content' ? 'is-active' : ''}`}
+              onClick={() => setActiveTab('content')}
+            >
+              <span className="admin-tab__label">Content</span>
+            </button>
+            <button 
+              className={`admin-tab ${activeTab === 'appearance' ? 'is-active' : ''}`}
+              onClick={() => setActiveTab('appearance')}
+            >
+              <span className="admin-tab__label">Appearance</span>
+            </button>
+          </nav>
+        )}
       </header>
 
-      {showAbout ? (
+      {/* Content Tab */}
+      {(!currentSection || activeTab === 'content') && (
         <>
-          <div className="admin-panel">
-            <header className="admin-panel__header">
-              <h2>About — Glassmorphic Page</h2>
-              <div className="admin-language-toggle" role="group" aria-label="About language">
-                {ABOUT_LANGUAGES.map(({ id, label }) => (
-                  <button
-                    key={id}
-                    type="button"
-                    className={`admin-language-toggle__button${aboutLanguage === id ? ' is-active' : ''}`}
-                    onClick={() => setAboutLanguage(id)}
-                    aria-pressed={aboutLanguage === id}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </header>
+          {showAbout ? (
+            <>
+              {/* Modern About Section */}
+              <div className="admin-section">
+                <div className="admin-section__header">
+                  <h2 className="admin-section__title">Page Content</h2>
+                  <div className="admin-language-switcher">
+                    {ABOUT_LANGUAGES.map(({ id, label }) => (
+                      <button
+                        key={id}
+                        type="button"
+                        className={`admin-language-switcher__btn ${aboutLanguage === id ? 'is-active' : ''}`}
+                        onClick={() => setAboutLanguage(id)}
+                        aria-pressed={aboutLanguage === id}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
             <div className="admin-panel__body admin-panel__body--grid">
               <div className="admin-field">
                 <label htmlFor="about-page-title">Page Title</label>
@@ -752,52 +858,176 @@ export default function ChannelContentEditor({ sections = ['about', 'projects', 
         </>
       ) : null}
 
-      {heroSections.map((section) => {
-        const label = SECTION_LABELS[section] ?? section;
-        const titleId = `${section}-title`;
-        const leadId = `${section}-lead`;
-        return (
-          <div className="admin-panel" key={section}>
-            <header className="admin-panel__header">
-              <h2>{label} — Hero</h2>
-            </header>
-            <div className="admin-panel__body admin-panel__body--grid">
-              <div className="admin-field">
-                <label htmlFor={titleId}>Title</label>
-                <input
-                  id={titleId}
-                  type="text"
-                  value={content[section].title}
-                  onChange={(event) => handleChannelHero(section, 'title', event.target.value)}
-                />
+          {heroSections.map((section) => {
+            const label = SECTION_LABELS[section] ?? section;
+            const titleId = `${section}-title`;
+            const leadId = `${section}-lead`;
+            return (
+              <div className="admin-section" key={section}>
+                <div className="admin-section__header">
+                  <h2 className="admin-section__title">{label} Content</h2>
+                </div>
+                <div className="admin-section__body">
+                  <div className="admin-form-grid">
+                    <div className="admin-field admin-field--full">
+                      <label htmlFor={titleId} className="admin-field__label">Title</label>
+                      <input
+                        id={titleId}
+                        type="text"
+                        className="admin-field__input"
+                        value={content[section].title}
+                        onChange={(event) => handleChannelHero(section, 'title', event.target.value)}
+                      />
+                    </div>
+                    <div className="admin-field admin-field--full">
+                      <label htmlFor={leadId} className="admin-field__label">Lead Text</label>
+                      <textarea
+                        id={leadId}
+                        rows={3}
+                        className="admin-field__textarea"
+                        value={content[section].lead}
+                        onChange={(event) => handleChannelHero(section, 'lead', event.target.value)}
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="admin-field">
-                <label htmlFor={leadId}>Lead</label>
-                <textarea
-                  id={leadId}
-                  rows={3}
-                  value={content[section].lead}
-                  onChange={(event) => handleChannelHero(section, 'lead', event.target.value)}
+            );
+          })}
+        </>
+      )}
+
+      {/* Appearance Tab */}
+      {currentSection && activeTab === 'appearance' && (
+        <div className="admin-appearance-tab">
+          {/* Background Image Section */}
+          <div className="admin-section">
+            <div className="admin-section__header">
+              <h2 className="admin-section__title">Background Image</h2>
+              <p className="admin-section__description">
+                This image will fade into the footer with customizable gradients
+              </p>
+            </div>
+            <div className="admin-section__body">
+              <Suspense fallback={<div className="uploader-loading">Loading selector...</div>}>
+                <MediaSelector
+                  value={
+                    currentSection === 'about' 
+                      ? content.about?.aboutBackgroundImage || ''
+                      : content[currentSection]?.backgroundImage || ''
+                  }
+                  onChange={(value) => {
+                    if (currentSection === 'about') {
+                      handleAboutField('aboutBackgroundImage', value);
+                    } else {
+                      handleChannelHero(currentSection, 'backgroundImage', value);
+                    }
+                  }}
+                  label="Background Image"
+                  placeholder="Select or paste background image URL"
+                  helpText="Upload images via the Media page, then select here"
                 />
-              </div>
-              <div className="admin-field admin-field--full-width">
-                <Suspense fallback={<div className="uploader-loading">Loading selector...</div>}>
-                  <MediaSelector
-                    value={content[section].backgroundImage || ''}
-                    onChange={(value) => {
-                      console.log(`📸 Setting backgroundImage for ${section}:`, value);
-                      handleChannelHero(section, 'backgroundImage', value);
-                    }}
-                    label="Background Image"
-                    placeholder="Select or paste background image URL"
-                    helpText={`This image will be used as the ${label.toLowerCase()} page background and fade into the footer`}
+              </Suspense>
+            </div>
+          </div>
+
+          {/* Fade Controls Section */}
+          <div className="admin-section">
+            <div className="admin-section__header">
+              <h2 className="admin-section__title">Fade Settings</h2>
+              <p className="admin-section__description">
+                Fine-tune how the background image blends into the page
+              </p>
+            </div>
+            <div className="admin-section__body">
+              <div className="fade-controls-grid">
+                {/* Image Position */}
+                <div className="fade-control-group">
+                  <h3 className="fade-control-group__title">Image Position</h3>
+                  <FadeControl
+                    label="Vertical Position"
+                    value={fadeSettings?.bgPosition ?? 70}
+                    onChange={(value) => handleFadeSettings('bgPosition', value)}
+                    min={0}
+                    max={100}
+                    step={5}
+                    suffix="%"
                   />
-                </Suspense>
+                </div>
+
+                {/* Top Fade */}
+                <div className="fade-control-group">
+                  <h3 className="fade-control-group__title">Top Fade</h3>
+                  <FadeControl
+                    label="Fade Height"
+                    value={fadeSettings?.topFadeHeight ?? 60}
+                    onChange={(value) => handleFadeSettings('topFadeHeight', value)}
+                    min={0}
+                    max={100}
+                    step={5}
+                    suffix="%"
+                  />
+                  <FadeControl
+                    label="Fade Intensity"
+                    value={(fadeSettings?.topFadeOpacity ?? 1) * 100}
+                    onChange={(value) => handleFadeSettings('topFadeOpacity', value / 100)}
+                    min={0}
+                    max={100}
+                    step={5}
+                    suffix="%"
+                  />
+                </div>
+
+                {/* Bottom Fade */}
+                <div className="fade-control-group">
+                  <h3 className="fade-control-group__title">Bottom Fade</h3>
+                  <FadeControl
+                    label="Fade Height"
+                    value={fadeSettings?.bottomFadeHeight ?? 40}
+                    onChange={(value) => handleFadeSettings('bottomFadeHeight', value)}
+                    min={0}
+                    max={100}
+                    step={5}
+                    suffix="%"
+                  />
+                  <FadeControl
+                    label="Fade Intensity"
+                    value={(fadeSettings?.bottomFadeOpacity ?? 0.95) * 100}
+                    onChange={(value) => handleFadeSettings('bottomFadeOpacity', value / 100)}
+                    min={0}
+                    max={100}
+                    step={5}
+                    suffix="%"
+                  />
+                </div>
+
+                {/* Side Fade */}
+                <div className="fade-control-group">
+                  <h3 className="fade-control-group__title">Side Fade</h3>
+                  <FadeControl
+                    label="Fade Width"
+                    value={fadeSettings?.sideFadeWidth ?? 30}
+                    onChange={(value) => handleFadeSettings('sideFadeWidth', value)}
+                    min={0}
+                    max={50}
+                    step={5}
+                    suffix="%"
+                  />
+                  <FadeControl
+                    label="Fade Intensity"
+                    value={(fadeSettings?.sideFadeOpacity ?? 0.8) * 100}
+                    onChange={(value) => handleFadeSettings('sideFadeOpacity', value / 100)}
+                    min={0}
+                    max={100}
+                    step={5}
+                    suffix="%"
+                  />
+                </div>
               </div>
             </div>
           </div>
-        );
-      })}
+        </div>
+      )}
 
       <div className="admin-actions">
         {status ? <span className="admin-status">{status}</span> : null}

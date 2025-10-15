@@ -9815,10 +9815,93 @@ body.qr-intro-active .site-shell__icon-button {
   /* Background image set dynamically via inline style */
   /* Supports both admin-uploaded images and fallback SVGs */
   background-size: cover;
-  background-position: center 70%; /* Show more of the top part while keeping bottom visible */
+  background-position: center var(--footer-bg-position, 70%); /* Customizable position per page */
   background-repeat: no-repeat;
   background-color: #000;
   min-height: 60vh; /* Ensure minimum height to show more image */
+  
+  /* Custom properties for page-specific tuning */
+  --top-fade-height: 60%;
+  --top-fade-start: 1;
+  --top-fade-mid: 0.85;
+  --top-fade-end: 0;
+  --bottom-fade-height: 40%;
+  --bottom-fade-start: 0.95;
+  --bottom-fade-mid: 0.6;
+  --bottom-fade-end: 0;
+  --side-fade-width: 30%;
+  --side-fade-start: 0.8;
+}
+
+/* Gradient overlays to fade image into black background */
+.site-footer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--top-fade-height);
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, var(--top-fade-start)) 0%,
+    rgba(0, 0, 0, var(--top-fade-mid)) 40%,
+    rgba(0, 0, 0, var(--top-fade-end)) 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+.site-footer::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--bottom-fade-height);
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, var(--bottom-fade-start)) 0%,
+    rgba(0, 0, 0, var(--bottom-fade-mid)) 50%,
+    rgba(0, 0, 0, var(--bottom-fade-end)) 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Side fades for smoother edges */
+.site-footer__side-fade {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: var(--side-fade-width);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.site-footer__side-fade--left {
+  left: 0;
+  background: linear-gradient(
+    to right,
+    rgba(0, 0, 0, var(--side-fade-start)) 0%,
+    rgba(0, 0, 0, 0.3) 50%,
+    transparent 100%
+  );
+}
+
+.site-footer__side-fade--right {
+  right: 0;
+  background: linear-gradient(
+    to left,
+    rgba(0, 0, 0, var(--side-fade-start)) 0%,
+    rgba(0, 0, 0, 0.3) 50%,
+    transparent 100%
+  );
+}
+
+/* Ensure content appears above the gradients */
+.site-footer__container {
+  position: relative;
+  z-index: 2;
 }
 
 .site-footer--visible {
@@ -10262,4 +10345,342 @@ a {
     transition: none;
     animation: none;
   }
+}
+
+/* ===== MODERN ADMIN INTERFACE ===== */
+/* Designed with minimalism, functionality, and user delight in mind */
+
+.admin-channel--modern {
+  padding: 0;
+  background: transparent;
+}
+
+/* Modern Header */
+.admin-modern-header {
+  padding: 3rem 0 2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 2rem;
+}
+
+.admin-modern-header__content {
+  margin-bottom: 2rem;
+}
+
+.admin-modern-header__title {
+  font-size: 2.5rem;
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  margin: 0 0 0.5rem;
+  background: linear-gradient(135deg, #fff 0%, rgba(255, 255, 255, 0.7) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.admin-modern-header__subtitle {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0;
+  font-weight: 400;
+}
+
+/* Tab Navigation */
+.admin-tabs {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+}
+
+.admin-tab {
+  flex: 1;
+  padding: 0.75rem 1.5rem;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.admin-tab:hover {
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.admin-tab.is-active {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.admin-tab__label {
+  position: relative;
+  z-index: 1;
+}
+
+/* Modern Sections */
+.admin-section {
+  margin-bottom: 3rem;
+  animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.admin-section__header {
+  margin-bottom: 1.5rem;
+}
+
+.admin-section__title {
+  font-size: 1.25rem;
+  font-weight: 400;
+  margin: 0 0 0.5rem;
+  color: #fff;
+  letter-spacing: -0.01em;
+}
+
+.admin-section__description {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0;
+}
+
+.admin-section__body {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 2rem;
+  backdrop-filter: blur(20px);
+}
+
+/* Language Switcher */
+.admin-language-switcher {
+  display: inline-flex;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+}
+
+.admin-language-switcher__btn {
+  padding: 0.5rem 1rem;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.813rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-language-switcher__btn:hover {
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.admin-language-switcher__btn.is-active {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+/* Form Grid */
+.admin-form-grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+/* Modern Fields */
+.admin-field__label {
+  display: block;
+  font-size: 0.813rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 0.5rem;
+  text-transform: none;
+  letter-spacing: 0.01em;
+}
+
+.admin-field__input,
+.admin-field__textarea {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: #fff;
+  font-size: 0.938rem;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.admin-field__input:hover,
+.admin-field__textarea:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.admin-field__input:focus,
+.admin-field__textarea:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.05);
+}
+
+.admin-field__textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* Fade Controls */
+.fade-controls-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+}
+
+.fade-control-group {
+  padding: 1.5rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.fade-control-group__title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0 0 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.fade-control {
+  margin-bottom: 1.25rem;
+}
+
+.fade-control:last-child {
+  margin-bottom: 0;
+}
+
+.fade-control__label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.fade-control__name {
+  font-size: 0.813rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 400;
+}
+
+.fade-control__value {
+  font-size: 0.813rem;
+  color: #fff;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  padding: 0.25rem 0.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.fade-control__slider-container {
+  position: relative;
+  height: 40px;
+  display: flex;
+  align-items: center;
+}
+
+.fade-control__slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  outline: none;
+  position: relative;
+  z-index: 2;
+}
+
+.fade-control__progress {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 4px;
+  background: linear-gradient(90deg, 
+    rgba(255, 255, 255, 0.3) 0%, 
+    rgba(255, 255, 255, 0.6) 100%);
+  border-radius: 2px;
+  pointer-events: none;
+  transition: width 0.2s ease;
+}
+
+.fade-control__slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  background: #fff;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
+}
+
+.fade-control__slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  background: #fff;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.fade-control__slider:hover::-webkit-slider-thumb {
+  transform: scale(1.1);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.4);
+}
+
+.fade-control__slider:hover::-moz-range-thumb {
+  transform: scale(1.1);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.4);
+}
+
+.fade-control__slider:active::-webkit-slider-thumb {
+  transform: scale(0.95);
+}
+
+.fade-control__slider:active::-moz-range-thumb {
+  transform: scale(0.95);
+}
+
+/* Appearance Tab */
+.admin-appearance-tab {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
