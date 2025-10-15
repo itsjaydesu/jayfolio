@@ -1,1018 +1,1159 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Hypnotic Monochrome Field</title>
-  <style>
-    @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&display=swap");
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Hypnotic Monochrome Field</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&display=swap");
 
-    :root {
-      color-scheme: dark;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    html,
-    body {
-      height: 100%;
-      margin: 0;
-      font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
-      background: radial-gradient(circle at 20% 20%, #171717, #050505 65%);
-      color: #ededed;
-      overflow: hidden;
-    }
-
-    body {
-      position: relative;
-    }
-
-    .scene-container {
-      position: fixed;
-      inset: 0;
-      width: 100vw;
-      height: 100vh;
-    }
-
-    canvas {
-      display: block;
-      width: 100%;
-      height: 100%;
-    }
-
-    .ui-overlay {
-      position: fixed;
-      top: 2.25rem;
-      left: 2.25rem;
-      max-width: 22rem;
-      line-height: 1.6;
-      letter-spacing: 0.04em;
-      font-size: 0.82rem;
-      text-transform: uppercase;
-      pointer-events: none;
-      opacity: 0.78;
-    }
-
-    .ui-overlay h1 {
-      margin: 0 0 0.35rem;
-      font-size: 0.92rem;
-      letter-spacing: 0.2em;
-      font-weight: 600;
-    }
-
-    .ui-overlay p {
-      margin: 0;
-    }
-
-    .lil-gui {
-      --background-color: rgba(14, 14, 14, 0.82);
-      --text-color: #f2f2f2;
-      --title-background-color: rgba(34, 34, 34, 0.92);
-      --widget-color: rgba(30, 30, 30, 0.92);
-      --hover-color: rgba(82, 82, 82, 0.92);
-      --focus-color: rgba(180, 180, 180, 0.92);
-      font-family: "Inter", "Segoe UI", sans-serif;
-      border-radius: 10px;
-      overflow: hidden;
-    }
-
-    .lil-gui.root {
-      position: fixed;
-      right: 24px;
-      top: 24px;
-    }
-
-    .retro-menu {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: clamp(240px, 26vw, 340px);
-      border: 2px solid #05344c;
-      background: linear-gradient(180deg, rgba(0, 133, 134, 0.92) 0%, rgba(1, 60, 70, 0.86) 100%);
-      box-shadow:
-        0 0 0 1px rgba(1, 92, 112, 0.55),
-        12px 12px 0 rgba(0, 0, 0, 0.65);
-      color: #daf3f4;
-      font-family: "IBM Plex Mono", "Lucida Console", "Courier New", monospace;
-      letter-spacing: 0.04em;
-      z-index: 12;
-      overflow: hidden;
-      backdrop-filter: blur(3px);
-    }
-
-    .retro-menu::after {
-      inset: 4px;
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      pointer-events: none;
-    }
-
-    .retro-menu__titlebar {
-      background: linear-gradient(90deg, #003a63 0%, #008bb2 55%, #00c8d0 100%);
-      color: #f4faff;
-      padding: 10px 16px 9px;
-      font-size: 0.84rem;
-      text-transform: uppercase;
-      font-weight: 600;
-      border-bottom: 2px solid rgba(6, 6, 6, 0.65);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-
-    .retro-menu__titlebar span {
-      display: inline-flex;
-      gap: 6px;
-      align-items: center;
-    }
-
-    .retro-menu__titlebar small {
-      font-size: 0.72rem;
-      letter-spacing: 0.16em;
-      opacity: 0.75;
-    }
-
-    .retro-menu__titlebar .indicator {
-      width: 10px;
-      height: 10px;
-      background: #6cffcf;
-      box-shadow: 0 0 6px rgba(108, 255, 207, 0.75);
-      border: 1px solid rgba(0, 40, 36, 0.8);
-    }
-
-    .titlebar-controls {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .language-toggle {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 10px;
-      margin-top: 12px;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 4px;
-      color: #f4faff;
-      font-size: 0.75rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      opacity: 0.7;
-    }
-
-    .language-toggle:hover {
-      background: rgba(255, 255, 255, 0.15);
-      border-color: rgba(255, 255, 255, 0.3);
-      opacity: 1;
-    }
-
-    .menu-language-toggle {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 24px;
-      height: 24px;
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 3px;
-      color: #f4faff;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .menu-language-toggle:hover {
-      background: rgba(255, 255, 255, 0.2);
-      border-color: rgba(255, 255, 255, 0.4);
-    }
-
-    .earth-icon {
-      width: 16px;
-      height: 16px;
-      fill: currentColor;
-    }
-
-    .earth-icon-small {
-      width: 12px;
-      height: 12px;
-      fill: currentColor;
-    }
-
-    .lang-text {
-      font-size: 0.75rem;
-      font-weight: 600;
-    }
-
-    /* Enhanced UI Overlay Styles */
-    .ui-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 0.75rem;
-      gap: 1rem;
-    }
-
-    .ui-title {
-      font-size: 0.92rem;
-      margin: 0 0 0.35rem;
-      letter-spacing: 0.2em;
-      font-weight: 600;
-      background: linear-gradient(45deg, #00ffcc, #00ccff, #0099ff);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      filter: drop-shadow(0 0 8px rgba(0, 255, 204, 0.3));
-    }
-
-    .ui-controls {
-      flex-shrink: 0;
-    }
-
-    .language-button {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 8px;
-      color: #daf3f4;
-      cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      backdrop-filter: blur(10px);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .language-button:hover {
-      background: rgba(255, 255, 255, 0.1);
-      border-color: rgba(255, 255, 255, 0.2);
-      transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(0, 255, 204, 0.2);
-    }
-
-    .language-button:active {
-      transform: translateY(0);
-    }
-
-    .earth-container {
-      position: relative;
-      width: 24px;
-      height: 24px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .earth-icon {
-      width: 20px;
-      height: 20px;
-      position: relative;
-      z-index: 2;
-    }
-
-    .orbit-ring {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 32px;
-      height: 8px;
-      border: 1px solid rgba(0, 255, 204, 0.3);
-      border-radius: 50%;
-      transform: translate(-50%, -50%) rotateX(75deg);
-      transition: all 0.6s ease;
-    }
-
-    .language-button:hover .orbit-ring {
-      border-color: rgba(0, 255, 204, 0.6);
-      transform: translate(-50%, -50%) rotateX(75deg) rotateZ(360deg);
-    }
-
-    .earth-glow {
-      animation: earthPulse 3s ease-in-out infinite;
-    }
-
-    @keyframes earthPulse {
-      0%, 100% { opacity: 0.3; transform: scale(1); }
-      50% { opacity: 0.6; transform: scale(1.05); }
-    }
-
-    .lang-indicator {
-      font-size: 0.7rem;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: #00ffcc;
-      text-shadow: 0 0 4px rgba(0, 255, 204, 0.4);
-    }
-
-    /* Enhanced Retro Menu Language Toggle */
-    .retro-language-toggle {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 8px;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 6px;
-      color: #f4faff;
-      cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .retro-language-toggle:hover {
-      background: rgba(255, 255, 255, 0.15);
-      border-color: rgba(255, 255, 255, 0.3);
-      transform: scale(1.05);
-      box-shadow: 0 4px 12px rgba(0, 255, 204, 0.3);
-    }
-
-    .retro-language-toggle::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(0, 255, 204, 0.2), transparent);
-      transition: left 0.6s ease;
-    }
-
-    .retro-language-toggle:hover::before {
-      left: 100%;
-    }
-
-    .retro-earth-container {
-      position: relative;
-      width: 20px;
-      height: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .retro-earth-icon {
-      width: 16px;
-      height: 16px;
-      position: relative;
-      z-index: 2;
-      filter: drop-shadow(0 0 2px rgba(0, 255, 204, 0.4));
-    }
-
-    .retro-earth-grid {
-      animation: retroGridRotate 20s linear infinite;
-    }
-
-    @keyframes retroGridRotate {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-
-    .retro-orbit-ring {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 28px;
-      height: 6px;
-      border: 1px solid rgba(0, 255, 204, 0.4);
-      border-radius: 50%;
-      transform: translate(-50%, -50%) rotateX(75deg);
-      transition: all 0.4s ease;
-    }
-
-    .retro-language-toggle:hover .retro-orbit-ring {
-      border-color: rgba(0, 255, 204, 0.8);
-      transform: translate(-50%, -50%) rotateX(75deg) rotateZ(180deg);
-    }
-
-    .retro-lang-label {
-      font-size: 0.65rem;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: #00ffcc;
-      text-shadow: 0 0 3px rgba(0, 255, 204, 0.5);
-    }
-
-    .retro-menu__body {
-      padding: 14px 0 0;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .retro-menu__list {
-      margin: 0;
-      padding: 0;
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    /* Base state for all menu items - hidden by default */
-    .retro-menu__item {
-      opacity: 0;
-      transform: translateY(-18px);
-      -webkit-transform: translateY(-18px);
-      -moz-transform: translateY(-18px);
-      will-change: opacity, transform;
-      /* No animation here - will be added per nth-child */
-      /* Ensure items stay hidden until animation starts */
-      animation-fill-mode: both;
-      -webkit-animation-fill-mode: both;
-    }
-
-    /* Each menu item gets its complete animation with delay built-in */
-    /* Using explicit animation properties for better browser compatibility */
-    .retro-menu__item:nth-child(1) {
-      animation-name: retroMenuItemEnter;
-      animation-duration: 0.52s;
-      animation-delay: 0.22s;
-      animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
-      animation-fill-mode: both;
-      -webkit-animation-name: retroMenuItemEnter;
-      -webkit-animation-duration: 0.52s;
-      -webkit-animation-delay: 0.22s;
-      -webkit-animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
-      -webkit-animation-fill-mode: both;
-    }
-
-    .retro-menu__item:nth-child(2) {
-      animation-name: retroMenuItemEnter;
-      animation-duration: 0.52s;
-      animation-delay: 0.28s;
-      animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
-      animation-fill-mode: both;
-      -webkit-animation-name: retroMenuItemEnter;
-      -webkit-animation-duration: 0.52s;
-      -webkit-animation-delay: 0.28s;
-      -webkit-animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
-      -webkit-animation-fill-mode: both;
-    }
-
-    .retro-menu__item:nth-child(3) {
-      animation-name: retroMenuItemEnter;
-      animation-duration: 0.52s;
-      animation-delay: 0.34s;
-      animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
-      animation-fill-mode: both;
-      -webkit-animation-name: retroMenuItemEnter;
-      -webkit-animation-duration: 0.52s;
-      -webkit-animation-delay: 0.34s;
-      -webkit-animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
-      -webkit-animation-fill-mode: both;
-    }
-
-    .retro-menu__item:nth-child(4) {
-      animation-name: retroMenuItemEnter;
-      animation-duration: 0.52s;
-      animation-delay: 0.40s;
-      animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
-      animation-fill-mode: both;
-      -webkit-animation-name: retroMenuItemEnter;
-      -webkit-animation-duration: 0.52s;
-      -webkit-animation-delay: 0.40s;
-      -webkit-animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
-      -webkit-animation-fill-mode: both;
-    }
-
-    /* Art menu item - 5th child with proper delay */
-    .retro-menu__item:nth-child(5) {
-      animation-name: retroMenuItemEnter;
-      animation-duration: 0.52s;
-      animation-delay: 0.46s;
-      animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
-      animation-fill-mode: both;
-      -webkit-animation-name: retroMenuItemEnter;
-      -webkit-animation-duration: 0.52s;
-      -webkit-animation-delay: 0.46s;
-      -webkit-animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
-      -webkit-animation-fill-mode: both;
-    }
-
-    /* Keyframe animation for menu items entering */
-    @keyframes retroMenuItemEnter {
-      from {
-        opacity: 0;
-        transform: translateY(-18px);
+      :root {
+        color-scheme: dark;
       }
-      to {
-        opacity: 1;
-        transform: translateY(0);
+
+      * {
+        box-sizing: border-box;
       }
-    }
 
-    @-webkit-keyframes retroMenuItemEnter {
-      from {
-        opacity: 0;
-        -webkit-transform: translateY(-18px);
-        transform: translateY(-18px);
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+        background: radial-gradient(circle at 20% 20%, #171717, #050505 65%);
+        color: #ededed;
+        overflow: hidden;
       }
-      to {
-        opacity: 1;
-        -webkit-transform: translateY(0);
-        transform: translateY(0);
+
+      body {
+        position: relative;
       }
-    }
 
-    .retro-menu__item button {
-      all: unset;
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-      gap: 14px;
-      width: 100%;
-      padding: 11px 20px;
-      background: rgba(0, 70, 74, 0.25);
-      color: #daf3f4;
-      cursor: pointer;
-      position: relative;
-      transition: background 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
-    }
+      .scene-container {
+        position: fixed;
+        inset: 0;
+        width: 100vw;
+        height: 100vh;
+      }
 
-    .retro-menu__item button::before {
-      content: "▌";
-      font-size: 0.9rem;
-      color: #7fffd7;
-      text-shadow: 0 0 9px rgba(0, 255, 224, 0.7);
-    }
+      canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
 
-    .retro-menu__item button::after {
-      content: "";
-      position: absolute;
-      left: 18px;
-      right: 18px;
-      bottom: 0;
-      height: 1px;
-      background: rgba(0, 204, 220, 0.25);
-      pointer-events: none;
-    }
-
-    .retro-menu__item:last-child button::after {
-      display: none;
-    }
-
-    .retro-menu__item button:hover,
-    .retro-menu__item button:focus-visible {
-      background: rgba(0, 148, 152, 0.78);
-      outline: 1px solid rgba(255, 255, 255, 0.45);
-      outline-offset: -3px;
-      transform: translateX(2px);
-      box-shadow: inset 0 0 0 1px rgba(0, 255, 255, 0.22);
-    }
-
-    .retro-menu__item button:active {
-      background: rgba(0, 88, 92, 0.95);
-    }
-
-    .retro-menu__item.is-active button {
-      background: rgba(0, 148, 152, 0.88);
-      box-shadow:
-        inset 0 0 0 1px rgba(255, 255, 255, 0.35),
-        inset 0 0 22px rgba(0, 255, 255, 0.25);
-    }
-
-    .retro-menu__item.is-active button::after {
-      background: rgba(255, 255, 255, 0.4);
-      opacity: 0.7;
-    }
-
-    .retro-menu__status {
-      margin: 0;
-      padding: 16px 20px 18px;
-      font-size: 0.78rem;
-      line-height: 1.6;
-      min-height: 128px;
-      background: linear-gradient(180deg, rgba(2, 38, 44, 0.8) 0%, rgba(2, 28, 34, 0.9) 100%);
-      border-top: 2px solid rgba(4, 62, 66, 0.8);
-      color: #dffdfd;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      box-shadow: inset 0 0 0 1px rgba(12, 102, 112, 0.35);
-    }
-
-    .retro-menu__status strong {
-      display: block;
-      font-size: 0.82rem;
-      letter-spacing: 0.12em;
-      margin-bottom: 6px;
-      color: #8affff;
-      text-shadow: 0 0 8px rgba(138, 255, 255, 0.55);
-    }
-
-    .retro-menu__status em {
-      display: block;
-      font-style: normal;
-      text-transform: none;
-      letter-spacing: 0.02em;
-      font-size: 0.72rem;
-      line-height: 1.55;
-      color: rgba(215, 248, 248, 0.82);
-    }
-
-    .retro-menu__status span {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      margin-top: 8px;
-      font-size: 0.72rem;
-      letter-spacing: 0.16em;
-      color: rgba(222, 255, 255, 0.6);
-      text-transform: uppercase;
-    }
-
-    .retro-menu__status span::before {
-      content: "▎";
-      color: rgba(122, 255, 255, 0.75);
-    }
-
-    .lil-gui .controller-with-fixed {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-
-    .lil-gui .controller-with-fixed .fixed-toggle {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 0.6rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: rgba(220, 220, 220, 0.55);
-      opacity: 0.85;
-    }
-
-    .lil-gui .controller-with-fixed .fixed-toggle input {
-      margin: 0;
-      accent-color: #bcbcbc;
-    }
-
-    .lil-gui .controller-with-fixed.is-locked {
-      background: rgba(120, 120, 120, 0.08);
-    }
-
-    .lil-gui .controller-with-fixed.is-locked .fixed-toggle {
-      color: rgba(240, 240, 240, 0.85);
-    }
-
-    .lil-gui .title {
-      letter-spacing: 0.1em;
-    }
-
-    @media (max-width: 768px) {
       .ui-overlay {
-        left: 1.5rem;
-        right: 1.5rem;
-        max-width: 100%;
-        font-size: 0.75rem;
+        position: fixed;
+        top: 2.25rem;
+        left: 2.25rem;
+        max-width: 22rem;
+        line-height: 1.6;
+        letter-spacing: 0.04em;
+        font-size: 0.82rem;
+        text-transform: uppercase;
+        pointer-events: none;
+        opacity: 0.78;
       }
 
-      .ui-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
+      .ui-overlay h1 {
+        margin: 0 0 0.35rem;
+        font-size: 0.92rem;
+        letter-spacing: 0.2em;
+        font-weight: 600;
       }
 
-      .language-button {
+      .ui-overlay p {
+        margin: 0;
+      }
+
+      .lil-gui {
+        --background-color: rgba(14, 14, 14, 0.82);
+        --text-color: #f2f2f2;
+        --title-background-color: rgba(34, 34, 34, 0.92);
+        --widget-color: rgba(30, 30, 30, 0.92);
+        --hover-color: rgba(82, 82, 82, 0.92);
+        --focus-color: rgba(180, 180, 180, 0.92);
+        font-family: "Inter", "Segoe UI", sans-serif;
+        border-radius: 10px;
+        overflow: hidden;
+      }
+
+      .lil-gui.root {
+        position: fixed;
+        right: 24px;
+        top: 24px;
+      }
+
+      .retro-menu {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: clamp(240px, 26vw, 340px);
+        border: 2px solid #05344c;
+        background: linear-gradient(
+          180deg,
+          rgba(0, 133, 134, 0.92) 0%,
+          rgba(1, 60, 70, 0.86) 100%
+        );
+        box-shadow: 0 0 0 1px rgba(1, 92, 112, 0.55),
+          12px 12px 0 rgba(0, 0, 0, 0.65);
+        color: #daf3f4;
+        font-family: "IBM Plex Mono", "Lucida Console", "Courier New", monospace;
+        letter-spacing: 0.04em;
+        z-index: 12;
+        overflow: hidden;
+        backdrop-filter: blur(3px);
+      }
+
+      .retro-menu::after {
+        inset: 4px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        pointer-events: none;
+      }
+
+      .retro-menu__titlebar {
+        background: linear-gradient(
+          90deg,
+          #003a63 0%,
+          #008bb2 55%,
+          #00c8d0 100%
+        );
+        color: #f4faff;
+        padding: 10px 16px 9px;
+        font-size: 0.84rem;
+        text-transform: uppercase;
+        font-weight: 600;
+        border-bottom: 2px solid rgba(6, 6, 6, 0.65);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .retro-menu__titlebar span {
+        display: inline-flex;
+        gap: 6px;
+        align-items: center;
+      }
+
+      .retro-menu__titlebar small {
+        font-size: 0.72rem;
+        letter-spacing: 0.16em;
+        opacity: 0.75;
+      }
+
+      .retro-menu__titlebar .indicator {
+        width: 10px;
+        height: 10px;
+        background: #6cffcf;
+        box-shadow: 0 0 6px rgba(108, 255, 207, 0.75);
+        border: 1px solid rgba(0, 40, 36, 0.8);
+      }
+
+      .titlebar-controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .language-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
         padding: 6px 10px;
+        margin-top: 12px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 4px;
+        color: #f4faff;
+        font-size: 0.75rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        opacity: 0.7;
       }
 
-      .earth-container {
-        width: 20px;
-        height: 20px;
+      .language-toggle:hover {
+        background: rgba(255, 255, 255, 0.15);
+        border-color: rgba(255, 255, 255, 0.3);
+        opacity: 1;
+      }
+
+      .menu-language-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 3px;
+        color: #f4faff;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .menu-language-toggle:hover {
+        background: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.4);
       }
 
       .earth-icon {
         width: 16px;
         height: 16px;
+        fill: currentColor;
+      }
+
+      .earth-icon-small {
+        width: 12px;
+        height: 12px;
+        fill: currentColor;
+      }
+
+      .lang-text {
+        font-size: 0.75rem;
+        font-weight: 600;
+      }
+
+      /* Enhanced UI Overlay Styles */
+      .ui-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 0.75rem;
+        gap: 1rem;
+      }
+
+      .ui-title {
+        font-size: 0.92rem;
+        margin: 0 0 0.35rem;
+        letter-spacing: 0.2em;
+        font-weight: 600;
+        background: linear-gradient(45deg, #00ffcc, #00ccff, #0099ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        filter: drop-shadow(0 0 8px rgba(0, 255, 204, 0.3));
+      }
+
+      .ui-controls {
+        flex-shrink: 0;
+      }
+
+      .language-button {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        color: #daf3f4;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        backdrop-filter: blur(10px);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .language-button:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.2);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0, 255, 204, 0.2);
+      }
+
+      .language-button:active {
+        transform: translateY(0);
+      }
+
+      .earth-container {
+        position: relative;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .earth-icon {
+        width: 20px;
+        height: 20px;
+        position: relative;
+        z-index: 2;
       }
 
       .orbit-ring {
-        width: 26px;
-        height: 6px;
-      }
-
-      .lil-gui.root {
-        right: auto;
+        position: absolute;
+        top: 50%;
         left: 50%;
-        transform: translateX(-50%);
-        top: auto;
-        bottom: 1rem;
+        width: 32px;
+        height: 8px;
+        border: 1px solid rgba(0, 255, 204, 0.3);
+        border-radius: 50%;
+        transform: translate(-50%, -50%) rotateX(75deg);
+        transition: all 0.6s ease;
       }
 
-      .retro-menu {
-        width: min(90vw, 360px);
-        transform: translate(-50%, -52%);
-        box-shadow:
-          0 0 0 1px rgba(1, 92, 112, 0.55),
-          10px 10px 0 rgba(0, 0, 0, 0.55);
+      .language-button:hover .orbit-ring {
+        border-color: rgba(0, 255, 204, 0.6);
+        transform: translate(-50%, -50%) rotateX(75deg) rotateZ(360deg);
       }
-    }
-  </style>
-</head>
-<body>
-  <div class="scene-container"></div>
-  <div class="ui-overlay">
-    <div class="ui-header">
-      <h1 class="ui-title">Hypnotic Field</h1>
-      <div class="ui-controls">
-        <button class="language-button" onclick="toggleLanguage()" title="Switch Language / 言語を切り替える" aria-label="Language toggle">
-          <div class="earth-container">
-            <svg class="earth-icon" viewBox="0 0 24 24" aria-hidden="true">
-              <defs>
-                <linearGradient id="earthGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" style="stop-color:#00d4ff;stop-opacity:1" />
-                  <stop offset="100%" style="stop-color:#0099cc;stop-opacity:1" />
-                </linearGradient>
-              </defs>
-              <path fill="url(#earthGradient)" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
-              <g class="earth-glow">
-                <circle cx="12" cy="12" r="11" fill="none" stroke="rgba(0, 212, 255, 0.3)" stroke-width="0.5"/>
-              </g>
-            </svg>
-            <div class="orbit-ring"></div>
-          </div>
-          <span class="lang-indicator">EN</span>
-        </button>
+
+      .earth-glow {
+        animation: earthPulse 3s ease-in-out infinite;
+      }
+
+      @keyframes earthPulse {
+        0%,
+        100% {
+          opacity: 0.3;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 0.6;
+          transform: scale(1.05);
+        }
+      }
+
+      .lang-indicator {
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #00ffcc;
+        text-shadow: 0 0 4px rgba(0, 255, 204, 0.4);
+      }
+
+      /* Enhanced Retro Menu Language Toggle */
+      .retro-language-toggle {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 8px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 6px;
+        color: #f4faff;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .retro-language-toggle:hover {
+        background: rgba(255, 255, 255, 0.15);
+        border-color: rgba(255, 255, 255, 0.3);
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(0, 255, 204, 0.3);
+      }
+
+      .retro-language-toggle::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(0, 255, 204, 0.2),
+          transparent
+        );
+        transition: left 0.6s ease;
+      }
+
+      .retro-language-toggle:hover::before {
+        left: 100%;
+      }
+
+      .retro-earth-container {
+        position: relative;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .retro-earth-icon {
+        width: 16px;
+        height: 16px;
+        position: relative;
+        z-index: 2;
+        filter: drop-shadow(0 0 2px rgba(0, 255, 204, 0.4));
+      }
+
+      .retro-earth-grid {
+        animation: retroGridRotate 20s linear infinite;
+      }
+
+      @keyframes retroGridRotate {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .retro-orbit-ring {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 28px;
+        height: 6px;
+        border: 1px solid rgba(0, 255, 204, 0.4);
+        border-radius: 50%;
+        transform: translate(-50%, -50%) rotateX(75deg);
+        transition: all 0.4s ease;
+      }
+
+      .retro-language-toggle:hover .retro-orbit-ring {
+        border-color: rgba(0, 255, 204, 0.8);
+        transform: translate(-50%, -50%) rotateX(75deg) rotateZ(180deg);
+      }
+
+      .retro-lang-label {
+        font-size: 0.65rem;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #00ffcc;
+        text-shadow: 0 0 3px rgba(0, 255, 204, 0.5);
+      }
+
+      .retro-menu__body {
+        padding: 14px 0 0;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .retro-menu__list {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      /* Base state for all menu items - hidden by default */
+      .retro-menu__item {
+        opacity: 0;
+        transform: translateY(-18px);
+        -webkit-transform: translateY(-18px);
+        -moz-transform: translateY(-18px);
+        will-change: opacity, transform;
+        /* No animation here - will be added per nth-child */
+        /* Ensure items stay hidden until animation starts */
+        animation-fill-mode: both;
+        -webkit-animation-fill-mode: both;
+      }
+
+      /* Each menu item gets its complete animation with delay built-in */
+      /* Using explicit animation properties for better browser compatibility */
+      .retro-menu__item:nth-child(1) {
+        animation-name: retroMenuItemEnter;
+        animation-duration: 0.52s;
+        animation-delay: 0.22s;
+        animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+        animation-fill-mode: both;
+        -webkit-animation-name: retroMenuItemEnter;
+        -webkit-animation-duration: 0.52s;
+        -webkit-animation-delay: 0.22s;
+        -webkit-animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+        -webkit-animation-fill-mode: both;
+      }
+
+      .retro-menu__item:nth-child(2) {
+        animation-name: retroMenuItemEnter;
+        animation-duration: 0.52s;
+        animation-delay: 0.28s;
+        animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+        animation-fill-mode: both;
+        -webkit-animation-name: retroMenuItemEnter;
+        -webkit-animation-duration: 0.52s;
+        -webkit-animation-delay: 0.28s;
+        -webkit-animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+        -webkit-animation-fill-mode: both;
+      }
+
+      .retro-menu__item:nth-child(3) {
+        animation-name: retroMenuItemEnter;
+        animation-duration: 0.52s;
+        animation-delay: 0.34s;
+        animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+        animation-fill-mode: both;
+        -webkit-animation-name: retroMenuItemEnter;
+        -webkit-animation-duration: 0.52s;
+        -webkit-animation-delay: 0.34s;
+        -webkit-animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+        -webkit-animation-fill-mode: both;
+      }
+
+      .retro-menu__item:nth-child(4) {
+        animation-name: retroMenuItemEnter;
+        animation-duration: 0.52s;
+        animation-delay: 0.4s;
+        animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+        animation-fill-mode: both;
+        -webkit-animation-name: retroMenuItemEnter;
+        -webkit-animation-duration: 0.52s;
+        -webkit-animation-delay: 0.4s;
+        -webkit-animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+        -webkit-animation-fill-mode: both;
+      }
+
+      /* Art menu item - 5th child with proper delay */
+      .retro-menu__item:nth-child(5) {
+        animation-name: retroMenuItemEnter;
+        animation-duration: 0.52s;
+        animation-delay: 0.46s;
+        animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+        animation-fill-mode: both;
+        -webkit-animation-name: retroMenuItemEnter;
+        -webkit-animation-duration: 0.52s;
+        -webkit-animation-delay: 0.46s;
+        -webkit-animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+        -webkit-animation-fill-mode: both;
+      }
+
+      /* Keyframe animation for menu items entering */
+      @keyframes retroMenuItemEnter {
+        from {
+          opacity: 0;
+          transform: translateY(-18px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @-webkit-keyframes retroMenuItemEnter {
+        from {
+          opacity: 0;
+          -webkit-transform: translateY(-18px);
+          transform: translateY(-18px);
+        }
+        to {
+          opacity: 1;
+          -webkit-transform: translateY(0);
+          transform: translateY(0);
+        }
+      }
+
+      .retro-menu__item button {
+        all: unset;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 14px;
+        width: 100%;
+        padding: 11px 20px;
+        background: rgba(0, 70, 74, 0.25);
+        color: #daf3f4;
+        cursor: pointer;
+        position: relative;
+        transition: background 0.18s ease, transform 0.18s ease,
+          box-shadow 0.18s ease;
+      }
+
+      .retro-menu__item button::before {
+        content: "▌";
+        font-size: 0.9rem;
+        color: #7fffd7;
+        text-shadow: 0 0 9px rgba(0, 255, 224, 0.7);
+      }
+
+      .retro-menu__item button::after {
+        content: "";
+        position: absolute;
+        left: 18px;
+        right: 18px;
+        bottom: 0;
+        height: 1px;
+        background: rgba(0, 204, 220, 0.25);
+        pointer-events: none;
+      }
+
+      .retro-menu__item:last-child button::after {
+        display: none;
+      }
+
+      .retro-menu__item button:hover,
+      .retro-menu__item button:focus-visible {
+        background: rgba(0, 148, 152, 0.78);
+        outline: 1px solid rgba(255, 255, 255, 0.45);
+        outline-offset: -3px;
+        transform: translateX(2px);
+        box-shadow: inset 0 0 0 1px rgba(0, 255, 255, 0.22);
+      }
+
+      .retro-menu__item button:active {
+        background: rgba(0, 88, 92, 0.95);
+      }
+
+      .retro-menu__item.is-active button {
+        background: rgba(0, 148, 152, 0.88);
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35),
+          inset 0 0 22px rgba(0, 255, 255, 0.25);
+      }
+
+      .retro-menu__item.is-active button::after {
+        background: rgba(255, 255, 255, 0.4);
+        opacity: 0.7;
+      }
+
+      .retro-menu__status {
+        margin: 0;
+        padding: 16px 20px 18px;
+        font-size: 0.78rem;
+        line-height: 1.6;
+        min-height: 128px;
+        background: linear-gradient(
+          180deg,
+          rgba(2, 38, 44, 0.8) 0%,
+          rgba(2, 28, 34, 0.9) 100%
+        );
+        border-top: 2px solid rgba(4, 62, 66, 0.8);
+        color: #dffdfd;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        box-shadow: inset 0 0 0 1px rgba(12, 102, 112, 0.35);
+      }
+
+      .retro-menu__status strong {
+        display: block;
+        font-size: 0.82rem;
+        letter-spacing: 0.12em;
+        margin-bottom: 6px;
+        color: #8affff;
+        text-shadow: 0 0 8px rgba(138, 255, 255, 0.55);
+      }
+
+      .retro-menu__status em {
+        display: block;
+        font-style: normal;
+        text-transform: none;
+        letter-spacing: 0.02em;
+        font-size: 0.72rem;
+        line-height: 1.55;
+        color: rgba(215, 248, 248, 0.82);
+      }
+
+      .retro-menu__status span {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 8px;
+        font-size: 0.72rem;
+        letter-spacing: 0.16em;
+        color: rgba(222, 255, 255, 0.6);
+        text-transform: uppercase;
+      }
+
+      .retro-menu__status span::before {
+        content: "▎";
+        color: rgba(122, 255, 255, 0.75);
+      }
+
+      .lil-gui .controller-with-fixed {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .lil-gui .controller-with-fixed .fixed-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.6rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: rgba(220, 220, 220, 0.55);
+        opacity: 0.85;
+      }
+
+      .lil-gui .controller-with-fixed .fixed-toggle input {
+        margin: 0;
+        accent-color: #bcbcbc;
+      }
+
+      .lil-gui .controller-with-fixed.is-locked {
+        background: rgba(120, 120, 120, 0.08);
+      }
+
+      .lil-gui .controller-with-fixed.is-locked .fixed-toggle {
+        color: rgba(240, 240, 240, 0.85);
+      }
+
+      .lil-gui .title {
+        letter-spacing: 0.1em;
+      }
+
+      @media (max-width: 768px) {
+        .ui-overlay {
+          left: 1.5rem;
+          right: 1.5rem;
+          max-width: 100%;
+          font-size: 0.75rem;
+        }
+
+        .ui-header {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 0.5rem;
+        }
+
+        .language-button {
+          padding: 6px 10px;
+        }
+
+        .earth-container {
+          width: 20px;
+          height: 20px;
+        }
+
+        .earth-icon {
+          width: 16px;
+          height: 16px;
+        }
+
+        .orbit-ring {
+          width: 26px;
+          height: 6px;
+        }
+
+        .lil-gui.root {
+          right: auto;
+          left: 50%;
+          transform: translateX(-50%);
+          top: auto;
+          bottom: 1rem;
+        }
+
+        .retro-menu {
+          width: min(90vw, 360px);
+          transform: translate(-50%, -52%);
+          box-shadow: 0 0 0 1px rgba(1, 92, 112, 0.55),
+            10px 10px 0 rgba(0, 0, 0, 0.55);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="scene-container"></div>
+    <div class="ui-overlay">
+      <div class="ui-header">
+        <h1 class="ui-title">Hypnotic Field</h1>
+        <div class="ui-controls">
+          <button
+            class="language-button"
+            onclick="toggleLanguage()"
+            title="Switch Language / 言語を切り替える"
+            aria-label="Language toggle"
+          >
+            <div class="earth-container">
+              <svg class="earth-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <defs>
+                  <linearGradient
+                    id="earthGradient"
+                    x1="0%"
+                    y1="0%"
+                    x2="100%"
+                    y2="100%"
+                  >
+                    <stop
+                      offset="0%"
+                      style="stop-color: #00d4ff; stop-opacity: 1"
+                    />
+                    <stop
+                      offset="100%"
+                      style="stop-color: #0099cc; stop-opacity: 1"
+                    />
+                  </linearGradient>
+                </defs>
+                <path
+                  fill="url(#earthGradient)"
+                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"
+                />
+                <g class="earth-glow">
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="11"
+                    fill="none"
+                    stroke="rgba(0, 212, 255, 0.3)"
+                    stroke-width="0.5"
+                  />
+                </g>
+              </svg>
+              <div class="orbit-ring"></div>
+            </div>
+            <span class="lang-indicator">EN</span>
+          </button>
+        </div>
       </div>
+      <p class="ui-description">
+        Glide to tilt the waves. Click or tap for gentle ripples. Tune,
+        randomize, or export every setting.
+      </p>
     </div>
-    <p class="ui-description">
-      Glide to tilt the waves. Click or tap for gentle ripples. Tune, randomize, or export every setting.
-    </p>
-  </div>
-  <div class="retro-menu" aria-label="Main navigation">
-    <div class="retro-menu__titlebar">
-      <span><div class="indicator" aria-hidden="true"></div> Jay Winder</span>
-      <div class="titlebar-controls">
-        <button class="retro-language-toggle" onclick="toggleLanguage()" title="Switch Language / 言語を切り替える" aria-label="Language toggle">
-          <div class="retro-earth-container">
-            <svg class="retro-earth-icon" viewBox="0 0 24 24" aria-hidden="true">
-              <defs>
-                <linearGradient id="retroEarthGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" style="stop-color:#00ffcc;stop-opacity:1" />
-                  <stop offset="50%" style="stop-color:#00ccff;stop-opacity:1" />
-                  <stop offset="100%" style="stop-color:#0099ff;stop-opacity:1" />
-                </linearGradient>
-              </defs>
-              <path fill="url(#retroEarthGradient)" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.80 3.97-2.1 5.39z"/>
-              <g class="retro-earth-grid">
-                <circle cx="12" cy="12" r="11" fill="none" stroke="rgba(0, 255, 204, 0.2)" stroke-width="0.5" stroke-dasharray="2,2"/>
-                <path d="M1,12 Q6,10 12,12 T23,12" fill="none" stroke="rgba(0, 204, 255, 0.2)" stroke-width="0.3"/>
-                <path d="M12,1 Q10,6 12,12 T12,23" fill="none" stroke="rgba(0, 153, 255, 0.2)" stroke-width="0.3"/>
-              </g>
-            </svg>
-            <div class="retro-orbit-ring"></div>
-          </div>
-          <span class="retro-lang-label">EN</span>
-        </button>
-        <small>v4.1</small>
+    <div class="retro-menu" aria-label="Main navigation">
+      <div class="retro-menu__titlebar">
+        <span
+          ><div class="indicator" aria-hidden="true"></div>
+          Jay Winder</span
+        >
+        <div class="titlebar-controls">
+          <button
+            class="retro-language-toggle"
+            onclick="toggleLanguage()"
+            title="Switch Language / 言語を切り替える"
+            aria-label="Language toggle"
+          >
+            <div class="retro-earth-container">
+              <svg
+                class="retro-earth-icon"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <defs>
+                  <linearGradient
+                    id="retroEarthGradient"
+                    x1="0%"
+                    y1="0%"
+                    x2="100%"
+                    y2="100%"
+                  >
+                    <stop
+                      offset="0%"
+                      style="stop-color: #00ffcc; stop-opacity: 1"
+                    />
+                    <stop
+                      offset="50%"
+                      style="stop-color: #00ccff; stop-opacity: 1"
+                    />
+                    <stop
+                      offset="100%"
+                      style="stop-color: #0099ff; stop-opacity: 1"
+                    />
+                  </linearGradient>
+                </defs>
+                <path
+                  fill="url(#retroEarthGradient)"
+                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.80 3.97-2.1 5.39z"
+                />
+                <g class="retro-earth-grid">
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="11"
+                    fill="none"
+                    stroke="rgba(0, 255, 204, 0.2)"
+                    stroke-width="0.5"
+                    stroke-dasharray="2,2"
+                  />
+                  <path
+                    d="M1,12 Q6,10 12,12 T23,12"
+                    fill="none"
+                    stroke="rgba(0, 204, 255, 0.2)"
+                    stroke-width="0.3"
+                  />
+                  <path
+                    d="M12,1 Q10,6 12,12 T12,23"
+                    fill="none"
+                    stroke="rgba(0, 153, 255, 0.2)"
+                    stroke-width="0.3"
+                  />
+                </g>
+              </svg>
+              <div class="retro-orbit-ring"></div>
+            </div>
+            <span class="retro-lang-label">EN</span>
+          </button>
+          <small>v4.1</small>
+        </div>
       </div>
+      <div class="retro-menu__body">
+        <ul class="retro-menu__list">
+          <li class="retro-menu__item" data-section="about">
+            <button type="button">About</button>
+          </li>
+          <li class="retro-menu__item" data-section="projects">
+            <button type="button">Projects</button>
+          </li>
+          <li class="retro-menu__item" data-section="words">
+            <button type="button">Words</button>
+          </li>
+          <li class="retro-menu__item" data-section="sounds">
+            <button type="button">Sounds</button>
+          </li>
+          <li class="retro-menu__item" data-section="art">
+            <button type="button">Art</button>
+          </li>
+        </ul>
+      </div>
+      <p class="retro-menu__status" aria-live="polite"></p>
     </div>
-    <div class="retro-menu__body">
-      <ul class="retro-menu__list">
-        <li class="retro-menu__item" data-section="about">
-          <button type="button">About</button>
-        </li>
-        <li class="retro-menu__item" data-section="projects">
-          <button type="button">Projects</button>
-        </li>
-        <li class="retro-menu__item" data-section="words">
-          <button type="button">Words</button>
-        </li>
-        <li class="retro-menu__item" data-section="sounds">
-          <button type="button">Sounds</button>
-        </li>
-        <li class="retro-menu__item" data-section="art">
-          <button type="button">Art</button>
-        </li>
-      </ul>
-    </div>
-    <p class="retro-menu__status" aria-live="polite"></p>
-  </div>
-  <script type="module">
-    import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.157/build/three.module.js";
-    import Stats from "https://threejs.org/examples/jsm/libs/stats.module.js";
-    import GUI from "https://cdn.jsdelivr.net/npm/lil-gui@0.19/+esm";
+    <script type="module">
+      import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.157/build/three.module.js";
+      import Stats from "https://threejs.org/examples/jsm/libs/stats.module.js";
+      import GUI from "https://cdn.jsdelivr.net/npm/lil-gui@0.19/+esm";
 
-    // Language toggle function
-    function toggleLanguage() {
-      // Check current language and toggle
-      const currentLang = localStorage.getItem('index-page-language') || 'en';
-      const newLang = currentLang === 'en' ? 'ja' : 'en';
-      
-      // Save preference
-      localStorage.setItem('index-page-language', newLang);
-      
-      // Update all language toggle buttons
-      updateLanguageUI(newLang);
-    }
+      // Language toggle function
+      function toggleLanguage() {
+        // Check current language and toggle
+        const currentLang = localStorage.getItem("index-page-language") || "en";
+        const newLang = currentLang === "en" ? "ja" : "en";
 
-    function updateLanguageUI(language) {
-      // Update language indicators on all toggle buttons
-      const langIndicators = document.querySelectorAll('.lang-indicator, .retro-lang-label');
-      langIndicators.forEach(text => {
-        text.textContent = language === 'ja' ? '日本語' : 'EN';
-      });
-      
-      // Update HTML lang attribute
-      document.documentElement.lang = language;
-      
-      // Update UI text
-      const uiOverlay = document.querySelector('.ui-overlay');
-      if (uiOverlay) {
-        const uiTitle = uiOverlay.querySelector('.ui-title');
-        const uiDescription = uiOverlay.querySelector('.ui-description');
-        
-        if (language === 'ja') {
-          if (uiTitle) {
-            uiTitle.textContent = '催眠フィールド';
-            // Update gradient colors for Japanese
-            uiTitle.style.background = 'linear-gradient(45deg, #ff00cc, #cc00ff, #9900ff)';
+        // Save preference
+        localStorage.setItem("index-page-language", newLang);
+
+        // Update all language toggle buttons
+        updateLanguageUI(newLang);
+      }
+
+      function updateLanguageUI(language) {
+        // Update language indicators on all toggle buttons
+        const langIndicators = document.querySelectorAll(
+          ".lang-indicator, .retro-lang-label"
+        );
+        langIndicators.forEach((text) => {
+          text.textContent = language === "ja" ? "日本語" : "EN";
+        });
+
+        // Update HTML lang attribute
+        document.documentElement.lang = language;
+
+        // Update UI text
+        const uiOverlay = document.querySelector(".ui-overlay");
+        if (uiOverlay) {
+          const uiTitle = uiOverlay.querySelector(".ui-title");
+          const uiDescription = uiOverlay.querySelector(".ui-description");
+
+          if (language === "ja") {
+            if (uiTitle) {
+              uiTitle.textContent = "催眠フィールド";
+              // Update gradient colors for Japanese
+              uiTitle.style.background =
+                "linear-gradient(45deg, #ff00cc, #cc00ff, #9900ff)";
+            }
+            if (uiDescription)
+              uiDescription.textContent =
+                "グライドして波を傾ける。クリックまたはタップで優しい波紋を。すべての設定を調整、ランダム化、またはエクスポート。";
+          } else {
+            if (uiTitle) {
+              uiTitle.textContent = "Hypnotic Field";
+              // Reset gradient colors for English
+              uiTitle.style.background =
+                "linear-gradient(45deg, #00ffcc, #00ccff, #0099ff)";
+            }
+            if (uiDescription)
+              uiDescription.textContent =
+                "Glide to tilt the waves. Click or tap for gentle ripples. Tune, randomize, or export every setting.";
           }
-          if (uiDescription) uiDescription.textContent = 'グライドして波を傾ける。クリックまたはタップで優しい波紋を。すべての設定を調整、ランダム化、またはエクスポート。';
-        } else {
-          if (uiTitle) {
-            uiTitle.textContent = 'Hypnotic Field';
-            // Reset gradient colors for English
-            uiTitle.style.background = 'linear-gradient(45deg, #00ffcc, #00ccff, #0099ff)';
+        }
+
+        // Update menu items
+        const menuItems = [
+          {
+            selector: '[data-section="about"] button',
+            en: "About",
+            ja: "について",
+          },
+          {
+            selector: '[data-section="projects"] button',
+            en: "Projects",
+            ja: "プロジェクト",
+          },
+          {
+            selector: '[data-section="words"] button',
+            en: "Content",
+            ja: "コンテンツ",
+          },
+          {
+            selector: '[data-section="sounds"] button',
+            en: "Sounds",
+            ja: "サウンド",
+          },
+          { selector: '[data-section="art"] button', en: "Art", ja: "アート" },
+        ];
+
+        menuItems.forEach((item) => {
+          const button = document.querySelector(item.selector);
+          if (button) {
+            button.textContent = item[language];
           }
-          if (uiDescription) uiDescription.textContent = 'Glide to tilt the waves. Click or tap for gentle ripples. Tune, randomize, or export every setting.';
-        }
+        });
       }
-      
-      // Update menu items
-      const menuItems = [
-        { selector: '[data-section="about"] button', en: 'About', ja: 'について' },
-        { selector: '[data-section="projects"] button', en: 'Projects', ja: 'プロジェクト' },
-        { selector: '[data-section="words"] button', en: 'Content', ja: 'コンテンツ' },
-        { selector: '[data-section="sounds"] button', en: 'Sounds', ja: 'サウンド' },
-        { selector: '[data-section="art"] button', en: 'Art', ja: 'アート' }
-      ];
-      
-      menuItems.forEach(item => {
-        const button = document.querySelector(item.selector);
-        if (button) {
-          button.textContent = item[language];
-        }
+
+      // Initialize language on page load
+      document.addEventListener("DOMContentLoaded", () => {
+        const savedLang = localStorage.getItem("index-page-language") || "en";
+        updateLanguageUI(savedLang);
       });
-    }
 
-    // Initialize language on page load
-    document.addEventListener('DOMContentLoaded', () => {
-      const savedLang = localStorage.getItem('index-page-language') || 'en';
-      updateLanguageUI(savedLang);
-    });
+      const SEPARATION = 90;
+      const AMOUNTX = 70;
+      const AMOUNTY = 70;
 
-    const SEPARATION = 90;
-    const AMOUNTX = 70;
-    const AMOUNTY = 70;
+      const halfGridX = ((AMOUNTX - 1) * SEPARATION) / 2;
+      const halfGridY = ((AMOUNTY - 1) * SEPARATION) / 2;
 
-    const halfGridX = ((AMOUNTX - 1) * SEPARATION) / 2;
-    const halfGridY = ((AMOUNTY - 1) * SEPARATION) / 2;
+      let container;
+      let camera;
+      let scene;
+      let renderer;
+      let stats;
+      let gui;
+      let particles;
 
-    let container;
-    let camera;
-    let scene;
-    let renderer;
-    let stats;
-    let gui;
-    let particles;
+      const clock = new THREE.Clock();
+      let elapsedTime = 0;
+      let animationTime = 0;
+      let autoAngle = 0;
 
-    const clock = new THREE.Clock();
-    let elapsedTime = 0;
-    let animationTime = 0;
-    let autoAngle = 0;
+      const pointer = {
+        x: 0,
+        y: 0,
+        worldX: 0,
+        worldZ: 0,
+        energy: 0,
+      };
 
-    const pointer = {
-      x: 0,
-      y: 0,
-      worldX: 0,
-      worldZ: 0,
-      energy: 0
-    };
+      const ripples = [];
 
-    const ripples = [];
+      const uniforms = {
+        opacity: { value: 0.85 },
+        pointMultiplier: { value: 28 },
+      };
 
-    const uniforms = {
-      opacity: { value: 0.85 },
-      pointMultiplier: { value: 28 }
-    };
+      const settings = {
+        amplitude: 70,
+        waveXFrequency: 0.18,
+        waveYFrequency: 0.24,
+        swirlStrength: 1.1,
+        swirlFrequency: 0.0055,
+        animationSpeed: 0.36,
+        pointSize: 28,
+        mouseInfluence: 0.0035,
+        rippleStrength: 45,
+        rippleSpeed: 300,
+        rippleWidth: 22,
+        rippleDecay: 0.0018,
+        opacity: 0.85,
+        autoRotate: true,
+        showStats: false,
+        brightness: 0.5,
+        contrast: 2.5,
+        fogDensity: 0.0015,
+      };
 
-    const settings = {
-      amplitude: 70,
-      waveXFrequency: 0.18,
-      waveYFrequency: 0.24,
-      swirlStrength: 1.1,
-      swirlFrequency: 0.0055,
-      animationSpeed: 0.36,
-      pointSize: 28,
-      mouseInfluence: 0.0035,
-      rippleStrength: 45,
-      rippleSpeed: 300,
-      rippleWidth: 22,
-      rippleDecay: 0.0018,
-      opacity: 0.85,
-      autoRotate: true,
-      showStats: false,
-      brightness: 0.5,
-      contrast: 2.5,
-      fogDensity: 0.0015
-    };
+      const controllers = {};
+      const fixedStates = {};
+      const defaultLockedKeys = new Set([
+        "opacity",
+        "pointSize",
+        "brightness",
+        "contrast",
+        "fogDensity",
+      ]);
 
-    const controllers = {};
-    const fixedStates = {};
-    const defaultLockedKeys = new Set(["opacity", "pointSize", "brightness", "contrast", "fogDensity"]);
-
-    let retroActiveKey = "about";
-    const retroMenu = {
-      items: [],
-      status: null,
-      content: {
-        about: {
-          title: "About",
-          description:
-            "Jay Winder curates lucid audiovisual experiments, shaping hypnotic interfaces that oscillate between nostalgia and the hyperreal."
+      let retroActiveKey = "about";
+      const retroMenu = {
+        items: [],
+        status: null,
+        content: {
+          about: {
+            title: "About",
+            description:
+              "Jay Winder curates lucid audiovisual experiments, shaping hypnotttic interfaces that oscillate between nostalgia and the hyperreal.",
+          },
+          projects: {
+            title: "Projects",
+            description:
+              "Highlights include kinetic WebGL fields, performance-driven installations, and tactile controls for curious collaborators.",
+          },
+          words: {
+            title: "Words",
+            description:
+              "Dispatches chart process notes, essays on spatial computing, and glossaries for future signal-bearers.",
+          },
+          sounds: {
+            title: "Sounds",
+            description:
+              "A rotating archive of ambient loops, chromatic drones, and responsive audio sketches tuned for late-night wanderers.",
+          },
+          art: {
+            title: "Art",
+            description:
+              "Dot field studies and shader sketches documenting how the field bends through every mode.",
+          },
         },
-        projects: {
-          title: "Projects",
-          description:
-            "Highlights include kinetic WebGL fields, performance-driven installations, and tactile controls for curious collaborators."
-        },
-        words: {
-          title: "Words",
-          description:
-            "Dispatches chart process notes, essays on spatial computing, and glossaries for future signal-bearers."
-        },
-        sounds: {
-          title: "Sounds",
-          description:
-            "A rotating archive of ambient loops, chromatic drones, and responsive audio sketches tuned for late-night wanderers."
-        },
-        art: {
-          title: "Art",
-          description:
-            "Dot field studies and shader sketches documenting how the field bends through every mode."
+      };
+
+      init();
+      animate();
+
+      function init() {
+        container = document.querySelector(".scene-container");
+
+        camera = new THREE.PerspectiveCamera(
+          58,
+          window.innerWidth / window.innerHeight,
+          1,
+          5000
+        );
+        camera.position.set(0, 380, 1500);
+
+        scene = new THREE.Scene();
+        const backgroundColor = new THREE.Color(0x050505);
+        scene.background = backgroundColor;
+        scene.fog = new THREE.FogExp2(backgroundColor, settings.fogDensity);
+
+        const numParticles = AMOUNTX * AMOUNTY;
+        const positions = new Float32Array(numParticles * 3);
+        const scales = new Float32Array(numParticles);
+        const colors = new Float32Array(numParticles * 3);
+
+        let i = 0;
+        let j = 0;
+
+        for (let ix = 0; ix < AMOUNTX; ix++) {
+          for (let iy = 0; iy < AMOUNTY; iy++) {
+            positions[i] = ix * SEPARATION - halfGridX;
+            positions[i + 1] = 0;
+            positions[i + 2] = iy * SEPARATION - halfGridY;
+
+            scales[j] = 1;
+
+            colors[j * 3] = 1;
+            colors[j * 3 + 1] = 1;
+            colors[j * 3 + 2] = 1;
+
+            i += 3;
+            j++;
+          }
         }
-      }
-    };
 
-    init();
-    animate();
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute(
+          "position",
+          new THREE.BufferAttribute(positions, 3)
+        );
+        geometry.setAttribute("scale", new THREE.BufferAttribute(scales, 1));
+        geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
 
-    function init() {
-      container = document.querySelector(".scene-container");
-
-      camera = new THREE.PerspectiveCamera(58, window.innerWidth / window.innerHeight, 1, 5000);
-      camera.position.set(0, 380, 1500);
-
-      scene = new THREE.Scene();
-      const backgroundColor = new THREE.Color(0x050505);
-      scene.background = backgroundColor;
-      scene.fog = new THREE.FogExp2(backgroundColor, settings.fogDensity);
-
-      const numParticles = AMOUNTX * AMOUNTY;
-      const positions = new Float32Array(numParticles * 3);
-      const scales = new Float32Array(numParticles);
-      const colors = new Float32Array(numParticles * 3);
-
-      let i = 0;
-      let j = 0;
-
-      for (let ix = 0; ix < AMOUNTX; ix++) {
-        for (let iy = 0; iy < AMOUNTY; iy++) {
-          positions[i] = ix * SEPARATION - halfGridX;
-          positions[i + 1] = 0;
-          positions[i + 2] = iy * SEPARATION - halfGridY;
-
-          scales[j] = 1;
-
-          colors[j * 3] = 1;
-          colors[j * 3 + 1] = 1;
-          colors[j * 3 + 2] = 1;
-
-          i += 3;
-          j++;
-        }
-      }
-
-      const geometry = new THREE.BufferGeometry();
-      geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-      geometry.setAttribute("scale", new THREE.BufferAttribute(scales, 1));
-      geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
-
-      const material = new THREE.ShaderMaterial({
-        uniforms,
-        vertexShader: /* glsl */ `
+        const material = new THREE.ShaderMaterial({
+          uniforms,
+          vertexShader: /* glsl */ `
           attribute float scale;
           attribute vec3 color;
           varying vec3 vColor;
@@ -1026,7 +1167,7 @@
             gl_Position = projectionMatrix * mvPosition;
           }
         `,
-        fragmentShader: /* glsl */ `
+          fragmentShader: /* glsl */ `
           varying vec3 vColor;
           uniform float opacity;
 
@@ -1038,541 +1179,632 @@
             gl_FragColor = vec4(vColor, falloff * opacity);
           }
         `,
-        transparent: true,
-        depthWrite: false,
-        blending: THREE.AdditiveBlending
-      });
+          transparent: true,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending,
+        });
 
-      particles = new THREE.Points(geometry, material);
-      particles.frustumCulled = false;
-      scene.add(particles);
+        particles = new THREE.Points(geometry, material);
+        particles.frustumCulled = false;
+        scene.add(particles);
 
-      renderer = new THREE.WebGLRenderer({ antialias: true });
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.outputColorSpace = THREE.SRGBColorSpace;
-      renderer.toneMapping = THREE.ReinhardToneMapping;
-      container.appendChild(renderer.domElement);
+        renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.outputColorSpace = THREE.SRGBColorSpace;
+        renderer.toneMapping = THREE.ReinhardToneMapping;
+        container.appendChild(renderer.domElement);
 
-      stats = new Stats();
-      stats.dom.style.display = "none";
-      container.appendChild(stats.dom);
+        stats = new Stats();
+        stats.dom.style.display = "none";
+        container.appendChild(stats.dom);
 
-      container.style.touchAction = "none";
-      container.addEventListener("pointermove", onPointerMove);
-      container.addEventListener("pointerdown", onPointerDown);
-      container.addEventListener("pointerleave", onPointerLeave);
+        container.style.touchAction = "none";
+        container.addEventListener("pointermove", onPointerMove);
+        container.addEventListener("pointerdown", onPointerDown);
+        container.addEventListener("pointerleave", onPointerLeave);
 
-      window.addEventListener("resize", onWindowResize);
+        window.addEventListener("resize", onWindowResize);
 
-      buildGui();
-      initRetroMenu();
-    }
-
-    function registerController(key, controller) {
-      controllers[key] = controller;
-      if (!(key in fixedStates)) {
-        fixedStates[key] = defaultLockedKeys.has(key);
+        buildGui();
+        initRetroMenu();
       }
-      Promise.resolve().then(() => attachFixedToggle(controller, key));
-      return controller;
-    }
 
-    function attachFixedToggle(controller, key) {
-      const row = controller?.domElement;
-      if (!row || row.querySelector(".fixed-toggle")) return;
-      row.classList.add("controller-with-fixed");
-
-      const toggle = document.createElement("label");
-      toggle.className = "fixed-toggle";
-
-      const checkbox = document.createElement("input");
-      checkbox.type = "checkbox";
-      checkbox.checked = fixedStates[key];
-      checkbox.addEventListener("change", () => {
-        fixedStates[key] = checkbox.checked;
-        row.classList.toggle("is-locked", checkbox.checked);
-      });
-
-      const text = document.createElement("span");
-      text.textContent = "Fixed";
-
-      toggle.appendChild(checkbox);
-      toggle.appendChild(text);
-      row.appendChild(toggle);
-
-      if (checkbox.checked) {
-        row.classList.add("is-locked");
+      function registerController(key, controller) {
+        controllers[key] = controller;
+        if (!(key in fixedStates)) {
+          fixedStates[key] = defaultLockedKeys.has(key);
+        }
+        Promise.resolve().then(() => attachFixedToggle(controller, key));
+        return controller;
       }
-    }
 
-    function buildGui() {
-      gui = new GUI({ title: "Field Controls" });
+      function attachFixedToggle(controller, key) {
+        const row = controller?.domElement;
+        if (!row || row.querySelector(".fixed-toggle")) return;
+        row.classList.add("controller-with-fixed");
 
-      const waveFolder = gui.addFolder("Waves");
-      registerController("amplitude", waveFolder.add(settings, "amplitude", 30, 140, 1));
-      registerController(
-        "waveXFrequency",
-        waveFolder.add(settings, "waveXFrequency", 0.05, 0.45, 0.005).name("Frequency X")
-      );
-      registerController(
-        "waveYFrequency",
-        waveFolder.add(settings, "waveYFrequency", 0.05, 0.45, 0.005).name("Frequency Y")
-      );
-      registerController("swirlStrength", waveFolder.add(settings, "swirlStrength", 0, 3, 0.01));
-      registerController(
-        "swirlFrequency",
-        waveFolder.add(settings, "swirlFrequency", 0.001, 0.02, 0.0005).name("Swirl Scale")
-      );
-      registerController(
-        "animationSpeed",
-        waveFolder.add(settings, "animationSpeed", 0.05, 1.2, 0.01).name("Flow Speed")
-      );
+        const toggle = document.createElement("label");
+        toggle.className = "fixed-toggle";
 
-      const toneFolder = gui.addFolder("Tone & Glow");
-      registerController(
-        "opacity",
-        toneFolder.add(settings, "opacity", 0.3, 1, 0.01).name("Glow").onChange((value) => {
-          uniforms.opacity.value = value;
-        })
-      );
-      registerController(
-        "pointSize",
-        toneFolder.add(settings, "pointSize", 6, 32, 0.5).name("Point Scale").onChange((value) => {
-          uniforms.pointMultiplier.value = value;
-        })
-      );
-      registerController("brightness", toneFolder.add(settings, "brightness", 0.1, 0.6, 0.01));
-      registerController("contrast", toneFolder.add(settings, "contrast", 0.6, 2.5, 0.05));
-      registerController(
-        "fogDensity",
-        toneFolder.add(settings, "fogDensity", 0.0002, 0.003, 0.0001).name("Fog").onChange((value) => {
-          scene.fog.density = value;
-        })
-      );
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = fixedStates[key];
+        checkbox.addEventListener("change", () => {
+          fixedStates[key] = checkbox.checked;
+          row.classList.toggle("is-locked", checkbox.checked);
+        });
 
-      const interactionFolder = gui.addFolder("Interaction");
-      registerController(
-        "mouseInfluence",
-        interactionFolder.add(settings, "mouseInfluence", 0.001, 0.02, 0.0005).name("Pointer Warp")
-      );
-      registerController(
-        "rippleStrength",
-        interactionFolder.add(settings, "rippleStrength", 10, 120, 1).name("Ripple Strength")
-      );
-      registerController(
-        "rippleSpeed",
-        interactionFolder.add(settings, "rippleSpeed", 120, 520, 5).name("Ripple Speed")
-      );
-      registerController(
-        "rippleWidth",
-        interactionFolder.add(settings, "rippleWidth", 8, 40, 0.1).name("Ripple Width")
-      );
-      registerController(
-        "rippleDecay",
-        interactionFolder.add(settings, "rippleDecay", 0.0005, 0.01, 0.0001).name("Ripple Fade")
-      );
-      registerController("autoRotate", interactionFolder.add(settings, "autoRotate"));
-      registerController(
-        "showStats",
-        interactionFolder.add(settings, "showStats").name("Show Stats").onChange((value) => {
-          stats.dom.style.display = value ? "block" : "none";
-        })
-      );
+        const text = document.createElement("span");
+        text.textContent = "Fixed";
 
-      const actions = {
-        randomize: () => {
-          const ranges = {
-            amplitude: [30, 140],
-            waveXFrequency: [0.05, 0.45],
-            waveYFrequency: [0.05, 0.45],
-            swirlStrength: [0, 3],
-            swirlFrequency: [0.001, 0.02],
-            animationSpeed: [0.05, 1.2],
-            opacity: [0.35, 0.95],
-            pointSize: [8, 30],
-            brightness: [0.15, 0.55],
-            contrast: [0.8, 2.5],
-            fogDensity: [0.00025, 0.0022],
-            mouseInfluence: [0.0015, 0.015],
-            rippleStrength: [15, 110],
-            rippleSpeed: [140, 480],
-            rippleWidth: [10, 32],
-            rippleDecay: [0.0009, 0.006],
-            autoRotate: [0, 1],
-            showStats: [0, 1]
-          };
+        toggle.appendChild(checkbox);
+        toggle.appendChild(text);
+        row.appendChild(toggle);
 
-          Object.entries(ranges).forEach(([key, [min, max]]) => {
-            if (fixedStates[key]) return;
-            const value = key === "autoRotate" || key === "showStats"
-              ? Math.random() > 0.5
-              : min + Math.random() * (max - min);
-            controllers[key]?.setValue(value);
-          });
-        },
-        copySettings: async () => {
-          const payload = getExportPayload();
-          const serialized = JSON.stringify(payload, null, 2);
-          try {
-            if (navigator.clipboard) {
-              await navigator.clipboard.writeText(serialized);
-              flashMessage("Settings copied to clipboard");
-              return;
+        if (checkbox.checked) {
+          row.classList.add("is-locked");
+        }
+      }
+
+      function buildGui() {
+        gui = new GUI({ title: "Field Controls" });
+
+        const waveFolder = gui.addFolder("Waves");
+        registerController(
+          "amplitude",
+          waveFolder.add(settings, "amplitude", 30, 140, 1)
+        );
+        registerController(
+          "waveXFrequency",
+          waveFolder
+            .add(settings, "waveXFrequency", 0.05, 0.45, 0.005)
+            .name("Frequency X")
+        );
+        registerController(
+          "waveYFrequency",
+          waveFolder
+            .add(settings, "waveYFrequency", 0.05, 0.45, 0.005)
+            .name("Frequency Y")
+        );
+        registerController(
+          "swirlStrength",
+          waveFolder.add(settings, "swirlStrength", 0, 3, 0.01)
+        );
+        registerController(
+          "swirlFrequency",
+          waveFolder
+            .add(settings, "swirlFrequency", 0.001, 0.02, 0.0005)
+            .name("Swirl Scale")
+        );
+        registerController(
+          "animationSpeed",
+          waveFolder
+            .add(settings, "animationSpeed", 0.05, 1.2, 0.01)
+            .name("Flow Speed")
+        );
+
+        const toneFolder = gui.addFolder("Tone & Glow");
+        registerController(
+          "opacity",
+          toneFolder
+            .add(settings, "opacity", 0.3, 1, 0.01)
+            .name("Glow")
+            .onChange((value) => {
+              uniforms.opacity.value = value;
+            })
+        );
+        registerController(
+          "pointSize",
+          toneFolder
+            .add(settings, "pointSize", 6, 32, 0.5)
+            .name("Point Scale")
+            .onChange((value) => {
+              uniforms.pointMultiplier.value = value;
+            })
+        );
+        registerController(
+          "brightness",
+          toneFolder.add(settings, "brightness", 0.1, 0.6, 0.01)
+        );
+        registerController(
+          "contrast",
+          toneFolder.add(settings, "contrast", 0.6, 2.5, 0.05)
+        );
+        registerController(
+          "fogDensity",
+          toneFolder
+            .add(settings, "fogDensity", 0.0002, 0.003, 0.0001)
+            .name("Fog")
+            .onChange((value) => {
+              scene.fog.density = value;
+            })
+        );
+
+        const interactionFolder = gui.addFolder("Interaction");
+        registerController(
+          "mouseInfluence",
+          interactionFolder
+            .add(settings, "mouseInfluence", 0.001, 0.02, 0.0005)
+            .name("Pointer Warp")
+        );
+        registerController(
+          "rippleStrength",
+          interactionFolder
+            .add(settings, "rippleStrength", 10, 120, 1)
+            .name("Ripple Strength")
+        );
+        registerController(
+          "rippleSpeed",
+          interactionFolder
+            .add(settings, "rippleSpeed", 120, 520, 5)
+            .name("Ripple Speed")
+        );
+        registerController(
+          "rippleWidth",
+          interactionFolder
+            .add(settings, "rippleWidth", 8, 40, 0.1)
+            .name("Ripple Width")
+        );
+        registerController(
+          "rippleDecay",
+          interactionFolder
+            .add(settings, "rippleDecay", 0.0005, 0.01, 0.0001)
+            .name("Ripple Fade")
+        );
+        registerController(
+          "autoRotate",
+          interactionFolder.add(settings, "autoRotate")
+        );
+        registerController(
+          "showStats",
+          interactionFolder
+            .add(settings, "showStats")
+            .name("Show Stats")
+            .onChange((value) => {
+              stats.dom.style.display = value ? "block" : "none";
+            })
+        );
+
+        const actions = {
+          randomize: () => {
+            const ranges = {
+              amplitude: [30, 140],
+              waveXFrequency: [0.05, 0.45],
+              waveYFrequency: [0.05, 0.45],
+              swirlStrength: [0, 3],
+              swirlFrequency: [0.001, 0.02],
+              animationSpeed: [0.05, 1.2],
+              opacity: [0.35, 0.95],
+              pointSize: [8, 30],
+              brightness: [0.15, 0.55],
+              contrast: [0.8, 2.5],
+              fogDensity: [0.00025, 0.0022],
+              mouseInfluence: [0.0015, 0.015],
+              rippleStrength: [15, 110],
+              rippleSpeed: [140, 480],
+              rippleWidth: [10, 32],
+              rippleDecay: [0.0009, 0.006],
+              autoRotate: [0, 1],
+              showStats: [0, 1],
+            };
+
+            Object.entries(ranges).forEach(([key, [min, max]]) => {
+              if (fixedStates[key]) return;
+              const value =
+                key === "autoRotate" || key === "showStats"
+                  ? Math.random() > 0.5
+                  : min + Math.random() * (max - min);
+              controllers[key]?.setValue(value);
+            });
+          },
+          copySettings: async () => {
+            const payload = getExportPayload();
+            const serialized = JSON.stringify(payload, null, 2);
+            try {
+              if (navigator.clipboard) {
+                await navigator.clipboard.writeText(serialized);
+                flashMessage("Settings copied to clipboard");
+                return;
+              }
+            } catch (error) {
+              console.warn("Clipboard copy failed", error);
             }
-          } catch (error) {
-            console.warn("Clipboard copy failed", error);
-          }
-          downloadText(serialized, "field-settings.json");
-        },
-        downloadSettings: () => {
-          const payload = getExportPayload();
-          const serialized = JSON.stringify(payload, null, 2);
-          downloadText(serialized, "field-settings.json");
+            downloadText(serialized, "field-settings.json");
+          },
+          downloadSettings: () => {
+            const payload = getExportPayload();
+            const serialized = JSON.stringify(payload, null, 2);
+            downloadText(serialized, "field-settings.json");
+          },
+        };
+
+        gui.add(actions, "randomize").name("Randomize");
+        gui.add(actions, "copySettings").name("Copy Settings");
+        gui.add(actions, "downloadSettings").name("Download Settings");
+      }
+
+      function initRetroMenu() {
+        const menuRoot = document.querySelector(".retro-menu");
+        retroMenu.status = menuRoot.querySelector(".retro-menu__status");
+        retroMenu.items = Array.from(
+          menuRoot.querySelectorAll(".retro-menu__item")
+        );
+
+        // Set up menu item event listeners without disrupting animations
+        retroMenu.items.forEach((item, index) => {
+          const key = item.dataset.section;
+          const button = item.querySelector("button");
+
+          button.addEventListener("click", () => handleRetroMenuSelection(key));
+          button.addEventListener("mouseenter", () =>
+            previewRetroMenuStatus(key)
+          );
+          button.addEventListener("focus", () => previewRetroMenuStatus(key));
+          button.addEventListener("mouseleave", () => restoreRetroMenuStatus());
+          button.addEventListener("blur", () => restoreRetroMenuStatus());
+        });
+
+        // Delay initial selection until after animations complete
+        // Art animation completes at 460ms + 520ms = 980ms
+        setTimeout(() => {
+          handleRetroMenuSelection("about");
+        }, 1000);
+      }
+
+      function handleRetroMenuSelection(key) {
+        retroActiveKey = key;
+        retroMenu.items.forEach((item) => {
+          item.classList.toggle("is-active", item.dataset.section === key);
+        });
+        updateRetroMenuStatus(key, true);
+        nudgeFieldForMenu(key);
+      }
+
+      function previewRetroMenuStatus(key) {
+        if (key === retroActiveKey) return;
+        updateRetroMenuStatus(key, false, true);
+      }
+
+      function restoreRetroMenuStatus() {
+        updateRetroMenuStatus(retroActiveKey, true);
+      }
+
+      function updateRetroMenuStatus(key, persistent = false, preview = false) {
+        const payload = retroMenu.content[key];
+        if (!payload || !retroMenu.status) return;
+        retroMenu.status.innerHTML = `<strong>${payload.title}</strong><em>${
+          payload.description
+        }</em><span>mode ▸ ${preview ? "preview" : "active"}</span>`;
+        if (persistent) {
+          retroMenu.status.dataset.active = key;
         }
-      };
-
-      gui.add(actions, "randomize").name("Randomize");
-      gui.add(actions, "copySettings").name("Copy Settings");
-      gui.add(actions, "downloadSettings").name("Download Settings");
-    }
-
-    function initRetroMenu() {
-      const menuRoot = document.querySelector(".retro-menu");
-      retroMenu.status = menuRoot.querySelector(".retro-menu__status");
-      retroMenu.items = Array.from(menuRoot.querySelectorAll(".retro-menu__item"));
-
-      // Set up menu item event listeners without disrupting animations
-      retroMenu.items.forEach((item, index) => {
-        const key = item.dataset.section;
-        const button = item.querySelector("button");
-        
-        button.addEventListener("click", () => handleRetroMenuSelection(key));
-        button.addEventListener("mouseenter", () => previewRetroMenuStatus(key));
-        button.addEventListener("focus", () => previewRetroMenuStatus(key));
-        button.addEventListener("mouseleave", () => restoreRetroMenuStatus());
-        button.addEventListener("blur", () => restoreRetroMenuStatus());
-      });
-
-      // Delay initial selection until after animations complete
-      // Art animation completes at 460ms + 520ms = 980ms
-      setTimeout(() => {
-        handleRetroMenuSelection("about");
-      }, 1000);
-    }
-
-    function handleRetroMenuSelection(key) {
-      retroActiveKey = key;
-      retroMenu.items.forEach((item) => {
-        item.classList.toggle("is-active", item.dataset.section === key);
-      });
-      updateRetroMenuStatus(key, true);
-      nudgeFieldForMenu(key);
-    }
-
-    function previewRetroMenuStatus(key) {
-      if (key === retroActiveKey) return;
-      updateRetroMenuStatus(key, false, true);
-    }
-
-    function restoreRetroMenuStatus() {
-      updateRetroMenuStatus(retroActiveKey, true);
-    }
-
-    function updateRetroMenuStatus(key, persistent = false, preview = false) {
-      const payload = retroMenu.content[key];
-      if (!payload || !retroMenu.status) return;
-      retroMenu.status.innerHTML = `<strong>${payload.title}</strong><em>${payload.description}</em><span>mode ▸ ${preview ? "preview" : "active"}</span>`;
-      if (persistent) {
-        retroMenu.status.dataset.active = key;
       }
-    }
 
-    function nudgeFieldForMenu(key) {
-      const influence = {
-        about: () => {
-          applyMenuValue("mouseInfluence", 0.0035);
-          applyMenuValue("animationSpeed", 0.36);
-          applyMenuValue("brightness", 0.5);
-        },
-        projects: () => {
-          applyMenuValue("animationSpeed", 0.48);
-          applyMenuValue("swirlStrength", 1.6);
-          applyMenuValue("pointSize", 26);
-        },
-        words: () => {
-          applyMenuValue("animationSpeed", 0.24);
-          applyMenuValue("rippleWidth", 28);
-          applyMenuValue("contrast", 2.1);
-        },
-        sounds: () => {
-          applyMenuValue("rippleStrength", 58);
-          applyMenuValue("rippleDecay", 0.0012);
-          applyMenuValue("mouseInfluence", 0.0045);
-        },
-        art: () => {
-          applyMenuValue("swirlStrength", 2.25);
-          applyMenuValue("waveXFrequency", 0.34);
-          applyMenuValue("rippleStrength", 72);
+      function nudgeFieldForMenu(key) {
+        const influence = {
+          about: () => {
+            applyMenuValue("mouseInfluence", 0.0035);
+            applyMenuValue("animationSpeed", 0.36);
+            applyMenuValue("brightness", 0.5);
+          },
+          projects: () => {
+            applyMenuValue("animationSpeed", 0.48);
+            applyMenuValue("swirlStrength", 1.6);
+            applyMenuValue("pointSize", 26);
+          },
+          words: () => {
+            applyMenuValue("animationSpeed", 0.24);
+            applyMenuValue("rippleWidth", 28);
+            applyMenuValue("contrast", 2.1);
+          },
+          sounds: () => {
+            applyMenuValue("rippleStrength", 58);
+            applyMenuValue("rippleDecay", 0.0012);
+            applyMenuValue("mouseInfluence", 0.0045);
+          },
+          art: () => {
+            applyMenuValue("swirlStrength", 2.25);
+            applyMenuValue("waveXFrequency", 0.34);
+            applyMenuValue("rippleStrength", 72);
+          },
+        };
+
+        influence[key]?.();
+      }
+
+      function applyMenuValue(key, value) {
+        const controller = controllers[key];
+        if (fixedStates[key]) {
+          controller?.updateDisplay();
+          return false;
         }
-      };
-
-      influence[key]?.();
-    }
-
-    function applyMenuValue(key, value) {
-      const controller = controllers[key];
-      if (fixedStates[key]) {
-        controller?.updateDisplay();
-        return false;
-      }
-      if (controller) {
-        controller.setValue(value);
-      } else {
-        settings[key] = value;
-      }
-      return true;
-    }
-
-    function getSettingsSnapshot() {
-      const {
-        amplitude,
-        waveXFrequency,
-        waveYFrequency,
-        swirlStrength,
-        swirlFrequency,
-        animationSpeed,
-        pointSize,
-        mouseInfluence,
-        rippleStrength,
-        rippleSpeed,
-        rippleWidth,
-        rippleDecay,
-        opacity,
-        autoRotate,
-        showStats,
-        brightness,
-        contrast,
-        fogDensity
-      } = settings;
-      return {
-        amplitude,
-        waveXFrequency,
-        waveYFrequency,
-        swirlStrength,
-        swirlFrequency,
-        animationSpeed,
-        pointSize,
-        mouseInfluence,
-        rippleStrength,
-        rippleSpeed,
-        rippleWidth,
-        rippleDecay,
-        opacity,
-        autoRotate,
-        showStats,
-        brightness,
-        contrast,
-        fogDensity
-      };
-    }
-
-    function getFixedSnapshot() {
-      return Object.keys(controllers).reduce((acc, key) => {
-        acc[key] = !!fixedStates[key];
-        return acc;
-      }, {});
-    }
-
-    function getExportPayload() {
-      return {
-        settings: getSettingsSnapshot(),
-        fixed: getFixedSnapshot()
-      };
-    }
-
-    let messageTimeout;
-    function flashMessage(text) {
-      clearTimeout(messageTimeout);
-      let bubble = document.querySelector(".clipboard-bubble");
-      if (!bubble) {
-        bubble = document.createElement("div");
-        bubble.className = "clipboard-bubble";
-        bubble.style.position = "fixed";
-        bubble.style.left = "50%";
-        bubble.style.bottom = "60px";
-        bubble.style.transform = "translateX(-50%)";
-        bubble.style.padding = "10px 16px";
-        bubble.style.borderRadius = "999px";
-        bubble.style.background = "rgba(20, 20, 20, 0.82)";
-        bubble.style.color = "#f5f5f5";
-        bubble.style.fontSize = "0.75rem";
-        bubble.style.letterSpacing = "0.08em";
-        bubble.style.textTransform = "uppercase";
-        bubble.style.pointerEvents = "none";
-        document.body.appendChild(bubble);
-      }
-      bubble.textContent = text;
-      bubble.style.opacity = "1";
-      messageTimeout = setTimeout(() => {
-        bubble.style.opacity = "0";
-      }, 1600);
-    }
-
-    function downloadText(text, filename) {
-      const blob = new Blob([text], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    }
-
-    function onWindowResize() {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    }
-
-    function onPointerMove(event) {
-      if (!event.isPrimary) return;
-
-      const normalizedX = (event.clientX / window.innerWidth) * 2 - 1;
-      const normalizedY = (event.clientY / window.innerHeight) * 2 - 1;
-
-      const deltaX = normalizedX - pointer.x;
-      const deltaY = normalizedY - pointer.y;
-
-      pointer.x = normalizedX;
-      pointer.y = normalizedY;
-      pointer.worldX = pointer.x * halfGridX;
-      pointer.worldZ = pointer.y * halfGridY;
-      pointer.energy = Math.min(pointer.energy + (Math.abs(deltaX) + Math.abs(deltaY)) * 0.35, 1.2);
-    }
-
-    function onPointerDown(event) {
-      if (!event.isPrimary) return;
-
-      const rect = renderer.domElement.getBoundingClientRect();
-      const normX = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-      const normY = ((event.clientY - rect.top) / rect.height) * 2 - 1;
-
-      const rippleX = normX * halfGridX;
-      const rippleZ = normY * halfGridY;
-
-      ripples.push({ x: rippleX, z: rippleZ, start: elapsedTime });
-      if (ripples.length > 8) {
-        ripples.shift();
+        if (controller) {
+          controller.setValue(value);
+        } else {
+          settings[key] = value;
+        }
+        return true;
       }
 
-      pointer.energy = Math.min(pointer.energy + 0.5, 1.4);
-    }
-
-    function onPointerLeave() {
-      pointer.x = 0;
-      pointer.y = 0;
-      pointer.worldX = 0;
-      pointer.worldZ = 0;
-    }
-
-    function animate() {
-      requestAnimationFrame(animate);
-      render();
-    }
-
-    function render() {
-      const delta = clock.getDelta();
-      elapsedTime += delta;
-      animationTime += delta * settings.animationSpeed;
-
-      if (settings.autoRotate) {
-        autoAngle += delta * 0.1;
+      function getSettingsSnapshot() {
+        const {
+          amplitude,
+          waveXFrequency,
+          waveYFrequency,
+          swirlStrength,
+          swirlFrequency,
+          animationSpeed,
+          pointSize,
+          mouseInfluence,
+          rippleStrength,
+          rippleSpeed,
+          rippleWidth,
+          rippleDecay,
+          opacity,
+          autoRotate,
+          showStats,
+          brightness,
+          contrast,
+          fogDensity,
+        } = settings;
+        return {
+          amplitude,
+          waveXFrequency,
+          waveYFrequency,
+          swirlStrength,
+          swirlFrequency,
+          animationSpeed,
+          pointSize,
+          mouseInfluence,
+          rippleStrength,
+          rippleSpeed,
+          rippleWidth,
+          rippleDecay,
+          opacity,
+          autoRotate,
+          showStats,
+          brightness,
+          contrast,
+          fogDensity,
+        };
       }
 
-      pointer.energy = Math.max(pointer.energy * 0.92 - 0.002, 0);
+      function getFixedSnapshot() {
+        return Object.keys(controllers).reduce((acc, key) => {
+          acc[key] = !!fixedStates[key];
+          return acc;
+        }, {});
+      }
 
-      const positions = particles.geometry.attributes.position.array;
-      const scales = particles.geometry.attributes.scale.array;
-      const colors = particles.geometry.attributes.color.array;
+      function getExportPayload() {
+        return {
+          settings: getSettingsSnapshot(),
+          fixed: getFixedSnapshot(),
+        };
+      }
 
-      let i = 0;
-      let j = 0;
+      let messageTimeout;
+      function flashMessage(text) {
+        clearTimeout(messageTimeout);
+        let bubble = document.querySelector(".clipboard-bubble");
+        if (!bubble) {
+          bubble = document.createElement("div");
+          bubble.className = "clipboard-bubble";
+          bubble.style.position = "fixed";
+          bubble.style.left = "50%";
+          bubble.style.bottom = "60px";
+          bubble.style.transform = "translateX(-50%)";
+          bubble.style.padding = "10px 16px";
+          bubble.style.borderRadius = "999px";
+          bubble.style.background = "rgba(20, 20, 20, 0.82)";
+          bubble.style.color = "#f5f5f5";
+          bubble.style.fontSize = "0.75rem";
+          bubble.style.letterSpacing = "0.08em";
+          bubble.style.textTransform = "uppercase";
+          bubble.style.pointerEvents = "none";
+          document.body.appendChild(bubble);
+        }
+        bubble.textContent = text;
+        bubble.style.opacity = "1";
+        messageTimeout = setTimeout(() => {
+          bubble.style.opacity = "0";
+        }, 1600);
+      }
 
-      for (let ix = 0; ix < AMOUNTX; ix++) {
-        for (let iy = 0; iy < AMOUNTY; iy++) {
-          const px = ix * SEPARATION - halfGridX;
-          const pz = iy * SEPARATION - halfGridY;
-          const radial = Math.sqrt(px * px + pz * pz);
+      function downloadText(text, filename) {
+        const blob = new Blob([text], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }
 
-          let height = 0;
-          height += Math.sin(ix * settings.waveXFrequency + animationTime) * settings.amplitude;
-          height += Math.cos(iy * settings.waveYFrequency - animationTime * 1.25) * settings.amplitude * 0.6;
-          height += Math.sin(radial * settings.swirlFrequency - animationTime * 1.6) * settings.swirlStrength * settings.amplitude * 0.4;
+      function onWindowResize() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
 
-          const dxMouse = px - pointer.worldX;
-          const dzMouse = pz - pointer.worldZ;
-          const mouseDist = Math.sqrt(dxMouse * dxMouse + dzMouse * dzMouse) + 0.0001;
-          const mouseEnvelope = Math.exp(-mouseDist * settings.mouseInfluence * 0.55);
-          height += Math.cos(mouseDist * settings.mouseInfluence * 14 - animationTime * 2.4) * pointer.energy * settings.amplitude * 0.28 * mouseEnvelope;
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      }
 
-          for (let r = ripples.length - 1; r >= 0; r--) {
-            const ripple = ripples[r];
-            const age = elapsedTime - ripple.start;
-            if (age > 6) {
-              ripples.splice(r, 1);
-              continue;
+      function onPointerMove(event) {
+        if (!event.isPrimary) return;
+
+        const normalizedX = (event.clientX / window.innerWidth) * 2 - 1;
+        const normalizedY = (event.clientY / window.innerHeight) * 2 - 1;
+
+        const deltaX = normalizedX - pointer.x;
+        const deltaY = normalizedY - pointer.y;
+
+        pointer.x = normalizedX;
+        pointer.y = normalizedY;
+        pointer.worldX = pointer.x * halfGridX;
+        pointer.worldZ = pointer.y * halfGridY;
+        pointer.energy = Math.min(
+          pointer.energy + (Math.abs(deltaX) + Math.abs(deltaY)) * 0.35,
+          1.2
+        );
+      }
+
+      function onPointerDown(event) {
+        if (!event.isPrimary) return;
+
+        const rect = renderer.domElement.getBoundingClientRect();
+        const normX = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+        const normY = ((event.clientY - rect.top) / rect.height) * 2 - 1;
+
+        const rippleX = normX * halfGridX;
+        const rippleZ = normY * halfGridY;
+
+        ripples.push({ x: rippleX, z: rippleZ, start: elapsedTime });
+        if (ripples.length > 8) {
+          ripples.shift();
+        }
+
+        pointer.energy = Math.min(pointer.energy + 0.5, 1.4);
+      }
+
+      function onPointerLeave() {
+        pointer.x = 0;
+        pointer.y = 0;
+        pointer.worldX = 0;
+        pointer.worldZ = 0;
+      }
+
+      function animate() {
+        requestAnimationFrame(animate);
+        render();
+      }
+
+      function render() {
+        const delta = clock.getDelta();
+        elapsedTime += delta;
+        animationTime += delta * settings.animationSpeed;
+
+        if (settings.autoRotate) {
+          autoAngle += delta * 0.1;
+        }
+
+        pointer.energy = Math.max(pointer.energy * 0.92 - 0.002, 0);
+
+        const positions = particles.geometry.attributes.position.array;
+        const scales = particles.geometry.attributes.scale.array;
+        const colors = particles.geometry.attributes.color.array;
+
+        let i = 0;
+        let j = 0;
+
+        for (let ix = 0; ix < AMOUNTX; ix++) {
+          for (let iy = 0; iy < AMOUNTY; iy++) {
+            const px = ix * SEPARATION - halfGridX;
+            const pz = iy * SEPARATION - halfGridY;
+            const radial = Math.sqrt(px * px + pz * pz);
+
+            let height = 0;
+            height +=
+              Math.sin(ix * settings.waveXFrequency + animationTime) *
+              settings.amplitude;
+            height +=
+              Math.cos(iy * settings.waveYFrequency - animationTime * 1.25) *
+              settings.amplitude *
+              0.6;
+            height +=
+              Math.sin(radial * settings.swirlFrequency - animationTime * 1.6) *
+              settings.swirlStrength *
+              settings.amplitude *
+              0.4;
+
+            const dxMouse = px - pointer.worldX;
+            const dzMouse = pz - pointer.worldZ;
+            const mouseDist =
+              Math.sqrt(dxMouse * dxMouse + dzMouse * dzMouse) + 0.0001;
+            const mouseEnvelope = Math.exp(
+              -mouseDist * settings.mouseInfluence * 0.55
+            );
+            height +=
+              Math.cos(
+                mouseDist * settings.mouseInfluence * 14 - animationTime * 2.4
+              ) *
+              pointer.energy *
+              settings.amplitude *
+              0.28 *
+              mouseEnvelope;
+
+            for (let r = ripples.length - 1; r >= 0; r--) {
+              const ripple = ripples[r];
+              const age = elapsedTime - ripple.start;
+              if (age > 6) {
+                ripples.splice(r, 1);
+                continue;
+              }
+              const dist =
+                Math.sqrt(
+                  (px - ripple.x) * (px - ripple.x) +
+                    (pz - ripple.z) * (pz - ripple.z)
+                ) + 0.0001;
+              const wavefront = age * settings.rippleSpeed;
+              const envelope =
+                Math.exp(-dist * settings.rippleDecay) * Math.exp(-age * 0.55);
+              height +=
+                Math.sin((dist - wavefront) / settings.rippleWidth) *
+                settings.rippleStrength *
+                0.65 *
+                envelope;
             }
-            const dist = Math.sqrt((px - ripple.x) * (px - ripple.x) + (pz - ripple.z) * (pz - ripple.z)) + 0.0001;
-            const wavefront = age * settings.rippleSpeed;
-            const envelope = Math.exp(-dist * settings.rippleDecay) * Math.exp(-age * 0.55);
-            height += Math.sin((dist - wavefront) / settings.rippleWidth) * settings.rippleStrength * 0.65 * envelope;
+
+            positions[i + 1] = height;
+
+            const heightNormalized = THREE.MathUtils.clamp(
+              0.5 + height * 0.0015,
+              0,
+              1
+            );
+            scales[j] = 0.6 + heightNormalized * 2.1;
+
+            const grayscale = THREE.MathUtils.clamp(
+              settings.brightness + heightNormalized * settings.contrast * 0.65,
+              0,
+              1
+            );
+            const ci = j * 3;
+            colors[ci] = grayscale;
+            colors[ci + 1] = grayscale;
+            colors[ci + 2] = grayscale;
+
+            i += 3;
+            j++;
           }
+        }
 
-          positions[i + 1] = height;
+        particles.geometry.attributes.position.needsUpdate = true;
+        particles.geometry.attributes.scale.needsUpdate = true;
+        particles.geometry.attributes.color.needsUpdate = true;
 
-          const heightNormalized = THREE.MathUtils.clamp(0.5 + height * 0.0015, 0, 1);
-          scales[j] = 0.6 + heightNormalized * 2.1;
+        uniforms.pointMultiplier.value = settings.pointSize;
+        uniforms.opacity.value = settings.opacity;
 
-          const grayscale = THREE.MathUtils.clamp(settings.brightness + heightNormalized * settings.contrast * 0.65, 0, 1);
-          const ci = j * 3;
-          colors[ci] = grayscale;
-          colors[ci + 1] = grayscale;
-          colors[ci + 2] = grayscale;
+        const orbitRadius = 1180;
+        const baseX = Math.cos(autoAngle) * orbitRadius;
+        const baseZ = Math.sin(autoAngle) * orbitRadius * 0.72 + 1350;
+        const targetX = baseX + pointer.x * 240;
+        const targetY = 340 + pointer.y * 190;
+        const targetZ = baseZ + pointer.y * -90;
 
-          i += 3;
-          j++;
+        camera.position.x += (targetX - camera.position.x) * 0.04;
+        camera.position.y += (targetY - camera.position.y) * 0.045;
+        camera.position.z += (targetZ - camera.position.z) * 0.035;
+        camera.lookAt(scene.position);
+
+        renderer.render(scene, camera);
+
+        if (settings.showStats) {
+          stats.update();
         }
       }
-
-      particles.geometry.attributes.position.needsUpdate = true;
-      particles.geometry.attributes.scale.needsUpdate = true;
-      particles.geometry.attributes.color.needsUpdate = true;
-
-      uniforms.pointMultiplier.value = settings.pointSize;
-      uniforms.opacity.value = settings.opacity;
-
-      const orbitRadius = 1180;
-      const baseX = Math.cos(autoAngle) * orbitRadius;
-      const baseZ = Math.sin(autoAngle) * orbitRadius * 0.72 + 1350;
-      const targetX = baseX + pointer.x * 240;
-      const targetY = 340 + pointer.y * 190;
-      const targetZ = baseZ + pointer.y * -90;
-
-      camera.position.x += (targetX - camera.position.x) * 0.04;
-      camera.position.y += (targetY - camera.position.y) * 0.045;
-      camera.position.z += (targetZ - camera.position.z) * 0.035;
-      camera.lookAt(scene.position);
-
-      renderer.render(scene, camera);
-
-      if (settings.showStats) {
-        stats.update();
-      }
-    }
-  </script>
-</body>
+    </script>
+  </body>
 </html>

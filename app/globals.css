@@ -4302,7 +4302,7 @@ a {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   letter-spacing: 0.12em;
   z-index: 2; /* Above the pseudo-element */
 }
@@ -5005,7 +5005,7 @@ a {
 
   .retro-menu__titlebar span {
     justify-content: flex-start;
-    font-size: 0.6rem;
+    font-size: 0.7rem;
     letter-spacing: 0.16em;
   }
 
@@ -5213,12 +5213,13 @@ a {
 }
 
 .indicator {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   border-radius: 999px;
   background: #8cfbff;
   box-shadow: 0 0 14px rgba(140, 251, 255, 0.8);
   animation: pulse 2.6s ease-in-out infinite;
+  display: inline-block;
 }
 
 .content-region {
@@ -8132,31 +8133,30 @@ body.qr-intro-active .site-shell__icon-button {
   pointer-events: none;
   /* Base darkness gradient */
   background: 
-    /* Vignette for focus */
-    radial-gradient(
+    /* Vignette for focus */ radial-gradient(
       ellipse at center 60%,
       transparent 0%,
       rgba(10, 12, 15, 0.3) 50%,
       rgba(10, 12, 15, 0.7) 100%
     ),
     /* Top fade for content readability */
-    linear-gradient(
-      to bottom,
-      rgba(10, 12, 15, 0.95) 0%,
-      rgba(10, 12, 15, 0.88) 15%,
-      rgba(10, 12, 15, 0.7) 30%,
-      rgba(10, 12, 15, 0.3) 50%,
-      transparent 65%,
-      transparent 75%,
-      rgba(10, 12, 15, 0.2) 85%,
-      rgba(10, 12, 15, 0.5) 92%,
-      rgba(10, 12, 15, 0.85) 100%
-    );
+      linear-gradient(
+        to bottom,
+        rgba(10, 12, 15, 0.95) 0%,
+        rgba(10, 12, 15, 0.88) 15%,
+        rgba(10, 12, 15, 0.7) 30%,
+        rgba(10, 12, 15, 0.3) 50%,
+        transparent 65%,
+        transparent 75%,
+        rgba(10, 12, 15, 0.2) 85%,
+        rgba(10, 12, 15, 0.5) 92%,
+        rgba(10, 12, 15, 0.85) 100%
+      );
 }
 
 /* Atmospheric depth layer */
 .clean-about-page__background::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: 0;
   left: 0;
@@ -8176,8 +8176,7 @@ body.qr-intro-active .site-shell__icon-button {
 /* Enhanced gradient when image is present - more transparent for footer visibility */
 .clean-about-page.has-background-image .clean-about-page__gradient {
   background: 
-    /* Subtle vignette for focus */
-    radial-gradient(
+    /* Subtle vignette for focus */ radial-gradient(
       ellipse at center 40%,
       transparent 0%,
       rgba(10, 12, 15, 0.05) 40%,
@@ -8185,18 +8184,18 @@ body.qr-intro-active .site-shell__icon-button {
       rgba(10, 12, 15, 0.4) 100%
     ),
     /* Much lighter vertical fade to show image in footer */
-    linear-gradient(
-      180deg,
-      rgba(10, 12, 15, 0.85) 0%,    /* Darker at top for nav readability */
-      rgba(10, 12, 15, 0.6) 10%,
-      rgba(10, 12, 15, 0.3) 25%,
-      transparent 40%,
-      transparent 60%,
-      transparent 75%,              /* Keep transparent through footer area */
-      rgba(10, 12, 15, 0.05) 85%,   /* Very subtle darkening at bottom */
-      rgba(10, 12, 15, 0.1) 95%,
-      rgba(10, 12, 15, 0.2) 100%    /* Light tint at very bottom */
-    );
+      linear-gradient(
+        180deg,
+        rgba(10, 12, 15, 0.85) 0%,
+        /* Darker at top for nav readability */ rgba(10, 12, 15, 0.6) 10%,
+        rgba(10, 12, 15, 0.3) 25%,
+        transparent 40%,
+        transparent 60%,
+        transparent 75%,
+        /* Keep transparent through footer area */ rgba(10, 12, 15, 0.05) 85%,
+        /* Very subtle darkening at bottom */ rgba(10, 12, 15, 0.1) 95%,
+        rgba(10, 12, 15, 0.2) 100% /* Light tint at very bottom */
+      );
 }
 
 /* Main container - Floating content layer */
@@ -8372,7 +8371,7 @@ body.qr-intro-active .site-shell__icon-button {
 }
 
 .clean-about-page__card::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -8392,9 +8391,7 @@ body.qr-intro-active .site-shell__icon-button {
   transform: translateY(-4px);
   background: rgba(18, 22, 28, 0.6);
   border-color: rgba(255, 255, 255, 0.1);
-  box-shadow: 
-    0 20px 40px rgba(0, 0, 0, 0.3),
-    0 0 60px rgba(138, 248, 255, 0.05);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 60px rgba(138, 248, 255, 0.05);
 }
 
 .clean-about-page__card:hover::before {
@@ -8427,7 +8424,7 @@ body.qr-intro-active .site-shell__icon-button {
 }
 
 .clean-about-page__footer::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -50vw;
@@ -8474,9 +8471,7 @@ body.qr-intro-active .site-shell__icon-button {
   border-color: rgba(138, 248, 255, 0.4);
   color: rgba(255, 255, 255, 0.95);
   transform: translateY(-3px) scale(1.05);
-  box-shadow: 
-    0 20px 40px rgba(0, 0, 0, 0.2),
-    0 0 30px rgba(138, 248, 255, 0.1);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2), 0 0 30px rgba(138, 248, 255, 0.1);
 }
 
 /* Animations */
@@ -9435,8 +9430,7 @@ body.qr-intro-active .site-shell__icon-button {
   overflow: visible;
   opacity: 0;
   transform: translateY(30px);
-  transition: 
-    opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1),
+  transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1),
     transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
   /* REMOVED opaque gradient - let background image show through */
   background: transparent;
@@ -9478,8 +9472,7 @@ body.qr-intro-active .site-shell__icon-button {
   -webkit-backdrop-filter: blur(20px) saturate(120%);
   border: 1px solid rgba(255, 255, 255, 0.06);
   /* Softer shadow */
-  box-shadow: 
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.04),
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.04),
     0 10px 30px -5px rgba(0, 0, 0, 0.3);
   /* Smooth emergence */
   opacity: 0;
@@ -9496,7 +9489,7 @@ body.qr-intro-active .site-shell__icon-button {
 
 /* Subtle top accent */
 .site-footer__content::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 20%;
@@ -9512,8 +9505,6 @@ body.qr-intro-active .site-shell__icon-button {
   );
 }
 
-
-
 .site-footer__headline {
   margin: 0;
   font-size: clamp(2.25rem, 5vw, 3.5rem);
@@ -9523,9 +9514,7 @@ body.qr-intro-active .site-shell__icon-button {
   /* High contrast white text for readability over image */
   color: rgba(255, 255, 255, 0.95);
   /* Strong shadow for text legibility over any background */
-  text-shadow: 
-    0 2px 4px rgba(0, 0, 0, 0.5),
-    0 4px 20px rgba(0, 0, 0, 0.4),
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5), 0 4px 20px rgba(0, 0, 0, 0.4),
     0 8px 40px rgba(0, 0, 0, 0.3);
 }
 
@@ -9538,9 +9527,7 @@ body.qr-intro-active .site-shell__icon-button {
   font-weight: 300;
   letter-spacing: 0.01em;
   /* Subtle shadow for readability */
-  text-shadow: 
-    0 1px 3px rgba(0, 0, 0, 0.4),
-    0 2px 10px rgba(0, 0, 0, 0.3);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 2px 10px rgba(0, 0, 0, 0.3);
 }
 
 .site-footer__form {
@@ -9577,8 +9564,7 @@ body.qr-intro-active .site-shell__icon-button {
   letter-spacing: 0.02em;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   /* Shadow for definition */
-  box-shadow: 
-    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05),
     0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
@@ -9625,9 +9611,7 @@ body.qr-intro-active .site-shell__icon-button {
   transform: translateY(-2px);
   border-color: rgba(138, 248, 255, 0.6);
   background: rgba(100, 150, 175, 0.35);
-  box-shadow: 
-    0 10px 30px rgba(0, 0, 0, 0.4),
-    0 0 40px rgba(138, 248, 255, 0.15);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), 0 0 40px rgba(138, 248, 255, 0.15);
 }
 
 .site-footer__submit:active {
@@ -9698,9 +9682,7 @@ body.qr-intro-active .site-shell__icon-button {
   border-color: rgba(255, 255, 255, 0.15);
   background: rgba(255, 255, 255, 0.05);
   color: rgba(255, 255, 255, 0.9);
-  box-shadow: 
-    0 8px 20px rgba(0, 0, 0, 0.3),
-    0 0 30px rgba(138, 248, 255, 0.08);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3), 0 0 30px rgba(138, 248, 255, 0.08);
 }
 
 .site-footer__social-link:active {
@@ -9744,9 +9726,7 @@ body.qr-intro-active .site-shell__icon-button {
   transform: translateY(-2px);
   border-color: rgba(138, 248, 255, 0.6);
   background: rgba(100, 150, 175, 0.3);
-  box-shadow: 
-    0 10px 30px rgba(0, 0, 0, 0.4),
-    0 0 40px rgba(138, 248, 255, 0.15);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), 0 0 40px rgba(138, 248, 255, 0.15);
 }
 
 .site-footer__cta:active {
@@ -9914,7 +9894,6 @@ a {
   overflow: hidden;
   text-overflow: ellipsis;
   display: inline-block;
-  min-width: 6rem; /* Ensure enough space for Japanese text */
 }
 
 /* Ensure Japanese text doesn't wrap in titles */
