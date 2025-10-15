@@ -7,7 +7,7 @@
       "route": "/about",
       "description": {
         "en": "How about that?",
-        "ja": "Jay Winderは、ノスタルジーとハイパーリアリズムの狭間で揺らぐ没入型インターフェースを編み上げる視覚と音の実験をキュレーションしています。"
+        "ja": "どうだい、なかなかでしょ？"
       }
     },
     {
@@ -16,7 +16,7 @@
       "route": "/projects",
       "description": {
         "en": "Stuff I ① made ② am making ③ did",
-        "ja": "動的なWebGLフィールド、パフォーマンス連動のインスタレーション、コラボレーターと磨き上げた触覚ツールを紹介します。"
+        "ja": "僕が ① 作ったもの ② いま作ってるもの ③ やってきたこと"
       }
     },
     {
@@ -25,7 +25,7 @@
       "route": "/content",
       "description": {
         "en": "Sharing my perspective to:\n ① make you laugh ② make you think ③ both.",
-        "ja": "テクノロジー、文化、そして現代の滑稽さを解きほぐすエッセイやブログ、コメディを収録しています。"
+        "ja": "僕の視点をシェアして：\n ① 笑わせる ② 考えさせる ③ その両方"
       }
     },
     {
@@ -34,7 +34,7 @@
       "route": "/sounds",
       "description": {
         "en": "\"Art is how we decorate space; \nmusic is how we decorate time\"",
-        "ja": "深夜の旅人に寄り添うアンビエントループとドローン、応答型のサウンドスケッチをアーカイブ。"
+        "ja": "「アートは空間を飾る方法、\n音楽は時間を彩る方法」"
       }
     },
     {
@@ -43,7 +43,7 @@
       "route": "/art",
       "description": {
         "en": "Intersections of art and technology I think are cool",
-        "ja": "シェーダーを駆使したスタディとドットフィールドのインスタレーションで、グリッドをギャラリー規模の動きへ変換します。"
+        "ja": "アートとテクノロジーが交差する、僕が'cool!'だと思うところ"
       }
     }
   ]
