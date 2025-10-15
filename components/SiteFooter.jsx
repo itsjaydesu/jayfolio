@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { ArrowUpRightIcon, InstagramIcon, XLogoIcon, YouTubeIcon } from './icons';
+import { InstagramIcon, XLogoIcon } from './icons';
 
 function validateEmail(value) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
@@ -11,52 +11,36 @@ function validateEmail(value) {
 
 const FOOTER_SCENES = {
   home: {
-    image: '/images/footer/home.svg',
-    tint: 'rgba(8, 22, 34, 0.82)',
-    glow: 'rgba(126, 242, 255, 0.22)',
-    focus: '50% 38%'
+    glow: 'rgba(255, 140, 90, 0.4)',
+    horizon: 'rgba(100, 180, 255, 0.15)'
   },
   about: {
-    image: '/images/footer/about.svg',
-    tint: 'rgba(12, 16, 28, 0.86)',
-    glow: 'rgba(232, 210, 255, 0.2)',
-    focus: '50% 40%'
+    glow: 'rgba(232, 210, 255, 0.35)',
+    horizon: 'rgba(180, 160, 255, 0.12)'
   },
   projects: {
-    image: '/images/footer/projects.svg',
-    tint: 'rgba(4, 18, 28, 0.88)',
-    glow: 'rgba(126, 248, 210, 0.26)',
-    focus: '48% 42%'
+    glow: 'rgba(126, 248, 210, 0.4)',
+    horizon: 'rgba(80, 200, 180, 0.15)'
   },
   content: {
-    image: '/images/footer/content.svg',
-    tint: 'rgba(6, 14, 24, 0.88)',
-    glow: 'rgba(248, 222, 174, 0.2)',
-    focus: '50% 44%'
+    glow: 'rgba(248, 222, 174, 0.35)',
+    horizon: 'rgba(255, 200, 120, 0.12)'
   },
   sounds: {
-    image: '/images/footer/sounds.svg',
-    tint: 'rgba(4, 12, 24, 0.9)',
-    glow: 'rgba(154, 214, 255, 0.24)',
-    focus: '50% 42%'
+    glow: 'rgba(154, 214, 255, 0.4)',
+    horizon: 'rgba(100, 160, 255, 0.15)'
   },
   art: {
-    image: '/images/footer/art.svg',
-    tint: 'rgba(10, 16, 24, 0.9)',
-    glow: 'rgba(242, 176, 255, 0.24)',
-    focus: '51% 40%'
+    glow: 'rgba(242, 176, 255, 0.35)',
+    horizon: 'rgba(200, 140, 255, 0.12)'
   },
   'work-with-me': {
-    image: '/images/footer/work-with-me.svg',
-    tint: 'rgba(6, 12, 20, 0.9)',
-    glow: 'rgba(124, 255, 206, 0.24)',
-    focus: '48% 43%'
+    glow: 'rgba(124, 255, 206, 0.4)',
+    horizon: 'rgba(80, 220, 180, 0.15)'
   },
   default: {
-    image: '/images/footer/home.svg',
-    tint: 'rgba(6, 18, 26, 0.86)',
-    glow: 'rgba(128, 236, 255, 0.18)',
-    focus: '50% 40%'
+    glow: 'rgba(255, 140, 90, 0.4)',
+    horizon: 'rgba(100, 180, 255, 0.15)'
   }
 };
 
@@ -80,10 +64,8 @@ export default function SiteFooter({ className = '' }) {
   const sceneConfig = FOOTER_SCENES[sceneKey] ?? FOOTER_SCENES.default;
 
   const footerStyle = useMemo(() => ({
-    '--footer-scene-image': `url(${sceneConfig.image})`,
-    '--footer-scene-tint': sceneConfig.tint,
     '--footer-scene-glow': sceneConfig.glow,
-    '--footer-scene-focus': sceneConfig.focus
+    '--footer-scene-horizon': sceneConfig.horizon
   }), [sceneConfig]);
 
   useEffect(() => {
@@ -126,10 +108,19 @@ export default function SiteFooter({ className = '' }) {
       icon: InstagramIcon
     },
     {
-      id: 'youtube',
-      href: 'https://www.youtube.com/@itsjaydesu',
-      label: `Watch Jay on YouTube`,
-      icon: YouTubeIcon
+      id: 'are.na',
+      href: 'https://www.are.na/jay',
+      label: `Jay on Are.na`,
+      icon: () => (
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="site-footer__social-icon"
+        >
+          <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" />
+        </svg>
+      )
     }
   ];
 
@@ -159,48 +150,42 @@ export default function SiteFooter({ className = '' }) {
       style={footerStyle}
     >
       <div className="site-footer__backdrop" aria-hidden="true">
-        <div className="site-footer__backdrop-layer site-footer__backdrop-layer--image" />
-        <div className="site-footer__backdrop-layer site-footer__backdrop-layer--tint" />
-        <div className="site-footer__backdrop-layer site-footer__backdrop-layer--mist" />
-        <div className="site-footer__backdrop-layer site-footer__backdrop-layer--glow" />
+        <div className="site-footer__horizon" />
+        <div className="site-footer__glow" />
       </div>
       <div className="site-footer__container">
         <div className="site-footer__content">
           <h2 id="site-footer-heading" className="site-footer__headline">
-            Keep a friendly pulse on what Jay ships next.
+            Keep a friendly pulse on what<br />Jay ships next.
           </h2>
           <p className="site-footer__description">
-            Receive very occassional updates when Jay releases something? Enter your email to get maybe one email a month. Cancel instantly anytime.
+            Receive very occasional updates when Jay releases something?<br />
+            Enter your email to get maybe one email a month, amoth.
           </p>
           <form className="site-footer__form" onSubmit={handleSubmit} noValidate>
-            <div className="site-footer__input-group">
-              <div className="site-footer__input-wrap">
-                <input
-                  type="email"
-                  name="email"
-                  autoComplete="email"
-                  value={email}
-                  onChange={(event) => {
-                    setEmail(event.target.value);
-                    if (status.type !== 'idle') {
-                      setStatus({ type: 'idle', message: '' });
-                    }
-                  }}
-                  placeholder="your@email.com"
-                  className="site-footer__input"
-                  aria-label="Email address"
-                />
-              </div>
-              <button type="submit" className="site-footer__submit">
-                Notify me
-              </button>
-            </div>
-            <p
-              className={`site-footer__status${status.type === 'success' ? ' site-footer__status--success' : ''}${status.type === 'error' ? ' site-footer__status--error' : ''}`}
-              aria-live="polite"
-            >
-              {status.message}
-            </p>
+            <input
+              type="email"
+              name="email"
+              autoComplete="email"
+              value={email}
+              onChange={(event) => {
+                setEmail(event.target.value);
+                if (status.type !== 'idle') {
+                  setStatus({ type: 'idle', message: '' });
+                }
+              }}
+              placeholder="your@email.com"
+              className="site-footer__input"
+              aria-label="Email address"
+            />
+            {status.message && (
+              <p
+                className={`site-footer__status${status.type === 'success' ? ' site-footer__status--success' : ''}${status.type === 'error' ? ' site-footer__status--error' : ''}`}
+                aria-live="polite"
+              >
+                {status.message}
+              </p>
+            )}
           </form>
           <div className="site-footer__links">
             <nav className="site-footer__social" aria-label="Social links">
@@ -222,8 +207,7 @@ export default function SiteFooter({ className = '' }) {
               </ul>
             </nav>
             <Link href="/work-with-me" className="site-footer__cta">
-              <span className="site-footer__cta-label">Work with me</span>
-              <ArrowUpRightIcon className="site-footer__cta-icon" />
+              <span className="site-footer__cta-label">WORK WITH ME</span>
             </Link>
           </div>
         </div>
