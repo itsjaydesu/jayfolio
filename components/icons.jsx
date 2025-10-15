@@ -3,7 +3,7 @@ export function CalendarIcon({ className }) {
     <svg
       viewBox="0 0 24 24"
       aria-hidden="true"
-      className={['icon', className].filter(Boolean).join(' ')}
+      className={["icon", className].filter(Boolean).join(" ")}
       fill="none"
       stroke="currentColor"
       strokeWidth="1.5"
@@ -23,23 +23,47 @@ export function DotfieldIcon({ className }) {
     <svg
       viewBox="0 0 24 24"
       aria-hidden="true"
-      className={['icon', className].filter(Boolean).join(' ')}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      className={["icon", "dotfield-icon-animated", className]
+        .filter(Boolean)
+        .join(" ")}
+      fill="currentColor"
     >
-      <path d="M4 6h.01" />
-      <path d="M10 6h.01" />
-      <path d="M16 6h.01" />
-      <path d="M7 12h.01" />
-      <path d="M13 12h.01" />
-      <path d="M19 12h.01" />
-      <path d="M4 18h.01" />
-      <path d="M10 18h.01" />
-      <path d="M16 18h.01" />
-      <rect x="2.5" y="4.5" width="19" height="15" rx="4" />
+      {/* Create animated dots in a 4x4 grid with wave effect */}
+      {[0, 1, 2, 3].map((row) =>
+        [0, 1, 2, 3].map((col) => {
+          const x = 3 + col * 6;
+          const y = 3 + row * 6;
+          const delay = (row * 0.1 + col * 0.1) % 0.4;
+
+          return (
+            <circle
+              key={`${row}-${col}`}
+              cx={x}
+              cy={y}
+              r="1.5"
+              className="dotfield-dot"
+              style={{
+                animationDelay: `${delay}s`,
+              }}
+            >
+              <animate
+                attributeName="r"
+                values="1.5;2.5;1.5"
+                dur="1.5s"
+                begin={`${delay}s`}
+                repeatCount="indefinite"
+              />
+              <animate
+                attributeName="opacity"
+                values="0.3;1;0.3"
+                dur="1.5s"
+                begin={`${delay}s`}
+                repeatCount="indefinite"
+              />
+            </circle>
+          );
+        })
+      )}
     </svg>
   );
 }
@@ -49,7 +73,7 @@ export function XLogoIcon({ className }) {
     <svg
       viewBox="0 0 24 24"
       aria-hidden="true"
-      className={['icon', className].filter(Boolean).join(' ')}
+      className={["icon", className].filter(Boolean).join(" ")}
       fill="currentColor"
       xmlns="http://www.w3.org/2000/svg"
     >
@@ -63,7 +87,7 @@ export function InstagramIcon({ className }) {
     <svg
       viewBox="0 0 24 24"
       aria-hidden="true"
-      className={['icon', className].filter(Boolean).join(' ')}
+      className={["icon", className].filter(Boolean).join(" ")}
       fill="none"
       stroke="currentColor"
       strokeWidth="1.5"
@@ -82,7 +106,7 @@ export function YouTubeIcon({ className }) {
     <svg
       viewBox="0 0 24 24"
       aria-hidden="true"
-      className={['icon', className].filter(Boolean).join(' ')}
+      className={["icon", className].filter(Boolean).join(" ")}
       fill="none"
       stroke="currentColor"
       strokeWidth="1.5"
@@ -100,7 +124,7 @@ export function TagIcon({ className }) {
     <svg
       viewBox="0 0 24 24"
       aria-hidden="true"
-      className={['icon', className].filter(Boolean).join(' ')}
+      className={["icon", className].filter(Boolean).join(" ")}
       fill="none"
       stroke="currentColor"
       strokeWidth="1.5"
@@ -118,7 +142,7 @@ export function ArrowUpRightIcon({ className }) {
     <svg
       viewBox="0 0 24 24"
       aria-hidden="true"
-      className={['icon', className].filter(Boolean).join(' ')}
+      className={["icon", className].filter(Boolean).join(" ")}
       fill="none"
       stroke="currentColor"
       strokeWidth="1.5"
@@ -136,7 +160,7 @@ export function BlueprintIcon({ className }) {
     <svg
       viewBox="0 0 24 24"
       aria-hidden="true"
-      className={['icon', className].filter(Boolean).join(' ')}
+      className={["icon", className].filter(Boolean).join(" ")}
       fill="none"
       stroke="currentColor"
       strokeWidth="1.5"
@@ -155,7 +179,7 @@ export function NotebookIcon({ className }) {
     <svg
       viewBox="0 0 24 24"
       aria-hidden="true"
-      className={['icon', className].filter(Boolean).join(' ')}
+      className={["icon", className].filter(Boolean).join(" ")}
       fill="none"
       stroke="currentColor"
       strokeWidth="1.5"
@@ -175,7 +199,7 @@ export function WaveformIcon({ className }) {
     <svg
       viewBox="0 0 24 24"
       aria-hidden="true"
-      className={['icon', className].filter(Boolean).join(' ')}
+      className={["icon", className].filter(Boolean).join(" ")}
       fill="none"
       stroke="currentColor"
       strokeWidth="1.5"
@@ -195,7 +219,7 @@ export function ChevronDoubleLeftIcon({ className }) {
     <svg
       viewBox="0 0 24 24"
       aria-hidden="true"
-      className={['icon', className].filter(Boolean).join(' ')}
+      className={["icon", className].filter(Boolean).join(" ")}
       fill="none"
       stroke="currentColor"
       strokeWidth="1.5"
@@ -213,7 +237,7 @@ export function ChevronDoubleRightIcon({ className }) {
     <svg
       viewBox="0 0 24 24"
       aria-hidden="true"
-      className={['icon', className].filter(Boolean).join(' ')}
+      className={["icon", className].filter(Boolean).join(" ")}
       fill="none"
       stroke="currentColor"
       strokeWidth="1.5"
@@ -231,7 +255,7 @@ export function ChevronDoubleUpIcon({ className }) {
     <svg
       viewBox="0 0 24 24"
       aria-hidden="true"
-      className={['icon', className].filter(Boolean).join(' ')}
+      className={["icon", className].filter(Boolean).join(" ")}
       fill="none"
       stroke="currentColor"
       strokeWidth="1.5"
@@ -249,7 +273,7 @@ export function ChevronDoubleDownIcon({ className }) {
     <svg
       viewBox="0 0 24 24"
       aria-hidden="true"
-      className={['icon', className].filter(Boolean).join(' ')}
+      className={["icon", className].filter(Boolean).join(" ")}
       fill="none"
       stroke="currentColor"
       strokeWidth="1.5"
@@ -267,7 +291,7 @@ export function UndoIcon({ className }) {
     <svg
       viewBox="0 0 24 24"
       aria-hidden="true"
-      className={['icon', className].filter(Boolean).join(' ')}
+      className={["icon", className].filter(Boolean).join(" ")}
       fill="none"
       stroke="currentColor"
       strokeWidth="1.5"
@@ -285,7 +309,7 @@ export function RedoIcon({ className }) {
     <svg
       viewBox="0 0 24 24"
       aria-hidden="true"
-      className={['icon', className].filter(Boolean).join(' ')}
+      className={["icon", className].filter(Boolean).join(" ")}
       fill="none"
       stroke="currentColor"
       strokeWidth="1.5"
@@ -303,7 +327,7 @@ export function SnapshotIcon({ className }) {
     <svg
       viewBox="0 0 24 24"
       aria-hidden="true"
-      className={['icon', className].filter(Boolean).join(' ')}
+      className={["icon", className].filter(Boolean).join(" ")}
       fill="none"
       stroke="currentColor"
       strokeWidth="1.5"
@@ -321,7 +345,7 @@ export function RestoreIcon({ className }) {
     <svg
       viewBox="0 0 24 24"
       aria-hidden="true"
-      className={['icon', className].filter(Boolean).join(' ')}
+      className={["icon", className].filter(Boolean).join(" ")}
       fill="none"
       stroke="currentColor"
       strokeWidth="1.5"
@@ -341,7 +365,7 @@ export function BoldIcon({ className }) {
     <svg
       viewBox="0 0 24 24"
       aria-hidden="true"
-      className={['icon', className].filter(Boolean).join(' ')}
+      className={["icon", className].filter(Boolean).join(" ")}
       fill="none"
       stroke="currentColor"
       strokeWidth="1.5"
@@ -359,7 +383,7 @@ export function ItalicIcon({ className }) {
     <svg
       viewBox="0 0 24 24"
       aria-hidden="true"
-      className={['icon', className].filter(Boolean).join(' ')}
+      className={["icon", className].filter(Boolean).join(" ")}
       fill="none"
       stroke="currentColor"
       strokeWidth="1.5"
@@ -378,7 +402,7 @@ export function UnderlineIcon({ className }) {
     <svg
       viewBox="0 0 24 24"
       aria-hidden="true"
-      className={['icon', className].filter(Boolean).join(' ')}
+      className={["icon", className].filter(Boolean).join(" ")}
       fill="none"
       stroke="currentColor"
       strokeWidth="1.5"
@@ -396,7 +420,7 @@ export function StrikethroughIcon({ className }) {
     <svg
       viewBox="0 0 24 24"
       aria-hidden="true"
-      className={['icon', className].filter(Boolean).join(' ')}
+      className={["icon", className].filter(Boolean).join(" ")}
       fill="none"
       stroke="currentColor"
       strokeWidth="1.5"
@@ -416,7 +440,7 @@ export function CodeIcon({ className }) {
     <svg
       viewBox="0 0 24 24"
       aria-hidden="true"
-      className={['icon', className].filter(Boolean).join(' ')}
+      className={["icon", className].filter(Boolean).join(" ")}
       fill="none"
       stroke="currentColor"
       strokeWidth="1.5"
@@ -435,7 +459,7 @@ export function QuoteIcon({ className }) {
     <svg
       viewBox="0 0 24 24"
       aria-hidden="true"
-      className={['icon', className].filter(Boolean).join(' ')}
+      className={["icon", className].filter(Boolean).join(" ")}
       fill="none"
       stroke="currentColor"
       strokeWidth="1.5"
@@ -453,7 +477,7 @@ export function DividerIcon({ className }) {
     <svg
       viewBox="0 0 24 24"
       aria-hidden="true"
-      className={['icon', className].filter(Boolean).join(' ')}
+      className={["icon", className].filter(Boolean).join(" ")}
       fill="none"
       stroke="currentColor"
       strokeWidth="1.5"
@@ -472,7 +496,7 @@ export function AlignLeftIcon({ className }) {
     <svg
       viewBox="0 0 24 24"
       aria-hidden="true"
-      className={['icon', className].filter(Boolean).join(' ')}
+      className={["icon", className].filter(Boolean).join(" ")}
       fill="none"
       stroke="currentColor"
       strokeWidth="1.5"
@@ -491,7 +515,7 @@ export function AlignCenterIcon({ className }) {
     <svg
       viewBox="0 0 24 24"
       aria-hidden="true"
-      className={['icon', className].filter(Boolean).join(' ')}
+      className={["icon", className].filter(Boolean).join(" ")}
       fill="none"
       stroke="currentColor"
       strokeWidth="1.5"
@@ -510,7 +534,7 @@ export function AlignRightIcon({ className }) {
     <svg
       viewBox="0 0 24 24"
       aria-hidden="true"
-      className={['icon', className].filter(Boolean).join(' ')}
+      className={["icon", className].filter(Boolean).join(" ")}
       fill="none"
       stroke="currentColor"
       strokeWidth="1.5"
@@ -529,7 +553,7 @@ export function AlignJustifyIcon({ className }) {
     <svg
       viewBox="0 0 24 24"
       aria-hidden="true"
-      className={['icon', className].filter(Boolean).join(' ')}
+      className={["icon", className].filter(Boolean).join(" ")}
       fill="none"
       stroke="currentColor"
       strokeWidth="1.5"
@@ -548,7 +572,7 @@ export function ListIcon({ className }) {
     <svg
       viewBox="0 0 24 24"
       aria-hidden="true"
-      className={['icon', className].filter(Boolean).join(' ')}
+      className={["icon", className].filter(Boolean).join(" ")}
       fill="none"
       stroke="currentColor"
       strokeWidth="1.5"
@@ -570,7 +594,7 @@ export function ListOrderedIcon({ className }) {
     <svg
       viewBox="0 0 24 24"
       aria-hidden="true"
-      className={['icon', className].filter(Boolean).join(' ')}
+      className={["icon", className].filter(Boolean).join(" ")}
       fill="none"
       stroke="currentColor"
       strokeWidth="1.5"
@@ -593,7 +617,7 @@ export function IndentIncreaseIcon({ className }) {
     <svg
       viewBox="0 0 24 24"
       aria-hidden="true"
-      className={['icon', className].filter(Boolean).join(' ')}
+      className={["icon", className].filter(Boolean).join(" ")}
       fill="none"
       stroke="currentColor"
       strokeWidth="1.5"
@@ -613,7 +637,7 @@ export function IndentDecreaseIcon({ className }) {
     <svg
       viewBox="0 0 24 24"
       aria-hidden="true"
-      className={['icon', className].filter(Boolean).join(' ')}
+      className={["icon", className].filter(Boolean).join(" ")}
       fill="none"
       stroke="currentColor"
       strokeWidth="1.5"
@@ -633,7 +657,7 @@ export function TableIcon({ className }) {
     <svg
       viewBox="0 0 24 24"
       aria-hidden="true"
-      className={['icon', className].filter(Boolean).join(' ')}
+      className={["icon", className].filter(Boolean).join(" ")}
       fill="none"
       stroke="currentColor"
       strokeWidth="1.5"
@@ -653,7 +677,7 @@ export function TableColumnIcon({ className }) {
     <svg
       viewBox="0 0 24 24"
       aria-hidden="true"
-      className={['icon', className].filter(Boolean).join(' ')}
+      className={["icon", className].filter(Boolean).join(" ")}
       fill="none"
       stroke="currentColor"
       strokeWidth="1.5"
@@ -674,7 +698,7 @@ export function TableRowIcon({ className }) {
     <svg
       viewBox="0 0 24 24"
       aria-hidden="true"
-      className={['icon', className].filter(Boolean).join(' ')}
+      className={["icon", className].filter(Boolean).join(" ")}
       fill="none"
       stroke="currentColor"
       strokeWidth="1.5"
@@ -695,7 +719,7 @@ export function TrashIcon({ className }) {
     <svg
       viewBox="0 0 24 24"
       aria-hidden="true"
-      className={['icon', className].filter(Boolean).join(' ')}
+      className={["icon", className].filter(Boolean).join(" ")}
       fill="none"
       stroke="currentColor"
       strokeWidth="1.5"
@@ -716,7 +740,7 @@ export function UploadIcon({ className }) {
     <svg
       viewBox="0 0 24 24"
       aria-hidden="true"
-      className={['icon', className].filter(Boolean).join(' ')}
+      className={["icon", className].filter(Boolean).join(" ")}
       fill="none"
       stroke="currentColor"
       strokeWidth="1.5"
@@ -735,7 +759,7 @@ export function ExpandIcon({ className }) {
     <svg
       viewBox="0 0 24 24"
       aria-hidden="true"
-      className={['icon', className].filter(Boolean).join(' ')}
+      className={["icon", className].filter(Boolean).join(" ")}
       fill="none"
       stroke="currentColor"
       strokeWidth="1.5"
@@ -755,7 +779,7 @@ export function CollapseIcon({ className }) {
     <svg
       viewBox="0 0 24 24"
       aria-hidden="true"
-      className={['icon', className].filter(Boolean).join(' ')}
+      className={["icon", className].filter(Boolean).join(" ")}
       fill="none"
       stroke="currentColor"
       strokeWidth="1.5"

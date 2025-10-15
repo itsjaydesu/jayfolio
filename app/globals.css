@@ -5890,7 +5890,8 @@ a {
   display: inline-flex;
   align-items: center;
   gap: clamp(0.8rem, 2vw, 1.2rem);
-  margin-left: clamp(1.5rem, 3vw, 2.5rem);
+  margin-left: auto;
+  margin-right: clamp(0.5rem, 1vw, 1rem); /* Balance with left side */
   height: 100%;
 }
 
@@ -5945,6 +5946,87 @@ a {
 .site-shell__icon-svg {
   width: 18px;
   height: 18px;
+}
+
+/* Animated Dotfield Icon Styles */
+.dotfield-icon-animated {
+  width: 20px;
+  height: 20px;
+}
+
+.dotfield-icon-animated .dotfield-dot {
+  animation: dotWave 1.5s ease-in-out infinite;
+  transform-origin: center;
+  transition: all 0.3s ease;
+}
+
+@keyframes dotWave {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.3;
+  }
+  50% {
+    transform: scale(1.4);
+    opacity: 1;
+  }
+}
+
+/* Hover effect for dotfield button */
+.site-shell__icon-button--action:hover .dotfield-icon-animated .dotfield-dot {
+  animation-duration: 0.8s;
+}
+
+.site-shell__icon-button--action.is-active .dotfield-icon-animated .dotfield-dot {
+  animation-duration: 0.5s;
+  fill: rgba(138, 248, 255, 0.9);
+}
+
+/* Mobile header layout - Jayfolio + icons on top, menu below */
+@media (max-width: 720px) {
+  .site-shell__header {
+    display: grid !important;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto;
+    align-items: center;
+    gap: 1rem;
+    flex-direction: unset;
+    flex-wrap: unset;
+  }
+  
+  .site-shell__brand {
+    grid-column: 1;
+    grid-row: 1;
+    margin-right: 0;
+  }
+  
+  .site-shell__icon-group {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+    margin-left: 0;
+    margin-right: 0;
+    gap: 0.7rem;
+  }
+  
+  .site-shell__nav {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: 100%;
+    justify-content: flex-start;
+    margin-top: 0.5rem;
+  }
+  
+  /* Smaller icons on mobile */
+  .site-shell__icon-button {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .site-shell__icon-svg,
+  .dotfield-icon-animated {
+    width: 16px;
+    height: 16px;
+  }
 }
 
 .site-shell__main {
