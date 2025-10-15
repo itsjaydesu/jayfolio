@@ -2585,7 +2585,7 @@ a {
 .site-shell__header {
   position: fixed;
   top: clamp(1.4rem, 4vh, 2.4rem);
-  left: 10%;
+  left: 50%;
   width: min(1180px, calc(100% - 2 * var(--shell-inline-pad)));
   display: flex;
   align-items: center;
@@ -5213,13 +5213,31 @@ a {
 }
 
 .indicator {
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-  background: #8cfbff;
-  box-shadow: 0 0 14px rgba(140, 251, 255, 0.8);
-  animation: pulse 2.6s ease-in-out infinite;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #b0fdff, #8cfbff, #6bf0ff);
+  box-shadow: 
+    0 0 20px rgba(140, 251, 255, 0.9),
+    0 0 40px rgba(140, 251, 255, 0.4),
+    inset 0 0 8px rgba(255, 255, 255, 0.3);
+  animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   display: inline-block;
+  position: relative;
+  margin-right: 0.3em;
+}
+
+.indicator::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 1px solid rgba(140, 251, 255, 0.4);
+  transform: translate(-50%, -50%);
+  animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 .content-region {
@@ -5313,6 +5331,49 @@ a {
 
 .lil-gui .controller-with-fixed.is-locked .fixed-toggle {
   color: rgba(240, 240, 240, 0.85);
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(0.8);
+    filter: brightness(0.9);
+    box-shadow: 
+      0 0 15px rgba(140, 251, 255, 0.6),
+      0 0 30px rgba(140, 251, 255, 0.3),
+      inset 0 0 6px rgba(255, 255, 255, 0.2);
+  }
+  25% {
+    opacity: 0.85;
+    transform: scale(0.95);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+    filter: brightness(1.2) saturate(1.2);
+    box-shadow: 
+      0 0 30px rgba(140, 251, 255, 1),
+      0 0 60px rgba(140, 251, 255, 0.6),
+      0 0 90px rgba(140, 251, 255, 0.3),
+      inset 0 0 10px rgba(255, 255, 255, 0.5);
+  }
+  75% {
+    opacity: 0.9;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes pulse-ring {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.8);
+    opacity: 0;
+  }
 }
 
 @keyframes pulse {
@@ -5933,6 +5994,17 @@ a {
   .site-shell__header {
     transition: none !important;
     pointer-events: auto !important;
+  }
+}
+
+/* Fix header alignment on large screens */
+@media (min-width: 1280px) {
+  .site-shell__header {
+    width: 1180px;
+  }
+  
+  .site-shell__header[data-nav-ready="true"]:not(.is-leaving) {
+    transform: translate(-50%, 0);
   }
 
   .site-shell__brand,
