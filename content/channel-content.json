@@ -2,10 +2,10 @@
   "about": {
     "aboutBackgroundImage": "https://irq8pcmcsnz9tzjh.public.blob.vercel-storage.com/bg-about-SFgPZz38rSMJbnuXTSKFgH8AKFeTYA.jpg",
     "aboutFooterFadeSettings": {
-      "bgPosition": "100",
-      "bgScale": "cover",
-      "topFadeHeight": "10",
-      "topFadeOpacity": "1",
+      "bgPosition": "bottom",
+      "bgScale": "80%",
+      "topFadeHeight": "0",
+      "topFadeOpacity": "0",
       "bottomFadeHeight": "0",
       "bottomFadeOpacity": "0",
       "sideFadeWidth": "0",
@@ -89,40 +89,20 @@
       {
         "year": "2024",
         "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Jay Winder launched a resonant lab for touring installations, experimenting with ambient operating systems that listen as performers move."
-      },
-      {
-        "year": "2021",
-        "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Crafted WebGL observatories for civic archives, translating sensor data into luminous sonic gradients for public play."
-      },
-      {
-        "year": "2017",
-        "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Embedded with research theaters to build responsive stage controls that blend composer gestures with adaptive lighting."
-      },
-      {
-        "year": "2012",
-        "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Began as a systems artist translating modular synthesis workflows into interactive exhibition tooling and haptic audio consoles."
       }
     ],
     "signals": [
       {
         "term": "Primary Mediums",
         "description": "Lorem ipsum interfaces, ambient OS prototypes, spatial sound choreography."
-      },
-      {
-        "term": "Operating Doctrine",
-        "description": "Lorem ipsum dolor sit amet technologist dictum—craft the atmosphere, prototype with hospitality, and release tools that invite co-authorship."
-      },
-      {
-        "term": "Open Invitations",
-        "description": "Lorem ipsum residencies, collaborative field recordings, and sensor-driven storytelling research."
       }
     ]
   },
   "projects": {
     "backgroundImage": "",
     "footerFadeSettings": {
-      "bgPosition": "70",
-      "bgScale": "cover",
+      "bgPosition": "bottom",
+      "bgScale": "contain",
       "topFadeHeight": "60",
       "topFadeOpacity": "1",
       "bottomFadeHeight": "40",
@@ -142,8 +122,8 @@
   "content": {
     "backgroundImage": "",
     "footerFadeSettings": {
-      "bgPosition": "70",
-      "bgScale": "cover",
+      "bgPosition": "bottom",
+      "bgScale": "contain",
       "topFadeHeight": "60",
       "topFadeOpacity": "1",
       "bottomFadeHeight": "40",
@@ -163,8 +143,8 @@
   "sounds": {
     "backgroundImage": "",
     "footerFadeSettings": {
-      "bgPosition": "70",
-      "bgScale": "cover",
+      "bgPosition": "bottom",
+      "bgScale": "contain",
       "topFadeHeight": "60",
       "topFadeOpacity": "1",
       "bottomFadeHeight": "40",
@@ -184,8 +164,8 @@
   "art": {
     "backgroundImage": "",
     "footerFadeSettings": {
-      "bgPosition": "70",
-      "bgScale": "cover",
+      "bgPosition": "bottom",
+      "bgScale": "contain",
       "topFadeHeight": "60",
       "topFadeOpacity": "1",
       "bottomFadeHeight": "40",

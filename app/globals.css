@@ -3734,7 +3734,9 @@ a {
 }
 
 .admin-field input,
-.admin-field textarea {
+.admin-field textarea,
+.admin-field select,
+.admin-field__select {
   width: 100%;
   border-radius: 14px;
   border: 1px solid rgba(118, 202, 210, 0.25);
@@ -3744,6 +3746,17 @@ a {
   font-size: 0.92rem;
   font-family: inherit;
   letter-spacing: 0.04em;
+}
+
+.admin-field select,
+.admin-field__select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='rgba(226, 236, 238, 0.5)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.7rem center;
+  background-size: 1.2em;
+  padding-right: 2.5rem;
 }
 
 .admin-field textarea {
@@ -9803,8 +9816,8 @@ body.qr-intro-active .site-shell__icon-button {
 .site-footer {
   position: relative;
   margin-top: 0;
-  /* Increased padding to show more of the background image */
-  padding: clamp(24rem, 50vh, 40rem) 0 0; /* Remove bottom padding to be flush */
+  /* Padding for content area */
+  padding: clamp(12rem, 32vh, 26rem) 0 0; /* No bottom padding - image goes to edge */
   width: 100vw;
   margin-left: calc(50% - 50vw);
   overflow: hidden;
@@ -9815,10 +9828,11 @@ body.qr-intro-active .site-shell__icon-button {
   /* Background image set dynamically via inline style */
   /* Supports both admin-uploaded images and fallback SVGs */
   background-size: var(--footer-bg-scale, cover);
-  background-position: center var(--footer-bg-position, 70%); /* Customizable position per page */
+  background-position: center var(--footer-bg-position, bottom); /* Center horizontally, align vertically */
   background-repeat: no-repeat;
   background-color: #000;
-  min-height: 60vh; /* Ensure minimum height to show more image */
+  background-attachment: scroll;
+  min-height: 100vh; /* Full viewport height to show more of the image */
   
   /* Custom properties for page-specific tuning */
   --top-fade-height: 60%;
@@ -9916,7 +9930,7 @@ body.qr-intro-active .site-shell__icon-button {
   z-index: 2;
   max-width: clamp(800px, 70vw, 1000px);
   margin: 0 auto;
-  padding: 0 clamp(1.5rem, 4vw, 3rem);
+  padding: 0 clamp(1.5rem, 4vw, 3rem); /* No bottom padding - let background reach edge */
   text-align: center;
 }
 
@@ -9927,6 +9941,7 @@ body.qr-intro-active .site-shell__icon-button {
   align-items: center;
   justify-content: center;
   min-height: 200px;
+  padding-bottom: clamp(2rem, 4vh, 3rem); /* Content spacing from bottom */
 }
 
 
@@ -10110,7 +10125,8 @@ body.qr-intro-active .site-shell__icon-button {
 
 @media (max-width: 720px) {
   .site-footer {
-    padding: clamp(10rem, 20vh, 14rem) 0 0; /* Remove bottom padding to be flush */
+    padding: clamp(8rem, 22vh, 12rem) 0 0; /* No bottom padding - image goes to edge */
+    min-height: 80vh; /* Slightly less on mobile for better UX */
   }
 
   .site-footer__links {
@@ -10673,6 +10689,84 @@ a {
 
 .fade-control__slider:active::-moz-range-thumb {
   transform: scale(0.95);
+}
+
+/* Footer Settings Presets */
+.admin-presets-section {
+  margin-bottom: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.admin-subsection__title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 1rem;
+}
+
+.preset-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.75rem;
+}
+
+.preset-button {
+  display: flex;
+  flex-direction: column;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: white;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.preset-button:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.preset-button:active {
+  transform: translateY(0);
+}
+
+.preset-button__name {
+  font-weight: 600;
+  font-size: 0.875rem;
+  margin-bottom: 0.25rem;
+}
+
+.preset-button__desc {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.4;
+}
+
+/* Help text for controls */
+.fade-control__help {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+  line-height: 1.4;
+}
+
+/* Footer Preview */
+.footer-preview {
+  margin-top: 1rem;
+}
+
+.footer-preview__container {
+  position: relative;
+  width: 100%;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Appearance Tab */

@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import { Suspense } from 'react';
 import { createChannelContentDefaults } from '../lib/channelContentDefaults';
 import { useAdminFetch } from './admin-session-context';
+import { footerPresets } from '../lib/footerSettingsGuide';
 
 // Dynamically import the image uploader for better code splitting
 const CoverImageUploader = dynamic(() => import('./cover-image-uploader'), {
@@ -936,26 +937,69 @@ export default function ChannelContentEditor({ sections = ['about', 'projects', 
           {/* Fade Controls Section */}
           <div className="admin-section">
             <div className="admin-section__header">
-              <h2 className="admin-section__title">Fade Settings</h2>
+              <h2 className="admin-section__title">Footer Background Settings</h2>
               <p className="admin-section__description">
-                Fine-tune how the background image blends into the page
+                Control how the background image appears in the footer - full bleed, artistic fade, or showcase mode
               </p>
             </div>
             <div className="admin-section__body">
+              {/* Presets Section */}
+              <div className="admin-presets-section">
+                <h3 className="admin-subsection__title">Quick Presets</h3>
+                <div className="preset-buttons">
+                  {Object.entries(footerPresets).map(([key, preset]) => (
+                    <button
+                      key={key}
+                      type="button"
+                      className="preset-button"
+                      onClick={() => {
+                        Object.entries(preset.settings).forEach(([field, value]) => {
+                          handleFadeSettings(field, value);
+                        });
+                        setStatus(`Applied "${preset.name}" preset`);
+                        setTimeout(() => setStatus(''), 3000);
+                      }}
+                      title={preset.description}
+                    >
+                      <span className="preset-button__name">{preset.name}</span>
+                      <span className="preset-button__desc">{preset.description}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <div className="fade-controls-grid">
                 {/* Image Position & Scale */}
                 <div className="fade-control-group">
-                  <h3 className="fade-control-group__title">Image Settings</h3>
-                  <FadeControl
-                    label="Vertical Position"
-                    value={fadeSettings?.bgPosition ?? 70}
-                    onChange={(value) => handleFadeSettings('bgPosition', value)}
-                    min={0}
-                    max={100}
-                    step={5}
-                    suffix="%"
-                  />
-                  <div style={{ marginTop: '1rem' }}>
+                  <h3 className="fade-control-group__title">Image Position & Scale</h3>
+                  
+                  {/* Position Control */}
+                  <div style={{ marginBottom: '1.5rem' }}>
+                    <label className="fade-control__label">
+                      <span className="fade-control__name">Vertical Position</span>
+                    </label>
+                    <select
+                      className="admin-field__select"
+                      value={fadeSettings?.bgPosition ?? 'bottom'}
+                      onChange={(e) => handleFadeSettings('bgPosition', e.target.value)}
+                      style={{ marginTop: '0.5rem', width: '100%' }}
+                    >
+                      <option value="bottom">Bottom (horizon/ground aligned)</option>
+                      <option value="center">Center (vertically centered)</option>
+                      <option value="top">Top (sky/ceiling aligned)</option>
+                      <option value="0">0% - Full Bottom</option>
+                      <option value="25">25% - Lower Third</option>
+                      <option value="50">50% - Middle</option>
+                      <option value="75">75% - Upper Third</option>
+                      <option value="100">100% - Full Top</option>
+                    </select>
+                    <small className="fade-control__help">
+                      Use "Bottom" for horizon images like the space shuttle
+                    </small>
+                  </div>
+
+                  {/* Scale Control */}
+                  <div>
                     <label className="fade-control__label">
                       <span className="fade-control__name">Scale Mode</span>
                     </label>
@@ -965,14 +1009,13 @@ export default function ChannelContentEditor({ sections = ['about', 'projects', 
                       onChange={(e) => handleFadeSettings('bgScale', e.target.value)}
                       style={{ marginTop: '0.5rem', width: '100%' }}
                     >
-                      <option value="cover">Cover (fills container)</option>
-                      <option value="contain">Contain (fits entirely)</option>
-                      <option value="120%">120% (slightly zoomed)</option>
-                      <option value="150%">150% (more zoomed)</option>
-                      <option value="200%">200% (double size)</option>
-                      <option value="80%">80% (slightly smaller)</option>
-                      <option value="auto">Auto (original size)</option>
+                      <option value="cover">Cover - Fills entire width (may crop)</option>
+                      <option value="contain">Contain - Shows entire image (may have gaps)</option>
+                      <option value="auto">Auto - Original size</option>
                     </select>
+                    <small className="fade-control__help">
+                      Use "Cover" for full-bleed hero images, "Contain" to show artwork entirely
+                    </small>
                   </div>
                 </div>
 
@@ -1043,6 +1086,111 @@ export default function ChannelContentEditor({ sections = ['about', 'projects', 
                     step={5}
                     suffix="%"
                   />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Visual Preview */}
+          <div className="admin-section">
+            <div className="admin-section__header">
+              <h2 className="admin-section__title">Live Preview</h2>
+              <p className="admin-section__description">
+                See how your settings will look in the footer
+              </p>
+            </div>
+            <div className="admin-section__body">
+              <div className="footer-preview">
+                <div 
+                  className="footer-preview__container"
+                  style={{
+                    backgroundImage: currentSection === 'about' && content.about?.aboutBackgroundImage 
+                      ? `url(${content.about.aboutBackgroundImage})` 
+                      : content[currentSection]?.backgroundImage 
+                        ? `url(${content[currentSection].backgroundImage})` 
+                        : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    backgroundSize: fadeSettings?.bgScale || 'cover',
+                    backgroundPosition: `center ${fadeSettings?.bgPosition || 'bottom'}`,
+                    backgroundRepeat: 'no-repeat',
+                    position: 'relative',
+                    height: '300px',
+                    borderRadius: '8px',
+                    overflow: 'hidden',
+                    backgroundColor: '#000',
+                  }}
+                >
+                  {/* Top fade overlay */}
+                  {fadeSettings?.topFadeHeight > 0 && (
+                    <div 
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: `${fadeSettings.topFadeHeight}%`,
+                        background: `linear-gradient(to bottom, rgba(0,0,0,${fadeSettings.topFadeOpacity || 0}) 0%, transparent 100%)`,
+                        pointerEvents: 'none',
+                      }}
+                    />
+                  )}
+                  {/* Bottom fade overlay */}
+                  {fadeSettings?.bottomFadeHeight > 0 && (
+                    <div 
+                      style={{
+                        position: 'absolute',
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        height: `${fadeSettings.bottomFadeHeight}%`,
+                        background: `linear-gradient(to top, rgba(0,0,0,${fadeSettings.bottomFadeOpacity || 0}) 0%, transparent 100%)`,
+                        pointerEvents: 'none',
+                      }}
+                    />
+                  )}
+                  {/* Side fade overlays */}
+                  {fadeSettings?.sideFadeWidth > 0 && (
+                    <>
+                      <div 
+                        style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          bottom: 0,
+                          width: `${fadeSettings.sideFadeWidth}%`,
+                          background: `linear-gradient(to right, rgba(0,0,0,${fadeSettings.sideFadeOpacity || 0}) 0%, transparent 100%)`,
+                          pointerEvents: 'none',
+                        }}
+                      />
+                      <div 
+                        style={{
+                          position: 'absolute',
+                          top: 0,
+                          right: 0,
+                          bottom: 0,
+                          width: `${fadeSettings.sideFadeWidth}%`,
+                          background: `linear-gradient(to left, rgba(0,0,0,${fadeSettings.sideFadeOpacity || 0}) 0%, transparent 100%)`,
+                          pointerEvents: 'none',
+                        }}
+                      />
+                    </>
+                  )}
+                  {/* Sample content */}
+                  <div style={{
+                    position: 'absolute',
+                    bottom: '2rem',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    textAlign: 'center',
+                    color: 'white',
+                    zIndex: 2,
+                  }}>
+                    <div style={{ fontSize: '0.75rem', opacity: 0.7, marginBottom: '0.5rem' }}>Footer Content Preview</div>
+                    <div style={{ display: 'flex', gap: '2rem', alignItems: 'center', justifyContent: 'center' }}>
+                      <span style={{ fontSize: '1rem' }}>📧</span>
+                      <span style={{ fontSize: '0.875rem', opacity: 0.8 }}>your@email.com</span>
+                      <span style={{ fontSize: '0.875rem', fontWeight: 600 }}>WORK WITH ME</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

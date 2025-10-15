@@ -17,7 +17,7 @@ const PROTECTED_API_PREFIXES = [
   '/api/upload'
 ];
 
-const SAFE_API_READ_PREFIXES = ['/api/site-text', '/api/field-settings'];
+const SAFE_API_READ_PREFIXES = ['/api/site-text', '/api/field-settings', '/api/channel-content'];
 const ALLOWED_COUNTRIES = new Set(['JP']);
 
 const isProductionDeployment = process.env.VERCEL_ENV

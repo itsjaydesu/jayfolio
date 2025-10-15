@@ -78,14 +78,7 @@ export default function SiteFooter({ className = '' }) {
             }
           }
         }
-        
-        console.log('🔍 SiteFooter Background Debug:', {
-          path: pathname,
-          segments,
-          backgroundImage,
-          hasBackgroundImage: Boolean(backgroundImage),
-          fadeSettings: settings
-        });
+
         
         if (!ignore) {
           setAdminFooterImage(backgroundImage || '');
@@ -102,7 +95,6 @@ export default function SiteFooter({ className = '' }) {
   const backgroundImage = useMemo(() => {
     // Use admin-uploaded image if available
     if (adminFooterImage) {
-      console.log('🎨 Using admin footer image:', adminFooterImage);
       return adminFooterImage;
     }
     // Otherwise use fallback SVG based on current path
@@ -110,7 +102,6 @@ export default function SiteFooter({ className = '' }) {
     const fallback = !segments.length 
       ? FALLBACK_BACKGROUNDS.home
       : FALLBACK_BACKGROUNDS[segments[0]] || FALLBACK_BACKGROUNDS.default;
-    console.log('🎨 Using fallback SVG:', fallback, 'for path:', pathname);
     return fallback;
   }, [pathname, adminFooterImage]);
 
@@ -138,7 +129,7 @@ export default function SiteFooter({ className = '' }) {
 
     observer.observe(node);
     return () => observer.disconnect();
-  }, []);
+  }, [backgroundImage, fadeSettings]);
 
   const socialLinks = [
     {
@@ -192,18 +183,58 @@ export default function SiteFooter({ className = '' }) {
     };
     
     if (fadeSettings) {
-      style['--footer-bg-position'] = `${fadeSettings.bgPosition}%`;
-      style['--footer-bg-scale'] = fadeSettings.bgScale || 'cover';
-      style['--top-fade-height'] = `${fadeSettings.topFadeHeight}%`;
-      style['--top-fade-start'] = fadeSettings.topFadeOpacity;
-      style['--bottom-fade-height'] = `${fadeSettings.bottomFadeHeight}%`;
-      style['--bottom-fade-start'] = fadeSettings.bottomFadeOpacity;
-      style['--side-fade-width'] = `${fadeSettings.sideFadeWidth}%`;
-      style['--side-fade-start'] = fadeSettings.sideFadeOpacity;
+      const rawPosition = fadeSettings.bgPosition || 'bottom';
+      const scaleMode = (fadeSettings.bgScale || 'cover').toLowerCase();
+      
+      // Parse position value for proper alignment
+      // Admin can use: 'bottom', 'center', 'top', or numeric values (0-100)
+      let positionValue = 'bottom'; // Default to bottom alignment
+      
+      // Handle different position formats
+      if (rawPosition === 'bottom' || rawPosition === 0 || rawPosition === '0') {
+        positionValue = 'bottom';
+      } else if (rawPosition === 'top' || rawPosition === 100 || rawPosition === '100') {
+        positionValue = 'top';
+      } else if (rawPosition === 'center' || rawPosition === 50 || rawPosition === '50') {
+        positionValue = 'center';
+      } else if (typeof rawPosition === 'number' || !isNaN(parseFloat(rawPosition))) {
+        // For numeric values, convert to percentage
+        const numValue = typeof rawPosition === 'number' ? rawPosition : parseFloat(rawPosition);
+        // Map 0 to bottom, 100 to top (inverted for intuitive control)
+        const invertedValue = 100 - numValue;
+        positionValue = `${Math.max(0, Math.min(100, invertedValue))}%`;
+      } else if (rawPosition) {
+        // Use the raw string value if it's a valid CSS position
+        positionValue = rawPosition.toString().trim();
+      }
+
+      // Log only in development for debugging
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Footer Config:', {
+          path: pathname,
+          scale: scaleMode,
+          position: positionValue,
+          hasFades: (fadeSettings.topFadeHeight > 0 || fadeSettings.bottomFadeHeight > 0)
+        });
+      }
+
+      style['--footer-bg-position'] = positionValue;
+      style['--footer-bg-scale'] = scaleMode;
+      style['--top-fade-height'] = `${fadeSettings.topFadeHeight || 0}%`;
+      style['--top-fade-start'] = fadeSettings.topFadeOpacity || 1;
+      style['--bottom-fade-height'] = `${fadeSettings.bottomFadeHeight || 0}%`;
+      style['--bottom-fade-start'] = fadeSettings.bottomFadeOpacity || 0;
+      style['--side-fade-width'] = `${fadeSettings.sideFadeWidth || 0}%`;
+      style['--side-fade-start'] = fadeSettings.sideFadeOpacity || 0;
+    } else {
+      // No fade settings, use sensible defaults
+      style['--footer-bg-position'] = 'bottom'; // Bottom alignment
+      style['--footer-bg-scale'] = 'cover';
+
     }
     
     return style;
-  }, [backgroundImage, fadeSettings]);
+  }, [backgroundImage, fadeSettings, pathname]);
 
   return (
     <footer
