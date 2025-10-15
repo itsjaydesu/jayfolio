@@ -2,7 +2,8 @@
   "about": {
     "aboutBackgroundImage": "https://irq8pcmcsnz9tzjh.public.blob.vercel-storage.com/bg-about-SFgPZz38rSMJbnuXTSKFgH8AKFeTYA.jpg",
     "aboutFooterFadeSettings": {
-      "bgPosition": "70",
+      "bgPosition": "100",
+      "bgScale": "cover",
       "topFadeHeight": "10",
       "topFadeOpacity": "1",
       "bottomFadeHeight": "0",
@@ -121,6 +122,7 @@
     "backgroundImage": "",
     "footerFadeSettings": {
       "bgPosition": "70",
+      "bgScale": "cover",
       "topFadeHeight": "60",
       "topFadeOpacity": "1",
       "bottomFadeHeight": "40",
@@ -141,6 +143,7 @@
     "backgroundImage": "",
     "footerFadeSettings": {
       "bgPosition": "70",
+      "bgScale": "cover",
       "topFadeHeight": "60",
       "topFadeOpacity": "1",
       "bottomFadeHeight": "40",
@@ -161,6 +164,7 @@
     "backgroundImage": "",
     "footerFadeSettings": {
       "bgPosition": "70",
+      "bgScale": "cover",
       "topFadeHeight": "60",
       "topFadeOpacity": "1",
       "bottomFadeHeight": "40",
@@ -181,6 +185,7 @@
     "backgroundImage": "",
     "footerFadeSettings": {
       "bgPosition": "70",
+      "bgScale": "cover",
       "topFadeHeight": "60",
       "topFadeOpacity": "1",
       "bottomFadeHeight": "40",

@@ -193,6 +193,7 @@ export default function SiteFooter({ className = '' }) {
     
     if (fadeSettings) {
       style['--footer-bg-position'] = `${fadeSettings.bgPosition}%`;
+      style['--footer-bg-scale'] = fadeSettings.bgScale || 'cover';
       style['--top-fade-height'] = `${fadeSettings.topFadeHeight}%`;
       style['--top-fade-start'] = fadeSettings.topFadeOpacity;
       style['--bottom-fade-height'] = `${fadeSettings.bottomFadeHeight}%`;

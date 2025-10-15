@@ -9804,7 +9804,7 @@ body.qr-intro-active .site-shell__icon-button {
   position: relative;
   margin-top: 0;
   /* Increased padding to show more of the background image */
-  padding: clamp(24rem, 50vh, 40rem) 0 clamp(8rem, 15vh, 12rem);
+  padding: clamp(24rem, 50vh, 40rem) 0 0; /* Remove bottom padding to be flush */
   width: 100vw;
   margin-left: calc(50% - 50vw);
   overflow: hidden;
@@ -9814,7 +9814,7 @@ body.qr-intro-active .site-shell__icon-button {
     transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
   /* Background image set dynamically via inline style */
   /* Supports both admin-uploaded images and fallback SVGs */
-  background-size: cover;
+  background-size: var(--footer-bg-scale, cover);
   background-position: center var(--footer-bg-position, 70%); /* Customizable position per page */
   background-repeat: no-repeat;
   background-color: #000;
@@ -10110,7 +10110,7 @@ body.qr-intro-active .site-shell__icon-button {
 
 @media (max-width: 720px) {
   .site-footer {
-    padding: clamp(10rem, 20vh, 14rem) 0 clamp(4rem, 10vh, 6rem);
+    padding: clamp(10rem, 20vh, 14rem) 0 0; /* Remove bottom padding to be flush */
   }
 
   .site-footer__links {

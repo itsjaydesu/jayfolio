@@ -164,6 +164,7 @@ export default function ChannelContentEditor({ sections = ['about', 'projects', 
     if (!rawFadeSettings) return null;
     return {
       bgPosition: !isNaN(parseFloat(rawFadeSettings.bgPosition)) ? parseFloat(rawFadeSettings.bgPosition) : 70,
+      bgScale: rawFadeSettings.bgScale || 'cover',
       topFadeHeight: !isNaN(parseFloat(rawFadeSettings.topFadeHeight)) ? parseFloat(rawFadeSettings.topFadeHeight) : 60,
       topFadeOpacity: !isNaN(parseFloat(rawFadeSettings.topFadeOpacity)) ? parseFloat(rawFadeSettings.topFadeOpacity) : 1,
       bottomFadeHeight: !isNaN(parseFloat(rawFadeSettings.bottomFadeHeight)) ? parseFloat(rawFadeSettings.bottomFadeHeight) : 40,
@@ -294,6 +295,7 @@ export default function ChannelContentEditor({ sections = ['about', 'projects', 
     // Get default values from channelContentDefaults
     const defaultFadeSettings = {
       bgPosition: '70',
+      bgScale: 'cover',
       topFadeHeight: '60',
       topFadeOpacity: '1',
       bottomFadeHeight: '40',
@@ -941,9 +943,9 @@ export default function ChannelContentEditor({ sections = ['about', 'projects', 
             </div>
             <div className="admin-section__body">
               <div className="fade-controls-grid">
-                {/* Image Position */}
+                {/* Image Position & Scale */}
                 <div className="fade-control-group">
-                  <h3 className="fade-control-group__title">Image Position</h3>
+                  <h3 className="fade-control-group__title">Image Settings</h3>
                   <FadeControl
                     label="Vertical Position"
                     value={fadeSettings?.bgPosition ?? 70}
@@ -953,6 +955,25 @@ export default function ChannelContentEditor({ sections = ['about', 'projects', 
                     step={5}
                     suffix="%"
                   />
+                  <div style={{ marginTop: '1rem' }}>
+                    <label className="fade-control__label">
+                      <span className="fade-control__name">Scale Mode</span>
+                    </label>
+                    <select
+                      className="admin-field__select"
+                      value={fadeSettings?.bgScale ?? 'cover'}
+                      onChange={(e) => handleFadeSettings('bgScale', e.target.value)}
+                      style={{ marginTop: '0.5rem', width: '100%' }}
+                    >
+                      <option value="cover">Cover (fills container)</option>
+                      <option value="contain">Contain (fits entirely)</option>
+                      <option value="120%">120% (slightly zoomed)</option>
+                      <option value="150%">150% (more zoomed)</option>
+                      <option value="200%">200% (double size)</option>
+                      <option value="80%">80% (slightly smaller)</option>
+                      <option value="auto">Auto (original size)</option>
+                    </select>
+                  </div>
                 </div>
 
                 {/* Top Fade */}
