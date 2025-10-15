@@ -3,9 +3,9 @@
     "aboutBackgroundImage": "https://irq8pcmcsnz9tzjh.public.blob.vercel-storage.com/bg-about-SFgPZz38rSMJbnuXTSKFgH8AKFeTYA.jpg",
     "aboutFooterFadeSettings": {
       "bgPosition": "bottom",
-      "bgScale": "80%",
-      "topFadeHeight": "0",
-      "topFadeOpacity": "0",
+      "bgScale": "cover",
+      "topFadeHeight": "10",
+      "topFadeOpacity": "1",
       "bottomFadeHeight": "0",
       "bottomFadeOpacity": "0",
       "sideFadeWidth": "0",
