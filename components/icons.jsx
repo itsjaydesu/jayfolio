@@ -32,7 +32,7 @@ export function DotfieldIcon({ className }) {
       {[0, 1, 2].map((index) => {
         const x = 6 + index * 6; // Position dots at x = 6, 12, 18
         const y = 12; // Center vertically
-        const delay = index * 0.3; // Stagger the animation for wave effect
+        const delay = index * 1.5; // Stagger the animation for wave effect
 
         return (
           <circle
@@ -48,14 +48,14 @@ export function DotfieldIcon({ className }) {
             <animate
               attributeName="r"
               values="2;3.5;2"
-              dur="2.4s"
+              dur="12s"
               begin={`${delay}s`}
               repeatCount="indefinite"
             />
             <animate
               attributeName="opacity"
               values="0.4;1;0.4"
-              dur="2.4s"
+              dur="12s"
               begin={`${delay}s`}
               repeatCount="indefinite"
             />

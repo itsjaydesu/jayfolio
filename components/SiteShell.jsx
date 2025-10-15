@@ -16,7 +16,6 @@ import { t, getLocalizedContent } from "../lib/translations";
 
 const DOTFIELD_OVERLAY_FADE_MS = 520;
 const DOTFIELD_EFFECT_SEQUENCE = [
-  'calmReset',
   'jitter',
   'swirlPulse',
   'spiralFlow',
@@ -1105,15 +1104,13 @@ export default function SiteShell({ children, isAdmin = false }) {
             title={fieldEffectsLabel}
           >
             <svg
-              viewBox="0 0 20 20"
+              viewBox="0 0 24 24"
               aria-hidden="true"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
+              fill="currentColor"
             >
-              <circle cx="10" cy="10" r="3" />
-              <path d="M10 3.5v-1m0 15v-1m6.5-6.5h1m-15 0h1" />
-              <path d="M14.5 5.5l.7-.7m-10.4 10.4l.7-.7m0-9.4l-.7-.7m10.4 10.4l-.7-.7" />
+              <circle cx="5" cy="12" r="2" />
+              <circle cx="12" cy="12" r="2" />
+              <circle cx="19" cy="12" r="2" />
             </svg>
           </button>
           {isDotfieldFieldPanelOpen ? (
@@ -1124,6 +1121,14 @@ export default function SiteShell({ children, isAdmin = false }) {
                   <span>{t('menu.tooltip.effect-active', language, { effect: activeEffectInfo.name })}</span>
                 ) : null}
               </div>
+              <button
+                type="button"
+                className="dotfield-overlay__panel-btn dotfield-overlay__panel-btn--zen"
+                onClick={() => handleFieldEffect('calmReset')}
+                title={t('effects.calmReset.tooltip', language)}
+              >
+                <span>{t('effects.calmReset', language)}</span>
+              </button>
               <div className="dotfield-overlay__panel-grid">
                 {DOTFIELD_EFFECT_SEQUENCE.map((effectKey) => (
                   <button

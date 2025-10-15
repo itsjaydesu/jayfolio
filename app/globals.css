@@ -5955,7 +5955,7 @@ a {
 }
 
 .dotfield-icon-animated .dotfield-dot {
-  animation: dotWave 2.4s ease-in-out infinite;
+  animation: dotWave 12s ease-in-out infinite;
   transform-origin: center;
   transition: fill 0.3s ease;
 }
@@ -5973,13 +5973,23 @@ a {
 
 /* Hover effect for dotfield button - slightly faster */
 .site-shell__icon-button--action:hover .dotfield-icon-animated .dotfield-dot {
-  animation-duration: 1.8s;
+  animation-duration: 9s;
 }
 
-/* Active state - faster animation and different color */
+/* Active state - faster animation, no border change */
 .site-shell__icon-button--action.is-active .dotfield-icon-animated .dotfield-dot {
-  animation-duration: 1.2s;
+  animation-duration: 6s;
   fill: rgba(138, 248, 255, 0.9);
+}
+
+/* Override active state for dotfield button - no border highlight */
+.site-shell__icon-button.site-shell__icon-button--action.is-active {
+  border-color: rgba(138, 248, 255, 0.25) !important;
+  background: radial-gradient(
+    circle at 30% 20%,
+    rgba(12, 28, 36, 0.92),
+    rgba(6, 18, 26, 0.78)
+  ) !important;
 }
 
 /* Mobile header layout - Jayfolio + icons on top, menu below */
@@ -7943,9 +7953,9 @@ body.qr-intro-active .site-shell__icon-button {
   position: fixed;
   inset: 0;
   z-index: 140;
-  display: grid;
-  grid-template-rows: auto 1fr;
-  padding: clamp(1rem, 3vw, 2.2rem);
+  display: block; /* Changed from grid to block for full canvas */
+  padding: 0; /* Removed padding for true fullscreen */
+  margin: 0; /* Ensure no margin */
   background: radial-gradient(
       circle at 24% -10%,
       rgba(46, 108, 136, 0.45),
@@ -7968,19 +7978,25 @@ body.qr-intro-active .site-shell__icon-button {
 }
 
 .dotfield-overlay__controls {
+  position: absolute; /* Position over the canvas */
+  top: 0;
+  right: 0;
+  left: 0;
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   align-items: center;
   gap: clamp(0.6rem, 1.8vw, 1.2rem);
-  position: relative;
-  z-index: 2;
+  padding: clamp(1rem, 3vw, 2.2rem);
+  z-index: 10; /* Above the canvas */
 }
 
 .dotfield-overlay__control {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(138, 248, 255, 0.28);
+  border: 1px solid rgba(138, 248, 255, 0.2);
+  background: rgba(8, 22, 30, 0.25);
+  backdrop-filter: blur(16px) saturate(130%);
   color: rgba(226, 246, 252, 0.92);
   transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease,
     background 0.2s ease;
@@ -8000,14 +8016,13 @@ body.qr-intro-active .site-shell__icon-button {
   text-transform: uppercase;
   letter-spacing: 0.22em;
   font-size: 0.62rem;
-  background: rgba(8, 24, 36, 0.8);
 }
 
 .dotfield-overlay__control--primary:hover,
 .dotfield-overlay__control--primary:focus-visible {
   transform: translateY(-2px);
-  border-color: rgba(138, 248, 255, 0.5);
-  background: rgba(14, 40, 54, 0.88);
+  border-color: rgba(138, 248, 255, 0.35);
+  background: rgba(14, 40, 54, 0.35);
   box-shadow: 0 18px 32px rgba(0, 0, 0, 0.36);
 }
 
@@ -8020,23 +8035,22 @@ body.qr-intro-active .site-shell__icon-button {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: radial-gradient(
-    circle at 30% 20%,
-    rgba(12, 32, 42, 0.88),
-    rgba(6, 20, 30, 0.82)
-  );
+  background: rgba(8, 22, 30, 0.25);
+  backdrop-filter: blur(16px) saturate(130%);
+}
+
+.dotfield-overlay__control--icon svg {
+  width: 20px;
+  height: 20px;
+  opacity: 0.9;
 }
 
 .dotfield-overlay__control--icon:hover,
 .dotfield-overlay__control--icon:focus-visible,
 .dotfield-overlay__control--icon.is-active {
   transform: translateY(-2px);
-  border-color: rgba(138, 248, 255, 0.5);
-  background: radial-gradient(
-    circle at 30% 20%,
-    rgba(22, 60, 74, 0.96),
-    rgba(10, 26, 36, 0.86)
-  );
+  border-color: rgba(138, 248, 255, 0.35);
+  background: rgba(10, 26, 36, 0.4);
   box-shadow: 0 18px 32px rgba(0, 0, 0, 0.34);
 }
 
@@ -8049,14 +8063,11 @@ body.qr-intro-active .site-shell__icon-button {
   gap: 1rem;
   padding: clamp(1rem, 3vw, 1.4rem);
   border-radius: 22px;
-  border: 1px solid rgba(138, 248, 255, 0.35);
-  background: linear-gradient(
-    160deg,
-    rgba(6, 38, 54, 0.95),
-    rgba(4, 18, 28, 0.9)
-  );
+  border: 1px solid rgba(138, 248, 255, 0.2);
+  /* Transparent background like the root menu */
+  background: rgba(4, 18, 28, 0.15);
+  backdrop-filter: blur(20px) saturate(140%);
   box-shadow: 0 28px 60px rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(22px) saturate(130%);
 }
 
 .dotfield-overlay__panel-header {
@@ -8082,12 +8093,10 @@ body.qr-intro-active .site-shell__icon-button {
   justify-content: center;
   padding: 0.65rem 0.75rem;
   border-radius: 12px;
-  border: 1px solid rgba(138, 248, 255, 0.2);
-  background: linear-gradient(
-    140deg,
-    rgba(10, 28, 38, 0.82),
-    rgba(8, 20, 28, 0.68)
-  );
+  border: 1px solid rgba(138, 248, 255, 0.15);
+  /* Transparent button background */
+  background: rgba(8, 20, 28, 0.2);
+  backdrop-filter: blur(12px) saturate(120%);
   color: rgba(214, 240, 246, 0.9);
   font-size: 0.82rem;
   letter-spacing: 0.05em;
@@ -8096,17 +8105,32 @@ body.qr-intro-active .site-shell__icon-button {
     box-shadow 0.2s ease;
 }
 
+/* Zen button spans full width */
+.dotfield-overlay__panel-btn--zen {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  border-radius: 16px;
+}
+
 .dotfield-overlay__panel-btn:hover,
 .dotfield-overlay__panel-btn:focus-visible {
   outline: none;
   transform: translateY(-1px);
-  border-color: rgba(138, 248, 255, 0.5);
-  background: linear-gradient(
-    140deg,
-    rgba(20, 60, 78, 0.92),
-    rgba(12, 32, 44, 0.78)
-  );
+  border-color: rgba(138, 248, 255, 0.3);
+  background: rgba(12, 32, 44, 0.35);
   box-shadow: 0 16px 30px rgba(0, 0, 0, 0.32);
+}
+
+/* Zen button hover has slightly different effect */
+.dotfield-overlay__panel-btn--zen:hover,
+.dotfield-overlay__panel-btn--zen:focus-visible {
+  transform: translateY(-2px);
+  border-color: rgba(138, 248, 255, 0.4);
+  background: rgba(16, 40, 52, 0.4);
 }
 
 .dotfield-overlay__panel-btn span {
@@ -8114,8 +8138,10 @@ body.qr-intro-active .site-shell__icon-button {
 }
 
 .dotfield-overlay__canvas {
-  position: relative;
+  position: absolute; /* Fill the entire overlay */
+  inset: 0;
   overflow: hidden;
+  z-index: 1;
 }
 
 .dotfield-overlay__canvas .canvas-placeholder,
@@ -8163,7 +8189,8 @@ body.qr-intro-active .site-shell__icon-button {
 }
 
 .site-shell__icon-button.is-active {
-  border-color: rgba(138, 248, 255, 0.5);
+  /* Keep the same border as normal state, no green highlight */
+  border-color: rgba(138, 248, 255, 0.25);
   background: radial-gradient(
     circle at 30% 20%,
     rgba(24, 60, 74, 0.96),
