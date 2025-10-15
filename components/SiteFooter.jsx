@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import { usePathname } from 'next/navigation';
 import { InstagramIcon, XLogoIcon } from './icons';
 
@@ -9,39 +9,16 @@ function validateEmail(value) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 }
 
-const FOOTER_SCENES = {
-  home: {
-    glow: 'rgba(255, 140, 90, 0.4)',
-    horizon: 'rgba(100, 180, 255, 0.15)'
-  },
-  about: {
-    glow: 'rgba(232, 210, 255, 0.35)',
-    horizon: 'rgba(180, 160, 255, 0.12)'
-  },
-  projects: {
-    glow: 'rgba(126, 248, 210, 0.4)',
-    horizon: 'rgba(80, 200, 180, 0.15)'
-  },
-  content: {
-    glow: 'rgba(248, 222, 174, 0.35)',
-    horizon: 'rgba(255, 200, 120, 0.12)'
-  },
-  sounds: {
-    glow: 'rgba(154, 214, 255, 0.4)',
-    horizon: 'rgba(100, 160, 255, 0.15)'
-  },
-  art: {
-    glow: 'rgba(242, 176, 255, 0.35)',
-    horizon: 'rgba(200, 140, 255, 0.12)'
-  },
-  'work-with-me': {
-    glow: 'rgba(124, 255, 206, 0.4)',
-    horizon: 'rgba(80, 220, 180, 0.15)'
-  },
-  default: {
-    glow: 'rgba(255, 140, 90, 0.4)',
-    horizon: 'rgba(100, 180, 255, 0.15)'
-  }
+// Fallback SVG backgrounds if no admin image is set
+const FALLBACK_BACKGROUNDS = {
+  home: '/images/footer/home.svg',
+  about: '/images/footer/about.svg',
+  projects: '/images/footer/projects.svg',
+  content: '/images/footer/content.svg',
+  sounds: '/images/footer/sounds.svg',
+  art: '/images/footer/art.svg',
+  'work-with-me': '/images/footer/work-with-me.svg',
+  default: '/images/footer/home.svg'
 };
 
 export default function SiteFooter({ className = '' }) {
@@ -49,24 +26,84 @@ export default function SiteFooter({ className = '' }) {
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState({ type: 'idle', message: '' });
   const [isVisible, setIsVisible] = useState(false);
+  const [adminFooterImage, setAdminFooterImage] = useState('');
   const footerRef = useRef(null);
 
-  const sceneKey = useMemo(() => {
-    const segments = pathname?.split('/').filter(Boolean) ?? [];
-    if (!segments.length) return 'home';
-    const first = segments[0];
-    if (FOOTER_SCENES[first]) {
-      return first;
-    }
-    return 'default';
+  // Fetch page-specific background image
+  useEffect(() => {
+    let ignore = false;
+    (async () => {
+      try {
+        const segments = pathname?.split('/').filter(Boolean) ?? [];
+        let backgroundImage = '';
+        
+        // Check if we're on a content/blog post page with a slug
+        if (segments.length === 2) {
+          const [section, slug] = segments;
+          const contentTypes = ['projects', 'content', 'sounds', 'art'];
+          
+          if (contentTypes.includes(section)) {
+            // Fetch the specific content item
+            const res = await fetch(`/api/content/${section}`);
+            if (res.ok) {
+              const data = await res.json();
+              const entry = data.entries?.find(e => e.slug === slug);
+              if (entry?.backgroundImage) {
+                backgroundImage = entry.backgroundImage;
+              }
+            }
+          }
+        }
+        
+        // If no content-specific image, check channel backgrounds
+        if (!backgroundImage && segments.length > 0) {
+          const res = await fetch('/api/channel-content');
+          if (res.ok) {
+            const data = await res.json();
+            const section = segments[0];
+            
+            if (section === 'about') {
+              backgroundImage = data.content?.about?.aboutBackgroundImage || '';
+            } else if (data.content?.[section]) {
+              backgroundImage = data.content[section]?.backgroundImage || '';
+            }
+          }
+        }
+        
+        console.log('🔍 SiteFooter Background Debug:', {
+          path: pathname,
+          segments,
+          backgroundImage,
+          hasBackgroundImage: Boolean(backgroundImage)
+        });
+        
+        if (!ignore && backgroundImage) {
+          setAdminFooterImage(backgroundImage);
+        } else if (!ignore) {
+          setAdminFooterImage('');
+        }
+      } catch (error) {
+        console.error('Failed to load footer background:', error);
+      }
+    })();
+    return () => { ignore = true; };
   }, [pathname]);
 
-  const sceneConfig = FOOTER_SCENES[sceneKey] ?? FOOTER_SCENES.default;
-
-  const footerStyle = useMemo(() => ({
-    '--footer-scene-glow': sceneConfig.glow,
-    '--footer-scene-horizon': sceneConfig.horizon
-  }), [sceneConfig]);
+  // Determine which background image to use
+  const backgroundImage = useMemo(() => {
+    // Use admin-uploaded image if available
+    if (adminFooterImage) {
+      console.log('🎨 Using admin footer image:', adminFooterImage);
+      return adminFooterImage;
+    }
+    // Otherwise use fallback SVG based on current path
+    const segments = pathname?.split('/').filter(Boolean) ?? [];
+    const fallback = !segments.length 
+      ? FALLBACK_BACKGROUNDS.home
+      : FALLBACK_BACKGROUNDS[segments[0]] || FALLBACK_BACKGROUNDS.default;
+    console.log('🎨 Using fallback SVG:', fallback, 'for path:', pathname);
+    return fallback;
+  }, [pathname, adminFooterImage]);
 
   useEffect(() => {
     const node = footerRef.current;
@@ -139,20 +176,16 @@ export default function SiteFooter({ className = '' }) {
   if (className) footerClasses.push(className);
   if (isVisible) footerClasses.push('site-footer--visible');
 
-  footerClasses.push(`site-footer--${sceneKey}`);
-
   return (
     <footer
       ref={footerRef}
       className={footerClasses.join(' ')}
       aria-label="Site footer with newsletter signup"
-      data-footer-scene={sceneKey}
-      style={footerStyle}
+      style={{
+        backgroundImage: `url(${backgroundImage})`
+      }}
     >
-      <div className="site-footer__backdrop" aria-hidden="true">
-        <div className="site-footer__horizon" />
-        <div className="site-footer__glow" />
-      </div>
+
       <div className="site-footer__container">
         <div className="site-footer__content">
           <div className="site-footer__links">
@@ -176,11 +209,11 @@ export default function SiteFooter({ className = '' }) {
             </nav>
             
             <form className="site-footer__form" onSubmit={handleSubmit} noValidate>
-              <p className="site-footer__description" id="email-description">
-                Receive very occasional updates when Jay releases something?<br />
-                Enter your email to get maybe one email a month, amoth.
-              </p>
               <div className="site-footer__input-wrapper">
+                <p className="site-footer__description" id="email-description">
+                  Receive very occasional updates when Jay releases something?<br />
+                  Enter your email to get maybe one email a month, amoth.
+                </p>
                 <svg className="site-footer__input-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.5"/>
                   <path d="M3 7L12 13L21 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>

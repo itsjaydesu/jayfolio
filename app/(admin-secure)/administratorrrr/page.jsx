@@ -18,6 +18,11 @@ const CoverImageUploader = dynamic(() => import('@/components/cover-image-upload
   ssr: false
 });
 
+const MediaSelector = dynamic(() => import('@/components/media-selector'), {
+  loading: () => <div className="uploader-loading">Loading selector...</div>,
+  ssr: false
+});
+
 const TYPE_OPTIONS = [
   { id: 'projects', label: 'Projects' },
   { id: 'content', label: 'Content' },
@@ -179,6 +184,8 @@ function buildInitialForm() {
     status: 'draft',
     coverImageUrl: '',
     coverImageAlt: { en: '', ja: '' },
+    backgroundImageUrl: '',
+    galleryImages: [],
     createdAt: today,
     content: { en: INITIAL_CONTENT, ja: INITIAL_CONTENT }
   };
@@ -296,6 +303,8 @@ export default function AdminPage() {
       status: entry.status || 'draft',
       coverImageUrl: entry.coverImage?.url || '',
       coverImageAlt: ensureLocalizedField(entry.coverImage?.alt, ''),
+      backgroundImageUrl: entry.backgroundImage || '',
+      galleryImages: entry.galleryImages || [],
       createdAt: formatDateValue(entry.createdAt),
       content: ensureLocalizedRichText(entry.content || INITIAL_CONTENT)
     });
@@ -420,6 +429,8 @@ export default function AdminPage() {
               alt: prepareLocalizedField(form.coverImageAlt)
             }
           : null,
+        backgroundImage: form.backgroundImageUrl?.trim() || '',
+        galleryImages: form.galleryImages || [],
         createdAt: formatDateValue(form.createdAt) || new Date().toISOString().slice(0, 10)
       };
 
@@ -734,6 +745,68 @@ export default function AdminPage() {
                     onChange={(event) => handleLocalizedFieldChange('coverImageAlt', activeLanguage, event.target.value)}
                     placeholder="Describe the cover image"
                   />
+                </div>
+              </div>
+            </section>
+
+            <section className="editor-panel editor-panel--full">
+              <header className="editor-panel__header">
+                <h2>Background Image</h2>
+              </header>
+              <div className="editor-panel__body">
+                <Suspense fallback={<div className="uploader-loading">Loading selector...</div>}>
+                  <MediaSelector
+                    value={form.backgroundImageUrl || ''}
+                    onChange={(value) => handleFieldChange('backgroundImageUrl', value)}
+                    label="Background Image"
+                    placeholder="Select or paste background image URL"
+                    helpText="This image will be used as the page background and fade into the footer"
+                  />
+                </Suspense>
+              </div>
+            </section>
+
+            <section className="editor-panel editor-panel--full">
+              <header className="editor-panel__header">
+                <h2>Image Gallery</h2>
+              </header>
+              <div className="editor-panel__body">
+                <div className="editor-gallery">
+                  {form.galleryImages && form.galleryImages.map((image, index) => (
+                    <div key={index} className="editor-gallery__item">
+                      <Suspense fallback={<div className="uploader-loading">Loading selector...</div>}>
+                        <MediaSelector
+                          value={image}
+                          onChange={(value) => {
+                            const newGallery = [...form.galleryImages];
+                            newGallery[index] = value;
+                            handleFieldChange('galleryImages', newGallery);
+                          }}
+                          label={`Gallery Image ${index + 1}`}
+                          placeholder="Select or paste image URL"
+                        />
+                      </Suspense>
+                      <button
+                        type="button"
+                        className="admin-ghost"
+                        onClick={() => {
+                          const newGallery = form.galleryImages.filter((_, i) => i !== index);
+                          handleFieldChange('galleryImages', newGallery);
+                        }}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    className="admin-primary"
+                    onClick={() => {
+                      handleFieldChange('galleryImages', [...(form.galleryImages || []), '']);
+                    }}
+                  >
+                    Add Gallery Image
+                  </button>
                 </div>
               </div>
             </section>

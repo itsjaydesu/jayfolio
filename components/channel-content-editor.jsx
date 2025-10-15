@@ -12,6 +12,12 @@ const CoverImageUploader = dynamic(() => import('./cover-image-uploader'), {
   ssr: false
 });
 
+// Import MediaSelector for simpler image selection
+const MediaSelector = dynamic(() => import('./media-selector'), {
+  loading: () => <div className="uploader-loading">Loading selector...</div>,
+  ssr: false
+});
+
 const SECTION_LABELS = {
   about: 'About',
   projects: 'Projects',
@@ -99,6 +105,8 @@ export default function ChannelContentEditor({ sections = ['about', 'projects', 
         const data = await res.json();
         if (!res.ok) throw new Error(data?.error || 'Failed to load channel content');
         if (ignore) return;
+        console.log('📥 Loaded channel content:', data.content);
+        console.log('📥 Projects backgroundImage:', data.content?.projects?.backgroundImage);
         setContent(data.content || createInitialState());
       } catch (error) {
         if (!ignore) setStatus(error.message);
@@ -216,13 +224,18 @@ export default function ChannelContentEditor({ sections = ['about', 'projects', 
   }, []);
 
   const handleChannelHero = useCallback((channel, field, value) => {
-    setContent((prev) => ({
-      ...prev,
-      [channel]: {
-        ...prev[channel],
-        [field]: value
-      }
-    }));
+    console.log(`🔧 handleChannelHero called:`, { channel, field, value });
+    setContent((prev) => {
+      const newContent = {
+        ...prev,
+        [channel]: {
+          ...prev[channel],
+          [field]: value
+        }
+      };
+      console.log(`🔧 New content state for ${channel}:`, newContent[channel]);
+      return newContent;
+    });
   }, []);
 
   const handleAboutHistoryChange = useCallback((index, patch) => {
@@ -303,6 +316,8 @@ export default function ChannelContentEditor({ sections = ['about', 'projects', 
     try {
       setSaving(true);
       setStatus('');
+      console.log('💾 Saving channel content:', content);
+      console.log('💾 Projects backgroundImage:', content.projects?.backgroundImage);
       const res = await adminFetch('/api/channel-content', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -310,6 +325,8 @@ export default function ChannelContentEditor({ sections = ['about', 'projects', 
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || 'Save failed');
+      console.log('✅ Saved response:', data.content);
+      console.log('✅ Projects backgroundImage after save:', data.content?.projects?.backgroundImage);
       setContent(data.content || createInitialState());
       setStatus('Saved');
     } catch (error) {
@@ -432,15 +449,15 @@ export default function ChannelContentEditor({ sections = ['about', 'projects', 
                 <small>Separate tags with commas</small>
               </div>
               <div className="admin-field admin-field--full-width">
-                <label htmlFor="about-background-image">Background Image</label>
-                <Suspense fallback={<div className="uploader-loading">Loading uploader...</div>}>
-                  <CoverImageUploader
+                <Suspense fallback={<div className="uploader-loading">Loading selector...</div>}>
+                  <MediaSelector
                     value={about.aboutBackgroundImage || ''}
-                    alt="About page background"
-                    onChange={(data) => handleAboutField('aboutBackgroundImage', typeof data === 'string' ? data : data?.url || '')}
+                    onChange={(value) => handleAboutField('aboutBackgroundImage', value)}
+                    label="Background Image"
+                    placeholder="Select or paste background image URL"
+                    helpText="This image will be used as the page background and fade into the footer"
                   />
                 </Suspense>
-                <small>Upload a background image that will fade into the footer</small>
               </div>
             </div>
           </div>
@@ -764,15 +781,18 @@ export default function ChannelContentEditor({ sections = ['about', 'projects', 
                 />
               </div>
               <div className="admin-field admin-field--full-width">
-                <label htmlFor={`${section}-background`}>Background Image</label>
-                <Suspense fallback={<div className="uploader-loading">Loading uploader...</div>}>
-                  <CoverImageUploader
+                <Suspense fallback={<div className="uploader-loading">Loading selector...</div>}>
+                  <MediaSelector
                     value={content[section].backgroundImage || ''}
-                    alt={`${label} page background`}
-                    onChange={(data) => handleChannelHero(section, 'backgroundImage', typeof data === 'string' ? data : data?.url || '')}
+                    onChange={(value) => {
+                      console.log(`📸 Setting backgroundImage for ${section}:`, value);
+                      handleChannelHero(section, 'backgroundImage', value);
+                    }}
+                    label="Background Image"
+                    placeholder="Select or paste background image URL"
+                    helpText={`This image will be used as the ${label.toLowerCase()} page background and fade into the footer`}
                   />
                 </Suspense>
-                <small>Upload a background image that will fade into the footer</small>
               </div>
             </div>
           </div>

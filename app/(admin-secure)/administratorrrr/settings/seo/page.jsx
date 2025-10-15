@@ -316,16 +316,17 @@ export default function SeoSettingsPage() {
                 />
               </div>
 
-              <div className="admin-field">
-                <label htmlFor="defaultImage">Default OG Image</label>
-                <input
-                  id="defaultImage"
-                  type="text"
+              <div className="admin-field admin-field--full">
+                <MediaSelector
                   value={config.global?.defaultImage || ''}
-                  onChange={(e) => handleGlobalChange('defaultImage', e.target.value)}
-                  placeholder="/og-default.jpg"
+                  onChange={(value) => handleGlobalChange('defaultImage', value)}
+                  label="Default OG Image"
+                  placeholder="Select or paste default OG image URL"
+                  helpText="Fallback Open Graph image for social media"
                 />
               </div>
+
+
 
               <div className="admin-field">
                 <label htmlFor="favicon">Favicon Path</label>
@@ -413,13 +414,12 @@ export default function SeoSettingsPage() {
               </div>
 
               <div className="admin-field admin-field--full">
-                <label htmlFor={`${activePage}-image`}>OG Image</label>
-                <input
-                  id={`${activePage}-image`}
-                  type="text"
+                <MediaSelector
                   value={config.pages?.[activePage]?.image || ''}
-                  onChange={(e) => handlePageChange(activePage, 'image', e.target.value)}
-                  placeholder="/og-page.jpg"
+                  onChange={(value) => handlePageChange(activePage, 'image', value)}
+                  label="OG Image"
+                  placeholder="Select or paste OG image URL"
+                  helpText="Open Graph image for social media previews"
                 />
               </div>
             </div>

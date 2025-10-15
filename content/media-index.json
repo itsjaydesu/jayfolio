@@ -1,10 +1,17 @@
 {
   "files": [
     {
+      "url": "https://irq8pcmcsnz9tzjh.public.blob.vercel-storage.com/bg-about-SFgPZz38rSMJbnuXTSKFgH8AKFeTYA.jpg",
+      "pathname": "bg-about-SFgPZz38rSMJbnuXTSKFgH8AKFeTYA.jpg",
+      "type": "image/jpeg",
+      "createdAt": "2025-10-15T04:00:09.111Z"
+    },
+    {
       "url": "https://irq8pcmcsnz9tzjh.public.blob.vercel-storage.com/bg-about-ydZScV92MmsrudY993M4BeVGYa0PxB.jpg",
       "pathname": "bg-about-ydZScV92MmsrudY993M4BeVGYa0PxB.jpg",
       "type": "image/jpeg",
-      "createdAt": "2025-10-14T15:35:29.154Z"
+      "createdAt": "2025-10-14T15:35:29.154Z",
+      "size": 333062
     },
     {
       "url": "https://irq8pcmcsnz9tzjh.public.blob.vercel-storage.com/bg-about-2j0TQZgFUPDCklrCc7eEppVCWXknJR.jpg",

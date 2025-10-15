@@ -22,6 +22,16 @@ export default function ProjectsContent({ entries, hero, isAdmin = false }) {
   
   const backgroundImage = hero.backgroundImage || '';
   
+  // DEBUG: Log what we're receiving
+  useEffect(() => {
+    console.log('🔍 ProjectsContent Debug:', {
+      hero,
+      backgroundImage,
+      hasBackgroundImage: Boolean(backgroundImage),
+      backgroundImageLength: backgroundImage?.length
+    });
+  }, [hero, backgroundImage]);
+  
   const CATEGORIES = useMemo(() => (
     [
       { id: 'all', key: 'projects.all' },
