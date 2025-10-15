@@ -28,42 +28,40 @@ export function DotfieldIcon({ className }) {
         .join(" ")}
       fill="currentColor"
     >
-      {/* Create animated dots in a 4x4 grid with wave effect */}
-      {[0, 1, 2, 3].map((row) =>
-        [0, 1, 2, 3].map((col) => {
-          const x = 3 + col * 6;
-          const y = 3 + row * 6;
-          const delay = (row * 0.1 + col * 0.1) % 0.4;
+      {/* Create 3 dots in a horizontal line with wave animation */}
+      {[0, 1, 2].map((index) => {
+        const x = 6 + index * 6; // Position dots at x = 6, 12, 18
+        const y = 12; // Center vertically
+        const delay = index * 0.3; // Stagger the animation for wave effect
 
-          return (
-            <circle
-              key={`${row}-${col}`}
-              cx={x}
-              cy={y}
-              r="1.5"
-              className="dotfield-dot"
-              style={{
-                animationDelay: `${delay}s`,
-              }}
-            >
-              <animate
-                attributeName="r"
-                values="1.5;2.5;1.5"
-                dur="1.5s"
-                begin={`${delay}s`}
-                repeatCount="indefinite"
-              />
-              <animate
-                attributeName="opacity"
-                values="0.3;1;0.3"
-                dur="1.5s"
-                begin={`${delay}s`}
-                repeatCount="indefinite"
-              />
-            </circle>
-          );
-        })
-      )}
+        return (
+          <circle
+            key={index}
+            cx={x}
+            cy={y}
+            r="2"
+            className="dotfield-dot"
+            style={{
+              animationDelay: `${delay}s`,
+            }}
+          >
+            <animate
+              attributeName="r"
+              values="2;3.5;2"
+              dur="2.4s"
+              begin={`${delay}s`}
+              repeatCount="indefinite"
+            />
+            <animate
+              attributeName="opacity"
+              values="0.4;1;0.4"
+              dur="2.4s"
+              begin={`${delay}s`}
+              repeatCount="indefinite"
+            />
+          </circle>
+        );
+      })}
     </svg>
   );
 }
