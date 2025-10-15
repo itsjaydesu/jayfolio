@@ -145,7 +145,7 @@ export default function SiteFooter({ className = '' }) {
     <footer
       ref={footerRef}
       className={footerClasses.join(' ')}
-      aria-labelledby="site-footer-heading"
+      aria-label="Site footer with newsletter signup"
       data-footer-scene={sceneKey}
       style={footerStyle}
     >
@@ -155,38 +155,6 @@ export default function SiteFooter({ className = '' }) {
       </div>
       <div className="site-footer__container">
         <div className="site-footer__content">
-          <h2 id="site-footer-heading" className="site-footer__headline">
-            Keep a friendly pulse on what<br />Jay ships next.
-          </h2>
-          <p className="site-footer__description">
-            Receive very occasional updates when Jay releases something?<br />
-            Enter your email to get maybe one email a month, amoth.
-          </p>
-          <form className="site-footer__form" onSubmit={handleSubmit} noValidate>
-            <input
-              type="email"
-              name="email"
-              autoComplete="email"
-              value={email}
-              onChange={(event) => {
-                setEmail(event.target.value);
-                if (status.type !== 'idle') {
-                  setStatus({ type: 'idle', message: '' });
-                }
-              }}
-              placeholder="your@email.com"
-              className="site-footer__input"
-              aria-label="Email address"
-            />
-            {status.message && (
-              <p
-                className={`site-footer__status${status.type === 'success' ? ' site-footer__status--success' : ''}${status.type === 'error' ? ' site-footer__status--error' : ''}`}
-                aria-live="polite"
-              >
-                {status.message}
-              </p>
-            )}
-          </form>
           <div className="site-footer__links">
             <nav className="site-footer__social" aria-label="Social links">
               <ul className="site-footer__social-list">
@@ -206,6 +174,44 @@ export default function SiteFooter({ className = '' }) {
                 ))}
               </ul>
             </nav>
+            
+            <form className="site-footer__form" onSubmit={handleSubmit} noValidate>
+              <p className="site-footer__description" id="email-description">
+                Receive very occasional updates when Jay releases something?<br />
+                Enter your email to get maybe one email a month, amoth.
+              </p>
+              <div className="site-footer__input-wrapper">
+                <svg className="site-footer__input-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.5"/>
+                  <path d="M3 7L12 13L21 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <input
+                type="email"
+                name="email"
+                autoComplete="email"
+                value={email}
+                onChange={(event) => {
+                  setEmail(event.target.value);
+                  if (status.type !== 'idle') {
+                    setStatus({ type: 'idle', message: '' });
+                  }
+                }}
+                placeholder="your@email.com"
+                className="site-footer__input"
+                aria-label="Email address"
+                aria-describedby="email-description"
+              />
+              </div>
+              {status.message && (
+                <p
+                  className={`site-footer__status${status.type === 'success' ? ' site-footer__status--success' : ''}${status.type === 'error' ? ' site-footer__status--error' : ''}`}
+                  aria-live="polite"
+                >
+                  {status.message}
+                </p>
+              )}
+            </form>
+            
             <Link href="/work-with-me" className="site-footer__cta">
               <span className="site-footer__cta-label">WORK WITH ME</span>
             </Link>
