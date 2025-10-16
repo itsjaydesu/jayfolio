@@ -25,7 +25,7 @@ const DOTFIELD_EFFECT_SEQUENCE = [
   'harmonicPendulum',
   'starfield'
 ];
-const HEADER_OBSERVER_ROOT_MARGIN = "-120px 0px 0px 0px";
+// Removed: Header observer no longer needed without shaded background
 
 // Dynamically import SceneCanvas to reduce initial bundle size
 const SceneCanvas = dynamic(() => import('./SceneCanvas'), {
@@ -75,9 +75,6 @@ export default function SiteShell({ children, isAdmin = false }) {
   const overlaySceneRef = useRef(null);
   const { language } = useLanguage();
   const returnTimerRef = useRef(null);
-  const menuLeaveTimerRef = useRef(null); // Timer for menu fade-out animation
-  const headerLeaveTimerRef = useRef(null); // Timer for header fade-out animation
-  const headerLeavingRef = useRef(false); // Track leaving state with ref for immediate updates
   const { isAdmin: clientAdmin } = useAdminStatus();
   const isAdminActive = isAdmin || clientAdmin;
   
@@ -120,15 +117,8 @@ export default function SiteShell({ children, isAdmin = false }) {
   const [brand, setBrand] = useState(t('brand.name', language));
   const [menuItems, setMenuItems] = useState(getLocalizedMenuItems(language));
   const [isReturningHome, setIsReturningHome] = useState(false);
-  const [menuVisible, setMenuVisible] = useState(false);
-  const [menuLeaving, setMenuLeaving] = useState(false); // Track menu fade-out state
-  // Initialize header visibility correctly based on route
-  const [headerVisible, setHeaderVisible] = useState(() => !isHome); // Start visible on subpages, hidden on home
-  const [headerLeaving, setHeaderLeaving] = useState(false); // Track header fade-out state
-  // Track previous route to detect transitions - use state for immediate updates
-  const [prevIsHome, setPrevIsHome] = useState(isHome);
-  // Track if we're currently animating out - this persists through re-renders
-  const [isAnimatingOut, setIsAnimatingOut] = useState(false);
+  const [menuVisible, setMenuVisible] = useState(isHome);
+  const [headerVisible, setHeaderVisible] = useState(!isHome);
   const [isDotfieldOverlayOpen, setIsDotfieldOverlayOpen] = useState(false);
   const [isDotfieldOverlayMounted, setIsDotfieldOverlayMounted] = useState(false);
   const [isDotfieldOverlayLeaving, setIsDotfieldOverlayLeaving] = useState(false);
@@ -136,32 +126,6 @@ export default function SiteShell({ children, isAdmin = false }) {
   const overlayFadeTimeoutRef = useRef(null);
   const overlayAnimationFrameRef = useRef(null);
   const lastPathnameRef = useRef(pathname);
-  const headerSentinelRef = useRef(null);
-  
-  // Compute if we should keep header mounted - check animation flag first
-  const shouldKeepHeaderMounted = 
-    !isHome || // Always show on subpages
-    isAnimatingOut || // CRITICAL: Keep mounted during animation
-    headerVisible || 
-    headerLeaving || 
-    headerLeavingRef.current;
-
-  // Handle route changes - but DON'T update prevIsHome immediately if animating
-  if (prevIsHome !== isHome && !isAnimatingOut) {
-    // If transitioning to home with visible header, start animation sequence
-    if (!prevIsHome && isHome && headerVisible) {
-      headerLeavingRef.current = true;
-      setIsAnimatingOut(true); // Set animation flag
-      // DON'T update prevIsHome yet - wait for animation to complete
-    } else {
-      // For other transitions, update immediately
-      setPrevIsHome(isHome);
-      // Clear any lingering animation state
-      if (isAnimatingOut) {
-        setIsAnimatingOut(false);
-      }
-    }
-  }
   const createStatus = useCallback(
     (statusData, modeKey = 'waiting') => createStatusPayload(statusData, language, modeKey),
     [language]
@@ -275,7 +239,6 @@ export default function SiteShell({ children, isAdmin = false }) {
 
   const [status, setStatus] = useState(waitingStatus);
   const [navReady, setNavReady] = useState(false);
-  const [hasScrolled, setHasScrolled] = useState(false);
   const [hasActiveEffect, setHasActiveEffect] = useState(false);
   const [activeEffectInfo, setActiveEffectInfo] = useState(null); // { name, startTime, duration }
 
@@ -299,17 +262,8 @@ export default function SiteShell({ children, isAdmin = false }) {
     setStatus(activeStatus);
   }, [activeStatus]);
 
-  const headerClassName = useMemo(() => {
-    const leaving = headerLeaving || headerLeavingRef.current;
-    return `site-shell__header${
-      hasScrolled ? " site-shell__header--shaded" : ""
-    }${leaving ? " is-leaving" : ""}`;
-  }, [hasScrolled, headerLeaving]);
-
-  const containerClassName = useMemo(
-    () => `site-shell__container${hasScrolled ? " site-shell__container--shaded" : ""}`,
-    [hasScrolled]
-  );
+  const headerClassName = "site-shell__header";
+  const containerClassName = "site-shell__container";
 
   useEffect(() => {
     if (!isDotfieldOverlayOpen) return;
@@ -458,178 +412,20 @@ export default function SiteShell({ children, isAdmin = false }) {
         window.clearTimeout(returnTimerRef.current);
         returnTimerRef.current = null;
       }
-      if (menuLeaveTimerRef.current) {
-        window.clearTimeout(menuLeaveTimerRef.current);
-        menuLeaveTimerRef.current = null;
-      }
-      if (headerLeaveTimerRef.current) {
-        window.clearTimeout(headerLeaveTimerRef.current);
-        headerLeaveTimerRef.current = null;
-      }
     };
   }, [router]);
 
-  // Navigation is always ready now to avoid hydration mismatches
-  // The CSS animations handle the visual transitions
-
+  // Simple menu visibility - show on home, hide elsewhere
   useEffect(() => {
-    // Clear any pending menu leave timer when component unmounts or dependencies change
-    const clearMenuLeaveTimer = () => {
-      if (menuLeaveTimerRef.current) {
-        clearTimeout(menuLeaveTimerRef.current);
-        menuLeaveTimerRef.current = null;
-      }
-    };
+    setMenuVisible(isHome);
+  }, [isHome]);
 
-    if (!isHome) {
-      // Navigating away from home - start fade-out animation
-      if (menuVisible && !menuLeaving) {
-        setMenuLeaving(true); // Start fade-out animation
-        
-        // Check for reduced motion preference
-        const motionQuery = typeof window !== "undefined" && 
-          window.matchMedia("(prefers-reduced-motion: reduce)");
-        
-        if (motionQuery && motionQuery.matches) {
-          // No animation for reduced motion
-          setMenuVisible(false);
-          setMenuLeaving(false);
-        } else {
-          // Allow time for fade-out animation (0.68s matches the CSS transition)
-          menuLeaveTimerRef.current = setTimeout(() => {
-            setMenuVisible(false);
-            setMenuLeaving(false);
-            menuLeaveTimerRef.current = null;
-          }, 680); // 680ms to match the menu fade-out transition duration
-        }
-      }
-      return clearMenuLeaveTimer;
-    }
-
-    // Navigating to home - show menu
-    clearMenuLeaveTimer(); // Clear any pending hide timer
-    setMenuLeaving(false); // Clear leaving state
-
-    if (typeof window === "undefined") {
-      setMenuVisible(true);
-      return;
-    }
-
-    const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    if (motionQuery.matches) {
-      setMenuVisible(true);
-      return;
-    }
-
-    let frameId = requestAnimationFrame(() => {
-      setMenuVisible(true);
-    });
-
-    return () => {
-      cancelAnimationFrame(frameId);
-      clearMenuLeaveTimer();
-    };
-  }, [isHome, menuVisible, menuLeaving]);
-
-  // Handle header visibility and transitions
+  // Simple header visibility - hide on home, show elsewhere
   useEffect(() => {
-    // Skip if we're in SSR
-    if (typeof window === "undefined") return;
-    
-    // Clear any pending header leave timer
-    const clearHeaderLeaveTimer = () => {
-      if (headerLeaveTimerRef.current) {
-        clearTimeout(headerLeaveTimerRef.current);
-        headerLeaveTimerRef.current = null;
-      }
-    };
+    setHeaderVisible(!isHome);
+  }, [isHome]);
 
-    // Check for reduced motion preference once
-    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    
-    if (isHome && isAnimatingOut) {
-      // Start the leave animation if not already started
-      if (!headerLeaving) {
-        setHeaderLeaving(true);
-      }
-      
-      // Set up timer to complete the animation
-      if (!headerLeaveTimerRef.current) {
-        headerLeaveTimerRef.current = setTimeout(() => {
-          headerLeavingRef.current = false;
-          setHeaderVisible(false);
-          setHeaderLeaving(false);
-          setIsAnimatingOut(false); // Clear animation flag
-          setPrevIsHome(true); // NOW update the prev state after animation
-          headerLeaveTimerRef.current = null;
-        }, prefersReducedMotion ? 0 : 950);
-      }
-    } else if (isHome && !isAnimatingOut) {
-      // On home, not animating - ensure header is hidden
-      if (headerVisible) {
-        setHeaderVisible(false);
-        setHeaderLeaving(false);
-        headerLeavingRef.current = false;
-      }
-    } else {
-      // Not on home page - show header
-      clearHeaderLeaveTimer();
-      
-      if (!headerVisible && !headerLeavingRef.current) {
-        // Show header immediately
-        headerLeavingRef.current = false;
-        setHeaderVisible(true);
-        setHeaderLeaving(false);
-      } else if (headerLeavingRef.current) {
-        // If we were in the middle of leaving but route changed, cancel it
-        clearHeaderLeaveTimer();
-        headerLeavingRef.current = false;
-        setHeaderLeaving(false);
-        setHeaderVisible(true);
-      }
-    }
-
-    return clearHeaderLeaveTimer;
-  }, [isHome, isAnimatingOut, headerVisible, headerLeaving]); // Include animation state in dependencies
-
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      return undefined;
-    }
-
-    if (isDetailView) {
-      setHasScrolled(false);
-      return undefined;
-    }
-
-    const sentinel = headerSentinelRef.current;
-    const supportsObserver = typeof window.IntersectionObserver === "function";
-
-    if (sentinel && supportsObserver) {
-      const observer = new IntersectionObserver(([entry]) => {
-        const next = entry ? !entry.isIntersecting : false;
-        setHasScrolled((prev) => (prev === next ? prev : next));
-      }, { rootMargin: HEADER_OBSERVER_ROOT_MARGIN, threshold: 0 });
-
-      observer.observe(sentinel);
-
-      return () => {
-        observer.disconnect();
-      };
-    }
-
-    const SCROLL_TRIGGER_PX = 12;
-    const handleScroll = () => {
-      const next = window.scrollY > SCROLL_TRIGGER_PX;
-      setHasScrolled((prev) => (prev === next ? prev : next));
-    };
-
-    handleScroll();
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, [isDetailView, pathname]);
+  // Removed scroll detection - no longer needed without shaded header
   
   // ===== MOUNT INITIALIZATION =====
   // Initialize scene on mount for stopped routes (instant black on subpages)
@@ -1179,7 +975,7 @@ export default function SiteShell({ children, isAdmin = false }) {
             />
           </Suspense>
         </div>
-        <div className={`menu-overlay${menuVisible ? " is-visible" : ""}${menuLeaving ? " is-leaving" : ""}`}>
+        <div className={`menu-overlay${menuVisible ? " is-visible" : ""}`}>
           <RetroMenu
             id="retro-menu"
             items={menuItems}
@@ -1235,15 +1031,7 @@ export default function SiteShell({ children, isAdmin = false }) {
       ) : null}
       <div className={`site-shell${isDetailView ? " site-shell--detail" : ""}`}>
         <div className={containerClassName}>
-          {!isDetailView ? (
-            <div
-              ref={headerSentinelRef}
-              className="site-shell__header-sentinel"
-              aria-hidden="true"
-            />
-          ) : null}
-          {/* Keep header mounted based on computed value */}
-          {!isDetailView && shouldKeepHeaderMounted ? (
+          {!isDetailView && headerVisible ? (
             <header
               className={headerClassName}
               data-nav-ready={navReady ? "true" : "false"}

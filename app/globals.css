@@ -234,13 +234,9 @@ a {
   transform: scale(1) translateY(0);
 }
 
-/* Smooth fade-out when leaving home page */
-.menu-overlay.is-leaving {
-  opacity: 0;
-  pointer-events: none;
-  transform: scale(0.96) translateY(-12px);
-  transition: opacity 0.68s cubic-bezier(0.33, 1, 0.68, 1),
-    transform 0.68s cubic-bezier(0.33, 1, 0.68, 1);
+/* Simple fade-out when leaving home page */
+.menu-overlay:not(.is-visible) {
+  transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
 .menu-overlay .retro-menu--centerpiece {
@@ -311,57 +307,7 @@ a {
   transition-delay: 0.52s;
 }
 
-/* Fade-out transitions for menu elements when leaving */
-.menu-overlay.is-leaving .retro-menu--centerpiece {
-  opacity: 0;
-  transform: translate(-50%, -16px) scale(0.94);
-  filter: blur(12px);
-  transition: opacity 0.52s cubic-bezier(0.33, 1, 0.68, 1),
-    transform 0.52s cubic-bezier(0.33, 1, 0.68, 1),
-    filter 0.52s cubic-bezier(0.33, 1, 0.68, 1);
-  transition-delay: 0s;
-}
 
-.menu-overlay.is-leaving .retro-menu__list,
-.menu-overlay.is-leaving .retro-menu__status {
-  opacity: 0;
-  transform: translateY(-12px);
-  transition: opacity 0.42s cubic-bezier(0.33, 1, 0.68, 1),
-    transform 0.42s cubic-bezier(0.33, 1, 0.68, 1);
-  transition-delay: 0s;
-}
-
-.menu-overlay.is-leaving .retro-menu__item {
-  opacity: 0;
-  transform: translateX(14px);
-  transition: opacity 0.36s cubic-bezier(0.33, 1, 0.68, 1),
-    transform 0.36s cubic-bezier(0.33, 1, 0.68, 1);
-}
-
-/* Reverse staggered delays for smooth fade-out */
-.menu-overlay.is-leaving .retro-menu__item:nth-child(1) {
-  transition-delay: 0.16s;
-}
-
-.menu-overlay.is-leaving .retro-menu__item:nth-child(2) {
-  transition-delay: 0.12s;
-}
-
-.menu-overlay.is-leaving .retro-menu__item:nth-child(3) {
-  transition-delay: 0.08s;
-}
-
-.menu-overlay.is-leaving .retro-menu__item:nth-child(4) {
-  transition-delay: 0.04s;
-}
-
-.menu-overlay.is-leaving .retro-menu__item:nth-child(5) {
-  transition-delay: 0s;
-}
-
-.menu-overlay.is-leaving .retro-menu__status {
-  transition-delay: 0s;
-}
 
 .content-stage {
   position: fixed;
@@ -2612,100 +2558,8 @@ a {
   transition-delay: 0s !important;
 }
 
-/* Smooth fade-out when header is leaving (navigating to home) */
-/* This is the exact reverse of the fade-in animation */
-.site-shell__header.is-leaving {
-  opacity: 0;
-  transform: translateY(-20px);
-  pointer-events: none;
-  transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1),
-    transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-  /* Add slight delay to allow children to start animating first */
-  transition-delay: 0.1s;
-}
 
-.site-shell__header.is-leaving .site-shell__brand,
-.site-shell__header.is-leaving .site-shell__nav-link,
-.site-shell__header.is-leaving .site-shell__icon-button {
-  opacity: 0;
-  transform: translateY(-10px);
-  transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-    transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Staggered fade-out - TRUE REVERSE order of fade-in sequence */
-/* Fade-in order was: brand(0.1s) -> nav1-5(0.15-0.35s) -> social(0.4s) */
-/* Fade-out order is: social(first) -> nav5-1(reversed) -> brand(last) */
-
-.site-shell__header.is-leaving .site-shell__icon-button {
-  transition-delay: 0s; /* First to disappear (was last to appear at 0.4s) */
-}
-
-.site-shell__header.is-leaving
-  .site-shell__nav
-  .site-shell__nav-link:nth-child(5) {
-  transition-delay: 0.05s; /* Was at 0.35s coming in */
-}
-
-.site-shell__header.is-leaving
-  .site-shell__nav
-  .site-shell__nav-link:nth-child(4) {
-  transition-delay: 0.1s; /* Was at 0.3s coming in */
-}
-
-.site-shell__header.is-leaving
-  .site-shell__nav
-  .site-shell__nav-link:nth-child(3) {
-  transition-delay: 0.15s; /* Was at 0.25s coming in */
-}
-
-.site-shell__header.is-leaving
-  .site-shell__nav
-  .site-shell__nav-link:nth-child(2) {
-  transition-delay: 0.2s; /* Was at 0.2s coming in */
-}
-
-.site-shell__header.is-leaving
-  .site-shell__nav
-  .site-shell__nav-link:nth-child(1) {
-  transition-delay: 0.25s; /* Was at 0.15s coming in */
-}
-
-.site-shell__header.is-leaving .site-shell__brand {
-  transition-delay: 0.3s; /* Last to disappear (was first to appear at 0.1s) */
-}
-/* Removed old pill-style background pseudo-elements */
-.site-shell__header--shaded {
-  background: linear-gradient(
-    to bottom,
-    rgba(2, 6, 12, 0.85),
-    rgba(2, 6, 12, 0.6) 80%,
-    transparent
-  );
-  backdrop-filter: blur(18px) saturate(160%);
-}
-.site-shell__header--shaded::after {
-  opacity: 1;
-  background: linear-gradient(
-    to right,
-    transparent,
-    rgba(255, 255, 255, 0.18) 10%,
-    rgba(255, 255, 255, 0.18) 90%,
-    transparent
-  );
-}
-.site-shell__header--shaded .site-shell__brand {
-  color: rgba(250, 252, 255, 0.99);
-}
-.site-shell__header--shaded .site-shell__nav-link {
-  color: rgba(232, 242, 248, 0.94);
-}
-.site-shell__header--shaded .site-shell__nav-link.is-active {
-  color: rgba(252, 254, 255, 0.99);
-}
-.site-shell__header--shaded .site-shell__icon-button {
-  color: rgba(240, 250, 254, 0.95);
-}
+/* Clean header - no shaded background box (class kept for compatibility) */
 
 .detail-view__media {
   position: relative;
@@ -4806,13 +4660,6 @@ a {
     filter: none;
   }
 
-  /* Mobile fade-out styles */
-  .menu-overlay.is-leaving .retro-menu--centerpiece {
-    transform: translateY(-12px);
-    opacity: 0;
-    filter: blur(8px);
-  }
-
   /* Mobile: centerpiece doesn't need translateX when panel is active */
   .retro-menu--centerpiece[data-panel-active="true"] {
     transform: scale(0.85) !important; /* No translateX needed on mobile */
@@ -5591,24 +5438,7 @@ a {
   will-change: opacity, transform;
 }
 
-/* Add a separator line under the header */
-.site-shell__header::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: var(--shell-inline-pad);
-  right: var(--shell-inline-pad);
-  height: 1px;
-  background: linear-gradient(
-    to right,
-    transparent,
-    rgba(255, 255, 255, 0.12) 10%,
-    rgba(255, 255, 255, 0.12) 90%,
-    transparent
-  );
-  opacity: 1;
-  transition: opacity 0.36s cubic-bezier(0.33, 1, 0.68, 1);
-}
+/* Removed separator line for cleaner look */
 
 .site-shell__header-inner {
   width: 100%;
@@ -5636,7 +5466,7 @@ a {
   pointer-events: none;
 }
 
-.site-shell__header[data-nav-ready="true"]:not(.is-leaving) {
+.site-shell__header[data-nav-ready="true"] {
   opacity: 1;
   transform: translateY(0);
   pointer-events: auto;
@@ -6100,7 +5930,7 @@ a {
     width: 1180px;
   }
 
-  .site-shell__header[data-nav-ready="true"]:not(.is-leaving) {
+  .site-shell__header[data-nav-ready="true"] {
     transform: translateY(0);
   }
 
@@ -6134,22 +5964,9 @@ a {
     transform: none;
   }
 
-  /* Instant fade-out for reduced motion */
-  .menu-overlay.is-leaving,
-  .menu-overlay.is-leaving .retro-menu--centerpiece,
-  .menu-overlay.is-leaving .retro-menu__list,
-  .menu-overlay.is-leaving .retro-menu__status,
-  .menu-overlay.is-leaving .retro-menu__item {
-    transition: none !important;
-    opacity: 0;
-  }
 
-  /* Instant header transitions for reduced motion */
-  .site-shell__header.is-leaving {
-    transition: none !important;
-    opacity: 0;
-    transform: translateY(0);
-  }
+
+
 
   .site-shell__header:not(.is-leaving)[data-nav-ready="true"] {
     animation: none !important;
@@ -7936,9 +7753,6 @@ body.qr-intro-active .site-shell__header {
   opacity: 0 !important;
   transform: translate3d(0, -36px, 0) !important;
   pointer-events: none !important;
-}
-body.qr-intro-active .site-shell__header::after {
-  opacity: 0 !important;
 }
 body.qr-intro-active .site-shell__brand,
 body.qr-intro-active .site-shell__nav-link,
