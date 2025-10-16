@@ -21,7 +21,6 @@ export default function RetroMenu({
   activeEffectInfo = null,
   onRipple,
 }) {
-
   // Panel transition states: 'closed' | 'fading' | 'opening' | 'open' | 'closing'
   // 'fading' = menu is fading out, panel not visible yet
   const [panelState, setPanelState] = useState("closed");
@@ -38,49 +37,54 @@ export default function RetroMenu({
   const { language, changeLanguage } = useLanguage();
 
   const fieldEffectsLabel = useMemo(
-    () => t('menu.field-effects', language),
+    () => t("menu.field-effects", language),
     [language]
   );
 
   const effectLabels = useMemo(
     () => ({
-      calmReset: t('effects.calmReset', language),
-      jitter: t('effects.jitter', language),
-      swirlPulse: t('effects.swirlPulse', language),
-      spiralFlow: t('effects.spiralFlow', language),
-      riverFlow: t('effects.riverFlow', language),
-      mandelbrotZoom: t('effects.mandelbrotZoom', language),
-      reactionDiffusionBloom: t('effects.reactionDiffusionBloom', language),
-      harmonicPendulum: t('effects.harmonicPendulum', language),
-      starfield: t('effects.starfield', language),
-      zenMode: t('effects.calmReset', language),
+      calmReset: t("effects.calmReset", language),
+      jitter: t("effects.jitter", language),
+      swirlPulse: t("effects.swirlPulse", language),
+      spiralFlow: t("effects.spiralFlow", language),
+      riverFlow: t("effects.riverFlow", language),
+      mandelbrotZoom: t("effects.mandelbrotZoom", language),
+      reactionDiffusionBloom: t("effects.reactionDiffusionBloom", language),
+      harmonicPendulum: t("effects.harmonicPendulum", language),
+      starfield: t("effects.starfield", language),
+      zenMode: t("effects.calmReset", language),
     }),
     [language]
   );
 
   const effectTooltips = useMemo(
     () => ({
-      calmReset: t('effects.calmReset.tooltip', language),
-      jitter: t('effects.jitter.tooltip', language),
-      swirlPulse: t('effects.swirlPulse.tooltip', language),
-      spiralFlow: t('effects.spiralFlow.tooltip', language),
-      riverFlow: t('effects.riverFlow.tooltip', language),
-      mandelbrotZoom: t('effects.mandelbrotZoom.tooltip', language),
-      reactionDiffusionBloom: t('effects.reactionDiffusionBloom.tooltip', language),
-      harmonicPendulum: t('effects.harmonicPendulum.tooltip', language),
-      starfield: t('effects.starfield.tooltip', language),
-      zenMode: t('effects.calmReset.tooltip', language),
+      calmReset: t("effects.calmReset.tooltip", language),
+      jitter: t("effects.jitter.tooltip", language),
+      swirlPulse: t("effects.swirlPulse.tooltip", language),
+      spiralFlow: t("effects.spiralFlow.tooltip", language),
+      riverFlow: t("effects.riverFlow.tooltip", language),
+      mandelbrotZoom: t("effects.mandelbrotZoom.tooltip", language),
+      reactionDiffusionBloom: t(
+        "effects.reactionDiffusionBloom.tooltip",
+        language
+      ),
+      harmonicPendulum: t("effects.harmonicPendulum.tooltip", language),
+      starfield: t("effects.starfield.tooltip", language),
+      zenMode: t("effects.calmReset.tooltip", language),
     }),
     [language]
   );
 
-  const languageToggleTooltip = language === 'en'
-    ? t('language.toggle.tooltip.en', language)
-    : t('language.toggle.tooltip.ja', language);
+  const languageToggleTooltip =
+    language === "en"
+      ? t("language.toggle.tooltip.en", language)
+      : t("language.toggle.tooltip.ja", language);
 
-  const languageToggleAria = language === 'en'
-    ? t('language.toggle.aria.en', language)
-    : t('language.toggle.aria.ja', language);
+  const languageToggleAria =
+    language === "en"
+      ? t("language.toggle.aria.en", language)
+      : t("language.toggle.aria.ja", language);
 
   // Check for reduced motion preference
   const prefersReducedMotion = useRef(
@@ -99,8 +103,6 @@ export default function RetroMenu({
 
         // Find the titlebar to calculate overlay position
         const titlebar = menuElement.querySelector(".retro-menu__titlebar");
-
-
 
         // Calculate top position to overlay the menu body area
         // Position panel to replace the menu navbar area
@@ -130,8 +132,6 @@ export default function RetroMenu({
           left: leftPos,
           width: panelWidth,
         };
-
-
 
         setPanelPosition(newPosition);
 
@@ -227,7 +227,7 @@ export default function RetroMenu({
   // Toggle panel
   const togglePanel = () => {
     const isOpen = panelState === "opening" || panelState === "open";
-    
+
     if (isOpen) {
       closePanel();
     } else {
@@ -242,13 +242,13 @@ export default function RetroMenu({
         const elapsed = (Date.now() - activeEffectInfo.startTime) / 1000;
         const remaining = Math.max(0, activeEffectInfo.duration - elapsed);
         setRemainingTime(Math.ceil(remaining));
-        
+
         if (remaining > 0) {
           tooltipTimerRef.current = requestAnimationFrame(updateCountdown);
         }
       };
       updateCountdown();
-      
+
       return () => {
         if (tooltipTimerRef.current) {
           cancelAnimationFrame(tooltipTimerRef.current);
@@ -287,8 +287,6 @@ export default function RetroMenu({
     }
   };
 
-
-
   return (
     <nav
       id={id}
@@ -301,7 +299,6 @@ export default function RetroMenu({
           ? "true"
           : "false"
       }
-
       data-effect-active={hasActiveEffect ? "true" : "false"}
       aria-label="Main navigation"
     >
@@ -314,9 +311,9 @@ export default function RetroMenu({
             type="button"
             className="retro-menu__language-toggle"
             onClick={() => {
-              const newLang = language === 'en' ? 'ja' : 'en';
+              const newLang = language === "en" ? "ja" : "en";
               changeLanguage(newLang);
-              
+
               // Trigger a localized ripple animation at the menu position
               // This creates a ripple effect without changing the field effect state
               if (onRipple) {
@@ -341,21 +338,55 @@ export default function RetroMenu({
             >
               {/* Earth circle */}
               <circle cx="10" cy="10" r="7" fill="none" />
-              
+
               {/* Continents/landmasses - simplified Earth-like shapes */}
               {/* Europe/Africa */}
-              <path d="M 10 5 Q 11 6 10.5 8 T 11 10 Q 10 11 10.5 12" fill="none" strokeWidth="1.2" />
-              
+              <path
+                d="M 10 5 Q 11 6 10.5 8 T 11 10 Q 10 11 10.5 12"
+                fill="none"
+                strokeWidth="1.2"
+              />
+
               {/* Americas */}
-              <path d="M 6 7 Q 7 8 6.5 9 T 7 11" fill="none" strokeWidth="1.2" />
-              
+              <path
+                d="M 6 7 Q 7 8 6.5 9 T 7 11"
+                fill="none"
+                strokeWidth="1.2"
+              />
+
               {/* Asia/Pacific */}
               <path d="M 13 8 Q 14 9 13.5 10" fill="none" strokeWidth="1.2" />
-              
+
               {/* Latitude lines */}
-              <ellipse cx="10" cy="10" rx="7" ry="2.5" fill="none" strokeWidth="0.8" opacity="0.4" />
-              <ellipse cx="10" cy="10" rx="5" ry="1.8" fill="none" strokeWidth="0.8" opacity="0.3" transform="translate(0,-3)" />
-              <ellipse cx="10" cy="10" rx="5" ry="1.8" fill="none" strokeWidth="0.8" opacity="0.3" transform="translate(0,3)" />
+              <ellipse
+                cx="10"
+                cy="10"
+                rx="7"
+                ry="2.5"
+                fill="none"
+                strokeWidth="0.8"
+                opacity="0.4"
+              />
+              <ellipse
+                cx="10"
+                cy="10"
+                rx="5"
+                ry="1.8"
+                fill="none"
+                strokeWidth="0.8"
+                opacity="0.3"
+                transform="translate(0,-3)"
+              />
+              <ellipse
+                cx="10"
+                cy="10"
+                rx="5"
+                ry="1.8"
+                fill="none"
+                strokeWidth="0.8"
+                opacity="0.3"
+                transform="translate(0,3)"
+              />
             </svg>
           </button>
           <div className="retro-menu__settings-wrapper">
@@ -372,8 +403,8 @@ export default function RetroMenu({
                 if (toggleRef.current && activeEffectInfo) {
                   const rect = toggleRef.current.getBoundingClientRect();
                   setTooltipPosition({
-                    top: rect.top - 10,  // Position above the button
-                    left: rect.left + rect.width / 2
+                    top: rect.top - 10, // Position above the button
+                    left: rect.left + rect.width / 2,
                   });
                 }
                 setTooltipVisible(true);
@@ -396,27 +427,31 @@ export default function RetroMenu({
               </svg>
             </button>
             {tooltipVisible && activeEffectInfo && (
-              <div 
+              <div
                 className="retro-menu__tooltip"
                 style={{
-                  top: `${tooltipPosition.top - 40}px`,  // Adjust to appear above button
-                  left: `${tooltipPosition.left}px`
+                  top: `${tooltipPosition.top - 40}px`, // Adjust to appear above button
+                  left: `${tooltipPosition.left}px`,
                 }}
               >
                 <div className="retro-menu__tooltip-content">
                   <div className="retro-menu__tooltip-effect">
-                    {t('menu.tooltip.effect-active', language, {
-                      effect: effectLabels[activeEffectInfo.type] || activeEffectInfo.name
+                    {t("menu.tooltip.effect-active", language, {
+                      effect:
+                        effectLabels[activeEffectInfo.type] ||
+                        activeEffectInfo.name,
                     })}
                   </div>
                   {activeEffectInfo.duration && remainingTime !== null && (
                     <div className="retro-menu__tooltip-timer">
-                      {t('menu.tooltip.reset-timer', language, { seconds: remainingTime })}
+                      {t("menu.tooltip.reset-timer", language, {
+                        seconds: remainingTime,
+                      })}
                     </div>
                   )}
                   {!activeEffectInfo.duration && (
                     <div className="retro-menu__tooltip-info">
-                      {t('menu.tooltip.no-auto-reset', language)}
+                      {t("menu.tooltip.no-auto-reset", language)}
                     </div>
                   )}
                 </div>
@@ -428,7 +463,7 @@ export default function RetroMenu({
             target="_blank"
             rel="noreferrer noopener"
             className="retro-menu__social"
-            aria-label={t('menu.social.aria', language)}
+            aria-label={t("menu.social.aria", language)}
           >
             <svg viewBox="0 0 20 20" aria-hidden="true">
               <path d="M15.95 1h-1.62l-3.58 4.31L7.79 1H3.25l5.32 7.16L3.25 19h1.62l3.92-4.78L12.21 19h4.54l-5.58-7.4zM11.6 11.52 8.46 7.27l1.6-1.92 4.63 6.17z" />
@@ -440,7 +475,7 @@ export default function RetroMenu({
             className="retro-menu__dismiss"
             onClick={handleDismiss}
           >
-            {t('menu.close', language)}
+            {t("menu.close", language)}
           </button>
         </div>
       </div>
@@ -452,7 +487,7 @@ export default function RetroMenu({
               if (!onStatusChange) return;
               onStatusChange({
                 ...item.status,
-                modeKey: isActive ? 'active' : 'preview',
+                modeKey: isActive ? "active" : "preview",
               });
             };
 

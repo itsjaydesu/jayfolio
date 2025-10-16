@@ -1255,87 +1255,16 @@ export default function SiteShell({ children, isAdmin = false }) {
                   : {
                       opacity: "var(--nav-initial-opacity, 0)",
                       transform:
-                        "translate(-50%, var(--nav-initial-offset, -18px))",
+                        "translateY(var(--nav-initial-offset, -18px))",
                     }
               }
             >
-              <Link
-                href="/"
-                className="site-shell__brand"
-                aria-label={brand}
-                onClick={handleNavigateHome}
-                style={
-                  navReady
-                    ? undefined
-                    : {
-                        opacity: "var(--nav-item-initial-opacity, 0)",
-                        transform:
-                          "translateY(var(--nav-item-initial-offset, 8px))",
-                      }
-                }
-              >
-                <BrandWordmark className="site-shell__brand-wordmark" />
-              </Link>
-              <nav className="site-shell__nav" aria-label="Primary navigation">
-                {menuItems.map((item, index) => {
-                  const isActive = item.id === activeSection;
-                  return (
-                    <Link
-                      key={item.id}
-                      href={item.href}
-                      prefetch
-                      className={`site-shell__nav-link${
-                        isActive ? " is-active" : ""
-                      }`}
-                      aria-current={isActive ? "page" : undefined}
-                      onMouseEnter={() => handlePreview(item, isActive)}
-                      onMouseLeave={handleReset}
-                      onFocus={() => handlePreview(item, isActive)}
-                      onBlur={handleReset}
-                      style={
-                        navReady
-                          ? {
-                              transitionDelay: `${index * 60}ms`,
-                            }
-                          : {
-                              opacity: "var(--nav-item-initial-opacity, 0)",
-                              transform:
-                                "translateY(var(--nav-item-initial-offset, 12px))",
-                            }
-                      }
-                    >
-                      {item.label}
-                    </Link>
-                  );
-                })}
-              </nav>
-              <div className="site-shell__icon-group">
-                <button
-                  type="button"
-                  className={`site-shell__icon-button site-shell__icon-button--action${(isDotfieldOverlayOpen || isDotfieldOverlayMounted) ? " is-active" : ""}`}
-                  onClick={toggleDotfieldOverlay}
-                  aria-pressed={isDotfieldOverlayOpen}
-                  aria-label={t('dotfield.open', language)}
-                  title={t('dotfield.open', language)}
-                  style={
-                    navReady
-                      ? undefined
-                      : {
-                          opacity: "var(--nav-item-initial-opacity, 0)",
-                          transform:
-                            "translateY(var(--nav-item-initial-offset, 8px))",
-                        }
-                  }
-                >
-                  <DotfieldIcon className="site-shell__icon-svg" />
-                </button>
+              <div className="site-shell__header-inner">
                 <Link
-                  href="https://x.com/itsjaydesu"
-                  className="site-shell__icon-button site-shell__icon-button--link"
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  aria-label={t('menu.social.aria', language)}
-                  title={t('menu.social.aria', language)}
+                  href="/"
+                  className="site-shell__brand"
+                  aria-label={brand}
+                  onClick={handleNavigateHome}
                   style={
                     navReady
                       ? undefined
@@ -1346,9 +1275,82 @@ export default function SiteShell({ children, isAdmin = false }) {
                         }
                   }
                 >
-                  <XLogoIcon className="site-shell__icon-svg" />
+                  <BrandWordmark className="site-shell__brand-wordmark" />
                 </Link>
-                <LanguageSwitcher className="site-shell__icon-button site-shell__header-language-toggle" />
+                <nav className="site-shell__nav" aria-label="Primary navigation">
+                  {menuItems.map((item, index) => {
+                    const isActive = item.id === activeSection;
+                    return (
+                      <Link
+                        key={item.id}
+                        href={item.href}
+                        prefetch
+                        className={`site-shell__nav-link${
+                          isActive ? " is-active" : ""
+                        }`}
+                        aria-current={isActive ? "page" : undefined}
+                        onMouseEnter={() => handlePreview(item, isActive)}
+                        onMouseLeave={handleReset}
+                        onFocus={() => handlePreview(item, isActive)}
+                        onBlur={handleReset}
+                        style={
+                          navReady
+                            ? {
+                                transitionDelay: `${index * 60}ms`,
+                              }
+                            : {
+                                opacity: "var(--nav-item-initial-opacity, 0)",
+                                transform:
+                                  "translateY(var(--nav-item-initial-offset, 12px))",
+                              }
+                        }
+                      >
+                        {item.label}
+                      </Link>
+                    );
+                  })}
+                </nav>
+                <div className="site-shell__icon-group">
+                  <button
+                    type="button"
+                    className={`site-shell__icon-button site-shell__icon-button--action${(isDotfieldOverlayOpen || isDotfieldOverlayMounted) ? " is-active" : ""}`}
+                    onClick={toggleDotfieldOverlay}
+                    aria-pressed={isDotfieldOverlayOpen}
+                    aria-label={t('dotfield.open', language)}
+                    title={t('dotfield.open', language)}
+                    style={
+                      navReady
+                        ? undefined
+                        : {
+                            opacity: "var(--nav-item-initial-opacity, 0)",
+                            transform:
+                              "translateY(var(--nav-item-initial-offset, 8px))",
+                          }
+                    }
+                  >
+                    <DotfieldIcon className="site-shell__icon-svg" />
+                  </button>
+                  <Link
+                    href="https://x.com/itsjaydesu"
+                    className="site-shell__icon-button site-shell__icon-button--link"
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    aria-label={t('menu.social.aria', language)}
+                    title={t('menu.social.aria', language)}
+                    style={
+                      navReady
+                        ? undefined
+                        : {
+                            opacity: "var(--nav-item-initial-opacity, 0)",
+                            transform:
+                              "translateY(var(--nav-item-initial-offset, 8px))",
+                          }
+                    }
+                  >
+                    <XLogoIcon className="site-shell__icon-svg" />
+                  </Link>
+                  <LanguageSwitcher className="site-shell__icon-button site-shell__header-language-toggle" />
+                </div>
               </div>
             </header>
           ) : null}

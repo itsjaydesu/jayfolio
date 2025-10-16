@@ -2584,35 +2584,25 @@ a {
 
 .site-shell__header {
   position: fixed;
-  top: clamp(1.4rem, 4vh, 2.4rem);
-  left: 50%;
-  width: min(1180px, calc(100% - 2 * var(--shell-inline-pad)));
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: clamp(2rem, 4vw, 3rem);
-  padding: clamp(0.85rem, 2vw, 1.1rem) 0;
-  border-radius: 0;
-  border: none;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  padding: clamp(1.4rem, 4vh, 2.4rem) var(--shell-inline-pad) 0;
   background: transparent;
-  box-shadow: none;
-  backdrop-filter: none;
   z-index: 18;
   opacity: 0;
-  transform: translate(-50%, -20px);
+  transform: translateY(-20px);
   pointer-events: none;
   isolation: isolate;
   transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1),
     transform 0.8s cubic-bezier(0.4, 0, 0.2, 1),
-    background 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-    border-color 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-    box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-    backdrop-filter 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    background 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   will-change: opacity, transform;
 }
 .site-shell__header[data-returning-home="true"] {
   opacity: 0;
-  transform: translate(-50%, -28px);
+  transform: translateY(-28px);
   pointer-events: none;
 }
 .site-shell__header[data-returning-home="true"] .site-shell__brand,
@@ -2631,7 +2621,7 @@ a {
 /* This is the exact reverse of the fade-in animation */
 .site-shell__header.is-leaving {
   opacity: 0;
-  transform: translate(-50%, -20px);
+  transform: translateY(-20px);
   pointer-events: none;
   transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1),
     transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
@@ -2689,54 +2679,25 @@ a {
 .site-shell__header.is-leaving .site-shell__brand {
   transition-delay: 0.3s; /* Last to disappear (was first to appear at 0.1s) */
 }
-.site-shell__header::before,
-.site-shell__header::after {
-  content: "";
-  position: absolute;
-  inset: -2.4rem 0 -3.5rem;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.36s cubic-bezier(0.33, 1, 0.68, 1);
-  z-index: -1;
-}
-.site-shell__header::before {
-  background: radial-gradient(
-      circle at 50% -35%,
-      rgba(16, 68, 96, 0.4),
-      transparent 52%
-    ),
-    linear-gradient(
-      180deg,
-      rgba(2, 8, 14, 0.96),
-      rgba(2, 8, 14, 0.82) 36%,
-      rgba(2, 8, 14, 0.68) 58%,
-      rgba(2, 8, 14, 0)
-    );
-}
-.site-shell__header::after {
-  inset: auto 0 -1px;
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    rgba(120, 210, 226, 0.6),
-    rgba(120, 210, 226, 0),
-    rgba(120, 210, 226, 0.6)
-  );
-  filter: drop-shadow(0 22px 46px rgba(0, 4, 12, 0.6));
-}
+/* Removed old pill-style background pseudo-elements */
 .site-shell__header--shaded {
   background: linear-gradient(
-    to right,
-    rgba(6, 18, 26, 0.6) 0%,
-    rgba(6, 18, 26, 0.3) 50%,
-    transparent 100%
+    to bottom,
+    rgba(2, 6, 12, 0.85),
+    rgba(2, 6, 12, 0.6) 80%,
+    transparent
   );
-  box-shadow: none;
   backdrop-filter: blur(18px) saturate(160%);
 }
-.site-shell__header--shaded::before,
 .site-shell__header--shaded::after {
   opacity: 1;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(255, 255, 255, 0.18) 10%,
+    rgba(255, 255, 255, 0.18) 90%,
+    transparent
+  );
 }
 .site-shell__header--shaded .site-shell__brand {
   color: rgba(250, 252, 255, 0.99);
@@ -5618,12 +5579,49 @@ a {
 
 .site-shell__header {
   position: fixed;
-  top: clamp(1.4rem, 4vh, 2.4rem);
-  left: 50%;
-  width: min(1180px, calc(100% - 2 * var(--shell-inline-pad)));
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  padding: clamp(1.4rem, 4vh, 2.4rem) var(--shell-inline-pad) 0;
+  background: transparent;
+  z-index: 18;
+  opacity: 0;
+  transform: translateY(-18px);
+  pointer-events: none;
+  isolation: isolate;
+  transition: opacity 0.6s cubic-bezier(0.33, 1, 0.68, 1),
+    transform 0.6s cubic-bezier(0.33, 1, 0.68, 1),
+    background 0.36s cubic-bezier(0.33, 1, 0.68, 1);
+  will-change: opacity, transform;
+}
+
+/* Add a separator line under the header */
+.site-shell__header::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: var(--shell-inline-pad);
+  right: var(--shell-inline-pad);
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(255, 255, 255, 0.12) 10%,
+    rgba(255, 255, 255, 0.12) 90%,
+    transparent
+  );
+  opacity: 1;
+  transition: opacity 0.36s cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.site-shell__header-inner {
+  width: 100%;
+  max-width: calc(100vw - 2 * var(--shell-inline-pad));
+  margin: 0 auto;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: space-between;
   gap: clamp(2rem, 4vw, 3rem);
   padding: clamp(1rem, 2.4vw, 1.35rem) 0;
   border: none;
@@ -5631,15 +5629,10 @@ a {
   background: transparent;
   box-shadow: none;
   backdrop-filter: none;
-  z-index: 18;
-  opacity: 0;
-  transform: translate(-50%, -18px);
-  pointer-events: none;
-  isolation: isolate;
-  transition: opacity 0.6s cubic-bezier(0.33, 1, 0.68, 1),
-    transform 0.6s cubic-bezier(0.33, 1, 0.68, 1),
+  transition: background 0.36s cubic-bezier(0.33, 1, 0.68, 1),
+    border-color 0.36s cubic-bezier(0.33, 1, 0.68, 1),
+    box-shadow 0.36s cubic-bezier(0.33, 1, 0.68, 1),
     backdrop-filter 0.36s cubic-bezier(0.33, 1, 0.68, 1);
-  will-change: opacity, transform;
 }
 .site-shell__header-sentinel {
   position: relative;
@@ -5650,7 +5643,7 @@ a {
 
 .site-shell__header[data-nav-ready="true"]:not(.is-leaving) {
   opacity: 1;
-  transform: translate(-50%, 0);
+  transform: translateY(0);
   pointer-events: auto;
 }
 
@@ -5658,18 +5651,18 @@ a {
 @keyframes headerFadeIn {
   from {
     opacity: 0;
-    transform: translate(-50%, -20px);
+    transform: translateY(-20px);
   }
   to {
     opacity: 1;
-    transform: translate(-50%, 0);
+    transform: translateY(0);
   }
 }
 
 /* Prevent flash by ensuring initial state is correct */
 .site-shell__header[data-nav-ready="false"] {
   opacity: 0 !important;
-  transform: translate(-50%, -20px) !important;
+  transform: translateY(-20px) !important;
   pointer-events: none !important;
 }
 
@@ -5839,6 +5832,8 @@ a {
   align-items: center;
   gap: clamp(1.2rem, 2.5vw, 2rem);
   flex-wrap: nowrap; /* Keep items on one line */
+  flex: 1;
+  justify-content: center;
   height: 100%;
 }
 
@@ -6004,7 +5999,7 @@ a {
 
 /* Mobile header layout - Jayfolio + icons on top, menu below */
 @media (max-width: 720px) {
-  .site-shell__header {
+  .site-shell__header-inner {
     display: grid !important;
     grid-template-columns: auto 1fr;
     grid-template-rows: auto auto;
@@ -6051,10 +6046,12 @@ a {
 }
 
 .site-shell__main {
-  width: min(1180px, 100%);
+  width: 100%;
+  max-width: calc(100vw - 2 * var(--shell-inline-pad));
   margin: 0 auto;
   display: grid;
   gap: clamp(2.2rem, 6vw, 3.4rem);
+  padding-top: calc(clamp(1.4rem, 4vh, 2.4rem) + clamp(1rem, 2.4vw, 1.35rem) * 2 + 2rem);
   position: relative;
   z-index: 0;
   transition: opacity 0.52s cubic-bezier(0.33, 1, 0.68, 1),
@@ -6102,12 +6099,12 @@ a {
 
 /* Fix header alignment on large screens */
 @media (min-width: 1280px) {
-  .site-shell__header {
+  .site-shell__header-inner {
     width: 1180px;
   }
 
   .site-shell__header[data-nav-ready="true"]:not(.is-leaving) {
-    transform: translate(-50%, 0);
+    transform: translateY(0);
   }
 
   .site-shell__brand,
@@ -6154,7 +6151,7 @@ a {
   .site-shell__header.is-leaving {
     transition: none !important;
     opacity: 0;
-    transform: translate(-50%, 0);
+    transform: translateY(0);
   }
 
   .site-shell__header:not(.is-leaving)[data-nav-ready="true"] {
@@ -7220,12 +7217,12 @@ a {
     padding-top: 0;
   }
 
-  .site-shell__header {
+  .site-shell__header-inner {
     flex-direction: row;
     flex-wrap: wrap;
     align-items: center;
     justify-content: flex-start;
-    width: calc(100% - 2 * var(--shell-inline-pad));
+    width: 100%;
   }
 
   .site-shell__nav {
@@ -7945,10 +7942,9 @@ body.qr-intro-active {
 }
 body.qr-intro-active .site-shell__header {
   opacity: 0 !important;
-  transform: translate3d(-50%, -36px, 0) !important;
+  transform: translate3d(0, -36px, 0) !important;
   pointer-events: none !important;
 }
-body.qr-intro-active .site-shell__header::before,
 body.qr-intro-active .site-shell__header::after {
   opacity: 0 !important;
 }
