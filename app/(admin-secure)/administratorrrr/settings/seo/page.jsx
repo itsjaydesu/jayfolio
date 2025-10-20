@@ -1,7 +1,13 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { useAdminFetch } from '@/components/admin-session-context';
+
+const MediaSelector = dynamic(() => import('@/components/media-selector'), {
+  loading: () => <div className="uploader-loading">Loading selector...</div>,
+  ssr: false
+});
 
 const DEFAULT_PAGE_NAMES = ['home', 'about', 'projects', 'content', 'sounds', 'art'];
 

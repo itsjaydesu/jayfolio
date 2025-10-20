@@ -7,12 +7,6 @@ import { createChannelContentDefaults } from '../lib/channelContentDefaults';
 import { useAdminFetch } from './admin-session-context';
 import { footerPresets } from '../lib/footerSettingsGuide';
 
-// Dynamically import the image uploader for better code splitting
-const CoverImageUploader = dynamic(() => import('./cover-image-uploader'), {
-  loading: () => <div className="uploader-loading">Loading uploader...</div>,
-  ssr: false
-});
-
 // Import MediaSelector for simpler image selection
 const MediaSelector = dynamic(() => import('./media-selector'), {
   loading: () => <div className="uploader-loading">Loading selector...</div>,
@@ -994,7 +988,7 @@ export default function ChannelContentEditor({ sections = ['about', 'projects', 
                       <option value="100">100% - Full Top</option>
                     </select>
                     <small className="fade-control__help">
-                      Use "Bottom" for horizon images like the space shuttle
+                      Use &quot;Bottom&quot; for horizon images like the space shuttle
                     </small>
                   </div>
 
@@ -1014,7 +1008,7 @@ export default function ChannelContentEditor({ sections = ['about', 'projects', 
                       <option value="auto">Auto - Original size</option>
                     </select>
                     <small className="fade-control__help">
-                      Use "Cover" for full-bleed hero images, "Contain" to show artwork entirely
+                      Use &quot;Cover&quot; for full-bleed hero images, &quot;Contain&quot; to show artwork entirely
                     </small>
                   </div>
                 </div>
