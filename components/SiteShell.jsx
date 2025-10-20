@@ -119,6 +119,7 @@ export default function SiteShell({ children, isAdmin = false }) {
   const [isReturningHome, setIsReturningHome] = useState(false);
   const [menuVisible, setMenuVisible] = useState(isHome);
   const [headerVisible, setHeaderVisible] = useState(!isHome);
+  const [headerShade, setHeaderShade] = useState(0);
   const [isDotfieldOverlayOpen, setIsDotfieldOverlayOpen] = useState(false);
   const [isDotfieldOverlayMounted, setIsDotfieldOverlayMounted] = useState(false);
   const [isDotfieldOverlayLeaving, setIsDotfieldOverlayLeaving] = useState(false);
@@ -170,6 +171,11 @@ export default function SiteShell({ children, isAdmin = false }) {
     }),
     [language]
   );
+
+  const updateHeaderShade = useCallback((value) => {
+    const clamped = Math.min(Math.max(value, 0), 1);
+    setHeaderShade((previous) => (Math.abs(previous - clamped) < 0.01 ? previous : clamped));
+  }, []);
 
   const openDotfieldOverlay = useCallback(() => {
     if (overlayFadeTimeoutRef.current && typeof window !== "undefined") {
@@ -262,7 +268,15 @@ export default function SiteShell({ children, isAdmin = false }) {
     setStatus(activeStatus);
   }, [activeStatus]);
 
-  const headerClassName = "site-shell__header";
+  const isHeaderShaded = headerShade > 0.05;
+  const headerClassName = `site-shell__header${isHeaderShaded ? " is-scrolled" : ""}`;
+  const headerStyle = navReady
+    ? { '--header-backdrop-opacity': headerShade }
+    : {
+        '--header-backdrop-opacity': headerShade,
+        opacity: "var(--nav-initial-opacity, 0)",
+        transform: "translateY(var(--nav-initial-offset, -18px))",
+      };
   const containerClassName = "site-shell__container";
 
   useEffect(() => {
@@ -425,7 +439,153 @@ export default function SiteShell({ children, isAdmin = false }) {
     setHeaderVisible(!isHome);
   }, [isHome]);
 
-  // Removed scroll detection - no longer needed without shaded header
+  // DIAGNOSTIC: Log alignment on mount and when page changes (only if ?debug=true in URL)
+  useEffect(() => {
+    const isDebugMode = typeof window !== 'undefined' && window.location.search.includes('debug=true');
+    if (!isDebugMode) return;
+    
+    const logAlignment = () => {
+      console.group('🔍 ALIGNMENT DIAGNOSTIC');
+      
+      const brand = document.querySelector('.site-shell__brand');
+      const brandWordmark = document.querySelector('.brand-wordmark');
+      const headerInner = document.querySelector('.site-shell__header-inner');
+      const mainContainer = document.querySelector('.site-shell__main');
+      const channelTitle = document.querySelector('.channel__title');
+      const aboutTitle = document.querySelector('.clean-about-page__title');
+      const h1 = document.querySelector('main h1');
+      
+      console.log('🎯 Brand element:', {
+        element: brand,
+        left: brand?.getBoundingClientRect().left,
+        paddingLeft: brand ? getComputedStyle(brand).paddingLeft : 'N/A',
+        marginLeft: brand ? getComputedStyle(brand).marginLeft : 'N/A'
+      });
+      
+      console.log('📝 Brand Wordmark:', {
+        element: brandWordmark,
+        left: brandWordmark?.getBoundingClientRect().left,
+        paddingLeft: brandWordmark ? getComputedStyle(brandWordmark).paddingLeft : 'N/A'
+      });
+      
+      console.log('📦 Header Inner:', {
+        element: headerInner,
+        left: headerInner?.getBoundingClientRect().left,
+        paddingLeft: headerInner ? getComputedStyle(headerInner).paddingLeft : 'N/A',
+        maxWidth: headerInner ? getComputedStyle(headerInner).maxWidth : 'N/A'
+      });
+      
+      console.log('📦 Main Container:', {
+        element: mainContainer,
+        left: mainContainer?.getBoundingClientRect().left,
+        paddingLeft: mainContainer ? getComputedStyle(mainContainer).paddingLeft : 'N/A',
+        maxWidth: mainContainer ? getComputedStyle(mainContainer).maxWidth : 'N/A'
+      });
+      
+      console.log('🏷️ Page Title Elements:', {
+        channelTitle: {
+          element: channelTitle,
+          left: channelTitle?.getBoundingClientRect().left,
+          text: channelTitle?.textContent
+        },
+        aboutTitle: {
+          element: aboutTitle,
+          left: aboutTitle?.getBoundingClientRect().left,
+          text: aboutTitle?.textContent
+        },
+        h1: {
+          element: h1,
+          left: h1?.getBoundingClientRect().left,
+          text: h1?.textContent
+        }
+      });
+      
+      console.log('📏 Alignment Differences:', {
+        'brand vs h1': brand && h1 ? Math.abs(brand.getBoundingClientRect().left - h1.getBoundingClientRect().left).toFixed(2) + 'px' : 'N/A',
+        'brand vs channelTitle': brand && channelTitle ? Math.abs(brand.getBoundingClientRect().left - channelTitle.getBoundingClientRect().left).toFixed(2) + 'px' : 'N/A',
+        'brand vs aboutTitle': brand && aboutTitle ? Math.abs(brand.getBoundingClientRect().left - aboutTitle.getBoundingClientRect().left).toFixed(2) + 'px' : 'N/A'
+      });
+      
+      console.log('🎨 CSS Custom Properties:', {
+        shellInlinePad: getComputedStyle(document.documentElement).getPropertyValue('--shell-inline-pad')
+      });
+      
+      console.log('🏗️ DOM Structure:', {
+        'Is channel in main?': !!mainContainer?.querySelector('.channel'),
+        'Is channel direct child of main?': Array.from(mainContainer?.children || []).some(el => el.classList.contains('channel')),
+        'Channel parent': document.querySelector('.channel')?.parentElement?.className,
+        'Channel computed styles': document.querySelector('.channel') ? {
+          width: getComputedStyle(document.querySelector('.channel')).width,
+          maxWidth: getComputedStyle(document.querySelector('.channel')).maxWidth,
+          paddingLeft: getComputedStyle(document.querySelector('.channel')).paddingLeft,
+          paddingRight: getComputedStyle(document.querySelector('.channel')).paddingRight,
+        } : 'No channel element'
+      });
+      
+      console.groupEnd();
+    };
+    
+    // Log after a short delay to ensure DOM is ready
+    const timer = setTimeout(logAlignment, 500);
+    return () => clearTimeout(timer);
+  }, [pathname]);
+
+  // Enhanced scroll detection for header background fade effect
+  // Uses requestAnimationFrame for better performance and multiple scroll sources
+  useEffect(() => {
+    if (isHome || !headerVisible) {
+      updateHeaderShade(0);
+      return;
+    }
+
+    let ticking = false;
+    let rafId = null;
+    const scrollStart = 12;
+    const scrollRange = 220;
+
+    const updateScrollPosition = () => {
+      const scrollY = Math.max(
+        window.pageYOffset || 0,
+        document.documentElement.scrollTop || 0,
+        document.body.scrollTop || 0,
+        document.scrollingElement?.scrollTop || 0
+      );
+
+      const rawProgress = (scrollY - scrollStart) / scrollRange;
+      const normalized = Math.min(Math.max(rawProgress, 0), 1);
+      const eased = normalized === 0 || normalized === 1 ? normalized : Math.pow(normalized, 0.82);
+      updateHeaderShade(eased);
+      ticking = false;
+    };
+
+    const requestTick = () => {
+      if (!ticking) {
+        rafId = requestAnimationFrame(updateScrollPosition);
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', requestTick, { passive: true });
+    document.addEventListener('scroll', requestTick, { passive: true });
+
+    const mainEl = document.querySelector('main');
+    if (mainEl) {
+      mainEl.addEventListener('scroll', requestTick, { passive: true });
+    }
+
+    updateScrollPosition();
+
+    return () => {
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+      }
+      window.removeEventListener('scroll', requestTick);
+      document.removeEventListener('scroll', requestTick);
+      if (mainEl) {
+        mainEl.removeEventListener('scroll', requestTick);
+      }
+    };
+  }, [isHome, headerVisible, updateHeaderShade]);
   
   // ===== MOUNT INITIALIZATION =====
   // Initialize scene on mount for stopped routes (instant black on subpages)
@@ -1036,16 +1196,8 @@ export default function SiteShell({ children, isAdmin = false }) {
               className={headerClassName}
               data-nav-ready={navReady ? "true" : "false"}
               data-returning-home={isReturningHome ? "true" : "false"}
-
-              style={
-                navReady
-                  ? undefined
-                  : {
-                      opacity: "var(--nav-initial-opacity, 0)",
-                      transform:
-                        "translateY(var(--nav-initial-offset, -18px))",
-                    }
-              }
+              data-scrolled={isHeaderShaded ? "true" : "false"}
+              style={headerStyle}
             >
               <div className="site-shell__header-inner">
                 <Link

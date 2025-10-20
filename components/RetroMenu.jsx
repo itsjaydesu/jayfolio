@@ -32,6 +32,7 @@ export default function RetroMenu({
   const [remainingTime, setRemainingTime] = useState(null);
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
   const tooltipTimerRef = useRef(null);
+  const [scrolled, setScrolled] = useState(false);
 
   // Language context
   const { language, changeLanguage } = useLanguage();
@@ -257,6 +258,49 @@ export default function RetroMenu({
     }
   }, [activeEffectInfo, tooltipVisible]);
 
+  // Enhanced scroll detection for background fade effect with requestAnimationFrame
+  useEffect(() => {
+    let ticking = false;
+    let rafId = null;
+
+    const updateScrollPosition = () => {
+      const scrollThreshold = 50;
+      // Check all possible scroll sources for maximum compatibility
+      const scrollY = Math.max(
+        window.pageYOffset || 0,
+        document.documentElement.scrollTop || 0,
+        document.body.scrollTop || 0,
+        document.scrollingElement?.scrollTop || 0
+      );
+      
+      const isScrolled = scrollY > scrollThreshold;
+      setScrolled(isScrolled);
+      ticking = false;
+    };
+
+    const requestTick = () => {
+      if (!ticking) {
+        rafId = requestAnimationFrame(updateScrollPosition);
+        ticking = true;
+      }
+    };
+
+    // Listen to multiple scroll events for maximum compatibility
+    window.addEventListener('scroll', requestTick, { passive: true });
+    document.addEventListener('scroll', requestTick, { passive: true });
+    
+    // Initial check
+    updateScrollPosition();
+
+    return () => {
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+      }
+      window.removeEventListener('scroll', requestTick);
+      document.removeEventListener('scroll', requestTick);
+    };
+  }, []);
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -292,6 +336,7 @@ export default function RetroMenu({
       id={id}
       className={`retro-menu retro-menu--${variant}${isOpen ? " is-open" : ""}`}
       data-open={isOpen}
+      data-scrolled={scrolled ? "true" : "false"}
       data-panel-active={
         panelState === "fading" ||
         panelState === "opening" ||

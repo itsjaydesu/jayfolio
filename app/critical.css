@@ -79,10 +79,11 @@ body {
 /* Prevent layout shift for header */
 .site-shell__header {
   position: fixed;
-  top: 2rem;
-  left: 50%;
-  transform: translate(-50%, var(--nav-initial-offset));
-  opacity: var(--nav-initial-opacity);
+  top: 0;
+  left: 0;
+  right: 0;
+  transform: translateY(var(--nav-initial-offset, -18px));
+  opacity: var(--nav-initial-opacity, 0);
   z-index: 100;
   pointer-events: none;
   transition: opacity 0.3s ease, transform 0.3s ease;
@@ -90,7 +91,7 @@ body {
 
 .site-shell__header--visible {
   opacity: 1;
-  transform: translate(-50%, 0);
+  transform: translateY(0);
   pointer-events: auto;
 }
 
