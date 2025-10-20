@@ -8147,6 +8147,7 @@ body.qr-intro-active .site-shell__icon-button {
 /* ===== CLEAN ABOUT PAGE ===== */
 .clean-about-page {
   min-height: 100vh;
+  min-height: 100dvh;
   position: relative;
   opacity: 0;
   transform: translateY(10px);
@@ -8349,7 +8350,8 @@ body.qr-intro-active .site-shell__icon-button {
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
+  align-items: stretch;
   padding: clamp(2rem, 4vh, 4rem) 0;
 }
 
@@ -8365,7 +8367,24 @@ body.qr-intro-active .site-shell__icon-button {
   font-weight: 400;
   letter-spacing: 0.01em;
   margin: 0;
+  display: grid;
+  gap: clamp(1.5rem, 3vh, 2rem);
   animation: fadeUp 0.8s ease-out 0.4s both;
+}
+
+.clean-about-page__lead-paragraph {
+  margin: 0;
+}
+
+.clean-about-page__lead-paragraph--block {
+  display: grid;
+  gap: clamp(1.25rem, 2.5vh, 1.75rem);
+}
+
+.clean-about-page__lead-paragraph--block > * {
+  margin: 0;
+  font: inherit;
+  color: inherit;
 }
 
 .clean-about-page__lead a {
@@ -8505,6 +8524,23 @@ body.qr-intro-active .site-shell__icon-button {
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2), 0 0 30px rgba(138, 248, 255, 0.1);
 }
 
+.clean-about-page__empty {
+  align-self: center;
+  width: 100%;
+  max-width: 720px;
+  margin: clamp(2rem, 5vh, 3rem) 0 0;
+  padding: clamp(2rem, 5vh, 3rem);
+  font-size: clamp(0.95rem, 1.4vw, 1.05rem);
+  line-height: 1.75;
+  color: rgba(200, 220, 228, 0.72);
+  text-align: center;
+  background: rgba(18, 22, 28, 0.45);
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
 /* Animations */
 @keyframes fadeUp {
   from {
@@ -8561,6 +8597,11 @@ body.qr-intro-active .site-shell__icon-button {
   .clean-about-page__lead {
     font-size: 1rem;
     line-height: 1.75;
+    gap: 1.5rem;
+  }
+
+  .clean-about-page__lead-paragraph--block {
+    gap: 1.25rem;
   }
 
   .clean-about-page__cards {
@@ -8587,6 +8628,11 @@ body.qr-intro-active .site-shell__icon-button {
   .clean-about-page__tag {
     padding: 0.625rem 1.25rem;
     font-size: 0.8125rem;
+  }
+
+  .clean-about-page__empty {
+    padding: 2rem 1.5rem;
+    font-size: 0.9375rem;
   }
 }
 
