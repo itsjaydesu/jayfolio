@@ -87,20 +87,27 @@ export default function AboutContent({ initialContent }) {
     setIsLoaded(true);
   }, []);
 
-  // Scroll detection for fade effect
+  // Scroll detection for fade effect with progressive opacity
   useEffect(() => {
     let rafId = null;
-    const scrollThreshold = 80; // Start fading after scrolling 80px
+    const scrollStart = 20; // Start fading very early
+    const scrollRange = 200; // Over what distance should it reach full opacity
 
     const handleScroll = () => {
       if (rafId) return;
 
       rafId = requestAnimationFrame(() => {
         const scrollY = window.pageYOffset || document.documentElement.scrollTop;
-        const isScrolled = scrollY > scrollThreshold;
+        const progress = Math.min(Math.max((scrollY - scrollStart) / scrollRange, 0), 1);
 
-        if (isScrolled !== scrolled) {
-          setScrolled(isScrolled);
+        // Update data attribute and CSS variable for smooth progressive fade
+        const section = document.querySelector('.clean-about-page');
+        if (section) {
+          section.style.setProperty('--scroll-progress', progress.toString());
+          const isScrolled = progress > 0.05; // 5% threshold
+          if (isScrolled !== scrolled) {
+            setScrolled(isScrolled);
+          }
         }
 
         rafId = null;
@@ -181,6 +188,10 @@ export default function AboutContent({ initialContent }) {
       className={`clean-about-page ${isLoaded ? 'is-loaded' : ''} ${backgroundImage ? 'has-background-image' : ''}`}
       data-scrolled={scrolled ? "true" : "false"}
     >
+      {/* Scroll fade overlay - always present */}
+      <div className="clean-about-page__scroll-overlay" aria-hidden="true" />
+
+      {/* Optional background image */}
       <div className="clean-about-page__background">
         {backgroundImage && (
           <img

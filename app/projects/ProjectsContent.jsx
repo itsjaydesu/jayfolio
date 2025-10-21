@@ -200,6 +200,10 @@ export default function ProjectsContent({ entries, hero, isAdmin = false }) {
       ref={containerRef}
       data-scrolled={scrolled ? "true" : "false"}
     >
+      {/* Scroll fade overlay - always present */}
+      <div className="channel__scroll-overlay" aria-hidden="true" />
+
+      {/* Optional background image */}
       {backgroundImage && (
         <div className="channel__background">
           <img

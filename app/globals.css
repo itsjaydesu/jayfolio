@@ -6119,33 +6119,51 @@ a {
   pointer-events: none;
 }
 
-/* Scroll-triggered emerald green fade effect for channels */
-.channel[data-scrolled="true"] .channel__gradient {
-  background: linear-gradient(
-    180deg,
-    rgba(16, 185, 129, 0.15) 0%,
-    rgba(5, 150, 105, 0.12) 35%,
-    rgba(6, 95, 70, 0.08) 70%,
-    transparent 100%
-  );
-  opacity: 1;
-  transition: background 0.8s cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+/* ============================================================================
+   SCROLL FADE EFFECT - Emerald Green Overlay
+   ============================================================================
+   Applies a beautiful emerald green gradient overlay when user scrolls down
+   on any subpage. Uses CSS variable --scroll-progress for smooth progressive
+   fade (0 = no scroll, 1 = fully scrolled). Fades out smoothly when scrolling
+   back to top.
+   ========================================================================= */
+
+.channel {
+  --scroll-progress: 0; /* Updated dynamically by JavaScript */
 }
 
-/* Smooth fade-out when scrolling back to top */
-.channel:not([data-scrolled="true"]) .channel__gradient {
-  transition: background 0.8s cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+.channel__scroll-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: min(65vh, 900px);
+  pointer-events: none;
+  z-index: 5;
+  /* Progressive opacity based on scroll position */
+  opacity: var(--scroll-progress, 0);
+  background: linear-gradient(
+    180deg,
+    rgba(16, 185, 129, 0.32) 0%,
+    rgba(5, 150, 105, 0.24) 20%,
+    rgba(6, 95, 70, 0.18) 40%,
+    rgba(4, 78, 62, 0.10) 65%,
+    rgba(2, 50, 42, 0.04) 85%,
+    transparent 100%
+  );
+  /* Smooth transition for opacity changes */
+  transition: opacity 0.3s ease-out;
+  /* Subtle backdrop blur for depth */
+  backdrop-filter: blur(0.5px);
+  -webkit-backdrop-filter: blur(0.5px);
 }
 
 /* Respect reduced motion preference */
 @media (prefers-reduced-motion: reduce) {
-  .channel[data-scrolled="true"] .channel__gradient,
-  .channel:not([data-scrolled="true"]) .channel__gradient,
-  .clean-about-page[data-scrolled="true"] .clean-about-page__gradient,
-  .clean-about-page:not([data-scrolled="true"]) .clean-about-page__gradient {
-    transition: none;
+  .channel__scroll-overlay {
+    transition: opacity 0.1s linear;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
   }
 }
 
@@ -8260,24 +8278,43 @@ body.qr-intro-active .site-shell__icon-button {
   pointer-events: none;
 }
 
-/* Scroll-triggered emerald green fade effect */
-.clean-about-page[data-scrolled="true"] .clean-about-page__gradient {
-  background: linear-gradient(
-    180deg,
-    rgba(16, 185, 129, 0.15) 0%,
-    rgba(5, 150, 105, 0.12) 35%,
-    rgba(6, 95, 70, 0.08) 70%,
-    transparent 100%
-  );
-  opacity: 1;
-  transition: background 0.8s cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+/* ============================================================================
+   SCROLL FADE EFFECT - About Page
+   ========================================================================= */
+
+.clean-about-page {
+  --scroll-progress: 0;
 }
 
-/* Smooth fade-out when scrolling back to top */
-.clean-about-page:not([data-scrolled="true"]) .clean-about-page__gradient {
-  transition: background 0.8s cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+.clean-about-page__scroll-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: min(65vh, 900px);
+  pointer-events: none;
+  z-index: 5;
+  opacity: var(--scroll-progress, 0);
+  background: linear-gradient(
+    180deg,
+    rgba(16, 185, 129, 0.32) 0%,
+    rgba(5, 150, 105, 0.24) 20%,
+    rgba(6, 95, 70, 0.18) 40%,
+    rgba(4, 78, 62, 0.10) 65%,
+    rgba(2, 50, 42, 0.04) 85%,
+    transparent 100%
+  );
+  transition: opacity 0.3s ease-out;
+  backdrop-filter: blur(0.5px);
+  -webkit-backdrop-filter: blur(0.5px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .clean-about-page__scroll-overlay {
+    transition: opacity 0.1s linear;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
 }
 
 /* Main container - Optimized for single scroll */
@@ -8722,19 +8759,45 @@ body.qr-intro-active .site-shell__icon-button {
     rgba(6, 16, 24, 0.94),
     rgba(10, 24, 34, 0.9)
   );
-  transition: background 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Scroll-triggered emerald green fade effect for work-with-me */
-.work-with-me[data-scrolled="true"] .work-with-me__gradient {
+/* ============================================================================
+   SCROLL FADE EFFECT - Work With Me Page
+   ========================================================================= */
+
+.work-with-me {
+  --scroll-progress: 0;
+}
+
+.work-with-me__scroll-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: min(65vh, 900px);
+  pointer-events: none;
+  z-index: 5;
+  opacity: var(--scroll-progress, 0);
   background: linear-gradient(
-    150deg,
-    rgba(16, 185, 129, 0.18) 0%,
-    rgba(5, 150, 105, 0.14) 25%,
-    rgba(6, 95, 70, 0.12) 45%,
-    rgba(6, 16, 24, 0.94) 70%,
-    rgba(10, 24, 34, 0.9) 100%
+    180deg,
+    rgba(16, 185, 129, 0.32) 0%,
+    rgba(5, 150, 105, 0.24) 20%,
+    rgba(6, 95, 70, 0.18) 40%,
+    rgba(4, 78, 62, 0.10) 65%,
+    rgba(2, 50, 42, 0.04) 85%,
+    transparent 100%
   );
+  transition: opacity 0.3s ease-out;
+  backdrop-filter: blur(0.5px);
+  -webkit-backdrop-filter: blur(0.5px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .work-with-me__scroll-overlay {
+    transition: opacity 0.1s linear;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
 }
 
 .work-with-me__orb {

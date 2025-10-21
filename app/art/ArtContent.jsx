@@ -21,20 +21,26 @@ export default function ArtContent({ entries, hero, isAdmin = false }) {
     setIsLoaded(true);
   }, []);
 
-  // Scroll detection for fade effect
+  // Scroll detection for fade effect with progressive opacity
   useEffect(() => {
     let rafId = null;
-    const scrollThreshold = 80;
+    const scrollStart = 20;
+    const scrollRange = 200;
 
     const handleScroll = () => {
       if (rafId) return;
 
       rafId = requestAnimationFrame(() => {
         const scrollY = window.pageYOffset || document.documentElement.scrollTop;
-        const isScrolled = scrollY > scrollThreshold;
+        const progress = Math.min(Math.max((scrollY - scrollStart) / scrollRange, 0), 1);
 
-        if (isScrolled !== scrolled) {
-          setScrolled(isScrolled);
+        const section = document.querySelector('.channel--art');
+        if (section) {
+          section.style.setProperty('--scroll-progress', progress.toString());
+          const isScrolled = progress > 0.05;
+          if (isScrolled !== scrolled) {
+            setScrolled(isScrolled);
+          }
         }
 
         rafId = null;
@@ -55,11 +61,15 @@ export default function ArtContent({ entries, hero, isAdmin = false }) {
       className={`channel channel--art ${isLoaded ? 'is-loaded' : ''} ${backgroundImage ? 'has-background-image' : ''}`}
       data-scrolled={scrolled ? "true" : "false"}
     >
+      {/* Scroll fade overlay - always present */}
+      <div className="channel__scroll-overlay" aria-hidden="true" />
+
+      {/* Optional background image */}
       {backgroundImage && (
         <div className="channel__background">
-          <img 
-            src={backgroundImage} 
-            alt="" 
+          <img
+            src={backgroundImage}
+            alt=""
             className="channel__background-image"
             aria-hidden="true"
           />

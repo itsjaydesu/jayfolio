@@ -8,20 +8,26 @@ export default function WorkWithMePage() {
   const contactEmail = 'hello@jaywinder.com';
   const [scrolled, setScrolled] = useState(false);
 
-  // Scroll detection for fade effect
+  // Scroll detection for fade effect with progressive opacity
   useEffect(() => {
     let rafId = null;
-    const scrollThreshold = 80;
+    const scrollStart = 20;
+    const scrollRange = 200;
 
     const handleScroll = () => {
       if (rafId) return;
 
       rafId = requestAnimationFrame(() => {
         const scrollY = window.pageYOffset || document.documentElement.scrollTop;
-        const isScrolled = scrollY > scrollThreshold;
+        const progress = Math.min(Math.max((scrollY - scrollStart) / scrollRange, 0), 1);
 
-        if (isScrolled !== scrolled) {
-          setScrolled(isScrolled);
+        const section = document.querySelector('.work-with-me');
+        if (section) {
+          section.style.setProperty('--scroll-progress', progress.toString());
+          const isScrolled = progress > 0.05;
+          if (isScrolled !== scrolled) {
+            setScrolled(isScrolled);
+          }
         }
 
         rafId = null;
@@ -42,6 +48,9 @@ export default function WorkWithMePage() {
       className="work-with-me"
       data-scrolled={scrolled ? "true" : "false"}
     >
+      {/* Scroll fade overlay - always present */}
+      <div className="work-with-me__scroll-overlay" aria-hidden="true" />
+
       <div className="work-with-me__background">
         <div className="work-with-me__gradient" />
         <div className="work-with-me__orb" />
