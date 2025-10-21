@@ -90,8 +90,29 @@ export default function AboutContent({ initialContent }) {
   // Scroll detection for fade effect with progressive opacity
   useEffect(() => {
     let rafId = null;
-    const scrollStart = 20; // Start fading very early
-    const scrollRange = 200; // Over what distance should it reach full opacity
+    const scrollStart = 20;
+    const scrollRange = 200;
+
+    // DEBUG: Log on mount
+    console.log('🔍 [AboutContent] Scroll effect mounted');
+    const section = document.querySelector('.clean-about-page');
+    const overlay = document.querySelector('.clean-about-page__scroll-overlay');
+    console.log('🔍 [AboutContent] Section found:', !!section, section?.className);
+    console.log('🔍 [AboutContent] Overlay found:', !!overlay);
+    if (overlay) {
+      const overlayStyles = window.getComputedStyle(overlay);
+      console.log('🔍 [AboutContent] Overlay computed styles:', {
+        position: overlayStyles.position,
+        zIndex: overlayStyles.zIndex,
+        opacity: overlayStyles.opacity,
+        display: overlayStyles.display,
+        top: overlayStyles.top,
+        left: overlayStyles.left,
+        width: overlayStyles.width,
+        height: overlayStyles.height,
+        background: overlayStyles.background.substring(0, 100)
+      });
+    }
 
     const handleScroll = () => {
       if (rafId) return;
@@ -100,14 +121,27 @@ export default function AboutContent({ initialContent }) {
         const scrollY = window.pageYOffset || document.documentElement.scrollTop;
         const progress = Math.min(Math.max((scrollY - scrollStart) / scrollRange, 0), 1);
 
-        // Update data attribute and CSS variable for smooth progressive fade
         const section = document.querySelector('.clean-about-page');
         if (section) {
           section.style.setProperty('--scroll-progress', progress.toString());
-          const isScrolled = progress > 0.05; // 5% threshold
+          const isScrolled = progress > 0.05;
+
+          // DEBUG: Log scroll updates (throttled)
+          if (Math.random() < 0.1) { // Only log 10% of the time to avoid spam
+            console.log('📜 [AboutContent] Scroll update:', {
+              scrollY,
+              progress: progress.toFixed(3),
+              cssVarSet: section.style.getPropertyValue('--scroll-progress'),
+              isScrolled
+            });
+          }
+
           if (isScrolled !== scrolled) {
+            console.log('✅ [AboutContent] Scroll state changed:', isScrolled);
             setScrolled(isScrolled);
           }
+        } else {
+          console.error('❌ [AboutContent] Section not found during scroll!');
         }
 
         rafId = null;
@@ -118,6 +152,7 @@ export default function AboutContent({ initialContent }) {
     handleScroll(); // Check initial state
 
     return () => {
+      console.log('🔍 [AboutContent] Scroll effect unmounting');
       window.removeEventListener('scroll', handleScroll);
       if (rafId) cancelAnimationFrame(rafId);
     };

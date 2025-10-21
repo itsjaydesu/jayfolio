@@ -6139,7 +6139,7 @@ a {
   right: 0;
   height: min(65vh, 900px);
   pointer-events: none;
-  z-index: 5;
+  z-index: 9999; /* DEBUG: Temporarily very high to test stacking */
   /* Progressive opacity based on scroll position */
   opacity: var(--scroll-progress, 0);
   background: linear-gradient(
@@ -6156,6 +6156,8 @@ a {
   /* Subtle backdrop blur for depth */
   backdrop-filter: blur(0.5px);
   -webkit-backdrop-filter: blur(0.5px);
+  /* DEBUG: Add visible border to confirm element renders */
+  outline: 3px solid red !important;
 }
 
 /* Respect reduced motion preference */
@@ -8293,7 +8295,7 @@ body.qr-intro-active .site-shell__icon-button {
   right: 0;
   height: min(65vh, 900px);
   pointer-events: none;
-  z-index: 5;
+  z-index: 9999; /* DEBUG: Temporarily very high to test stacking */
   opacity: var(--scroll-progress, 0);
   background: linear-gradient(
     180deg,
@@ -8307,6 +8309,8 @@ body.qr-intro-active .site-shell__icon-button {
   transition: opacity 0.3s ease-out;
   backdrop-filter: blur(0.5px);
   -webkit-backdrop-filter: blur(0.5px);
+  /* DEBUG: Add visible border to confirm element renders */
+  outline: 3px solid red !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
