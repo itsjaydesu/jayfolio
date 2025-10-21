@@ -8153,8 +8153,8 @@ body.qr-intro-active .site-shell__icon-button {
   transform: translateY(10px);
   transition: opacity 0.6s ease-out, transform 0.6s ease-out;
   background: transparent;
-  overflow-x: hidden;
-  overflow-y: visible;
+  /* Ensure single scroll - no overflow on this container */
+  overflow: visible;
 }
 
 .clean-about-page.is-loaded {
@@ -8181,11 +8181,11 @@ body.qr-intro-active .site-shell__icon-button {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center center; /* Center the image for better composition */
+  object-position: center center;
   opacity: 0;
   animation: fadeInBackground 2.4s cubic-bezier(0.4, 0, 0.2, 1) 0.3s forwards;
-  filter: contrast(1.05) brightness(0.95); /* Slightly less filter for clarity */
-  transform: scale(1.02); /* Less scale for less crop */
+  filter: contrast(1.05) brightness(0.95);
+  transform: scale(1.02);
   will-change: transform, opacity;
 }
 
@@ -8230,28 +8230,30 @@ body.qr-intro-active .site-shell__icon-button {
   pointer-events: none;
 }
 
-/* Main container - Floating content layer */
+/* Main container - Optimized for single scroll */
 .clean-about-page__container {
   max-width: 1200px;
   width: 100%;
   margin: 0 auto;
-  padding: clamp(4rem, 8vh, 6rem) clamp(1.5rem, 4vw, 3rem);
-  padding-bottom: clamp(8rem, 15vh, 12rem);
+  /* Streamlined padding for better flow */
+  padding: clamp(6rem, 12vh, 8rem) clamp(1.5rem, 4vw, 3rem) clamp(6rem, 12vh, 8rem);
   position: relative;
   z-index: 1;
   animation: fadeUp 0.8s ease-out 0.2s both;
   background: transparent;
-  min-height: auto;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
+  /* Ensure content flows naturally */
+  gap: clamp(2rem, 4vh, 3rem);
 }
 
 /* Header section */
 .clean-about-page__header {
   position: relative;
-  margin-bottom: 3rem;
   padding-bottom: 1.5rem;
   border-bottom: 1px solid rgba(232, 240, 246, 0.08);
+  /* Removed margin-bottom - using container gap instead */
 }
 
 .clean-about-page__header--editable .clean-about-page__header-row {
@@ -8343,7 +8345,7 @@ body.qr-intro-active .site-shell__icon-button {
   transform: translateY(0);
 }
 
-/* Main content */
+/* Main content - Streamlined for single scroll */
 .clean-about-page__main {
   position: relative;
   z-index: 1;
@@ -8352,11 +8354,12 @@ body.qr-intro-active .site-shell__icon-button {
   flex-direction: column;
   justify-content: flex-start;
   align-items: stretch;
-  padding: clamp(2rem, 4vh, 4rem) 0;
+  /* Removed padding - using container gap instead */
+  gap: clamp(2rem, 4vh, 3rem);
 }
 
 .clean-about-page__text-content {
-  margin-bottom: 3rem;
+  /* Removed margin-bottom - using parent gap instead */
   max-width: 720px;
 }
 
@@ -8404,7 +8407,7 @@ body.qr-intro-active .site-shell__icon-button {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
   gap: clamp(1.5rem, 3vw, 2.5rem);
-  margin: clamp(3rem, 6vh, 5rem) 0;
+  /* Removed margin - using parent gap instead */
 }
 
 .clean-about-page__card {
@@ -8468,7 +8471,8 @@ body.qr-intro-active .site-shell__icon-button {
 /* Footer and Tags - Cinematic conclusion */
 .clean-about-page__footer {
   margin-top: auto;
-  padding-top: clamp(4rem, 8vh, 6rem);
+  /* Reduced padding for better flow */
+  padding-top: clamp(2rem, 4vh, 3rem);
   position: relative;
   z-index: 2;
 }
@@ -8528,7 +8532,7 @@ body.qr-intro-active .site-shell__icon-button {
   align-self: center;
   width: 100%;
   max-width: 720px;
-  margin: clamp(2rem, 5vh, 3rem) 0 0;
+  /* Removed margin - using parent gap instead */
   padding: clamp(2rem, 5vh, 3rem);
   font-size: clamp(0.95rem, 1.4vw, 1.05rem);
   line-height: 1.75;
@@ -8556,16 +8560,17 @@ body.qr-intro-active .site-shell__icon-button {
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .clean-about-page {
-    padding: 2rem 1.5rem 3rem;
     min-height: 100vh;
   }
 
   .clean-about-page__container {
-    padding-top: 0;
+    /* Optimized mobile padding */
+    padding: clamp(5rem, 10vh, 6rem) clamp(1.25rem, 4vw, 1.5rem) clamp(4rem, 8vh, 5rem);
+    gap: clamp(1.5rem, 3vh, 2rem);
   }
 
   .clean-about-page__header {
-    margin-bottom: 3rem;
+    /* No additional margin needed */
   }
   .clean-about-page__header-row {
     flex-direction: column;
@@ -8594,6 +8599,10 @@ body.qr-intro-active .site-shell__icon-button {
     font-size: 1.125rem;
   }
 
+  .clean-about-page__main {
+    gap: clamp(1.5rem, 3vh, 2rem);
+  }
+
   .clean-about-page__lead {
     font-size: 1rem;
     line-height: 1.75;
@@ -8606,7 +8615,7 @@ body.qr-intro-active .site-shell__icon-button {
 
   .clean-about-page__cards {
     grid-template-columns: 1fr;
-    gap: 2rem;
+    gap: 1.5rem;
   }
 
   .clean-about-page__card {
