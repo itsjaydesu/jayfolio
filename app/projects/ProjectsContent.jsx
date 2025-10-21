@@ -52,20 +52,58 @@ export default function ProjectsContent({ entries, hero, isAdmin = false }) {
     setIsLoaded(true);
   }, []);
 
-  // Scroll detection for fade effect
+  // Scroll detection for fade effect with progressive opacity
   useEffect(() => {
     let rafId = null;
-    const scrollThreshold = 80; // Start fading after scrolling 80px
+    const scrollStart = 20;
+    const scrollRange = 200;
+
+    // DEBUG: Log on mount
+    console.log('🔍 [ProjectsContent] Scroll effect mounted');
+    const section = document.querySelector('.channel--projects');
+    const overlay = document.querySelector('.channel__scroll-overlay');
+    console.log('🔍 [ProjectsContent] Section found:', !!section, section?.className);
+    console.log('🔍 [ProjectsContent] Overlay found:', !!overlay);
+    if (overlay) {
+      const overlayStyles = window.getComputedStyle(overlay);
+      console.log('🔍 [ProjectsContent] Overlay computed styles:', {
+        position: overlayStyles.position,
+        zIndex: overlayStyles.zIndex,
+        opacity: overlayStyles.opacity,
+        display: overlayStyles.display,
+        top: overlayStyles.top,
+        width: overlayStyles.width,
+        height: overlayStyles.height
+      });
+    }
 
     const handleScroll = () => {
       if (rafId) return;
 
       rafId = requestAnimationFrame(() => {
         const scrollY = window.pageYOffset || document.documentElement.scrollTop;
-        const isScrolled = scrollY > scrollThreshold;
+        const progress = Math.min(Math.max((scrollY - scrollStart) / scrollRange, 0), 1);
 
-        if (isScrolled !== scrolled) {
-          setScrolled(isScrolled);
+        const section = document.querySelector('.channel--projects');
+        if (section) {
+          section.style.setProperty('--scroll-progress', progress.toString());
+          const isScrolled = progress > 0.05;
+
+          // DEBUG: Log scroll updates (throttled)
+          if (Math.random() < 0.1) {
+            console.log('📜 [ProjectsContent] Scroll update:', {
+              scrollY,
+              progress: progress.toFixed(3),
+              cssVarSet: section.style.getPropertyValue('--scroll-progress')
+            });
+          }
+
+          if (isScrolled !== scrolled) {
+            console.log('✅ [ProjectsContent] Scroll state changed:', isScrolled);
+            setScrolled(isScrolled);
+          }
+        } else {
+          console.error('❌ [ProjectsContent] Section not found during scroll!');
         }
 
         rafId = null;
@@ -73,9 +111,10 @@ export default function ProjectsContent({ entries, hero, isAdmin = false }) {
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll(); // Check initial state
+    handleScroll();
 
     return () => {
+      console.log('🔍 [ProjectsContent] Unmounting scroll effect');
       window.removeEventListener('scroll', handleScroll);
       if (rafId) cancelAnimationFrame(rafId);
     };
