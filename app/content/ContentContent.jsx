@@ -28,12 +28,42 @@ export default function ContentContent({ entries, hero, isAdmin = false }) {
   const localizedCategories = useMemo(() => getLocalizedCategories(language), [language]);
   const [selectedCategory, setSelectedCategory] = useState(localizedCategories[0].key);
   const [isLoaded, setIsLoaded] = useState(false);
-  
+  const [scrolled, setScrolled] = useState(false);
+
   const backgroundImage = hero.backgroundImage || '';
-  
+
   useEffect(() => {
     setIsLoaded(true);
   }, []);
+
+  // Scroll detection for fade effect
+  useEffect(() => {
+    let rafId = null;
+    const scrollThreshold = 80;
+
+    const handleScroll = () => {
+      if (rafId) return;
+
+      rafId = requestAnimationFrame(() => {
+        const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+        const isScrolled = scrollY > scrollThreshold;
+
+        if (isScrolled !== scrolled) {
+          setScrolled(isScrolled);
+        }
+
+        rafId = null;
+      });
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
+  }, [scrolled]);
 
   // Auto-categorize entries based on tags or content
   const categorizedEntries = useMemo(() => {
@@ -77,12 +107,15 @@ export default function ContentContent({ entries, hero, isAdmin = false }) {
   }, [categorizedEntries, selectedCategory]);
 
   return (
-    <section className={`channel channel--words ${isLoaded ? 'is-loaded' : ''} ${backgroundImage ? 'has-background-image' : ''}`}>
+    <section
+      className={`channel channel--words ${isLoaded ? 'is-loaded' : ''} ${backgroundImage ? 'has-background-image' : ''}`}
+      data-scrolled={scrolled ? "true" : "false"}
+    >
       {backgroundImage && (
         <div className="channel__background">
-          <img 
-            src={backgroundImage} 
-            alt="" 
+          <img
+            src={backgroundImage}
+            alt=""
             className="channel__background-image"
             aria-hidden="true"
           />

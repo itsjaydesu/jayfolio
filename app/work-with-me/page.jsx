@@ -1,16 +1,47 @@
-import Link from 'next/link';
-import { ArrowUpRightIcon } from '../../components/icons';
+'use client';
 
-export const metadata = {
-  title: 'Work with Jay | jayfolio',
-  description: 'Partner with Jay Winder on immersive interfaces, audiovisual systems, and responsive installations.'
-};
+import Link from 'next/link';
+import { useState, useEffect } from 'react';
+import { ArrowUpRightIcon } from '../../components/icons';
 
 export default function WorkWithMePage() {
   const contactEmail = 'hello@jaywinder.com';
+  const [scrolled, setScrolled] = useState(false);
+
+  // Scroll detection for fade effect
+  useEffect(() => {
+    let rafId = null;
+    const scrollThreshold = 80;
+
+    const handleScroll = () => {
+      if (rafId) return;
+
+      rafId = requestAnimationFrame(() => {
+        const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+        const isScrolled = scrollY > scrollThreshold;
+
+        if (isScrolled !== scrolled) {
+          setScrolled(isScrolled);
+        }
+
+        rafId = null;
+      });
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
+  }, [scrolled]);
 
   return (
-    <section className="work-with-me">
+    <section
+      className="work-with-me"
+      data-scrolled={scrolled ? "true" : "false"}
+    >
       <div className="work-with-me__background">
         <div className="work-with-me__gradient" />
         <div className="work-with-me__orb" />

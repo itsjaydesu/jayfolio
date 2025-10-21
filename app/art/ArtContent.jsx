@@ -13,14 +13,48 @@ const ART_TONES = {
 export default function ArtContent({ entries, hero, isAdmin = false }) {
   const { language } = useLanguage();
   const [isLoaded, setIsLoaded] = useState(false);
-  
+  const [scrolled, setScrolled] = useState(false);
+
   const backgroundImage = hero.backgroundImage || '';
-  
+
   useEffect(() => {
     setIsLoaded(true);
   }, []);
+
+  // Scroll detection for fade effect
+  useEffect(() => {
+    let rafId = null;
+    const scrollThreshold = 80;
+
+    const handleScroll = () => {
+      if (rafId) return;
+
+      rafId = requestAnimationFrame(() => {
+        const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+        const isScrolled = scrollY > scrollThreshold;
+
+        if (isScrolled !== scrolled) {
+          setScrolled(isScrolled);
+        }
+
+        rafId = null;
+      });
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
+  }, [scrolled]);
+
   return (
-    <section className={`channel channel--art ${isLoaded ? 'is-loaded' : ''} ${backgroundImage ? 'has-background-image' : ''}`}>
+    <section
+      className={`channel channel--art ${isLoaded ? 'is-loaded' : ''} ${backgroundImage ? 'has-background-image' : ''}`}
+      data-scrolled={scrolled ? "true" : "false"}
+    >
       {backgroundImage && (
         <div className="channel__background">
           <img 

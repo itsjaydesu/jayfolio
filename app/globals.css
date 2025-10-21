@@ -6119,6 +6119,36 @@ a {
   pointer-events: none;
 }
 
+/* Scroll-triggered emerald green fade effect for channels */
+.channel[data-scrolled="true"] .channel__gradient {
+  background: linear-gradient(
+    180deg,
+    rgba(16, 185, 129, 0.15) 0%,
+    rgba(5, 150, 105, 0.12) 35%,
+    rgba(6, 95, 70, 0.08) 70%,
+    transparent 100%
+  );
+  opacity: 1;
+  transition: background 0.8s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Smooth fade-out when scrolling back to top */
+.channel:not([data-scrolled="true"]) .channel__gradient {
+  transition: background 0.8s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .channel[data-scrolled="true"] .channel__gradient,
+  .channel:not([data-scrolled="true"]) .channel__gradient,
+  .clean-about-page[data-scrolled="true"] .clean-about-page__gradient,
+  .clean-about-page:not([data-scrolled="true"]) .clean-about-page__gradient {
+    transition: none;
+  }
+}
+
 .channel__intro {
   display: grid;
   gap: clamp(0.8rem, 2vw, 1.4rem);
@@ -8230,6 +8260,26 @@ body.qr-intro-active .site-shell__icon-button {
   pointer-events: none;
 }
 
+/* Scroll-triggered emerald green fade effect */
+.clean-about-page[data-scrolled="true"] .clean-about-page__gradient {
+  background: linear-gradient(
+    180deg,
+    rgba(16, 185, 129, 0.15) 0%,
+    rgba(5, 150, 105, 0.12) 35%,
+    rgba(6, 95, 70, 0.08) 70%,
+    transparent 100%
+  );
+  opacity: 1;
+  transition: background 0.8s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Smooth fade-out when scrolling back to top */
+.clean-about-page:not([data-scrolled="true"]) .clean-about-page__gradient {
+  transition: background 0.8s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 /* Main container - Optimized for single scroll */
 .clean-about-page__container {
   max-width: 1200px;
@@ -8671,6 +8721,19 @@ body.qr-intro-active .site-shell__icon-button {
     150deg,
     rgba(6, 16, 24, 0.94),
     rgba(10, 24, 34, 0.9)
+  );
+  transition: background 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Scroll-triggered emerald green fade effect for work-with-me */
+.work-with-me[data-scrolled="true"] .work-with-me__gradient {
+  background: linear-gradient(
+    150deg,
+    rgba(16, 185, 129, 0.18) 0%,
+    rgba(5, 150, 105, 0.14) 25%,
+    rgba(6, 95, 70, 0.12) 45%,
+    rgba(6, 16, 24, 0.94) 70%,
+    rgba(10, 24, 34, 0.9) 100%
   );
 }
 

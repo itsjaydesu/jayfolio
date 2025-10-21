@@ -19,6 +19,7 @@ export default function ProjectsContent({ entries, hero, isAdmin = false }) {
   const containerRef = useRef(null);
   const { language } = useLanguage();
   const [isLoaded, setIsLoaded] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   
   const backgroundImage = hero.backgroundImage || '';
   
@@ -50,6 +51,35 @@ export default function ProjectsContent({ entries, hero, isAdmin = false }) {
   useEffect(() => {
     setIsLoaded(true);
   }, []);
+
+  // Scroll detection for fade effect
+  useEffect(() => {
+    let rafId = null;
+    const scrollThreshold = 80; // Start fading after scrolling 80px
+
+    const handleScroll = () => {
+      if (rafId) return;
+
+      rafId = requestAnimationFrame(() => {
+        const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+        const isScrolled = scrollY > scrollThreshold;
+
+        if (isScrolled !== scrolled) {
+          setScrolled(isScrolled);
+        }
+
+        rafId = null;
+      });
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll(); // Check initial state
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
+  }, [scrolled]);
   
   // Restore scroll position when coming back
   useEffect(() => {
@@ -165,12 +195,16 @@ export default function ProjectsContent({ entries, hero, isAdmin = false }) {
   }, [entries, filteredEntries, selectedCategory]);
 
   return (
-    <section className={`channel channel--projects ${isLoaded ? 'is-loaded' : ''} ${backgroundImage ? 'has-background-image' : ''}`} ref={containerRef}>
+    <section
+      className={`channel channel--projects ${isLoaded ? 'is-loaded' : ''} ${backgroundImage ? 'has-background-image' : ''}`}
+      ref={containerRef}
+      data-scrolled={scrolled ? "true" : "false"}
+    >
       {backgroundImage && (
         <div className="channel__background">
-          <img 
-            src={backgroundImage} 
-            alt="" 
+          <img
+            src={backgroundImage}
+            alt=""
             className="channel__background-image"
             aria-hidden="true"
           />

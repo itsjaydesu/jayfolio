@@ -79,12 +79,42 @@ function parseLegacyTags(legacyTags) {
 
 export default function AboutContent({ initialContent }) {
   const [isLoaded, setIsLoaded] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const { language } = useLanguage();
   const { isAdmin } = useAdminStatus();
 
   useEffect(() => {
     setIsLoaded(true);
   }, []);
+
+  // Scroll detection for fade effect
+  useEffect(() => {
+    let rafId = null;
+    const scrollThreshold = 80; // Start fading after scrolling 80px
+
+    const handleScroll = () => {
+      if (rafId) return;
+
+      rafId = requestAnimationFrame(() => {
+        const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+        const isScrolled = scrollY > scrollThreshold;
+
+        if (isScrolled !== scrolled) {
+          setScrolled(isScrolled);
+        }
+
+        rafId = null;
+      });
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll(); // Check initial state
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
+  }, [scrolled]);
   
   // Use dynamic data with fallbacks
   const {
@@ -147,12 +177,15 @@ export default function AboutContent({ initialContent }) {
   const hasContent = hasLead || hasCards || hasTags;
 
   return (
-    <section className={`clean-about-page ${isLoaded ? 'is-loaded' : ''} ${backgroundImage ? 'has-background-image' : ''}`}>
+    <section
+      className={`clean-about-page ${isLoaded ? 'is-loaded' : ''} ${backgroundImage ? 'has-background-image' : ''}`}
+      data-scrolled={scrolled ? "true" : "false"}
+    >
       <div className="clean-about-page__background">
         {backgroundImage && (
-          <img 
-            src={backgroundImage} 
-            alt="" 
+          <img
+            src={backgroundImage}
+            alt=""
             className="clean-about-page__background-image"
             aria-hidden="true"
           />
