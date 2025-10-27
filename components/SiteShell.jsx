@@ -657,6 +657,87 @@ export default function SiteShell({ children, isAdmin = false }) {
   useEffect(() => {
     setIsInitialMount(false);
   }, []);
+
+  // Header fade diagnostics – enable with ?debug-fade=true (or debug=true)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const search = window.location.search;
+    const isDebugFade = search.includes('debug-fade=true') || search.includes('debug=true');
+    if (!isDebugFade) return;
+
+    const logHeaderFadeDiagnostics = (reason = 'manual') => {
+      try {
+        // Grab elements
+        const header = document.querySelector('.site-shell__header');
+        const headerInner = document.querySelector('.site-shell__header-inner');
+        const container = document.querySelector('.site-shell__container');
+        if (!header) {
+          console.warn('[fade] No header found');
+          return;
+        }
+
+        // Computed styles
+        const cs = getComputedStyle(header);
+        const csBefore = getComputedStyle(header, '::before');
+        const csContainerBefore = container ? getComputedStyle(container, '::before') : null;
+
+        // Support checks
+        const supportsMask = CSS && (CSS.supports('mask-image', 'linear-gradient(black, transparent)') || CSS.supports('-webkit-mask-image', 'linear-gradient(black, transparent)'));
+        const supportsBackdrop = CSS && (CSS.supports('backdrop-filter', 'blur(4px)') || CSS.supports('-webkit-backdrop-filter', 'blur(4px)'));
+
+        // Bounding boxes
+        const rect = header.getBoundingClientRect();
+        const innerRect = headerInner?.getBoundingClientRect?.();
+
+        console.groupCollapsed(`\n🧪 Header Fade Diagnostics (${reason})`);
+        console.log('bounds', { rect, innerRect });
+        console.log('z-index', { header: cs.zIndex, containerBefore: csContainerBefore?.zIndex });
+        console.log('opacity/transform', { opacity: cs.opacity, transform: cs.transform });
+        console.log('backdrop', { backdropFilter: cs.backdropFilter, webkitBackdropFilter: cs.webkitBackdropFilter, supportsBackdrop });
+        console.log('mask', {
+          maskImage: cs.maskImage,
+          webkitMaskImage: cs.webkitMaskImage,
+          maskSize: cs.maskSize,
+          webkitMaskSize: cs.webkitMaskSize,
+          maskComposite: cs.maskComposite,
+          webkitMaskComposite: cs.webkitMaskComposite,
+          supportsMask
+        });
+        console.log('::before pseudo', {
+          exists: csBefore?.content && csBefore.content !== 'none' && csBefore.content !== 'normal',
+          height: csBefore?.height,
+          background: csBefore?.background,
+          opacity: csBefore?.opacity,
+          zIndex: csBefore?.zIndex,
+        });
+        console.log('container::before', csContainerBefore ? {
+          exists: csContainerBefore?.content && csContainerBefore.content !== 'none' && csContainerBefore.content !== 'normal',
+          zIndex: csContainerBefore?.zIndex,
+          opacity: csContainerBefore?.opacity,
+          top: csContainerBefore?.top,
+          height: csContainerBefore?.height,
+          background: csContainerBefore?.background,
+          position: csContainerBefore?.position,
+        } : 'n/a');
+        console.groupEnd();
+      } catch (e) {
+        console.warn('[fade] diagnostics failed', e);
+      }
+    };
+
+    const onResize = () => logHeaderFadeDiagnostics('resize');
+    const onScroll = () => logHeaderFadeDiagnostics('scroll');
+
+    // Initial
+    setTimeout(() => logHeaderFadeDiagnostics('mount'), 0);
+    window.addEventListener('resize', onResize, { passive: true });
+    window.addEventListener('scroll', onScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener('resize', onResize);
+      window.removeEventListener('scroll', onScroll);
+    };
+  }, []);
   
   // Handle animation state changes based on route
   useEffect(() => {
@@ -1214,6 +1295,10 @@ export default function SiteShell({ children, isAdmin = false }) {
       ) : null}
       <div className={`site-shell${isDetailView ? " site-shell--detail" : ""}`}>
         <div className={containerClassName}>
+          {/* Browser-safe top fade: sits above the header to avoid hard edge in browsers that ignore masks with backdrop-filter. */}
+          {headerVisible ? (
+            <div className="site-shell__top-fade" aria-hidden="true" />
+          ) : null}
           {!isDetailView && headerVisible ? (
             <header
               className={headerClassName}
