@@ -100,10 +100,10 @@ a {
 
 /* Ensure smooth fade-in when returning to home */
 .scene-wrapper:not(.scene-wrapper--faded) .scene-container.is-ready {
-  /* Faster fade-in when returning home */
-  transition: opacity 1.5s cubic-bezier(0.4, 0, 0.6, 1),
-    transform 1.5s cubic-bezier(0.4, 0, 0.6, 1),
-    filter 1.5s cubic-bezier(0.4, 0, 0.6, 1);
+  /* Faster fade-in for initial reveal */
+  transition: opacity 0.6s cubic-bezier(0.4, 0, 0.6, 1),
+    transform 0.6s cubic-bezier(0.4, 0, 0.6, 1),
+    filter 0.6s cubic-bezier(0.4, 0, 0.6, 1);
   opacity: 1;
   transform: scale(1);
   filter: blur(0px);
@@ -4294,6 +4294,9 @@ a {
   position: absolute;
   inset: 0;
   border: 1px solid rgba(233, 253, 255, 0.2);
+  /* Match the pill shape and avoid squared corners */
+  border-radius: inherit;
+  pointer-events: none;
   opacity: 0;
   transition: opacity 0.2s ease;
 }

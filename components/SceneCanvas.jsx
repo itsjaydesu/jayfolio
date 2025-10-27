@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import * as THREE from 'three';
-import Stats from 'three/examples/jsm/libs/stats.module.js';
 import { FIELD_DEFAULT_BASE, FIELD_DEFAULT_INFLUENCES } from '../lib/fieldDefaults';
 
 const SEPARATION = 90;
@@ -1432,6 +1431,8 @@ const SceneCanvas = forwardRef(function SceneCanvas(
         if (!renderer || !camera) return;
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
+        // Keep DPR in sync with device settings
+        try { renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2)); } catch {}
         renderer.setSize(window.innerWidth, window.innerHeight);
         syncCameraProfile(false);
       }
@@ -2247,8 +2248,11 @@ const SceneCanvas = forwardRef(function SceneCanvas(
         particles.frustumCulled = false;
         scene.add(particles);
 
-        renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        // Favor faster first paint: no AA, high-performance hint
+        renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'high-performance' });
+        // Boot at low DPR for instant first frame, bump after ready
+        const desiredPixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+        renderer.setPixelRatio(1);
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.outputColorSpace = THREE.SRGBColorSpace;
         renderer.toneMapping = THREE.ReinhardToneMapping;
@@ -2256,9 +2260,8 @@ const SceneCanvas = forwardRef(function SceneCanvas(
         container.appendChild(renderer.domElement);
         console.log('[SceneCanvas] ✅ renderer.domElement appended at', performance.now().toFixed(2), 'ms');
 
-        stats = new Stats();
-        stats.dom.style.display = settings.showStats ? 'block' : 'none';
-        container.appendChild(stats.dom);
+        // Only load Stats lazily if explicitly enabled later
+        // This avoids pulling the module and creating DOM on initial load
 
         container.style.touchAction = 'none';
         container.addEventListener('pointermove', onPointerMove);
@@ -2277,6 +2280,14 @@ const SceneCanvas = forwardRef(function SceneCanvas(
 
       const markReady = () => {
         console.log('[SceneCanvas] 🎯 Adding is-ready class at', performance.now().toFixed(2), 'ms');
+        // Raise renderer pixel ratio once visible for crispness
+        try {
+          const dpr = Math.min(window.devicePixelRatio || 1, 2);
+          if (renderer) {
+            renderer.setPixelRatio(dpr);
+            renderer.setSize(window.innerWidth, window.innerHeight);
+          }
+        } catch {}
         container.classList.add('is-ready');
         console.log('[SceneCanvas] ✨ is-ready class added at', performance.now().toFixed(2), 'ms');
         readinessFrame = null;

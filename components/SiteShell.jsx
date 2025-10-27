@@ -33,6 +33,12 @@ const SceneCanvas = dynamic(() => import('./SceneCanvas'), {
   ssr: false // Disable SSR for Three.js component
 });
 
+// Proactively warm the chunk so the canvas shows sooner
+// (especially useful when opening overlay on sub-pages)
+if (typeof window !== 'undefined' && typeof SceneCanvas?.preload === 'function') {
+  SceneCanvas.preload();
+}
+
 // Helper function to get localized menu items
 function getLocalizedMenuItems(lang = 'en') {
   return SITE_TEXT_DEFAULTS.primaryMenu.map((i) => ({
