@@ -2604,6 +2604,26 @@ a {
 
 /* Clean header - no shaded background box (class kept for compatibility) */
 
+/* Bottom feather: extend a gradient below the header to eliminate any hard
+   cutoff where the header background meets page content. This draws within the
+   header's stacking context so it always appears above content. */
+.site-shell__header::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  /* Extend outside the header box so the fade blends over content */
+  bottom: calc(-1 * var(--header-bottom-fade-height, 64px));
+  height: var(--header-bottom-fade-height, 64px);
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    rgba(3, 4, 5, 0.75) 0%,
+    rgba(3, 4, 5, 0.0) 100%
+  );
+  z-index: 0;
+}
+
 .detail-view__media {
   position: relative;
   width: 100%;
