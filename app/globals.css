@@ -5510,8 +5510,8 @@ a {
 .site-shell__header-inner {
   width: min(var(--layout-max-width), calc(100vw - 2 * var(--shell-inline-pad)));
   max-width: 100%;
-  margin: 0;
-  margin-right: auto;
+  /* Center the inner header block within the full-width header */
+  margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -5948,9 +5948,9 @@ a {
 .site-shell__main {
   width: min(var(--layout-max-width), calc(100vw - 2 * var(--shell-inline-pad)));
   max-width: 100%;
-  margin: 0;
-  margin-right: auto;
-  justify-self: start;
+  /* Center main content within the grid container */
+  margin: 0 auto;
+  justify-self: center;
   display: grid;
   gap: clamp(2.2rem, 6vw, 3.4rem);
   padding-top: calc(
