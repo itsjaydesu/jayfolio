@@ -5,6 +5,8 @@ import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import PostCard from '../../components/PostCard';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { t, getLocalizedContent, getLocalizedTags } from '../../lib/translations';
+import EntryReturnFocus from '../../components/EntryReturnFocus';
+import { ENTRY_RETURN_STORAGE_KEY } from '../../lib/entryReturn';
 
 const PROJECT_TONES = {
   'signal-grid': 'cyan',
@@ -16,6 +18,7 @@ export default function ProjectsContent({ entries, hero, isAdmin = false }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  // Container ref kept in case future measurements are needed
   const containerRef = useRef(null);
   const { language } = useLanguage();
   const [isLoaded, setIsLoaded] = useState(false);
@@ -47,27 +50,49 @@ export default function ProjectsContent({ entries, hero, isAdmin = false }) {
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   
   // Set loaded state on mount
+  const mountedRef = useRef(false);
   useEffect(() => {
+    if (mountedRef.current) return;
+    mountedRef.current = true;
     setIsLoaded(true);
-  }, []);
-  
-  // Restore scroll position when coming back
-  useEffect(() => {
-    const scrollPos = sessionStorage.getItem('projectsScrollPosition');
-    if (scrollPos && containerRef.current) {
-      window.scrollTo(0, parseInt(scrollPos, 10));
-      sessionStorage.removeItem('projectsScrollPosition');
-    }
-    const storedCategory = sessionStorage.getItem('projectsSelectedCategory');
-    if (storedCategory && storedCategory !== selectedCategory) {
-      const normalized = storedCategory.toLowerCase();
-      if (CATEGORIES.some((item) => item.id === normalized)) {
-        setSelectedCategory(normalized);
+    if (process.env.NODE_ENV === 'development') {
+      try {
+        const raw = sessionStorage.getItem(ENTRY_RETURN_STORAGE_KEY);
+        console.log('[ProjectsContent] mount', {
+          urlCategory: searchParams.get('category') || null,
+          initialCategory,
+          selectedCategory,
+          returnPayload: raw ? JSON.parse(raw) : null,
+        });
+      } catch (e) {
+        console.log('[ProjectsContent] mount (no storage access)', e?.message);
       }
     }
-    sessionStorage.removeItem('projectsSelectedCategory');
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [initialCategory, searchParams, selectedCategory]);
+  
+  // Restore previously selected category (but DO NOT auto-scroll).
+  // We intentionally removed the older scroll restoration by raw Y offset
+  // because it could apply on a cold load and jump the page, hiding the header.
+  // Instead, scroll restoration is handled by EntryReturnFocus using a slug anchor.
+  const didRestoreCategoryRef = useRef(false);
+  useEffect(() => {
+    if (didRestoreCategoryRef.current) return;
+    try {
+      const hasUrlCategory = !!searchParams.get('category');
+      const storedCategory = hasUrlCategory ? null : sessionStorage.getItem('projectsSelectedCategory');
+      if (storedCategory && storedCategory !== selectedCategory) {
+        const normalized = storedCategory.toLowerCase();
+        if (CATEGORIES.some((item) => item.id === normalized)) {
+          setSelectedCategory(normalized);
+        }
+      }
+      // Only clear category if we actually consumed it; otherwise leave
+      // so other navigations (e.g., back/forward) can also restore.
+    } catch {
+      // Ignore storage errors safely (private mode, etc.)
+    }
+    didRestoreCategoryRef.current = true;
+  }, [CATEGORIES, searchParams, selectedCategory]);
   
   // Update URL when category changes
   const handleCategoryChange = (category) => {
@@ -88,11 +113,15 @@ export default function ProjectsContent({ entries, hero, isAdmin = false }) {
     router.replace(newUrl, { scroll: false });
   };
   
-  // Save scroll position before navigating away
-  const handleProjectClick = () => {
-    sessionStorage.setItem('projectsScrollPosition', window.scrollY.toString());
-    sessionStorage.setItem('projectsSelectedCategory', selectedCategory);
-  };
+  // Persist the currently selected category so the list view is consistent
+  // when the user returns from a detail page, regardless of navigation method.
+  useEffect(() => {
+    try {
+      sessionStorage.setItem('projectsSelectedCategory', selectedCategory);
+    } catch {
+      // Ignore storage errors
+    }
+  }, [selectedCategory]);
 
   // Auto-categorize entries based on tags, title, or content
   const categorizedEntries = useMemo(() => {
@@ -207,22 +236,23 @@ export default function ProjectsContent({ entries, hero, isAdmin = false }) {
           })}
         </p>
       ) : (
-        <div className="channel__grid" key={selectedCategory} data-category={selectedCategory}>
-          {filteredEntries.map((entry) => {
-            const tone = PROJECT_TONES[entry.slug] ?? 'neutral';
-            return (
-              <PostCard
-                key={entry.slug}
-                entry={entry}
-                type="projects"
-                tone={tone}
-                isAdmin={isAdmin}
-                category={entry.category}
-                onClick={handleProjectClick}
-              />
-            );
-          })}
-        </div>
+        <EntryReturnFocus type="projects">
+          <div className="channel__grid" key={selectedCategory} data-category={selectedCategory}>
+            {filteredEntries.map((entry) => {
+              const tone = PROJECT_TONES[entry.slug] ?? 'neutral';
+              return (
+                <PostCard
+                  key={entry.slug}
+                  entry={entry}
+                  type="projects"
+                  tone={tone}
+                  isAdmin={isAdmin}
+                  category={entry.category}
+                />
+              );
+            })}
+          </div>
+        </EntryReturnFocus>
       )}
     </section>
   );

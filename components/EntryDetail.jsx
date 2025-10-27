@@ -87,6 +87,26 @@ export default function EntryDetail({ type, entry, isAdmin = false }) {
     };
   }, [logLayoutMetrics]);
 
+  // Store the return target on mount so that using the browser back button
+  // or any navigation method will still allow the list page to center the
+  // last viewed entry. This is safe and lightweight; the list view consumes
+  // and clears the value via EntryReturnFocus.
+  useEffect(() => {
+    if (!entry?.slug) return;
+    try {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[EntryDetail] mounting, will store return target', {
+          type,
+          slug: entry.slug,
+          path: window.location.pathname
+        });
+      }
+      storeEntryReturnTarget(type, entry.slug);
+    } catch {
+      // Ignore storage errors gracefully
+    }
+  }, [entry?.slug, type]);
+
   useEffect(() => {
     stageStateRef.current = stageState;
     logLayoutMetrics(`state-change-${stageState}`, stageState);
@@ -115,7 +135,13 @@ export default function EntryDetail({ type, entry, isAdmin = false }) {
 
       setStageState('leaving');
       leaveTimeoutRef.current = window.setTimeout(() => {
-        router.push(href);
+        // Prevent Next.js from auto-scrolling the destination page to top.
+        // Our list page handles centering via EntryReturnFocus.
+        try {
+          router.push(href, { scroll: false });
+        } catch {
+          router.push(href);
+        }
       }, TRANSITION_DURATION_MS);
     },
     [entry?.slug, router, stageState, type]
