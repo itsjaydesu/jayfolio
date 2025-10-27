@@ -15,6 +15,9 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { t, getLocalizedContent } from "../lib/translations";
 
 const DOTFIELD_OVERLAY_FADE_MS = 520;
+// Minimum header backdrop opacity on subpages so the menu is readable
+// over content even at scroll position 0. Kept subtle to avoid a heavy box.
+const HEADER_BASE_SHADE = 0.16; // ~16% base, escalates with scroll
 const DOTFIELD_EFFECT_SEQUENCE = [
   'jitter',
   'swirlPulse',
@@ -125,7 +128,8 @@ export default function SiteShell({ children, isAdmin = false }) {
   const [isReturningHome, setIsReturningHome] = useState(false);
   const [menuVisible, setMenuVisible] = useState(isHome);
   const [headerVisible, setHeaderVisible] = useState(!isHome);
-  const [headerShade, setHeaderShade] = useState(0);
+  // Ensure a small baseline shade on non-home views so header blur is visible on fade-in
+  const [headerShade, setHeaderShade] = useState(!isHome ? HEADER_BASE_SHADE : 0);
   const [isDotfieldOverlayOpen, setIsDotfieldOverlayOpen] = useState(false);
   const [isDotfieldOverlayMounted, setIsDotfieldOverlayMounted] = useState(false);
   const [isDotfieldOverlayLeaving, setIsDotfieldOverlayLeaving] = useState(false);
@@ -179,9 +183,22 @@ export default function SiteShell({ children, isAdmin = false }) {
   );
 
   const updateHeaderShade = useCallback((value) => {
+    // Clamp incoming value and enforce a baseline shade on subpages
     const clamped = Math.min(Math.max(value, 0), 1);
-    setHeaderShade((previous) => (Math.abs(previous - clamped) < 0.01 ? previous : clamped));
-  }, []);
+    const effective = (!isHome && headerVisible)
+      ? Math.max(clamped, HEADER_BASE_SHADE)
+      : clamped;
+    setHeaderShade((previous) => (Math.abs(previous - effective) < 0.01 ? previous : effective));
+  }, [isHome, headerVisible]);
+
+  // Keep baseline shade in sync if route/visibility changes (e.g., navigation or layout toggles)
+  useEffect(() => {
+    if (!isHome && headerVisible) {
+      setHeaderShade((s) => (s < HEADER_BASE_SHADE ? HEADER_BASE_SHADE : s));
+    } else if (isHome) {
+      setHeaderShade(0);
+    }
+  }, [isHome, headerVisible]);
 
   const openDotfieldOverlay = useCallback(() => {
     if (overlayFadeTimeoutRef.current && typeof window !== "undefined") {
