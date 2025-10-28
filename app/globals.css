@@ -8412,6 +8412,9 @@ a {
 /* Responsive adjustments for small screens */
 @media (max-width: 480px) {
   .site-shell__brand {
+    --brand-hitpad-inline: clamp(0.6rem, 4vw, 0.85rem);
+    --brand-hitpad-block: clamp(0.28rem, 3vw, 0.48rem);
+    --brand-left-offset: 0.18em;
     font-size: clamp(0.8rem, 2vw, 1.1rem);
     letter-spacing: 0.16em;
   }
@@ -9205,6 +9208,9 @@ a {
 }
 
 .site-shell__brand {
+  --brand-hitpad-inline: clamp(0.8rem, 2vw, 1.2rem);
+  --brand-hitpad-block: clamp(0.35rem, 1vw, 0.6rem);
+  --brand-left-offset: 0.28em;
   font-size: clamp(1rem, 2.2vw, 1.5rem);
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -9214,16 +9220,16 @@ a {
   opacity: 0;
   transform: translateY(8px);
   transition: color 0.2s ease, opacity 0.5s cubic-bezier(0.33, 1, 0.68, 1),
-    transform 0.5s cubic-bezier(0.33, 1, 0.68, 1);
+    transform 0.5s cubic-bezier(0.33, 1, 0.68, 1), background-color 0.3s ease,
+    box-shadow 0.3s ease;
   white-space: nowrap;
   margin-right: auto;
-  /* Removed padding-left to ensure alignment with content below */
-  padding-left: 0;
-  /* Compensate for letter-spacing visual offset - align text baseline */
-  margin-left: -0.09em;
-  display: flex;
+  padding: var(--brand-hitpad-block) var(--brand-hitpad-inline);
+  margin-left: calc(-1 * (var(--brand-left-offset) + var(--brand-hitpad-inline)));
+  display: inline-flex;
   align-items: center;
-  height: 100%;
+  justify-content: flex-start;
+  border-radius: clamp(1.5rem, 4vw, 2.75rem);
 }
 
 .site-shell__header[data-nav-ready="true"] .site-shell__brand {
@@ -9233,7 +9239,9 @@ a {
 
 .site-shell__brand:hover,
 .site-shell__brand:focus-visible {
-  color: rgba(232, 240, 246, 0.85);
+  color: rgba(232, 240, 246, 0.92);
+  background-color: rgba(138, 248, 255, 0.08);
+  box-shadow: 0 0 0 1px rgba(138, 248, 255, 0.18);
 }
 
 .brand-wordmark {
