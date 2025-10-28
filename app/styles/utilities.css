@@ -1,0 +1,27 @@
+/* Small, intentional utility set to reduce repetition */
+@layer utilities {
+  .u-flex { display: flex; }
+  .u-grid { display: grid; }
+  .u-items-center { align-items: center; }
+  .u-justify-between { justify-content: space-between; }
+  .u-center { display: grid; place-items: center; }
+  .u-w-full { width: 100%; }
+  .u-h-full { height: 100%; }
+  .u-overflow-x-hidden { overflow-x: hidden; }
+  .u-text-nowrap { white-space: nowrap; }
+
+  /* Visually hidden (alias existing .sr-only) */
+  .u-sr-only,
+  .u-visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+}
+

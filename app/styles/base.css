@@ -1,0 +1,37 @@
+/* Base styles: responsive media, focus, selection, motion guard */
+@layer base {
+  /* Media elements should be responsive by default */
+  :where(img, picture, video, canvas, svg) {
+    display: block;
+    max-width: 100%;
+  }
+
+  /* Form controls inherit typography */
+  :where(button, input, select, textarea) {
+    font: inherit;
+    color: inherit;
+  }
+
+  /* Sensible default focus ring that is easily overridden locally */
+  :where(a, button, [role="button"], input, select, textarea):focus-visible {
+    outline: 2px solid var(--focus-color);
+    outline-offset: var(--focus-offset);
+  }
+
+  /* Selection color that respects dark theme */
+  ::selection {
+    background: rgba(138, 248, 255, 0.28);
+    color: rgba(245, 247, 249, 0.96);
+  }
+
+  /* Global reduced-motion guard: turn off non-essential transitions/animations */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
