@@ -5,6 +5,7 @@ import { LanguageProvider } from '../contexts/LanguageContext';
 import HtmlHead from '../components/HtmlHead';
 import { Analytics } from '@vercel/analytics/react';
 import { readChannelContent } from '../lib/channelContent';
+import LanguageTransitionRoot from '../components/LanguageTransitionRoot';
 
 export async function generateMetadata() {
   return await getMetadata('home');
@@ -34,7 +35,9 @@ export default async function RootLayout({ children }) {
       <body>
         <LanguageProvider>
           <HtmlHead />
-          <SiteShell channelContent={channelContent}>{children}</SiteShell>
+          <LanguageTransitionRoot>
+            <SiteShell channelContent={channelContent}>{children}</SiteShell>
+          </LanguageTransitionRoot>
         </LanguageProvider>
         <Analytics />
         <noscript>

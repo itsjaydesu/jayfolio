@@ -8350,6 +8350,36 @@ a {
   }
 }
 
+.language-transition-root {
+  position: relative;
+  animation: none;
+  will-change: opacity, filter;
+}
+
+@keyframes languageContentFade {
+  0% {
+    opacity: 1;
+    filter: none;
+  }
+  45% {
+    opacity: 0;
+    filter: blur(1px);
+  }
+  55% {
+    opacity: 0;
+    filter: blur(1px);
+  }
+  100% {
+    opacity: 1;
+    filter: none;
+  }
+}
+
+body[data-language-transitioning="true"] .language-transition-root {
+  animation: languageContentFade var(--language-transition-duration, 0.8s)
+    var(--language-transition-easing, cubic-bezier(0.33, 1, 0.68, 1));
+}
+
 /* Apply the crossfade to transitioning elements */
 [data-language-transitioning="true"] .channel__title,
 [data-language-transitioning="true"] .channel__lead,

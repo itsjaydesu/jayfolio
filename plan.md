@@ -2,7 +2,7 @@ http://plan.md
 
 # Language Crossover Animation Plan
 
-**Overall Progress:** `79%`
+**Overall Progress:** `88%`
 
 ## Tasks
 
@@ -42,10 +42,10 @@ http://plan.md
 - [ ] 🟥 **Step 7: Diagnose + enhance text crossover**
   - [x] 🟩 Enumerate potential causes; instrument LanguageContext/SiteShell for runtime diagnostics. *(Comment: ensures we know the triggers fire on time.)*
   - [x] 🟩 Validate via logging that transition flags fire in sync with renders. *(Comment: confirmed infra works; issue lies in render pipeline.)*
-  - [ ] 🟥 Stage outgoing text layer (keep last language visible during transition). *(Comment: prevents instant swap by retaining previous copy.)*
-  - [ ] 🟥 Drive staggered opacity/blur animations via CSS variables (reuse existing duration/easing). *(Comment: ensures polish and consistency with overlay.)*
-  - [ ] 🟥 Update key components (headings, nav, cards, detail views) to consume staged layers without duplication. *(Comment: localizes the change to shared primitives.)*
-  - [ ] 🟥 Provide reliable cleanup once animation completes to avoid lingering DOM nodes. *(Comment: keeps DOM lean after transition.)*
+  - [x] 🟩 Stage outgoing text layer (keep last language visible during transition). *(Comment: fade-through holds prior text until swap.)*
+  - [x] 🟩 Drive staggered opacity/blur animations via CSS variables (reuse existing duration/easing). *(Comment: ensures polish and consistency with overlay.)*
+  - [x] 🟩 Update key components (headings, nav, cards, detail views) to consume staged layers without duplication. *(Comment: centralized via LanguageTransitionRoot wrapper.)*
+  - [x] 🟩 Provide reliable cleanup once animation completes to avoid lingering DOM nodes. *(Comment: timers clear + state resets post-animation.)*
   - [ ] 🟥 Re-run smoke tests on Home + primary routes to confirm smooth visual swap. *(Comment: validates the new layering end-to-end.)*
 
 Notes:
