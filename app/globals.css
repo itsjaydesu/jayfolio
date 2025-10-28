@@ -12,9 +12,7 @@
   --shell-inline-pad: clamp(1.5rem, 5vw, 4rem);
   --layout-max-width: 1180px;
   --site-shell-header-offset: calc(
-    clamp(1.4rem, 4vh, 2.4rem) +
-    clamp(1rem, 2.4vw, 1.35rem) * 2 +
-    2rem
+    clamp(1.4rem, 4vh, 2.4rem) + clamp(1rem, 2.4vw, 1.35rem) * 2 + 2rem
   );
   --surface-base: #030405;
   --surface-elevated: rgba(15, 18, 22, 0.78);
@@ -331,8 +329,6 @@ a {
 .menu-overlay.is-visible .retro-menu__status {
   transition-delay: 0.52s;
 }
-
-
 
 .content-stage {
   position: fixed;
@@ -1697,8 +1693,7 @@ a {
   text-decoration: none;
   font-size: 0.7rem;
   /* Drop transform on hover to avoid clipping at container edges */
-  transition: box-shadow 0.2s ease, background 0.2s ease,
-    border-color 0.2s ease;
+  transition: box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
 }
 
 .detail-view__back::before {
@@ -2569,7 +2564,6 @@ a {
   transition-delay: 0s !important;
 }
 
-
 /* Clean header - no shaded background box (class kept for compatibility) */
 
 /* Bottom feather: extend a gradient below the header to eliminate any hard
@@ -2587,7 +2581,7 @@ a {
   background: linear-gradient(
     to bottom,
     rgba(3, 4, 5, 0.75) 0%,
-    rgba(3, 4, 5, 0.0) 100%
+    rgba(3, 4, 5, 0) 100%
   );
   z-index: 0;
 }
@@ -4762,7 +4756,9 @@ a {
   opacity: 0 !important;
   filter: blur(12px) !important;
   pointer-events: none;
-  transition: opacity 0.48s cubic-bezier(0.33, 1, 0.68, 1), transform 0.48s cubic-bezier(0.33, 1, 0.68, 1), filter 0.48s cubic-bezier(0.33, 1, 0.68, 1);
+  transition: opacity 0.48s cubic-bezier(0.33, 1, 0.68, 1),
+    transform 0.48s cubic-bezier(0.33, 1, 0.68, 1),
+    filter 0.48s cubic-bezier(0.33, 1, 0.68, 1);
 }
 
 /* Specific rule for centerpiece variant to preserve horizontal centering */
@@ -5453,7 +5449,10 @@ a {
   top: clamp(0.4rem, 2.4vh, 1.6rem);
   left: 50%;
   transform: translateX(-50%);
-  width: min(var(--layout-max-width), calc(100vw - 2 * var(--shell-inline-pad)));
+  width: min(
+    var(--layout-max-width),
+    calc(100vw - 2 * var(--shell-inline-pad))
+  );
   max-width: calc(100vw - 2 * var(--shell-inline-pad));
   height: clamp(160px, 24vh, 280px);
   pointer-events: none;
@@ -5477,7 +5476,8 @@ a {
   left: 0;
   right: 0;
   width: 100%;
-  padding: clamp(1.4rem, 4vh, 2.4rem) var(--shell-inline-pad) clamp(1rem, 2vh, 1.5rem);
+  padding: clamp(1.4rem, 4vh, 2.4rem) var(--shell-inline-pad)
+    clamp(1rem, 2vh, 1.5rem);
   z-index: 32;
   opacity: 0;
   transform: translateY(-18px);
@@ -5502,7 +5502,11 @@ a {
   -webkit-mask-size: 100% 100%;
   mask-size: 100% 100%;
   --header-backdrop-opacity: 0;
-  --header-backdrop-strength: clamp(0, calc(var(--header-backdrop-opacity) * 1.35), 0.95);
+  --header-backdrop-strength: clamp(
+    0,
+    calc(var(--header-backdrop-opacity) * 1.35),
+    0.95
+  );
   --header-blur-strength: calc(18px * var(--header-backdrop-strength));
   --header-shadow-opacity: calc(0.38 * var(--header-backdrop-strength));
   background: linear-gradient(
@@ -5525,8 +5529,16 @@ a {
 
 .site-shell__header[data-scrolled="true"],
 .site-shell__header.is-scrolled {
-  --header-backdrop-strength: clamp(0, calc(var(--header-backdrop-opacity) * 1.45), 0.95);
-  --header-shadow-opacity: clamp(0.02, calc(var(--header-backdrop-strength) * 0.52), 0.55);
+  --header-backdrop-strength: clamp(
+    0,
+    calc(var(--header-backdrop-opacity) * 1.45),
+    0.95
+  );
+  --header-shadow-opacity: clamp(
+    0.02,
+    calc(var(--header-backdrop-strength) * 0.52),
+    0.55
+  );
 }
 
 /* Fixed top-edge fade overlay (browser-safe) */
@@ -5543,7 +5555,7 @@ a {
     to bottom,
     rgba(0, 0, 0, 0.78) 0%,
     rgba(0, 0, 0, 0.66) 28%,
-    rgba(0, 0, 0, 0.0) 100%
+    rgba(0, 0, 0, 0) 100%
   );
   /* Avoid layout jank on zoomed/high-DPR displays */
   transform: translateZ(0);
@@ -5563,7 +5575,7 @@ a {
   background: linear-gradient(
     to bottom,
     rgba(0, 0, 0, 0.96) 0%,
-    rgba(0, 0, 0, 0.0) 100%
+    rgba(0, 0, 0, 0) 100%
   );
   z-index: 0;
 }
@@ -5573,7 +5585,10 @@ a {
 /* Header inner container - matches content width for perfect alignment */
 /* Note: Parent header already has padding, so just use 100% width here */
 .site-shell__header-inner {
-  width: min(var(--layout-max-width), calc(100vw - 2 * var(--shell-inline-pad)));
+  width: min(
+    var(--layout-max-width),
+    calc(100vw - 2 * var(--shell-inline-pad))
+  );
   max-width: 100%;
   /* Center the inner header block within the full-width header */
   margin: 0 auto;
@@ -6013,7 +6028,10 @@ a {
 /* Main content container - uses same width calculation as header for alignment */
 /* Wrapped in site-shell__container which adds the padding */
 .site-shell__main {
-  width: min(var(--layout-max-width), calc(100vw - 2 * var(--shell-inline-pad)));
+  width: min(
+    var(--layout-max-width),
+    calc(100vw - 2 * var(--shell-inline-pad))
+  );
   max-width: 100%;
   /* Center main content within the grid container */
   margin: 0 auto;
@@ -6106,10 +6124,6 @@ a {
     transform: none;
   }
 
-
-
-
-
   .site-shell__header:not(.is-leaving)[data-nav-ready="true"] {
     animation: none !important;
   }
@@ -6173,14 +6187,14 @@ a {
     rgba(0, 0, 0, 0.85) 0%,
     rgba(0, 0, 0, 0.68) 35%,
     rgba(0, 0, 0, 0.4) 70%,
-    rgba(0, 0, 0, 0.0) 100%
+    rgba(0, 0, 0, 0) 100%
   );
   -webkit-mask-image: linear-gradient(
     to bottom,
     rgba(0, 0, 0, 0.85) 0%,
     rgba(0, 0, 0, 0.68) 35%,
     rgba(0, 0, 0, 0.4) 70%,
-    rgba(0, 0, 0, 0.0) 100%
+    rgba(0, 0, 0, 0) 100%
   );
 }
 
@@ -6196,36 +6210,38 @@ a {
     - Keeps performance high: pure CSS gradients, no extra paints.
   */
   background:
-    /* Top soft-vignette */
-    radial-gradient(90% 55% at 50% 0%,
+    /* Top soft-vignette */ radial-gradient(
+      90% 55% at 50% 0%,
       rgba(4, 12, 16, 0.55) 0%,
       rgba(4, 12, 16, 0.38) 35%,
       rgba(4, 12, 16, 0.18) 60%,
-      rgba(4, 12, 16, 0.00) 85%
+      rgba(4, 12, 16, 0) 85%
     ),
     /* Gentle bottom fade */
-    linear-gradient(to bottom,
-      rgba(2, 8, 12, 0.00) 65%,
-      rgba(2, 8, 12, 0.18) 84%,
-      rgba(2, 8, 12, 0.30) 100%
-    );
+      linear-gradient(
+        to bottom,
+        rgba(2, 8, 12, 0) 65%,
+        rgba(2, 8, 12, 0.18) 84%,
+        rgba(2, 8, 12, 0.3) 100%
+      );
   pointer-events: none;
 }
 
 /* Adjust gradient when background image is present */
 .channel.has-background-image .channel__gradient {
   /* Keep same overlay when a background is present. */
-  background:
-    radial-gradient(90% 55% at 50% 0%,
+  background: radial-gradient(
+      90% 55% at 50% 0%,
       rgba(4, 12, 16, 0.55) 0%,
       rgba(4, 12, 16, 0.38) 35%,
       rgba(4, 12, 16, 0.18) 60%,
-      rgba(4, 12, 16, 0.00) 85%
+      rgba(4, 12, 16, 0) 85%
     ),
-    linear-gradient(to bottom,
-      rgba(2, 8, 12, 0.00) 65%,
+    linear-gradient(
+      to bottom,
+      rgba(2, 8, 12, 0) 65%,
       rgba(2, 8, 12, 0.18) 84%,
-      rgba(2, 8, 12, 0.30) 100%
+      rgba(2, 8, 12, 0.3) 100%
     );
   pointer-events: none;
 }
@@ -6837,10 +6853,18 @@ a {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: rgba(238, 246, 250, 0.92);
+  overflow-wrap: anywhere; /* Allow long words to break before touching the media column */
 }
 
 /* Prevent wrapping on larger screens where space is available */
 @media (min-width: 768px) {
+  .project-entry__title {
+    max-width: 100%;
+    text-wrap: balance;
+  }
+}
+
+@media (min-width: 1200px) {
   .project-entry__title {
     white-space: nowrap;
     overflow: hidden;
@@ -7202,7 +7226,7 @@ a {
   :root {
     --shell-inline-pad: clamp(1.6rem, 6vw, 2.4rem);
   }
-  
+
   .site-shell {
     padding: clamp(1.6rem, 6vw, 2.4rem);
   }
@@ -8260,9 +8284,11 @@ body.qr-intro-active .site-shell__icon-button {
   position: relative;
   width: 100%;
   opacity: 0;
-  transform: translateY(12px);
-  transition: opacity 0.6s cubic-bezier(0.33, 1, 0.68, 1),
-    transform 0.6s cubic-bezier(0.33, 1, 0.68, 1);
+  transform: translateY(10px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  background: transparent;
+  /* Ensure single scroll - no overflow on this container */
+  overflow: visible;
 }
 
 .about-page.is-ready {
@@ -8270,9 +8296,118 @@ body.qr-intro-active .site-shell__icon-button {
   transform: none;
 }
 
-.about-page__inner {
-  width: min(100%, 880px);
+/* Cinematic Background System - Full Viewport Coverage */
+.clean-about-page__background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: -1; /* Ensure it's behind everything including footer */
+}
+
+.clean-about-page__background-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+  opacity: 0;
+  animation: fadeInBackground 2.4s cubic-bezier(0.4, 0, 0.2, 1) 0.3s forwards;
+  filter: contrast(1.05) brightness(0.95);
+  transform: scale(1.02);
+  will-change: transform, opacity;
+}
+
+@keyframes fadeInBackground {
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Multi-layer gradient system for depth - DISABLED */
+.clean-about-page__gradient {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  /* Gradient overlay completely removed - fully transparent */
+  background: transparent;
+}
+
+/* Atmospheric depth layer */
+.clean-about-page__background::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60%;
+  background: linear-gradient(
+    to top,
+    rgba(10, 12, 15, 0.98) 0%,
+    rgba(10, 12, 15, 0.9) 10%,
+    rgba(10, 12, 15, 0.6) 25%,
+    rgba(10, 12, 15, 0.2) 40%,
+    transparent 60%
+  );
+  pointer-events: none;
+}
+
+/* Enhanced gradient when image is present - DISABLED */
+.clean-about-page.has-background-image .clean-about-page__gradient {
+  background: transparent;
+  pointer-events: none;
+}
+
+/* Main container - Optimized for single scroll */
+.clean-about-page__container {
+  max-width: 1200px;
+  width: 100%;
   margin: 0 auto;
+  /* Streamlined padding for better flow */
+  padding: clamp(6rem, 12vh, 8rem) clamp(1.5rem, 4vw, 3rem)
+    clamp(6rem, 12vh, 8rem);
+  position: relative;
+  z-index: 1;
+  animation: fadeUp 0.8s ease-out 0.2s both;
+  background: transparent;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  /* Ensure content flows naturally */
+  gap: clamp(2rem, 4vh, 3rem);
+}
+
+/* Header section */
+.clean-about-page__header {
+  position: relative;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(232, 240, 246, 0.08);
+  /* Removed margin-bottom - using container gap instead */
+}
+
+.clean-about-page__header--editable .clean-about-page__header-row {
+  padding-right: clamp(2.6rem, 8vw, 4.2rem);
+}
+
+.clean-about-page__header--editable .clean-about-page__edit-btn {
+  position: absolute;
+  top: clamp(0.4rem, 2vw, 0.9rem);
+  right: 0;
+  z-index: 2;
+}
+.clean-about-page__header-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: clamp(1rem, 3vw, 2rem);
+}
+.clean-about-page__heading {
   display: grid;
   gap: clamp(2.5rem, 5vw, 3.75rem);
   padding-bottom: clamp(6rem, 12vh, 8rem);
@@ -8300,7 +8435,11 @@ body.qr-intro-active .site-shell__icon-button {
   letter-spacing: -0.018em;
   line-height: 1.05;
   font-weight: 600;
-  background: linear-gradient(135deg, rgba(232, 240, 246, 0.95), rgba(164, 214, 224, 0.75));
+  background: linear-gradient(
+    135deg,
+    rgba(232, 240, 246, 0.95),
+    rgba(164, 214, 224, 0.75)
+  );
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -8322,7 +8461,11 @@ body.qr-intro-active .site-shell__icon-button {
   padding: 0.7rem 1.8rem;
   border-radius: 999px;
   border: 1px solid rgba(138, 248, 255, 0.32);
-  background: linear-gradient(150deg, rgba(18, 66, 86, 0.85), rgba(10, 38, 50, 0.78));
+  background: linear-gradient(
+    150deg,
+    rgba(18, 66, 86, 0.85),
+    rgba(10, 38, 50, 0.78)
+  );
   color: rgba(232, 252, 255, 0.95);
   font-size: 0.68rem;
   letter-spacing: 0.22em;
@@ -8334,7 +8477,7 @@ body.qr-intro-active .site-shell__icon-button {
 }
 
 .about-page__edit-link::after {
-  content: '↗';
+  content: "↗";
   font-size: 0.78rem;
   transform: translateY(-0.05rem);
 }
@@ -8344,7 +8487,11 @@ body.qr-intro-active .site-shell__icon-button {
   outline: none;
   transform: translateY(-2px);
   border-color: rgba(138, 248, 255, 0.6);
-  background: linear-gradient(150deg, rgba(26, 92, 118, 0.9), rgba(12, 44, 58, 0.82));
+  background: linear-gradient(
+    150deg,
+    rgba(26, 92, 118, 0.9),
+    rgba(12, 44, 58, 0.82)
+  );
   box-shadow: 0 16px 28px rgba(0, 0, 0, 0.32);
 }
 
@@ -8352,13 +8499,26 @@ body.qr-intro-active .site-shell__icon-button {
   transform: translateY(0);
 }
 
-.about-page__content {
-  display: grid;
-  gap: clamp(2.25rem, 5vw, 3.25rem);
+/* Main content - Streamlined for single scroll */
+.clean-about-page__main {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: stretch;
+  /* Removed padding - using container gap instead */
+  gap: clamp(2rem, 4vh, 3rem);
 }
 
-.about-page__lead {
-  font-size: clamp(1.125rem, 2.4vw, 1.4rem);
+.clean-about-page__text-content {
+  /* Removed margin-bottom - using parent gap instead */
+  max-width: 720px;
+}
+
+.clean-about-page__lead {
+  font-size: clamp(1.0625rem, 1.5vw, 1.1875rem);
   line-height: 1.85;
   color: rgba(232, 240, 246, 0.86);
   display: grid;
@@ -8393,19 +8553,22 @@ body.qr-intro-active .site-shell__icon-button {
 
 .about-page__body {
   display: grid;
-  gap: clamp(1.5rem, 3vh, 2rem);
-  font-size: clamp(1.05rem, 1.8vw, 1.15rem);
-  line-height: 1.9;
-  color: rgba(214, 226, 236, 0.78);
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: clamp(1.5rem, 3vw, 2.5rem);
+  /* Removed margin - using parent gap instead */
 }
 
 .about-page__body-paragraph {
   margin: 0;
 }
 
-.about-page__body-paragraph--block {
-  display: grid;
-  gap: clamp(1rem, 2vh, 1.6rem);
+/* Footer and Tags - Cinematic conclusion */
+.clean-about-page__footer {
+  margin-top: auto;
+  /* Reduced padding for better flow */
+  padding-top: clamp(2rem, 4vh, 3rem);
+  position: relative;
+  z-index: 2;
 }
 
 .about-page__body-paragraph--block > * {
@@ -8433,18 +8596,39 @@ body.qr-intro-active .site-shell__icon-button {
   gap: 0.65rem;
 }
 
-.about-page__body li {
-  margin: 0;
+.clean-about-page__empty {
+  align-self: center;
+  width: 100%;
+  max-width: 720px;
+  /* Removed margin - using parent gap instead */
+  padding: clamp(2rem, 5vh, 3rem);
+  font-size: clamp(0.95rem, 1.4vw, 1.05rem);
+  line-height: 1.75;
+  color: rgba(200, 220, 228, 0.72);
+  text-align: center;
+  background: rgba(18, 22, 28, 0.45);
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 
 @media (max-width: 768px) {
-  .about-page__inner {
-    width: 100%;
-    gap: clamp(2rem, 4vw, 2.75rem);
-    padding-bottom: clamp(4rem, 8vh, 6rem);
+  .clean-about-page {
+    min-height: 100vh;
   }
 
-  .about-page__header {
+  .clean-about-page__container {
+    /* Optimized mobile padding */
+    padding: clamp(5rem, 10vh, 6rem) clamp(1.25rem, 4vw, 1.5rem)
+      clamp(4rem, 8vh, 5rem);
+    gap: clamp(1.5rem, 3vh, 2rem);
+  }
+
+  .clean-about-page__header {
+    /* No additional margin needed */
+  }
+  .clean-about-page__header-row {
     flex-direction: column;
     align-items: flex-start;
   }
@@ -8454,14 +8638,56 @@ body.qr-intro-active .site-shell__icon-button {
     justify-content: center;
   }
 
-  .about-page__lead {
-    font-size: 1.05rem;
+  .clean-about-page__title {
+    font-size: 2.25rem;
+  }
+
+  .clean-about-page__subtitle {
+    font-size: 1.125rem;
+  }
+
+  .clean-about-page__main {
+    gap: clamp(1.5rem, 3vh, 2rem);
+  }
+
+  .clean-about-page__lead {
+    font-size: 1rem;
     line-height: 1.75;
   }
 
-  .about-page__body {
-    font-size: 0.98rem;
-    line-height: 1.75;
+  .clean-about-page__lead-paragraph--block {
+    gap: 1.25rem;
+  }
+
+  .clean-about-page__cards {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .clean-about-page__card {
+    padding: 2rem 0;
+  }
+
+  .clean-about-page__card-title {
+    font-size: 1.25rem;
+  }
+
+  .clean-about-page__card-text {
+    font-size: 0.9375rem;
+  }
+
+  .clean-about-page__tags {
+    gap: 1rem;
+  }
+
+  .clean-about-page__tag {
+    padding: 0.625rem 1.25rem;
+    font-size: 0.8125rem;
+  }
+
+  .clean-about-page__empty {
+    padding: 2rem 1.5rem;
+    font-size: 0.9375rem;
   }
 }
 
