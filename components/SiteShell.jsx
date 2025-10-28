@@ -475,7 +475,7 @@ export default function SiteShell({ children, isAdmin = false }) {
       const headerInner = document.querySelector('.site-shell__header-inner');
       const mainContainer = document.querySelector('.site-shell__main');
       const channelTitle = document.querySelector('.channel__title');
-      const aboutTitle = document.querySelector('.clean-about-page__title');
+      const aboutTitle = document.querySelector('.about-page__title');
       const h1 = document.querySelector('main h1');
       
       console.log('🎯 Brand element:', {

@@ -19,7 +19,7 @@ export default function DebugGradient() {
     // Check for any gradient overlays
     const gradientElements = [
       '.channel__gradient',
-      '.clean-about-page__gradient',
+      '.about-page',
       '.menu-overlay',
       '.transition-curtain'
     ];

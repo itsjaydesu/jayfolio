@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useEffect, useRef, useState, useMemo } from 'react';
 import { usePathname } from 'next/navigation';
 import { InstagramIcon, XLogoIcon } from './icons';
@@ -176,15 +177,15 @@ export default function SiteFooter({ className = '' }) {
   if (className) footerClasses.push(className);
   if (isVisible) footerClasses.push('site-footer--visible');
 
+  const scaleMode = fadeSettings?.bgScale ? fadeSettings.bgScale.toLowerCase() : 'cover';
+
   // Build CSS variables from fade settings
   const footerStyle = useMemo(() => {
-    const style = {
-      backgroundImage: `url(${backgroundImage})`
-    };
-    
+    const style = {};
+
     if (fadeSettings) {
       const rawPosition = fadeSettings.bgPosition || 'bottom';
-      const scaleMode = (fadeSettings.bgScale || 'cover').toLowerCase();
+      const scaleValue = (fadeSettings.bgScale || 'cover').toLowerCase();
       
       // Parse position value for proper alignment
       // Admin can use: 'bottom', 'center', 'top', or numeric values (0-100)
@@ -219,7 +220,7 @@ export default function SiteFooter({ className = '' }) {
       }
 
       style['--footer-bg-position'] = positionValue;
-      style['--footer-bg-scale'] = scaleMode;
+      style['--footer-bg-scale'] = scaleValue;
       style['--top-fade-height'] = `${fadeSettings.topFadeHeight || 0}%`;
       style['--top-fade-start'] = fadeSettings.topFadeOpacity || 1;
       style['--bottom-fade-height'] = `${fadeSettings.bottomFadeHeight || 0}%`;
@@ -232,9 +233,9 @@ export default function SiteFooter({ className = '' }) {
       style['--footer-bg-scale'] = 'cover';
 
     }
-    
+
     return style;
-  }, [backgroundImage, fadeSettings, pathname]);
+  }, [fadeSettings, pathname, scaleMode]);
 
   return (
     <footer
@@ -242,7 +243,21 @@ export default function SiteFooter({ className = '' }) {
       className={footerClasses.join(' ')}
       aria-label="Site footer with newsletter signup"
       style={footerStyle}
+      data-bg-scale={scaleMode || 'cover'}
+      data-has-image={backgroundImage ? 'true' : 'false'}
     >
+      <div className="site-footer__background" aria-hidden="true">
+        {backgroundImage ? (
+          <Image
+            src={backgroundImage}
+            alt=""
+            fill
+            sizes="100vw"
+            priority={false}
+            className="site-footer__background-image"
+          />
+        ) : null}
+      </div>
       {/* Side fade gradients for smoother edges */}
       <div className="site-footer__side-fade site-footer__side-fade--left" />
       <div className="site-footer__side-fade site-footer__side-fade--right" />
