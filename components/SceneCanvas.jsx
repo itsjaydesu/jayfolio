@@ -1432,7 +1432,10 @@ const SceneCanvas = forwardRef(function SceneCanvas(
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
         // Keep DPR in sync with device settings
-        try { renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2)); } catch {}
+        if (renderer?.setPixelRatio) {
+          const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+          renderer.setPixelRatio(pixelRatio);
+        }
         renderer.setSize(window.innerWidth, window.innerHeight);
         syncCameraProfile(false);
       }
@@ -2251,7 +2254,6 @@ const SceneCanvas = forwardRef(function SceneCanvas(
         // Favor faster first paint: no AA, high-performance hint
         renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'high-performance' });
         // Boot at low DPR for instant first frame, bump after ready
-        const desiredPixelRatio = Math.min(window.devicePixelRatio || 1, 2);
         renderer.setPixelRatio(1);
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -2281,13 +2283,11 @@ const SceneCanvas = forwardRef(function SceneCanvas(
       const markReady = () => {
         console.log('[SceneCanvas] 🎯 Adding is-ready class at', performance.now().toFixed(2), 'ms');
         // Raise renderer pixel ratio once visible for crispness
-        try {
-          const dpr = Math.min(window.devicePixelRatio || 1, 2);
-          if (renderer) {
-            renderer.setPixelRatio(dpr);
-            renderer.setSize(window.innerWidth, window.innerHeight);
-          }
-        } catch {}
+        const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+        if (renderer?.setPixelRatio) {
+          renderer.setPixelRatio(pixelRatio);
+          renderer.setSize(window.innerWidth, window.innerHeight);
+        }
         container.classList.add('is-ready');
         console.log('[SceneCanvas] ✨ is-ready class added at', performance.now().toFixed(2), 'ms');
         readinessFrame = null;
