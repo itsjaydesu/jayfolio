@@ -10,7 +10,7 @@ const ART_TONES = {
   'dot-field': 'violet'
 };
 
-export default function ArtContent({ entries, hero, isAdmin = false }) {
+export default function ArtContent({ entries, hero }) {
   const { language } = useLanguage();
   const [isLoaded, setIsLoaded] = useState(false);
   
@@ -50,7 +50,6 @@ export default function ArtContent({ entries, hero, isAdmin = false }) {
                   entry={entry}
                   type="art"
                   tone={tone}
-                  isAdmin={isAdmin}
                 />
               );
             })}

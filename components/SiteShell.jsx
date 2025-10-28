@@ -36,12 +36,6 @@ const SceneCanvas = dynamic(() => import('./SceneCanvas'), {
   ssr: false // Disable SSR for Three.js component
 });
 
-// Proactively warm the chunk so the canvas shows sooner
-// (especially useful when opening overlay on sub-pages)
-if (typeof window !== 'undefined' && typeof SceneCanvas?.preload === 'function') {
-  SceneCanvas.preload();
-}
-
 // Helper function to get localized menu items
 function getLocalizedMenuItems(lang = 'en') {
   return SITE_TEXT_DEFAULTS.primaryMenu.map((i) => ({
@@ -77,15 +71,37 @@ function createStatusPayload(statusData, language = 'en', modeKey = 'waiting') {
   };
 }
 
-export default function SiteShell({ children, isAdmin = false }) {
+export default function SiteShell({ children, channelContent }) {
   const pathname = usePathname();
   const router = useRouter();
   const sceneRef = useRef(null);
   const overlaySceneRef = useRef(null);
+  const scenePreloadTriggeredRef = useRef(false);
+  const homePrefetchedRef = useRef(false);
+  const initialReducedMotionPreference =
+    typeof window !== 'undefined' &&
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const prefersReducedMotionRef = useRef(initialReducedMotionPreference);
   const { language } = useLanguage();
+  const footerChannelContent = channelContent ?? {};
   const returnTimerRef = useRef(null);
   const { isAdmin: clientAdmin } = useAdminStatus();
-  const isAdminActive = isAdmin || clientAdmin;
+  const isAdminActive = clientAdmin;
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(initialReducedMotionPreference);
+
+  const warmSceneChunk = useCallback(() => {
+    if (scenePreloadTriggeredRef.current) {
+      return;
+    }
+    if (prefersReducedMotionRef.current) {
+      return;
+    }
+    if (typeof SceneCanvas?.preload === 'function') {
+      SceneCanvas.preload();
+      scenePreloadTriggeredRef.current = true;
+    }
+  }, []);
   
   // ===== ROUTE ANALYSIS =====
   const pathSegments = useMemo(
@@ -104,6 +120,38 @@ export default function SiteShell({ children, isAdmin = false }) {
                               primarySegment === 'art' ||
                               primarySegment === 'work-with-me';
   const showAdminControls = isAdminActive && isHome;
+
+  useEffect(() => {
+    if (!isHome) {
+      return;
+    }
+    warmSceneChunk();
+  }, [isHome, warmSceneChunk]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || isHome || homePrefetchedRef.current) {
+      return undefined;
+    }
+
+    const schedule = window.requestIdleCallback
+      ? window.requestIdleCallback
+      : (callback) => window.setTimeout(callback, 180);
+    const cancel = window.cancelIdleCallback
+      ? window.cancelIdleCallback
+      : window.clearTimeout;
+
+    const id = schedule(() => {
+      warmSceneChunk();
+      try {
+        router.prefetch('/');
+      } catch {
+        // Ignore router prefetch errors triggered by offline or rapid navigation
+      }
+      homePrefetchedRef.current = true;
+    });
+
+    return () => cancel(id);
+  }, [isHome, router, warmSceneChunk]);
   
   // ===== INITIAL STATE SETUP =====
   // Track if this is the initial mount (for instant black on subpages)
@@ -201,6 +249,10 @@ export default function SiteShell({ children, isAdmin = false }) {
   }, [isHome, headerVisible]);
 
   const openDotfieldOverlay = useCallback(() => {
+    if (prefersReducedMotionRef.current) {
+      return;
+    }
+    warmSceneChunk();
     if (overlayFadeTimeoutRef.current && typeof window !== "undefined") {
       window.clearTimeout(overlayFadeTimeoutRef.current);
       overlayFadeTimeoutRef.current = null;
@@ -219,7 +271,7 @@ export default function SiteShell({ children, isAdmin = false }) {
     } else {
       setIsDotfieldOverlayOpen(true);
     }
-  }, [isDotfieldOverlayMounted]);
+  }, [isDotfieldOverlayMounted, warmSceneChunk]);
 
   const closeDotfieldOverlay = useCallback(() => {
     if (overlayAnimationFrameRef.current && typeof window !== "undefined") {
@@ -364,6 +416,38 @@ export default function SiteShell({ children, isAdmin = false }) {
         window.cancelAnimationFrame(frameId);
       }
     };
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+
+    const mediaQuery = window.matchMedia?.('(prefers-reduced-motion: reduce)');
+    if (!mediaQuery) {
+      return undefined;
+    }
+
+    const handleChange = (event) => {
+      const matches = event.matches;
+      prefersReducedMotionRef.current = matches;
+      setPrefersReducedMotion(matches);
+    };
+
+    prefersReducedMotionRef.current = mediaQuery.matches;
+    setPrefersReducedMotion(mediaQuery.matches);
+
+    if (typeof mediaQuery.addEventListener === 'function') {
+      mediaQuery.addEventListener('change', handleChange);
+      return () => mediaQuery.removeEventListener('change', handleChange);
+    }
+
+    if (typeof mediaQuery.addListener === 'function') {
+      mediaQuery.addListener(handleChange);
+      return () => mediaQuery.removeListener(handleChange);
+    }
+
+    return undefined;
   }, []);
 
   useEffect(() => {
@@ -958,6 +1042,7 @@ export default function SiteShell({ children, isAdmin = false }) {
 
   const handlePreview = (item, isActive) => {
     if (!item) return;
+    warmSceneChunk();
     setStatus(createStatus(item.status, isActive ? 'active' : 'preview'));
   };
 
@@ -1108,6 +1193,8 @@ export default function SiteShell({ children, isAdmin = false }) {
       event.preventDefault();
     }
 
+    warmSceneChunk();
+
     const reduceMotion =
       typeof window !== "undefined" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -1136,7 +1223,7 @@ export default function SiteShell({ children, isAdmin = false }) {
   }
 
   const activeSectionForCanvas = activeSection ?? "about";
-  const showCanvas = !isDetailView;
+  const showCanvas = isHome && !isDetailView && !prefersReducedMotion;
 
   const dotfieldOverlay = isDotfieldOverlayMounted ? (
     <div
@@ -1271,7 +1358,8 @@ export default function SiteShell({ children, isAdmin = false }) {
   // Solution: Only add scene-wrapper--black if we're in the 'stopped' state or initial mount
   const shouldApplyBlackBg = (shouldStopAnimation && animationState === 'stopped') || 
                               (isInitialMount && shouldStopAnimation);
-  const sceneWrapperClasses = `scene-wrapper${dotsFaded ? " scene-wrapper--faded" : ""}${shouldApplyBlackBg ? " scene-wrapper--black" : ""}`;
+  const baseSceneWrapperClass = 'scene-wrapper';
+  const sceneWrapperClasses = `${baseSceneWrapperClass}${dotsFaded ? " scene-wrapper--faded" : ""}${shouldApplyBlackBg ? " scene-wrapper--black" : ""}`;
 
   return (
     <>
@@ -1313,6 +1401,8 @@ export default function SiteShell({ children, isAdmin = false }) {
                   className="site-shell__brand"
                   aria-label={brand}
                   onClick={handleNavigateHome}
+                  onMouseEnter={warmSceneChunk}
+                  onFocus={warmSceneChunk}
                   style={
                     navReady
                       ? undefined
@@ -1413,7 +1503,7 @@ export default function SiteShell({ children, isAdmin = false }) {
           >
             {children}
           </main>
-          {!isDetailView ? <SiteFooter /> : null}
+          {!isDetailView ? <SiteFooter channelContent={footerChannelContent} /> : null}
         </div>
       </div>
     </>

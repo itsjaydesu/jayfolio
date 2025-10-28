@@ -23,7 +23,7 @@ function getLocalizedCategories(language = 'en') {
   ];
 }
 
-export default function ContentContent({ entries, hero, isAdmin = false }) {
+export default function ContentContent({ entries, hero }) {
   const { language } = useLanguage();
   const localizedCategories = useMemo(() => getLocalizedCategories(language), [language]);
   const [selectedCategory, setSelectedCategory] = useState(localizedCategories[0].key);
@@ -135,7 +135,6 @@ export default function ContentContent({ entries, hero, isAdmin = false }) {
                 entry={entry}
                 type="content"
                 tone={tone}
-                isAdmin={isAdmin}
                 category={entry.category}
               />
             );

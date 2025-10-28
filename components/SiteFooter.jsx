@@ -22,75 +22,36 @@ const FALLBACK_BACKGROUNDS = {
   default: '/images/footer/home.svg'
 };
 
-export default function SiteFooter({ className = '' }) {
+function resolveFooterConfig(pathname, channelContent) {
+  const segments = pathname?.split('/').filter(Boolean) ?? [];
+  const section = segments[0] ?? 'home';
+
+  if (section === 'about') {
+    const aboutContent = channelContent?.about ?? {};
+    return {
+      backgroundImage: aboutContent.aboutBackgroundImage || '',
+      fadeSettings: aboutContent.aboutFooterFadeSettings || null
+    };
+  }
+
+  const sectionContent = channelContent?.[section] ?? {};
+  return {
+    backgroundImage: sectionContent.backgroundImage || '',
+    fadeSettings: sectionContent.footerFadeSettings || null
+  };
+}
+
+export default function SiteFooter({ className = '', channelContent = {} }) {
   const pathname = usePathname();
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState({ type: 'idle', message: '' });
   const [isVisible, setIsVisible] = useState(false);
-  const [adminFooterImage, setAdminFooterImage] = useState('');
-  const [fadeSettings, setFadeSettings] = useState(null);
   const footerRef = useRef(null);
 
-  // Fetch page-specific background image and fade settings
-  useEffect(() => {
-    let ignore = false;
-    (async () => {
-      try {
-        const segments = pathname?.split('/').filter(Boolean) ?? [];
-        let backgroundImage = '';
-        let settings = null;
-        
-        // Check if we're on a content/blog post page with a slug
-        if (segments.length === 2) {
-          const [section, slug] = segments;
-          const contentTypes = ['projects', 'content', 'sounds', 'art'];
-          
-          if (contentTypes.includes(section)) {
-            // Fetch the specific content item
-            const res = await fetch(`/api/content/${section}`);
-            if (res.ok) {
-              const data = await res.json();
-              const entry = data.entries?.find(e => e.slug === slug);
-              if (entry?.backgroundImage) {
-                backgroundImage = entry.backgroundImage;
-              }
-              // TODO: Add per-post fade settings if needed
-            }
-          }
-        }
-        
-        // If no content-specific image, check channel backgrounds
-        if (segments.length > 0) {
-          const res = await fetch('/api/channel-content');
-          if (res.ok) {
-            const data = await res.json();
-            const section = segments[0];
-            
-            if (section === 'about') {
-              if (!backgroundImage) {
-                backgroundImage = data.content?.about?.aboutBackgroundImage || '';
-              }
-              settings = data.content?.about?.aboutFooterFadeSettings || null;
-            } else if (data.content?.[section]) {
-              if (!backgroundImage) {
-                backgroundImage = data.content[section]?.backgroundImage || '';
-              }
-              settings = data.content[section]?.footerFadeSettings || null;
-            }
-          }
-        }
-
-        
-        if (!ignore) {
-          setAdminFooterImage(backgroundImage || '');
-          setFadeSettings(settings);
-        }
-      } catch (error) {
-        console.error('Failed to load footer background:', error);
-      }
-    })();
-    return () => { ignore = true; };
-  }, [pathname]);
+  const { backgroundImage: adminFooterImage, fadeSettings } = useMemo(
+    () => resolveFooterConfig(pathname, channelContent),
+    [pathname, channelContent]
+  );
 
   // Determine which background image to use
   const backgroundImage = useMemo(() => {

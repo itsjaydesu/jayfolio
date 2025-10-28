@@ -1,10 +1,10 @@
 import './globals.css';
 import SiteShell from '../components/SiteShell';
-import { hasAdminSession } from '../lib/adminSession';
 import { generateMetadata as getMetadata, generateStructuredData, generateViewportData } from '../lib/metadata';
 import { LanguageProvider } from '../contexts/LanguageContext';
 import HtmlHead from '../components/HtmlHead';
 import { Analytics } from '@vercel/analytics/react';
+import { readChannelContent } from '../lib/channelContent';
 
 export async function generateMetadata() {
   return await getMetadata('home');
@@ -15,8 +15,10 @@ export async function generateViewport() {
 }
 
 export default async function RootLayout({ children }) {
-  const structuredData = await generateStructuredData('home');
-  const isAdmin = await hasAdminSession();
+  const [structuredData, channelContent] = await Promise.all([
+    generateStructuredData('home'),
+    readChannelContent()
+  ]);
   
   return (
     <html lang="en">
@@ -32,7 +34,7 @@ export default async function RootLayout({ children }) {
       <body>
         <LanguageProvider>
           <HtmlHead />
-          <SiteShell isAdmin={isAdmin}>{children}</SiteShell>
+          <SiteShell channelContent={channelContent}>{children}</SiteShell>
         </LanguageProvider>
         <Analytics />
         <noscript>

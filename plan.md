@@ -1,34 +1,48 @@
-# About Page Refactor Plan
+http://plan.md
 
-**Overall Progress:** `67%`
+# Performance & Responsiveness Optimization Plan
+
+**Overall Progress:** `88%`
 
 ## Tasks
 
-- [x] 🟩 **Step 1: Stabilize header layering on subpages**
-  - [x] 🟩 Ensure header sits above page content on initial load and navigation
-  - [x] 🟩 Revisit `.site-shell__top-fade` so it never obscures nav/content
-  - [x] 🟩 Verify `site-shell__main` offset keeps content below the fixed header
+- [x] 🟩 **Step 1: Restore static optimization and home‑first canvas**
+  - [x] 🟩 Remove server admin check from `app/layout.jsx`; rely on client admin hook
+  - [x] 🟩 Render `SceneCanvas` only on home; remove from subpages
+  - [x] 🟩 Idle prefetch home from subpages (`router.prefetch('/')`)
+  - [x] 🟩 Idle preload `SceneCanvas` chunk on subpages and on brand/nav hover
 
-- [x] 🟩 **Step 2: Rebuild the About page layout**
-  - [x] 🟩 Remove cinematic/hero background and extra gradients from About
-  - [x] 🟩 Keep only: title, subtitle, lead text, and body text
-  - [x] 🟩 Align typography, spacing, and width with site theme (shell/channel)
-  - [x] 🟩 Preserve admin-only “Edit About” action
+- [x] 🟩 **Step 2: Font loading adjustments**
+  - [x] 🟩 Centralize Inter & IBM Plex Mono imports via `app/globals.css`
+  - [x] 🟩 Ensure critical styles reference the shared font stack
 
-- [x] 🟩 **Step 3: Simplify About styles**
-  - [x] 🟩 Trim `.clean-about-page*` CSS to avoid new stacking contexts
-  - [x] 🟩 Ensure mobile readability (scale type/spacing responsibly)
+- [x] 🟩 **Step 3: CSS organization clean-up**
+  - [x] 🟩 Isolate major component style blocks within `app/globals.css`
+  - [x] 🟩 Ensure `app/styles/{reset,base,tokens,utilities}.css` stay canonical
+  - [x] 🟩 Remove unused global imports and prep for future modularization
 
-- [x] 🟩 **Step 4: Footer image behavior (mobile optimization)**
-  - [x] 🟩 Keep existing footer background logic and fades
-  - [x] 🟩 Use Next.js `<Image>` on mobile for responsive/smaller payloads
-  - [x] 🟩 Maintain visual parity on desktop
+- [x] 🟩 **Step 4: Footer data flow (eliminate client fetch)**
+  - [x] 🟩 Fetch channel content server-side (layout or per-route)
+  - [x] 🟩 Pass footer config via props/context to `SiteFooter`
+  - [x] 🟩 Remove `fetch('/api/channel-content')` from `components/SiteFooter.jsx`
 
-- [ ] 🟨 **Step 5: Manual smoke tests**
-  - [ ] 🟥 Desktop: `/about` then navigate to `/projects`, `/content`, `/sounds`, `/art` (including detail views) to confirm no overlay issues
-  - [ ] 🟥 Mobile viewport: header visibility/scroll, footer responsiveness/perf
-  - [ ] 🟥 Admin: confirm “Edit About” shows only for admin and `/administratorrrr` remains unaffected
+- [x] 🟩 **Step 5: Route pre-rendering and caching**
+  - [x] 🟩 Add `generateStaticParams` for `[slug]` pages (projects/content/sounds/art)
+  - [x] 🟩 Convert index pages to SSG; drop route-level `revalidate` unless required
+  - [x] 🟩 Keep admin routes protected via middleware
 
-- [ ] 🟨 **Step 6: Lint and documentation**
-  - [ ] 🟥 Run `pnpm lint` and fix trivial formatting *(blocked by existing `SceneCanvas.jsx` lint errors)*
-  - [ ] 🟥 Update README or notes only if behavior/usage changes
+- [x] 🟩 **Step 6: Asset and API caching**
+  - [x] 🟩 Add `next.config.js` header for `/sounds/:path*` (immutable, 1y)
+  - [x] 🟩 Ensure no audio preloading: set `<audio preload="none">`
+  - [x] 🟩 Retain image caching; verify OG image handling
+
+- [x] 🟩 **Step 7: Navigation prefetch and UX**
+  - [x] 🟩 Ensure `Link prefetch` enabled on nav and cards
+  - [x] 🟩 Prefetch `/` and warm `SceneCanvas` after idle on subpages
+  - [x] 🟩 Respect reduced motion: skip scene mount entirely
+
+- [ ] 🟥 **Step 8: Manual QA**
+  - [ ] 🟥 Smoke‑test all public routes and `/administratorrrr`
+  - [ ] 🟥 Verify instant home load from subpages
+  - [ ] 🟥 Confirm footer makes no client network calls
+  - [ ] 🟥 Confirm audio fetch occurs only on play

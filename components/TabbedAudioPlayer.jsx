@@ -131,7 +131,7 @@ export default function TabbedAudioPlayer({
       <audio 
         ref={audioRef} 
         src={currentUrl}
-        preload="metadata"
+        preload="none"
       />
       
       {coverImage?.url && (

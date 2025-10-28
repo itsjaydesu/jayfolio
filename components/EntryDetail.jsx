@@ -9,12 +9,14 @@ import { storeEntryReturnTarget } from '../lib/entryReturn';
 import TabbedAudioPlayer from './TabbedAudioPlayer';
 import { useLanguage } from '../contexts/LanguageContext';
 import { t, getLocalizedContent } from '../lib/translations';
+import { useAdminStatus } from '../lib/useAdminStatus';
 
 const TRANSITION_DURATION_MS = 480;
 
-export default function EntryDetail({ type, entry, isAdmin = false }) {
+export default function EntryDetail({ type, entry }) {
   const router = useRouter();
   const { language } = useLanguage();
+  const { isAdmin } = useAdminStatus();
   const [stageState, setStageState] = useState('idle');
   const stageRef = useRef(null);
   const leaveTimeoutRef = useRef();
@@ -150,6 +152,9 @@ export default function EntryDetail({ type, entry, isAdmin = false }) {
   // Extract audio URLs from content for sound posts
   const audioData = useMemo(() => {
     if (type !== 'sounds' || !localizedContent) return null;
+    if (typeof window === 'undefined') {
+      return null;
+    }
     
     // Parse the HTML content to find audio sources
     const parser = new DOMParser();
@@ -187,6 +192,9 @@ export default function EntryDetail({ type, entry, isAdmin = false }) {
   // Process content to remove audio elements if we're using the tabbed player
   const processedContent = useMemo(() => {
     if (!audioData || !localizedContent) return localizedContent || entry?.content;
+    if (typeof window === 'undefined') {
+      return localizedContent || entry?.content;
+    }
     
     // Remove the audio figure elements from content
     const parser = new DOMParser();

@@ -14,7 +14,7 @@ const PROJECT_TONES = {
   'signal-bloom': 'magenta'
 };
 
-export default function ProjectsContent({ entries, hero, isAdmin = false }) {
+export default function ProjectsContent({ entries, hero }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -246,7 +246,6 @@ export default function ProjectsContent({ entries, hero, isAdmin = false }) {
                   entry={entry}
                   type="projects"
                   tone={tone}
-                  isAdmin={isAdmin}
                   category={entry.category}
                 />
               );

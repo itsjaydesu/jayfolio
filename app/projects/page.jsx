@@ -1,11 +1,9 @@
 import { readEntries } from '../../lib/contentStore';
 import { readChannelContent } from '../../lib/channelContent';
 import { generateMetadata as getMetadata, generateViewportData } from '../../lib/metadata';
-import { hasAdminSession } from '../../lib/adminSession';
 import ProjectsContent from './ProjectsContent';
 
-// Use ISR with 1 hour revalidation for better performance
-export const revalidate = 3600;
+export const dynamic = 'force-static';
 
 export async function generateMetadata() {
   return await getMetadata('projects');
@@ -21,7 +19,5 @@ export default async function ProjectsPage() {
     readChannelContent()
   ]);
   const hero = channelContent.projects;
-  const isAdmin = await hasAdminSession();
-
-  return <ProjectsContent entries={entries} hero={hero} isAdmin={isAdmin} />;
+  return <ProjectsContent entries={entries} hero={hero} />;
 }

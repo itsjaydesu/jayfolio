@@ -10,7 +10,7 @@ const SOUND_TONES = {
   reviola: 'violet'
 };
 
-export default function SoundsContent({ entries, hero, isAdmin = false }) {
+export default function SoundsContent({ entries, hero }) {
   const { language } = useLanguage();
   const [isLoaded, setIsLoaded] = useState(false);
   
@@ -50,7 +50,6 @@ export default function SoundsContent({ entries, hero, isAdmin = false }) {
                   entry={entry}
                   type="sounds"
                   tone={tone}
-                  isAdmin={isAdmin}
                 />
               );
             })}

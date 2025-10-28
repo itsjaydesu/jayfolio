@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useLanguage } from '../contexts/LanguageContext';
 import { getCategoryName, getLocalizedContent, getLocalizedTags, t } from '../lib/translations';
+import { useAdminStatus } from '../lib/useAdminStatus';
 
 /**
  * PostCard - A consistent, reusable card component for all content types
@@ -19,11 +20,11 @@ export default function PostCard({
   entry, 
   type = 'projects', // 'content', 'projects', 'sounds', 'art'
   tone = 'neutral',
-  isAdmin = false,
   category = null,
   onClick = null
 }) {
   const { language } = useLanguage();
+  const { isAdmin: clientAdmin } = useAdminStatus();
   // Validate required entry data
   if (!entry || !entry.slug) {
     console.error('[PostCard] Invalid entry data:', entry);
@@ -41,19 +42,10 @@ export default function PostCard({
   const coverAlt = entry.coverImage ? getLocalizedContent(entry.coverImage.alt, language) : '';
   
   // Determine figure aspect ratio based on type
-  const getFigureClass = () => {
-    const baseClass = 'project-entry__figure';
-    switch(type) {
-      case 'content':
-      case 'words': // Keep for backward compatibility
-        return `${baseClass} project-entry__figure--words`;
-      case 'sounds':
-        return `${baseClass} project-entry__figure--sounds`;
-      case 'art':
-        return `${baseClass} project-entry__figure--art`;
-      default:
-        return baseClass;
-    }
+  const figureVariantClassMap = {
+    words: 'project-entry__figure--words',
+    sounds: 'project-entry__figure--sounds',
+    art: 'project-entry__figure--art'
   };
 
   // Handle click event for session storage (projects page)
@@ -71,18 +63,26 @@ export default function PostCard({
   const cssType = type === 'content' ? 'words' : type;
 
   const surfaceClasses = ['project-entry__surface', 'project-entry__surface--compact'];
-  if (isAdmin) {
+  if (clientAdmin) {
     surfaceClasses.push('project-entry__surface--with-edit');
   }
 
+  const articleClassName = `project-entry project-entry--${cssType}`;
+
+  const figureBaseClass = 'project-entry__figure';
+  const figureVariantClass = figureVariantClassMap[cssType];
+  const figureClassName = figureVariantClass
+    ? `${figureBaseClass} ${figureVariantClass}`
+    : figureBaseClass;
+
   return (
     <article
-      className={`project-entry project-entry--${cssType}`}
+      className={articleClassName}
       data-tone={tone}
       data-entry-slug={entry.slug}
     >
       <div className={surfaceClasses.join(' ')}>
-        {isAdmin ? (
+        {clientAdmin ? (
           <Link
             href={editHref}
             prefetch
@@ -129,7 +129,7 @@ export default function PostCard({
         </div>
 
         {/* Visual/Figure Section */}
-        <figure className={getFigureClass()} aria-hidden="true">
+        <figure className={figureClassName} aria-hidden="true">
           {entry.coverImage?.url && type === 'projects' ? (
             <Image
               src={entry.coverImage.url}
@@ -140,7 +140,7 @@ export default function PostCard({
               onError={(e) => {
                 // Fallback to gradient art on image load error
                 e.target.style.display = 'none';
-                e.target.parentElement.innerHTML = '<div className="project-entry__art" />';
+                e.target.parentElement.innerHTML = '<div class="project-entry__art"></div>';
               }}
             />
           ) : (

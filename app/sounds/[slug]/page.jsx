@@ -1,11 +1,9 @@
 import { notFound } from 'next/navigation';
 import EntryDetail from '../../../components/EntryDetail';
-import { readEntry } from '../../../lib/contentStore';
-import { hasAdminSession } from '../../../lib/adminSession';
+import { readEntry, readEntries } from '../../../lib/contentStore';
 import { generateMetadata as getMetadata, generateViewportData } from '../../../lib/metadata';
 
-// Use ISR with 1 hour revalidation for better performance
-export const revalidate = 3600;
+export const dynamic = 'force-static';
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
@@ -27,15 +25,17 @@ export async function generateViewport({ params }) {
   return await generateViewportData('sounds', entry, 'sounds');
 }
 
+export async function generateStaticParams() {
+  const entries = await readEntries('sounds');
+  return entries.map((entry) => ({ slug: entry.slug }));
+}
+
 export default async function SoundDetailPage({ params }) {
   const { slug } = await params;
-  const [entry, isAdmin] = await Promise.all([
-    readEntry('sounds', slug),
-    hasAdminSession()
-  ]);
+  const entry = await readEntry('sounds', slug);
   if (!entry) {
     notFound();
   }
 
-  return <EntryDetail type="sounds" entry={entry} isAdmin={isAdmin} />;
+  return <EntryDetail type="sounds" entry={entry} />;
 }
