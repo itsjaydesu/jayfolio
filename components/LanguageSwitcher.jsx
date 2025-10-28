@@ -13,9 +13,24 @@ export default function LanguageSwitcher({ className = '' }) {
     return null; // Don't render during server-side rendering
   }
 
-  const handleLanguageToggle = () => {
+  const handleLanguageToggle = (event) => {
     const newLanguage = language === 'en' ? 'ja' : 'en';
-    changeLanguage(newLanguage);
+    const target = event?.currentTarget;
+    const rect = target?.getBoundingClientRect();
+    const fallbackX = typeof window !== 'undefined' ? window.innerWidth / 2 : 0;
+    const fallbackY = typeof window !== 'undefined' ? window.innerHeight / 2 : 0;
+    const hasClientX = Number.isFinite(event?.clientX);
+    const hasClientY = Number.isFinite(event?.clientY);
+    const originX = hasClientX ? event.clientX : rect ? rect.left + rect.width / 2 : fallbackX;
+    const originY = hasClientY ? event.clientY : rect ? rect.top + rect.height / 2 : fallbackY;
+
+    changeLanguage(newLanguage, {
+      originX,
+      originY,
+      from: language,
+      to: newLanguage,
+      source: 'header-toggle',
+    });
   };
 
   const tooltipKey = language === 'en' ? 'language.toggle.tooltip.en' : 'language.toggle.tooltip.ja';

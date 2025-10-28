@@ -5,8 +5,8 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { t } from '../lib/translations';
 
 // Animation configuration
-const TRANSITION_DURATION_MS = 600; // Smooth transition duration
-const TRANSITION_EASING = 'cubic-bezier(0.4, 0.0, 0.2, 1)'; // Smooth easing
+const TRANSITION_DURATION_MS = 800; // Unified language transition duration
+const TRANSITION_EASING = 'cubic-bezier(0.33, 1, 0.68, 1)'; // Shared easing curve
 const DEBUG = false; // Debug logging disabled - fix verified
 
 export default function BrandWordmark({ className = '' }) {

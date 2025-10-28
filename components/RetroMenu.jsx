@@ -355,9 +355,24 @@ export default function RetroMenu({
           <button
             type="button"
             className="retro-menu__language-toggle"
-            onClick={() => {
+            onClick={(event) => {
               const newLang = language === "en" ? "ja" : "en";
-              changeLanguage(newLang);
+              const target = event?.currentTarget;
+              const rect = target?.getBoundingClientRect();
+              const fallbackX = typeof window !== "undefined" ? window.innerWidth / 2 : 0;
+              const fallbackY = typeof window !== "undefined" ? window.innerHeight / 2 : 0;
+              const hasClientX = Number.isFinite(event?.clientX);
+              const hasClientY = Number.isFinite(event?.clientY);
+              const originX = hasClientX ? event.clientX : rect ? rect.left + rect.width / 2 : fallbackX;
+              const originY = hasClientY ? event.clientY : rect ? rect.top + rect.height / 2 : fallbackY;
+
+              changeLanguage(newLang, {
+                originX,
+                originY,
+                from: language,
+                to: newLang,
+                source: 'retro-menu-toggle',
+              });
 
               // Trigger a localized ripple animation at the menu position
               // This creates a ripple effect without changing the field effect state

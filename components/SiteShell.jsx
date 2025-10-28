@@ -152,6 +152,48 @@ export default function SiteShell({ children, channelContent }) {
 
     return () => cancel(id);
   }, [isHome, router, warmSceneChunk]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+
+    const handleLanguageRipple = (event) => {
+      if (!isHome) {
+        return;
+      }
+
+      const detail = event?.detail;
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('[SiteShell] languagechange:start received', {
+          isHome,
+          detail,
+        });
+      }
+      if (!detail || (detail.source && detail.source !== 'header-toggle')) {
+        return;
+      }
+
+      const { originX, originY } = detail;
+      if (!sceneRef.current?.addRipple) {
+        return;
+      }
+
+      const viewportWidth = window.innerWidth || 1;
+      const viewportHeight = window.innerHeight || 1;
+      const normalizedX = typeof originX === 'number' ? originX / viewportWidth - 0.5 : 0;
+      const normalizedY = typeof originY === 'number' ? originY / viewportHeight - 0.5 : 0;
+      const fieldX = normalizedX * 0.6;
+      const fieldZ = -normalizedY * 0.6;
+
+      sceneRef.current.addRipple(fieldX, fieldZ, 0.7);
+    };
+
+    window.addEventListener('languagechange:start', handleLanguageRipple);
+    return () => {
+      window.removeEventListener('languagechange:start', handleLanguageRipple);
+    };
+  }, [isHome]);
   
   // ===== INITIAL STATE SETUP =====
   // Track if this is the initial mount (for instant black on subpages)
