@@ -141,16 +141,16 @@
     }
   },
   "sounds": {
-    "backgroundImage": "https://irq8pcmcsnz9tzjh.public.blob.vercel-storage.com/Generated-Image-October-30--2025---12_25AM-copy-n2R3V4ZydKdTeJHnUmzFgOAAK7Q05K.png",
+    "backgroundImage": "https://irq8pcmcsnz9tzjh.public.blob.vercel-storage.com/Generated-Image-October-30--2025---12_25AM-copy-2-ATUusGAiEJMdL3rEY8helBkEo9JHiL.png",
     "footerFadeSettings": {
       "bgPosition": "bottom",
       "bgScale": "cover",
       "topFadeHeight": "0",
       "topFadeOpacity": "0",
-      "bottomFadeHeight": "10",
-      "bottomFadeOpacity": "0.2",
-      "sideFadeWidth": "15",
-      "sideFadeOpacity": "0.3"
+      "bottomFadeHeight": "0",
+      "bottomFadeOpacity": "0",
+      "sideFadeWidth": "0",
+      "sideFadeOpacity": "0"
     },
     "title": {
       "en": "Sound Experiments",
