@@ -922,7 +922,7 @@ export default function ChannelContentEditor({ sections = ['about', 'projects', 
                   }}
                   label="Background Image"
                   placeholder="Select or paste background image URL"
-                  helpText="Upload images via the Media page, then select here"
+                  helpText="Upload or select media from the library without leaving this page"
                 />
               </Suspense>
             </div>
