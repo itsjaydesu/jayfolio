@@ -5553,6 +5553,63 @@ a {
   white-space: nowrap; /* Prevent wrapping when space is available */
 }
 
+body:not([data-language-transitioning="true"]) .channel:not(.is-loaded) .channel__intro > * {
+  opacity: 0;
+  transform: translateY(-24px);
+}
+
+body:not([data-language-transitioning="true"]) .channel.is-loaded .channel__intro > * {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.52s cubic-bezier(0.33, 1, 0.68, 1),
+    transform 0.52s cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+body:not([data-language-transitioning="true"]) .channel.is-loaded .channel__intro > *:nth-child(1) {
+  transition-delay: 0.04s;
+}
+
+body:not([data-language-transitioning="true"]) .channel.is-loaded .channel__intro > *:nth-child(2) {
+  transition-delay: 0.14s;
+}
+
+body:not([data-language-transitioning="true"]) .channel.is-loaded .channel__intro > *:nth-child(3) {
+  transition-delay: 0.24s;
+}
+
+body:not([data-language-transitioning="true"]) .channel.is-loaded .channel__intro > *:nth-child(n + 4) {
+  transition-delay: 0.32s;
+}
+
+body:not([data-language-transitioning="true"]) .channel:not(.is-loaded) .channel__grid,
+body:not([data-language-transitioning="true"]) .channel:not(.is-loaded) .channel__empty {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+body:not([data-language-transitioning="true"]) .channel.is-loaded .channel__grid,
+body:not([data-language-transitioning="true"]) .channel.is-loaded .channel__empty {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.56s cubic-bezier(0.33, 1, 0.68, 1),
+    transform 0.56s cubic-bezier(0.33, 1, 0.68, 1);
+  transition-delay: 0.34s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body:not([data-language-transitioning="true"]) .channel:not(.is-loaded) .channel__intro > *,
+  body:not([data-language-transitioning="true"]) .channel.is-loaded .channel__intro > *,
+  body:not([data-language-transitioning="true"]) .channel:not(.is-loaded) .channel__grid,
+  body:not([data-language-transitioning="true"]) .channel.is-loaded .channel__grid,
+  body:not([data-language-transitioning="true"]) .channel:not(.is-loaded) .channel__empty,
+  body:not([data-language-transitioning="true"]) .channel.is-loaded .channel__empty {
+    opacity: 1;
+    transform: none;
+    transition-duration: 0s;
+    transition-delay: 0s;
+  }
+}
+
 /* Allow wrapping on smaller screens */
 @media (max-width: 640px) {
   .channel__title {
