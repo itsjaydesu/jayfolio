@@ -349,7 +349,8 @@ export default function RetroMenu({
     >
       <div className="retro-menu__titlebar">
         <span>
-          <span className="indicator" aria-hidden="true" /> jayfolio
+          <span className="indicator" aria-hidden="true" />
+          <span className="retro-menu__wordmark">jayfolio</span>
         </span>
         <div className="retro-menu__title-actions">
           <button
@@ -371,7 +372,7 @@ export default function RetroMenu({
                 originY,
                 from: language,
                 to: newLang,
-                source: 'retro-menu-toggle',
+                source: "retro-menu-toggle",
               });
 
               // Trigger a localized ripple animation at the menu position
@@ -388,64 +389,54 @@ export default function RetroMenu({
             title={languageToggleTooltip}
           >
             <svg
-              viewBox="0 0 20 20"
+              className="retro-menu__icon retro-menu__icon--globe"
+              viewBox="0 0 24 24"
               aria-hidden="true"
-              fill="currentColor"
+              fill="none"
               stroke="currentColor"
-              strokeWidth="1.5"
               strokeLinecap="round"
               strokeLinejoin="round"
             >
-              {/* Earth circle */}
-              <circle cx="10" cy="10" r="7" fill="none" />
-
-              {/* Continents/landmasses - simplified Earth-like shapes */}
-              {/* Europe/Africa */}
               <path
-                d="M 10 5 Q 11 6 10.5 8 T 11 10 Q 10 11 10.5 12"
-                fill="none"
-                strokeWidth="1.2"
+                d="M12 5c2.2 2.1 3.5 4.7 3.5 7s-1.3 4.9-3.5 7"
+                strokeWidth="1.1"
               />
-
-              {/* Americas */}
               <path
-                d="M 6 7 Q 7 8 6.5 9 T 7 11"
-                fill="none"
-                strokeWidth="1.2"
+                d="M12 5c-2.2 2.1-3.5 4.7-3.5 7s1.3 4.9 3.5 7"
+                strokeWidth="1.1"
               />
-
-              {/* Asia/Pacific */}
-              <path d="M 13 8 Q 14 9 13.5 10" fill="none" strokeWidth="1.2" />
-
-              {/* Latitude lines */}
-              <ellipse
-                cx="10"
-                cy="10"
-                rx="7"
-                ry="2.5"
-                fill="none"
-                strokeWidth="0.8"
-                opacity="0.4"
+              <circle cx="12" cy="12" r="7" strokeWidth="1.5" />
+              <path
+                d="M5 12h14"
+                className="retro-menu__icon-accent"
+                strokeWidth="1"
               />
-              <ellipse
-                cx="10"
-                cy="10"
-                rx="5"
-                ry="1.8"
-                fill="none"
-                strokeWidth="0.8"
-                opacity="0.3"
-                transform="translate(0,-3)"
+              <path
+                d="M7.2 8.3c1.2.6 2.4.9 4.8.9s3.6-.3 4.8-.9"
+                className="retro-menu__icon-accent"
+                strokeWidth="0.95"
               />
-              <ellipse
-                cx="10"
-                cy="10"
-                rx="5"
-                ry="1.8"
-                fill="none"
-                strokeWidth="0.8"
-                opacity="0.3"
-                transform="translate(0,3)"
+              <path
+                d="M7.2 15.7c1.2-.6 2.4-.9 4.8-.9s3.6.3 4.8.9"
+                className="retro-menu__icon-accent"
+                strokeWidth="0.95"
+              />
+              <path
+                d="M17.3 6.8a2.3 2.3 0 0 0 3-1.1"
+                className="retro-menu__icon-accent retro-menu__icon-accent--faint"
+                strokeWidth="0.85"
+              />
+              <path
+                d="M6.7 17.2a2.3 2.3 0 0 0-3.1 1.1"
+                className="retro-menu__icon-accent retro-menu__icon-accent--faint"
+                strokeWidth="0.85"
+              />
+              <circle
+                cx="12"
+                cy="12"
+                r="9.5"
+                className="retro-menu__icon-accent retro-menu__icon-accent--halo"
+                strokeWidth="0.4"
               />
             </svg>
           </button>
@@ -475,15 +466,46 @@ export default function RetroMenu({
               title={!tooltipVisible ? fieldEffectsLabel : undefined}
             >
               <svg
-                viewBox="0 0 20 20"
+                className="retro-menu__icon retro-menu__icon--fx"
+                viewBox="0 0 24 24"
                 aria-hidden="true"
                 fill="none"
                 stroke="currentColor"
-                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
               >
-                <circle cx="10" cy="10" r="3" />
-                <path d="M10 3.5v-1m0 15v-1m6.5-6.5h1m-15 0h1" />
-                <path d="M14.5 5.5l.7-.7m-10.4 10.4l.7-.7m0-9.4l-.7-.7m10.4 10.4l-.7-.7" />
+                <circle cx="12" cy="12" r="3" strokeWidth="1.6" />
+                <path d="M12 4.2v2.6M12 17.2v2.6" strokeWidth="1.2" />
+                <path d="M4.2 12h2.6M17.2 12h2.6" strokeWidth="1.2" />
+                <path d="M6.3 6.3l1.9 1.9M15.8 15.8l1.9 1.9" strokeWidth="1.2" />
+                <path d="M6.3 17.7l1.9-1.9M15.8 8.2l1.9-1.9" strokeWidth="1.2" />
+                <path
+                  d="M8.4 12a3.6 3.6 0 0 1 3.6-3.6c.9 0 1.7.3 2.4.8"
+                  className="retro-menu__icon-accent"
+                  strokeWidth="1"
+                />
+                <path
+                  d="M15.6 12a3.6 3.6 0 0 1-3.6 3.6c-.9 0-1.7-.3-2.4-.8"
+                  className="retro-menu__icon-accent"
+                  strokeWidth="1"
+                />
+                <path
+                  d="M5.2 12c0-3.8 3-6.8 6.8-6.8 1.9 0 3.7.7 5 1.9"
+                  className="retro-menu__icon-accent retro-menu__icon-accent--faint"
+                  strokeWidth="0.9"
+                />
+                <path
+                  d="M18.8 12c0 3.8-3 6.8-6.8 6.8-1.9 0-3.7-.7-5-1.9"
+                  className="retro-menu__icon-accent retro-menu__icon-accent--faint"
+                  strokeWidth="0.9"
+                />
+                <circle
+                  cx="12"
+                  cy="12"
+                  r="9.5"
+                  className="retro-menu__icon-accent retro-menu__icon-accent--halo"
+                  strokeWidth="0.35"
+                />
               </svg>
             </button>
             {tooltipVisible && activeEffectInfo && (
@@ -525,8 +547,43 @@ export default function RetroMenu({
             className="retro-menu__social"
             aria-label={t("menu.social.aria", language)}
           >
-            <svg viewBox="0 0 20 20" aria-hidden="true">
-              <path d="M15.95 1h-1.62l-3.58 4.31L7.79 1H3.25l5.32 7.16L3.25 19h1.62l3.92-4.78L12.21 19h4.54l-5.58-7.4zM11.6 11.52 8.46 7.27l1.6-1.92 4.63 6.17z" />
+            <svg
+              className="retro-menu__icon retro-menu__icon--social"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path
+                d="M5.1 5.4h4.2l2.7 4 2.7-4h4.2l-5.5 7.4 5.6 7.8h-4.2l-2.8-4.3-2.9 4.3H5.1l5.6-7.8z"
+                strokeWidth="1.35"
+              />
+              <path
+                d="M8.2 5.4l9.9 13.8"
+                className="retro-menu__icon-accent"
+                strokeWidth="0.9"
+              />
+              <path
+                d="M15.8 5.4L5.9 19.2"
+                className="retro-menu__icon-accent"
+                strokeWidth="0.9"
+              />
+              <circle
+                cx="18.7"
+                cy="5"
+                r="1.1"
+                fill="currentColor"
+                className="retro-menu__icon-dot"
+              />
+              <circle
+                cx="18.7"
+                cy="5"
+                r="2"
+                className="retro-menu__icon-accent retro-menu__icon-accent--halo"
+                strokeWidth="0.35"
+              />
             </svg>
           </Link>
           <small>v4.1</small>
