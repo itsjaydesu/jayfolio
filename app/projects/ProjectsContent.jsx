@@ -238,7 +238,7 @@ export default function ProjectsContent({ entries, hero }) {
       ) : (
         <EntryReturnFocus type="projects">
           <div className="channel__grid" key={selectedCategory} data-category={selectedCategory}>
-            {filteredEntries.map((entry) => {
+            {filteredEntries.map((entry, index) => {
               const tone = PROJECT_TONES[entry.slug] ?? 'neutral';
               return (
                 <PostCard
@@ -247,6 +247,7 @@ export default function ProjectsContent({ entries, hero }) {
                   type="projects"
                   tone={tone}
                   category={entry.category}
+                  style={{ '--channel-card-index': index }}
                 />
               );
             })}

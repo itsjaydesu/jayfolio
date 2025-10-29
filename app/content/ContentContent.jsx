@@ -127,7 +127,7 @@ export default function ContentContent({ entries, hero }) {
         </p>
       ) : (
         <div className="channel__grid" key={selectedCategory} data-category={selectedCategory}>
-          {filteredEntries.map((entry) => {
+          {filteredEntries.map((entry, index) => {
             const tone = CONTENT_TONES[entry.slug] ?? 'neutral';
             return (
               <PostCard
@@ -136,6 +136,7 @@ export default function ContentContent({ entries, hero }) {
                 type="content"
                 tone={tone}
                 category={entry.category}
+                style={{ '--channel-card-index': index }}
               />
             );
           })}

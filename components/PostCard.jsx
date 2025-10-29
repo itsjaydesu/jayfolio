@@ -21,7 +21,8 @@ export default function PostCard({
   type = 'projects', // 'content', 'projects', 'sounds', 'art'
   tone = 'neutral',
   category = null,
-  onClick = null
+  onClick = null,
+  style = undefined
 }) {
   const { language } = useLanguage();
   const { isAdmin: clientAdmin } = useAdminStatus();
@@ -80,6 +81,7 @@ export default function PostCard({
       className={articleClassName}
       data-tone={tone}
       data-entry-slug={entry.slug}
+      style={style}
     >
       <div className={surfaceClasses.join(' ')}>
         {clientAdmin ? (

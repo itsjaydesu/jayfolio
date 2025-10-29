@@ -42,7 +42,7 @@ export default function SoundsContent({ entries, hero }) {
       ) : (
         <EntryReturnFocus type="sounds">
           <div className="channel__grid">
-            {entries.map((entry) => {
+            {entries.map((entry, index) => {
               const tone = SOUND_TONES[entry.slug] ?? 'neutral';
               return (
                 <PostCard
@@ -50,6 +50,7 @@ export default function SoundsContent({ entries, hero }) {
                   entry={entry}
                   type="sounds"
                   tone={tone}
+                  style={{ '--channel-card-index': index }}
                 />
               );
             })}

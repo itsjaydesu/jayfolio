@@ -5581,26 +5581,37 @@ body:not([data-language-transitioning="true"]) .channel.is-loaded .channel__intr
   transition-delay: 0.32s;
 }
 
-body:not([data-language-transitioning="true"]) .channel:not(.is-loaded) .channel__grid,
 body:not([data-language-transitioning="true"]) .channel:not(.is-loaded) .channel__empty {
   opacity: 0;
-  transform: translateY(20px);
+  transform: translateY(24px);
 }
 
-body:not([data-language-transitioning="true"]) .channel.is-loaded .channel__grid,
 body:not([data-language-transitioning="true"]) .channel.is-loaded .channel__empty {
   opacity: 1;
   transform: translateY(0);
   transition: opacity 0.56s cubic-bezier(0.33, 1, 0.68, 1),
     transform 0.56s cubic-bezier(0.33, 1, 0.68, 1);
-  transition-delay: 0.34s;
+  transition-delay: 0.36s;
+}
+
+body:not([data-language-transitioning="true"]) .channel:not(.is-loaded) .channel__grid > * {
+  opacity: 0;
+  transform: translateY(24px);
+}
+
+body:not([data-language-transitioning="true"]) .channel.is-loaded .channel__grid > * {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.56s cubic-bezier(0.33, 1, 0.68, 1),
+    transform 0.56s cubic-bezier(0.33, 1, 0.68, 1);
+  transition-delay: calc(0.36s + var(--channel-card-index, 0) * 0.08s);
 }
 
 @media (prefers-reduced-motion: reduce) {
   body:not([data-language-transitioning="true"]) .channel:not(.is-loaded) .channel__intro > *,
   body:not([data-language-transitioning="true"]) .channel.is-loaded .channel__intro > *,
-  body:not([data-language-transitioning="true"]) .channel:not(.is-loaded) .channel__grid,
-  body:not([data-language-transitioning="true"]) .channel.is-loaded .channel__grid,
+  body:not([data-language-transitioning="true"]) .channel:not(.is-loaded) .channel__grid > *,
+  body:not([data-language-transitioning="true"]) .channel.is-loaded .channel__grid > *,
   body:not([data-language-transitioning="true"]) .channel:not(.is-loaded) .channel__empty,
   body:not([data-language-transitioning="true"]) .channel.is-loaded .channel__empty {
     opacity: 1;

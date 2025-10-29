@@ -42,7 +42,7 @@ export default function ArtContent({ entries, hero }) {
       ) : (
         <EntryReturnFocus type="art">
           <div className="channel__grid">
-            {entries.map((entry) => {
+            {entries.map((entry, index) => {
               const tone = ART_TONES[entry.slug] ?? 'neutral';
               return (
                 <PostCard
@@ -50,6 +50,7 @@ export default function ArtContent({ entries, hero }) {
                   entry={entry}
                   type="art"
                   tone={tone}
+                  style={{ '--channel-card-index': index }}
                 />
               );
             })}
