@@ -5583,28 +5583,39 @@ body:not([data-language-transitioning="true"]) .channel.is-loaded .channel__intr
 
 body:not([data-language-transitioning="true"]) .channel:not(.is-loaded) .channel__empty {
   opacity: 0;
-  transform: translateY(24px);
+  transform: translateY(-24px);
 }
 
 body:not([data-language-transitioning="true"]) .channel.is-loaded .channel__empty {
-  opacity: 1;
-  transform: translateY(0);
-  transition: opacity 0.56s cubic-bezier(0.33, 1, 0.68, 1),
-    transform 0.56s cubic-bezier(0.33, 1, 0.68, 1);
-  transition-delay: 0.36s;
+  opacity: 0;
+  transform: translateY(-24px);
+  animation: channel-grid-item-enter 0.56s cubic-bezier(0.33, 1, 0.68, 1)
+    forwards;
+  animation-delay: 0.04s;
 }
 
 body:not([data-language-transitioning="true"]) .channel:not(.is-loaded) .channel__grid > * {
   opacity: 0;
-  transform: translateY(24px);
+  transform: translateY(-24px);
 }
 
 body:not([data-language-transitioning="true"]) .channel.is-loaded .channel__grid > * {
-  opacity: 1;
-  transform: translateY(0);
-  transition: opacity 0.56s cubic-bezier(0.33, 1, 0.68, 1),
-    transform 0.56s cubic-bezier(0.33, 1, 0.68, 1);
-  transition-delay: calc(0.36s + var(--channel-card-index, 0) * 0.08s);
+  opacity: 0;
+  transform: translateY(-24px);
+  animation: channel-grid-item-enter 0.56s cubic-bezier(0.33, 1, 0.68, 1)
+    forwards;
+  animation-delay: calc(0.04s + var(--channel-card-index, 0) * 0.08s);
+}
+
+@keyframes channel-grid-item-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(-24px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -5618,6 +5629,7 @@ body:not([data-language-transitioning="true"]) .channel.is-loaded .channel__grid
     transform: none;
     transition-duration: 0s;
     transition-delay: 0s;
+    animation: none;
   }
 }
 
