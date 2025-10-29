@@ -5604,7 +5604,7 @@ body:not([data-language-transitioning="true"]) .channel.is-loaded .channel__grid
   transform: translateY(-24px);
   animation: channel-grid-item-enter 0.56s cubic-bezier(0.33, 1, 0.68, 1)
     forwards;
-  animation-delay: calc(0.04s + var(--channel-card-index, 0) * 0.08s);
+  animation-delay: calc(0.08s + var(--channel-card-index, 0) * 0.16s);
 }
 
 @keyframes channel-grid-item-enter {
