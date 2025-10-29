@@ -299,14 +299,15 @@ a {
 
 .menu-overlay .retro-menu__item {
   opacity: 0;
-  transform: translateX(-14px);
+  transform: translateY(16px) scale(0.94);
   transition: opacity 0.42s cubic-bezier(0.33, 1, 0.68, 1),
     transform 0.42s cubic-bezier(0.33, 1, 0.68, 1);
+  transform-origin: center center;
 }
 
 .menu-overlay.is-visible .retro-menu__item {
   opacity: 1;
-  transform: translateX(0);
+  transform: translateY(0) scale(1);
 }
 
 .menu-overlay.is-visible .retro-menu__item:nth-child(1) {
@@ -5303,8 +5304,42 @@ a {
     overflow-y: auto;
   }
 
+  .menu-overlay {
+    --retro-menu-mobile-pad: clamp(1.1rem, 8vw, 2rem);
+    padding: calc(env(safe-area-inset-top, 0px) + clamp(1.4rem, 8vw, 2.2rem))
+      var(--retro-menu-mobile-pad)
+      calc(env(safe-area-inset-bottom, 0px) + clamp(1.8rem, 10vw, 2.6rem));
+    align-content: center;
+  }
+
   .retro-menu--centerpiece {
-    top: clamp(2.4rem, 32vh, 3.6rem);
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
+    margin: 0;
+    width: min(420px, calc(100vw - 2 * var(--retro-menu-mobile-pad, 1.5rem)));
+    max-width: 100%;
+  }
+
+  .menu-overlay .retro-menu--centerpiece {
+    justify-self: center;
+    align-self: center;
+    transform: translateY(26px) scale(0.96);
+  }
+
+  .menu-overlay.is-visible .retro-menu--centerpiece {
+    transform: translateY(0) scale(1);
+  }
+
+  .menu-overlay .retro-menu__body {
+    max-height: min(68vh, 26rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    padding-right: 0.35rem;
+    margin-right: -0.35rem;
+    padding-bottom: calc(0.6rem + env(safe-area-inset-bottom, 0px));
   }
 
   .content-stage {
@@ -9769,6 +9804,26 @@ body[data-language-transitioning="true"] .language-transition-root {
       width: 100%;
       justify-content: flex-start;
       margin-top: 0.5rem;
+      gap: clamp(0.75rem, 5.5vw, 1.25rem);
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      padding: 0 clamp(0.85rem, 6vw, 1.4rem);
+      margin-left: calc(-1 * clamp(0.85rem, 6vw, 1.4rem));
+      margin-right: calc(-1 * clamp(0.85rem, 6vw, 1.4rem));
+      scroll-snap-type: x proximity;
+      scroll-padding-left: clamp(0.85rem, 6vw, 1.4rem);
+      scroll-padding-right: clamp(0.85rem, 6vw, 1.4rem);
+    }
+
+    .site-shell__nav::-webkit-scrollbar {
+      display: none;
+    }
+
+    .site-shell__nav-link {
+      flex: 0 0 auto;
+      scroll-snap-align: start;
     }
 
     /* Smaller icons on mobile */

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useLanguage } from "../contexts/LanguageContext";
 import { t } from "../lib/translations";
@@ -28,6 +28,7 @@ export default function RetroMenu({
   const toggleRef = useRef(null);
   const panelTimerRef = useRef(null);
   const panelAnimFrameRef = useRef(null);
+  const panelRepositionFrameRef = useRef(null);
   const [tooltipVisible, setTooltipVisible] = useState(false);
   const [remainingTime, setRemainingTime] = useState(null);
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
@@ -93,61 +94,167 @@ export default function RetroMenu({
       window.matchMedia("(prefers-reduced-motion: reduce)").matches
   );
 
-  // Calculate panel position and start opening transition
-  useEffect(() => {
-    if (panelState === "opening" && toggleRef.current) {
-      const menuElement = toggleRef.current.closest(".retro-menu");
-      if (menuElement) {
-        const menuRect = menuElement.getBoundingClientRect();
-        const panelWidth = Math.min(menuRect.width - 4, 380); // Slightly smaller than menu
-        const viewportWidth = window.innerWidth;
+  const updatePanelPosition = useCallback(() => {
+    if (typeof window === "undefined") {
+      return null;
+    }
 
-        // Find the titlebar to calculate overlay position
-        const titlebar = menuElement.querySelector(".retro-menu__titlebar");
+    const toggleElement = toggleRef.current;
+    if (!toggleElement) {
+      return null;
+    }
 
-        // Calculate top position to overlay the menu body area
-        // Position panel to replace the menu navbar area
-        let topPos = menuRect.top;
-        if (titlebar) {
-          // Align panel with the menu top for cleaner overlay
-          topPos = menuRect.top; // Align with menu top
-        }
+    const menuElement = toggleElement.closest(".retro-menu");
+    if (!menuElement) {
+      return null;
+    }
 
-        // Calculate left position, ensuring panel stays within viewport
-        let leftPos = menuRect.left;
-        const rightEdge = leftPos + panelWidth;
+    const menuRect = menuElement.getBoundingClientRect();
+    if (!menuRect || menuRect.width === 0) {
+      return null;
+    }
 
-        // If panel would go off right edge, adjust left position
-        if (rightEdge > viewportWidth - 20) {
-          // 20px margin from edge
-          leftPos = viewportWidth - panelWidth - 20;
-        }
+    const viewportWidth = window.innerWidth || 0;
+    const safeMarginBase = viewportWidth * 0.04;
+    const safeMargin = Math.max(12, Math.min(48, safeMarginBase || 0));
 
-        // If panel would go off left edge, adjust
-        if (leftPos < 20) {
-          leftPos = 20;
-        }
+    let panelWidth = Math.min(menuRect.width, 420);
+    const maxWidth = viewportWidth - safeMargin * 2;
 
-        const newPosition = {
-          top: topPos,
-          left: leftPos,
-          width: panelWidth,
-        };
+    if (Number.isFinite(maxWidth) && maxWidth > 0) {
+      panelWidth = Math.min(panelWidth, maxWidth);
+    } else if (Number.isFinite(viewportWidth) && viewportWidth > 0) {
+      panelWidth = Math.min(panelWidth, viewportWidth);
+    }
 
-        setPanelPosition(newPosition);
+    if (!Number.isFinite(panelWidth) || panelWidth <= 0) {
+      panelWidth = menuRect.width;
+    }
 
-        // Trigger transition to 'open' state after position is set
-        // Skip delay if reduced motion is preferred
-        if (prefersReducedMotion.current) {
-          setPanelState("open");
-        } else {
-          panelAnimFrameRef.current = requestAnimationFrame(() => {
-            setPanelState("open");
-          });
-        }
+    if (Number.isFinite(viewportWidth) && viewportWidth > 0) {
+      panelWidth = Math.min(panelWidth, viewportWidth);
+    }
+
+    const menuCenterX = menuRect.left + menuRect.width / 2;
+    let leftPos = menuCenterX - panelWidth / 2;
+
+    if (Number.isFinite(viewportWidth) && viewportWidth > 0) {
+      const minLeft = safeMargin;
+      const maxLeft = viewportWidth - safeMargin - panelWidth;
+
+      if (Number.isFinite(maxLeft) && maxLeft >= minLeft) {
+        leftPos = Math.min(Math.max(leftPos, minLeft), maxLeft);
+      } else {
+        leftPos = Math.max((viewportWidth - panelWidth) / 2, 0);
       }
     }
-  }, [panelState]);
+
+    const titlebar = menuElement.querySelector(".retro-menu__titlebar");
+    let topPos = menuRect.top;
+
+    if (titlebar) {
+      const titlebarRect = titlebar.getBoundingClientRect();
+      if (titlebarRect) {
+        topPos = titlebarRect.top;
+      }
+    }
+
+    const nextPosition = {
+      top: Math.max(topPos, 0),
+      left: Math.max(leftPos, 0),
+      width: panelWidth,
+    };
+
+    setPanelPosition((prev) => {
+      if (
+        prev &&
+        Math.abs(prev.top - nextPosition.top) < 0.5 &&
+        Math.abs(prev.left - nextPosition.left) < 0.5 &&
+        Math.abs(prev.width - nextPosition.width) < 0.5
+      ) {
+        return prev;
+      }
+      return nextPosition;
+    });
+
+    return nextPosition;
+  }, []);
+
+  // Calculate panel position and start opening transition
+  useEffect(() => {
+    if (panelState === "opening") {
+      updatePanelPosition();
+
+      // Trigger transition to 'open' state after position is set
+      // Skip delay if reduced motion is preferred
+      if (prefersReducedMotion.current) {
+        setPanelState("open");
+      } else {
+        panelAnimFrameRef.current = requestAnimationFrame(() => {
+          setPanelState("open");
+        });
+      }
+    }
+  }, [panelState, updatePanelPosition]);
+
+  useEffect(() => {
+    if (panelState !== "open") {
+      return undefined;
+    }
+
+    const handleViewportChange = () => {
+      if (typeof window === "undefined") {
+        return;
+      }
+
+      if (panelRepositionFrameRef.current) {
+        cancelAnimationFrame(panelRepositionFrameRef.current);
+      }
+
+      panelRepositionFrameRef.current = requestAnimationFrame(() => {
+        updatePanelPosition();
+      });
+    };
+
+    // Initial sync in case viewport changed between "opening" and "open"
+    handleViewportChange();
+
+    window.addEventListener("resize", handleViewportChange);
+    window.addEventListener("orientationchange", handleViewportChange);
+    window.addEventListener("scroll", handleViewportChange, { passive: true });
+
+    const visualViewport = window.visualViewport;
+    if (visualViewport) {
+      visualViewport.addEventListener("resize", handleViewportChange);
+      visualViewport.addEventListener("scroll", handleViewportChange);
+    }
+
+    const menuElement =
+      toggleRef.current?.closest?.(".retro-menu") ?? null;
+    let menuResizeObserver = null;
+
+    if (menuElement && typeof ResizeObserver !== "undefined") {
+      menuResizeObserver = new ResizeObserver(handleViewportChange);
+      menuResizeObserver.observe(menuElement);
+    }
+
+    return () => {
+      window.removeEventListener("resize", handleViewportChange);
+      window.removeEventListener("orientationchange", handleViewportChange);
+      window.removeEventListener("scroll", handleViewportChange);
+      if (visualViewport) {
+        visualViewport.removeEventListener("resize", handleViewportChange);
+        visualViewport.removeEventListener("scroll", handleViewportChange);
+      }
+      if (menuResizeObserver) {
+        menuResizeObserver.disconnect();
+      }
+      if (panelRepositionFrameRef.current) {
+        cancelAnimationFrame(panelRepositionFrameRef.current);
+        panelRepositionFrameRef.current = null;
+      }
+    };
+  }, [panelState, updatePanelPosition]);
 
   // Handle click outside to close panel
   useEffect(() => {
@@ -309,6 +416,9 @@ export default function RetroMenu({
       }
       if (panelAnimFrameRef.current) {
         cancelAnimationFrame(panelAnimFrameRef.current);
+      }
+      if (panelRepositionFrameRef.current) {
+        cancelAnimationFrame(panelRepositionFrameRef.current);
       }
       if (tooltipTimerRef.current) {
         cancelAnimationFrame(tooltipTimerRef.current);
