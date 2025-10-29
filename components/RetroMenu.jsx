@@ -348,7 +348,7 @@ export default function RetroMenu({
       aria-label="Main navigation"
     >
       <div className="retro-menu__titlebar">
-        <span>
+        <span className="retro-menu__title">
           <span className="indicator" aria-hidden="true" />
           <span className="retro-menu__wordmark">jayfolio</span>
         </span>
