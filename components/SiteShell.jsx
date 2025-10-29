@@ -387,6 +387,17 @@ export default function SiteShell({ children, channelContent }) {
   }, [activeStatus]);
 
   const isHeaderShaded = headerShade > 0.05;
+  const isListingChannel =
+    !isHome && !isDetailView &&
+    (primarySegment === 'projects' ||
+      primarySegment === 'content' ||
+      primarySegment === 'sounds' ||
+      primarySegment === 'art');
+
+  const shellDataProps = {
+    ...(isListingChannel ? { 'data-channel-layout': 'list', 'data-channel-id': primarySegment } : {}),
+  };
+
   const headerClassName = `site-shell__header${isHeaderShaded ? " is-scrolled" : ""}`;
   const headerStyle = navReady
     ? { '--header-backdrop-opacity': headerShade }
@@ -396,6 +407,68 @@ export default function SiteShell({ children, channelContent }) {
         transform: "translateY(var(--nav-initial-offset, -18px))",
       };
   const containerClassName = "site-shell__container";
+
+  useEffect(() => {
+    if (!isListingChannel) {
+      return undefined;
+    }
+
+    if (typeof window === 'undefined' || process.env.NODE_ENV === 'production') {
+      return undefined;
+    }
+
+    const logLayout = (reason) => {
+      const channelEl = document.querySelector('.channel');
+      const footerEl = document.querySelector('.site-footer');
+      const mainEl = document.querySelector('.site-shell__main');
+
+      if (!channelEl || !footerEl || !mainEl) {
+        console.log('[ListingLayout] skipped log (missing elements)', {
+          reason,
+          hasChannel: Boolean(channelEl),
+          hasFooter: Boolean(footerEl),
+          hasMain: Boolean(mainEl),
+        });
+        return;
+      }
+
+      const channelRect = channelEl.getBoundingClientRect();
+      const footerRect = footerEl.getBoundingClientRect();
+      const mainRect = mainEl.getBoundingClientRect();
+
+      console.group(`[ListingLayout] ${reason}`);
+      console.log('channel', {
+        height: channelRect.height,
+        top: channelRect.top,
+        bottom: channelRect.bottom,
+        marginBottom: getComputedStyle(channelEl).marginBottom,
+        paddingBottom: getComputedStyle(channelEl).paddingBottom,
+      });
+      console.log('main', {
+        height: mainRect.height,
+        top: mainRect.top,
+        bottom: mainRect.bottom,
+        paddingBottom: getComputedStyle(mainEl).paddingBottom,
+      });
+      console.log('footer', {
+        height: footerRect.height,
+        top: footerRect.top,
+        marginTop: getComputedStyle(footerEl).marginTop,
+        minHeight: getComputedStyle(footerEl).minHeight,
+        paddingTop: getComputedStyle(footerEl).paddingTop,
+      });
+      console.groupEnd();
+    };
+
+    const handleResize = () => logLayout('resize');
+    const rafId = window.requestAnimationFrame(() => logLayout('initial'));
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.cancelAnimationFrame(rafId);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [isListingChannel]);
 
   useEffect(() => {
     if (!isDotfieldOverlayOpen) return;
@@ -1427,7 +1500,10 @@ export default function SiteShell({ children, channelContent }) {
         </div>
       ) : null}
       <LanguageTransitionRoot>
-        <div className={`site-shell${isDetailView ? " site-shell--detail" : ""}`}>
+        <div
+          className={`site-shell${isDetailView ? " site-shell--detail" : ""}`}
+          {...shellDataProps}
+        >
           <div className={containerClassName}>
             {/* Browser-safe top fade: sits above the header to avoid hard edge in browsers that ignore masks with backdrop-filter. */}
             {headerVisible ? (
