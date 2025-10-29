@@ -5,7 +5,7 @@ import { detectLanguage, saveLanguagePreference, DEFAULT_LANGUAGE, SUPPORTED_LAN
 
 const LanguageContext = createContext();
 
-const LANGUAGE_TRANSITION_MS = 800;
+const LANGUAGE_TRANSITION_MS = 1000;
 const LANGUAGE_TRANSITION_EASING = 'cubic-bezier(0.33, 1, 0.68, 1)';
 const LANGUAGE_SWAP_DELAY_MS = Math.max(160, Math.floor(LANGUAGE_TRANSITION_MS * 0.45));
 

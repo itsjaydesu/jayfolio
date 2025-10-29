@@ -48,6 +48,17 @@ http://plan.md
   - [x] 🟩 Provide reliable cleanup once animation completes to avoid lingering DOM nodes. *(Comment: timers clear + state resets post-animation.)*
   - [ ] 🟥 Re-run smoke tests on Home + primary routes to confirm smooth visual swap. *(Comment: validates the new layering end-to-end.)*
 
+- [ ] 🟥 **Step 8: Timing polish & overlay refinement**
+  - [x] 🟩 Extend shared duration by 25% (update constants + CSS fallbacks). *(Comment: matches desired slower cadence.)*
+  - [x] 🟩 Recalculate language swap delay to stay aligned with longer animation. *(Comment: keeps fade-through midpoint in sync.)*
+  - [x] 🟩 Remove radial glow overlay while retaining ripple + body markers. *(Comment: addresses request to drop white wash.)*
+  - [ ] 🟥 Quick smoke test: header + retro menu toggle verify slower crossover sans glow. *(Comment: ensures refinement behaves as expected.)*
+
+- [ ] 🟥 **Step 9: Home dotfield/menu separation**
+  - [x] 🟩 Relocate `LanguageTransitionRoot` so the scene canvas stays outside the fade scope on `/`. *(Comment: preserves continuous dotfield motion.)*
+  - [x] 🟩 Wrap the retro menu overlay with the fade root for graceful language swaps. *(Comment: keeps crossfade focused on navigation chrome.)*
+  - [x] 🟩 Ensure non-home layouts still receive fade coverage (wrap shell structure). *(Comment: avoids regressions on subpages.)*
+
 Notes:
 - Reduced motion: no new handling required (existing CSS already disables heavy transitions under system preference).
 - Admin: excluded by scoping overlay to public `.site-shell` surface.

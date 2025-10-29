@@ -1,11 +1,10 @@
 import './globals.css';
-import SiteShell from '../components/SiteShell';
 import { generateMetadata as getMetadata, generateStructuredData, generateViewportData } from '../lib/metadata';
 import { LanguageProvider } from '../contexts/LanguageContext';
 import HtmlHead from '../components/HtmlHead';
 import { Analytics } from '@vercel/analytics/react';
 import { readChannelContent } from '../lib/channelContent';
-import LanguageTransitionRoot from '../components/LanguageTransitionRoot';
+import SiteShell from '../components/SiteShell';
 
 export async function generateMetadata() {
   return await getMetadata('home');
@@ -35,9 +34,7 @@ export default async function RootLayout({ children }) {
       <body>
         <LanguageProvider>
           <HtmlHead />
-          <LanguageTransitionRoot>
-            <SiteShell channelContent={channelContent}>{children}</SiteShell>
-          </LanguageTransitionRoot>
+          <SiteShell channelContent={channelContent}>{children}</SiteShell>
         </LanguageProvider>
         <Analytics />
         <noscript>

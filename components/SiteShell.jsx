@@ -13,6 +13,7 @@ import { SITE_TEXT_DEFAULTS } from "../lib/siteTextDefaults";
 import { useAdminStatus } from "../lib/useAdminStatus";
 import { useLanguage } from "../contexts/LanguageContext";
 import { t, getLocalizedContent } from "../lib/translations";
+import LanguageTransitionRoot from "./LanguageTransitionRoot";
 
 const DOTFIELD_OVERLAY_FADE_MS = 520;
 // Minimum header backdrop opacity on subpages so the menu is readable
@@ -1368,26 +1369,28 @@ export default function SiteShell({ children, channelContent }) {
             />
           </Suspense>
         </div>
-        <div className={`menu-overlay${menuVisible ? " is-visible" : ""}`}>
-          <RetroMenu
-            id="retro-menu"
-            items={menuItems}
-            activeSection={activeSection}
-            status={status}
-            activeStatus={activeStatus}
-            onStatusChange={handleStatusChange}
-            onNavigate={handleMenuReset}
-            onFieldEffect={handleFieldEffect}
-            hasActiveEffect={hasActiveEffect}
-            activeEffectInfo={activeEffectInfo}
-            onRipple={(x, z, strength) => {
-              // Trigger a ripple without changing field effect state
-              sceneRef.current?.addRipple?.(x, z, strength);
-            }}
-            isOpen
-            variant="centerpiece"
-          />
-        </div>
+        <LanguageTransitionRoot>
+          <div className={`menu-overlay${menuVisible ? " is-visible" : ""}`}>
+            <RetroMenu
+              id="retro-menu"
+              items={menuItems}
+              activeSection={activeSection}
+              status={status}
+              activeStatus={activeStatus}
+              onStatusChange={handleStatusChange}
+              onNavigate={handleMenuReset}
+              onFieldEffect={handleFieldEffect}
+              hasActiveEffect={hasActiveEffect}
+              activeEffectInfo={activeEffectInfo}
+              onRipple={(x, z, strength) => {
+                // Trigger a ripple without changing field effect state
+                sceneRef.current?.addRipple?.(x, z, strength);
+              }}
+              isOpen
+              variant="centerpiece"
+            />
+          </div>
+        </LanguageTransitionRoot>
       </>
     );
   }
@@ -1423,13 +1426,14 @@ export default function SiteShell({ children, channelContent }) {
           </Suspense>
         </div>
       ) : null}
-      <div className={`site-shell${isDetailView ? " site-shell--detail" : ""}`}>
-        <div className={containerClassName}>
-          {/* Browser-safe top fade: sits above the header to avoid hard edge in browsers that ignore masks with backdrop-filter. */}
-          {headerVisible ? (
-            <div className="site-shell__top-fade" aria-hidden="true" />
-          ) : null}
-          {!isDetailView && headerVisible ? (
+      <LanguageTransitionRoot>
+        <div className={`site-shell${isDetailView ? " site-shell--detail" : ""}`}>
+          <div className={containerClassName}>
+            {/* Browser-safe top fade: sits above the header to avoid hard edge in browsers that ignore masks with backdrop-filter. */}
+            {headerVisible ? (
+              <div className="site-shell__top-fade" aria-hidden="true" />
+            ) : null}
+            {!isDetailView && headerVisible ? (
             <header
               className={headerClassName}
               data-nav-ready={navReady ? "true" : "false"}
@@ -1548,6 +1552,7 @@ export default function SiteShell({ children, channelContent }) {
           {!isDetailView ? <SiteFooter channelContent={footerChannelContent} /> : null}
         </div>
       </div>
+      </LanguageTransitionRoot>
     </>
   );
 }
