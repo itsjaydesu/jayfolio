@@ -12,6 +12,9 @@ const HALF_GRID_Y = ((AMOUNTY - 1) * SEPARATION) / 2;
 
 const DEFAULT_INFLUENCES = FIELD_DEFAULT_INFLUENCES;
 
+const CLICK_DEBOUNCE_MS = 750;
+const MAX_RIPPLES = 60;
+
 const GOLDEN_RATIO = (1 + Math.sqrt(5)) / 2;
 
 const PERLIN_BASE_PERMUTATION = Uint8Array.from([
@@ -231,6 +234,7 @@ const SceneCanvas = forwardRef(function SceneCanvas(
         flowAngle: 0,
         lastUpdate: 0,
         energy: 0,
+        lastRippleTime: 0,
         // Enhanced smoothing parameters
         dampingFactor: 0.08,  // Reduced from implicit 0.2 for smoother movement
         velocityDamping: 0.85  // Slower velocity decay for fluid motion
@@ -420,7 +424,7 @@ const SceneCanvas = forwardRef(function SceneCanvas(
         });
         
         // Keep ripple count reasonable but allow more for complex effects
-        while (ripples.length > 80) {
+        while (ripples.length > MAX_RIPPLES) {
           ripples.shift();
         }
       };
@@ -562,7 +566,7 @@ const SceneCanvas = forwardRef(function SceneCanvas(
         }
         
         // Keep ripple count reasonable but allow more for complex effects
-        while (ripples.length > 80) {  // Increased limit for richer, longer-lasting effects
+        while (ripples.length > MAX_RIPPLES) {  // Trim backlog to keep rendering efficient
           ripples.shift();
         }
       };
@@ -1521,6 +1525,12 @@ const SceneCanvas = forwardRef(function SceneCanvas(
         pointer.targetWorldX = rippleX;
         pointer.targetWorldZ = rippleZ;
 
+        const now = performance.now();
+        if (now - pointer.lastRippleTime < CLICK_DEBOUNCE_MS) {
+          return;
+        }
+        pointer.lastRippleTime = now;
+
         // Create beautiful click ripple with 4x slower speed
         enqueueRippleSlowMotion(rippleX, rippleZ, 1.0); // Custom function for ultra-slow ripples
         
@@ -1580,6 +1590,12 @@ const SceneCanvas = forwardRef(function SceneCanvas(
         pointer.targetY = normalizedY;
         pointer.targetWorldX = rippleX;
         pointer.targetWorldZ = rippleZ;
+
+        const now = performance.now();
+        if (now - pointer.lastRippleTime < CLICK_DEBOUNCE_MS) {
+          return;
+        }
+        pointer.lastRippleTime = now;
 
         // Create beautiful click ripple with enhanced drama
         enqueueRipple(rippleX, rippleZ, 1.0, true);  // true = isClick for multi-layer ripple
@@ -1773,6 +1789,165 @@ const SceneCanvas = forwardRef(function SceneCanvas(
           }
         }
 
+        const amplitude = settings.amplitude;
+        const activeBursts = [];
+        const activeShimmers = [];
+        const activeRipples = [];
+
+        // Precompute click burst contributions for the current frame
+        const burstMaxAge = 3.0;
+        const burstBaseHeight = amplitude * 1.8;
+        const burstBaseLight = 1.5;
+        const burstRingWidth = 60;
+        const burstInvRingWidth = 1 / (burstRingWidth * burstRingWidth);
+        const burstInvRingWidth2 = 1 / (burstRingWidth * burstRingWidth * 1.5);
+        const burstInvRingWidth3 = 1 / (burstRingWidth * burstRingWidth * 2);
+
+        for (let b = clickBursts.length - 1; b >= 0; b--) {
+          const burst = clickBursts[b];
+          const age = elapsedTime - burst.start;
+          if (age > burstMaxAge) {
+            clickBursts.splice(b, 1);
+            continue;
+          }
+          if (age < 0) continue;
+
+          const ageProgress = age / burstMaxAge;
+          const easedProgress = 1 - Math.pow(1 - ageProgress, 4);
+          const radius = easedProgress * 2400;
+          const fade = Math.cos(ageProgress * Math.PI * 0.5);
+          const shimmerPhase = burst.phase + age * 15;
+          const shimmerBoost = Math.sin(shimmerPhase) * 0.3 + 1;
+          const influenceRadius = radius + burstRingWidth * 4;
+
+          activeBursts.push({
+            x: burst.x,
+            z: burst.z,
+            radius,
+            invRingWidth: burstInvRingWidth,
+            invRingWidth2: burstInvRingWidth2,
+            invRingWidth3: burstInvRingWidth3,
+            heightScale: fade * shimmerBoost * burstBaseHeight,
+            scaleScale: fade * 2.5,
+            lightScale: fade * shimmerBoost * burstBaseLight,
+            influenceRadiusSq: influenceRadius * influenceRadius
+          });
+        }
+
+        // Precompute shimmer wave data upfront to avoid redundant math per point
+        const shimmerMaxAge = 8.0;
+        const shimmerWidth = 200;
+        const shimmerInvWidth = 1 / (shimmerWidth * shimmerWidth);
+        const shimmerInfluenceOffset = shimmerWidth * 3;
+        const shimmerSpeed = 120;
+
+        for (let s = shimmerWaves.length - 1; s >= 0; s--) {
+          const shimmer = shimmerWaves[s];
+          const age = elapsedTime - shimmer.start;
+          if (age < 0) continue;
+          if (age > shimmerMaxAge) {
+            shimmerWaves.splice(s, 1);
+            continue;
+          }
+
+          const lifeProgress = age / shimmerMaxAge;
+          const intensity = (1 - lifeProgress) * shimmer.intensity;
+          if (intensity <= 0.0001) continue;
+
+          const radius = age * shimmerSpeed;
+          const influenceRadius = radius + shimmerInfluenceOffset;
+
+          activeShimmers.push({
+            x: shimmer.x,
+            z: shimmer.z,
+            radius,
+            intensity,
+            distFactor: 0.02 * shimmer.frequency,
+            phaseBase: shimmer.phase + age * 8,
+            invWidth: shimmerInvWidth,
+            influenceRadiusSq: influenceRadius * influenceRadius
+          });
+        }
+
+        // Precompute ripple metadata so the inner loop stays lightweight
+        const rippleDecayBase = settings.rippleDecay * 0.8;
+        const rippleSpeedBase = settings.rippleSpeed;
+        const rippleWidthBase = settings.rippleWidth;
+        const rippleStrengthBase = settings.rippleStrength * 0.6;
+
+        for (let r = ripples.length - 1; r >= 0; r--) {
+          const ripple = ripples[r];
+          const age = elapsedTime - ripple.start;
+          const maxAge = ripple.maxAge || 8;
+          if (age > maxAge) {
+            ripples.splice(r, 1);
+            continue;
+          }
+          if (age < 0) continue;
+
+          const ageNormalized = THREE.MathUtils.clamp(age / maxAge, 0, 1);
+          let easedProgress;
+          switch (ripple.easing) {
+            case 'easeOutExpo':
+              easedProgress = easeOutExpo(ageNormalized);
+              break;
+            case 'easeOutCubic':
+              easedProgress = easeOutCubic(ageNormalized);
+              break;
+            case 'easeOutQuart':
+              easedProgress = easeOutQuart(ageNormalized);
+              break;
+            case 'easeOutQuint':
+              easedProgress = easeOutQuint(ageNormalized);
+              break;
+            case 'easeOutSine':
+              easedProgress = Math.sin((ageNormalized * Math.PI) / 2);
+              break;
+            case 'easeInOutSine':
+              easedProgress = easeInOutSine(ageNormalized);
+              break;
+            case 'easeInOutQuart':
+              easedProgress = easeInOutQuart(ageNormalized);
+              break;
+            default:
+              easedProgress = ageNormalized * ageNormalized * (3 - 2 * ageNormalized);
+          }
+
+          const ageDecay = 1.0 - easedProgress;
+          if (ageDecay <= 0.0001) {
+            continue;
+          }
+
+          let wavefront;
+          if (ripple.isSlowMotion) {
+            const slowSpeed = rippleSpeedBase / 4.0;
+            wavefront = age * slowSpeed;
+          } else {
+            wavefront = age * rippleSpeedBase * (ripple.speedMultiplier || 1.0);
+          }
+
+          const widthRaw = rippleWidthBase * (ripple.widthMultiplier || 1.0);
+          const width = widthRaw > 0.0001 ? widthRaw : 0.0001;
+          const influenceRadius = Math.max(wavefront + width * 4, width * 6) + 200;
+          const strength = ripple.strength || 1.0;
+          const colorVar = ripple.color || 1.0;
+
+          activeRipples.push({
+            x: ripple.x,
+            z: ripple.z,
+            wavefront,
+            width,
+            ageDecay,
+            decayFactor: rippleDecayBase * (ripple.decayMultiplier || 1.0),
+            frequency: ripple.frequency || 1.0,
+            type: ripple.type,
+            heightScale: rippleStrengthBase * strength,
+            scaleScale: strength * 0.5,
+            lightScale: strength * 0.6 * colorVar,
+            influenceRadiusSq: influenceRadius * influenceRadius
+          });
+        }
+
         let i = 0;
         let j = 0;
 
@@ -1822,202 +1997,99 @@ const SceneCanvas = forwardRef(function SceneCanvas(
             }
 
             // Click burst effects (instant feedback at click point)
-            for (let b = clickBursts.length - 1; b >= 0; b--) {
-              const burst = clickBursts[b];
-              const age = elapsedTime - burst.start;
-              const maxAge = 3.0;  // 5x longer for smoother, more luxurious response
-              
-              if (age > maxAge) {
-                clickBursts.splice(b, 1);
-                continue;
-              }
-              
-              // Distance from burst center
+            for (let b = 0; b < activeBursts.length; b++) {
+              const burst = activeBursts[b];
               const dx = px - burst.x;
               const dz = pz - burst.z;
-              const dist = Math.sqrt(dx * dx + dz * dz);
-              
-              // Smoother expanding radius with easing - 5x slower
-              const ageProgress = age / maxAge;
-              const easedProgress = 1 - Math.pow(1 - ageProgress, 4);  // EaseOutQuart for ultra smooth
-              burst.radius = easedProgress * 2400;  // Wider expansion area for luxury
-              
-              // Multiple concentric rings for beautiful effect
+              const distSq = dx * dx + dz * dz;
+              if (distSq > burst.influenceRadiusSq) continue;
+
+              const dist = Math.sqrt(distSq);
               const ring1Dist = Math.abs(dist - burst.radius);
               const ring2Dist = Math.abs(dist - burst.radius * 0.7);
               const ring3Dist = Math.abs(dist - burst.radius * 0.4);
-              
-              // Sharper, more defined rings
-              const ringWidth = 60;
-              const ring1Profile = Math.exp(-(ring1Dist * ring1Dist) / (ringWidth * ringWidth));
-              const ring2Profile = Math.exp(-(ring2Dist * ring2Dist) / (ringWidth * ringWidth * 1.5));
-              const ring3Profile = Math.exp(-(ring3Dist * ring3Dist) / (ringWidth * ringWidth * 2));
-              
-              // Smooth fade with easing
-              const fadeProgress = ageProgress;
-              const fadedIntensity = Math.cos(fadeProgress * Math.PI * 0.5);  // Cosine fade for smoothness
-              burst.intensity = fadedIntensity;
-              
-              // Combine multiple rings with phase offset for shimmer
-              const phaseOffset = burst.phase + age * 15;
-              const shimmer = Math.sin(phaseOffset) * 0.3 + 1;
-              
-              // Apply beautiful composite effects
-              const compositProfile = ring1Profile + ring2Profile * 0.6 + ring3Profile * 0.3;
-              const burstHeight = compositProfile * burst.intensity * settings.amplitude * 1.8 * shimmer;
-              const burstScale = compositProfile * burst.intensity * 2.5;
-              const burstLight = compositProfile * burst.intensity * 1.5 * shimmer;
-              
-              height += burstHeight;
-              scaleDelta += burstScale;
-              lightDelta += burstLight;
+
+              const ring1Profile = Math.exp(-(ring1Dist * ring1Dist) * burst.invRingWidth);
+              const ring2Profile = Math.exp(-(ring2Dist * ring2Dist) * burst.invRingWidth2);
+              const ring3Profile = Math.exp(-(ring3Dist * ring3Dist) * burst.invRingWidth3);
+
+              const composite = ring1Profile + ring2Profile * 0.6 + ring3Profile * 0.3;
+              if (composite < 1e-4) continue;
+
+              height += composite * burst.heightScale;
+              scaleDelta += composite * burst.scaleScale;
+              lightDelta += composite * burst.lightScale;
             }
-            
+
             // Beautiful shimmer waves that follow ripples
-            for (let s = shimmerWaves.length - 1; s >= 0; s--) {
-              const shimmer = shimmerWaves[s];
-              const age = elapsedTime - shimmer.start;
-              const maxAge = 8.0;  // 8 second lifetime for consistency
-              
-              if (age < 0) continue;  // Not started yet
-              if (age > maxAge) {
-                shimmerWaves.splice(s, 1);
-                continue;
-              }
-              
-              // Distance from shimmer center
+            for (let s = 0; s < activeShimmers.length; s++) {
+              const shimmer = activeShimmers[s];
               const dx = px - shimmer.x;
               const dz = pz - shimmer.z;
-              const dist = Math.sqrt(dx * dx + dz * dz);
-              
-              // Expanding shimmer radius - 5x slower
-              const shimmerSpeed = 120;  // 5x slower expansion
-              shimmer.radius = age * shimmerSpeed;
-              
-              // Create oscillating shimmer pattern
+              const distSq = dx * dx + dz * dz;
+              if (distSq > shimmer.influenceRadiusSq) continue;
+
+              const dist = Math.sqrt(distSq);
               const shimmerDist = dist - shimmer.radius;
-              const shimmerWidth = 200;
-              const shimmerEnvelope = Math.exp(-(shimmerDist * shimmerDist) / (shimmerWidth * shimmerWidth));
-              
-              // Beautiful oscillation with varying frequency
-              const oscillation = Math.sin(dist * 0.02 * shimmer.frequency + shimmer.phase + age * 8);
-              const shimmerIntensity = (1 - age / maxAge) * shimmer.intensity;
-              
-              // Apply subtle but beautiful shimmer effect
-              const shimmerEffect = shimmerEnvelope * oscillation * shimmerIntensity;
-              height += shimmerEffect * settings.amplitude * 0.15;
-              scaleDelta += Math.abs(shimmerEffect) * 0.3;
-              lightDelta += Math.max(0, shimmerEffect) * 0.4;
+              const shimmerEnvelope = Math.exp(-(shimmerDist * shimmerDist) * shimmer.invWidth);
+              if (shimmerEnvelope < 1e-5) continue;
+
+              const oscillation = Math.sin(dist * shimmer.distFactor + shimmer.phaseBase);
+              const shimmerEffect = shimmerEnvelope * oscillation * shimmer.intensity;
+
+              height += shimmerEffect * amplitude * 0.15;
+              const shimmerAbs = Math.abs(shimmerEffect);
+              scaleDelta += shimmerAbs * 0.3;
+              if (shimmerEffect > 0) {
+                lightDelta += shimmerEffect * 0.4;
+              }
             }
-            
+
             // Enhanced beautiful ripple rendering with smooth easing
-            for (let r = ripples.length - 1; r >= 0; r--) {
-              const ripple = ripples[r];
-              const age = elapsedTime - ripple.start;
-              
-              // Use custom maxAge if provided, otherwise default to 8 seconds
-              const maxAge = ripple.maxAge || 8;
-              
-              if (age > maxAge) {
-                ripples.splice(r, 1);
-                continue;
-              }
-              
-              const dist = Math.sqrt((px - ripple.x) * (px - ripple.x) + (pz - ripple.z) * (pz - ripple.z)) + 0.0001;
-              const speedMult = ripple.speedMultiplier || 1.0;
-              
-              // For slow-motion ripples, use a completely different speed calculation
-              // to achieve true 4x slower motion
-              let wavefront;
-              if (ripple.isSlowMotion) {
-                // For slow-motion, divide the normal speed by 4
-                // This gives us exactly 4x slower expansion
-                const slowSpeed = settings.rippleSpeed / 4.0;
-                wavefront = age * slowSpeed;  // Don't use speedMult for slow-motion
-              } else {
-                // Normal ripples use the settings speed
-                wavefront = age * settings.rippleSpeed * speedMult;
-              }
-              
-              // Advanced easing functions
-              const ageNormalized = THREE.MathUtils.clamp(age / maxAge, 0, 1);
-              let easedProgress;
-              
-              // Apply different easing based on ripple.easing property
-              switch(ripple.easing) {
-                case 'easeOutExpo':
-                  easedProgress = easeOutExpo(ageNormalized);
-                  break;
-                case 'easeOutCubic':
-                  easedProgress = easeOutCubic(ageNormalized);
-                  break;
-                case 'easeOutQuart':
-                  easedProgress = easeOutQuart(ageNormalized);
-                  break;
-                case 'easeOutQuint':
-                  easedProgress = easeOutQuint(ageNormalized);
-                  break;
-                case 'easeOutSine':
-                  easedProgress = Math.sin((ageNormalized * Math.PI) / 2);
-                  break;
-                case 'easeInOutSine':
-                  easedProgress = easeInOutSine(ageNormalized);
-                  break;
-                case 'easeInOutQuart':
-                  easedProgress = easeInOutQuart(ageNormalized);
-                  break;
-                default:
-                  // Smooth step function as fallback
-                  easedProgress = ageNormalized * ageNormalized * (3 - 2 * ageNormalized);
-              }
-              
-              // Invert for beautiful fade out
-              const ageDecay = 1.0 - easedProgress;
-              
-              const decayMultiplier = ripple.decayMultiplier || 1.0;
-              const distanceDecay = Math.exp(-dist * settings.rippleDecay * 0.8 * decayMultiplier);
-              const envelope = distanceDecay * ageDecay;
-              
-              const rippleStrength = ripple.strength || 1;
-              const widthMult = ripple.widthMultiplier || 1.0;
-              const width = settings.rippleWidth * widthMult;
-              
-              const normalized = (dist - wavefront) / width;
-              const frequency = ripple.frequency || 1.0;
-              
-              // Beautiful multi-component wave with smooth interpolation
+            for (let r = 0; r < activeRipples.length; r++) {
+              const ripple = activeRipples[r];
+              const dx = px - ripple.x;
+              const dz = pz - ripple.z;
+              const distSq = dx * dx + dz * dz;
+              if (distSq > ripple.influenceRadiusSq) continue;
+
+              const dist = Math.sqrt(distSq) + 0.0001;
+              const envelope = Math.exp(-dist * ripple.decayFactor) * ripple.ageDecay;
+              if (envelope < 1e-4) continue;
+
+              const normalized = (dist - ripple.wavefront) / ripple.width;
+              const frequency = ripple.frequency;
               let rippleProfile = 0;
-              
-              switch(ripple.type) {
+
+              switch (ripple.type) {
                 case 'flash': {
-                  // Ultra-bright, ultra-fast flash
                   const flashPeak = Math.exp(-normalized * normalized * 5.0);
                   const flashRing = Math.exp(-Math.pow(Math.abs(normalized - 0.15), 2) * 12);
                   rippleProfile = flashPeak * 2.0 + flashRing * 1.0;
                   break;
                 }
-                  
+
                 case 'impact': {
-                  // Sharp, dramatic impact wave
                   const impactPeak = Math.exp(-normalized * normalized * 3.5);
                   const impactRing1 = Math.exp(-Math.pow(Math.abs(normalized - 0.25), 2) * 10);
                   const impactRing2 = Math.exp(-Math.pow(Math.abs(normalized - 0.5), 2) * 8);
                   rippleProfile = impactPeak * 1.6 + impactRing1 * 0.9 + impactRing2 * 0.4;
                   break;
                 }
-                  
+
                 case 'primary': {
-                  // Beautiful main wave with complex structure
                   const primaryGaussian = Math.exp(-normalized * normalized * 0.7);
-                  const primaryWave1 = Math.sin(normalized * Math.PI * 2 * frequency) * 0.2 * Math.exp(-Math.abs(normalized) * 1.5);
-                  const primaryWave2 = Math.cos(normalized * Math.PI * 3 * frequency) * 0.1 * Math.exp(-Math.abs(normalized) * 2);
-                  const primaryDetail = Math.sin((normalized - 0.2) * Math.PI * 4) * 0.05 * Math.exp(-Math.abs(normalized - 0.2) * 4);
+                  const primaryWave1 =
+                    Math.sin(normalized * Math.PI * 2 * frequency) * 0.2 * Math.exp(-Math.abs(normalized) * 1.5);
+                  const primaryWave2 =
+                    Math.cos(normalized * Math.PI * 3 * frequency) * 0.1 * Math.exp(-Math.abs(normalized) * 2);
+                  const primaryDetail =
+                    Math.sin((normalized - 0.2) * Math.PI * 4) * 0.05 * Math.exp(-Math.abs(normalized - 0.2) * 4);
                   rippleProfile = primaryGaussian * 1.1 + primaryWave1 + primaryWave2 + primaryDetail;
                   break;
                 }
-                  
+
                 case 'harmonic': {
-                  // Creates beautiful interference patterns
                   const harmonicBase = Math.exp(-normalized * normalized * 1.0);
                   const harmonic1 = Math.sin(normalized * Math.PI * 2.5 * frequency) * 0.3;
                   const harmonic2 = Math.sin(normalized * Math.PI * 3.7 * frequency) * 0.2;
@@ -2025,59 +2097,56 @@ const SceneCanvas = forwardRef(function SceneCanvas(
                   rippleProfile = harmonicBase * 0.8 + (harmonic1 + harmonic2 + harmonic3) * Math.exp(-Math.abs(normalized) * 1.2);
                   break;
                 }
-                  
+
                 case 'secondary': {
-                  // Detailed follow-up wave
                   const secondaryGaussian = Math.exp(-normalized * normalized * 1.3);
-                  const secondaryDetail1 = Math.cos(normalized * Math.PI * 3.5) * 0.12 * Math.exp(-Math.abs(normalized) * 2.5);
-                  const secondaryDetail2 = Math.sin(normalized * Math.PI * 5) * 0.08 * Math.exp(-Math.abs(normalized) * 3);
+                  const secondaryDetail1 =
+                    Math.cos(normalized * Math.PI * 3.5) * 0.12 * Math.exp(-Math.abs(normalized) * 2.5);
+                  const secondaryDetail2 =
+                    Math.sin(normalized * Math.PI * 5) * 0.08 * Math.exp(-Math.abs(normalized) * 3);
                   rippleProfile = secondaryGaussian * 0.8 + secondaryDetail1 + secondaryDetail2;
                   break;
                 }
-                  
+
                 case 'glow': {
-                  // Soft, wide outer glow with gentle undulation
                   const glowGaussian = Math.exp(-normalized * normalized * 0.3);
                   const glowWave = Math.sin(normalized * Math.PI * 0.8) * 0.1;
                   rippleProfile = (glowGaussian + glowWave * glowGaussian) * 0.5;
                   break;
                 }
-                  
+
                 case 'echo': {
-                  // Subtle echo waves with diminishing amplitude
                   const echoGaussian = Math.exp(-normalized * normalized * 0.5);
                   const echoWave1 = Math.sin(normalized * Math.PI * 2) * 0.15;
                   const echoWave2 = Math.cos(normalized * Math.PI * 1.5) * 0.1;
                   rippleProfile = echoGaussian * 0.6 + (echoWave1 + echoWave2) * echoGaussian;
                   break;
                 }
-                  
+
                 case 'resonance': {
-                  // Very subtle, slow resonance
                   const resonanceGaussian = Math.exp(-normalized * normalized * 0.2);
                   const resonanceWave = Math.sin(normalized * Math.PI * 0.5) * 0.2;
-                  rippleProfile = (resonanceGaussian * 0.3 + resonanceWave * resonanceGaussian * 0.2);
+                  rippleProfile = resonanceGaussian * 0.3 + resonanceWave * resonanceGaussian * 0.2;
                   break;
                 }
-                  
+
                 default: {
-                  // Standard ripple with smooth wave
                   const standardCrest = Math.exp(-normalized * normalized * 1.0);
                   const standardTrough = Math.exp(-(normalized + 0.8) * (normalized + 0.8) * 1.2);
                   const standardOscillation = Math.sin(normalized * Math.PI * 1.5) * 0.18;
                   rippleProfile = (standardCrest - standardTrough * 0.5) * 0.9 + standardOscillation;
                 }
               }
-              
-              // Apply ripple with smooth transitions
-              const rippleContribution = rippleProfile * settings.rippleStrength * 0.6 * envelope * rippleStrength;
+
+              const rippleContribution = rippleProfile * ripple.heightScale * envelope;
               height += rippleContribution;
-              
-              // Enhanced sparkle effect with color variation
+
               const sparkle = Math.max(0, rippleProfile * 0.8);
-              const colorVar = ripple.color || 1.0;
-              scaleDelta += sparkle * 0.5 * rippleStrength * envelope;
-              lightDelta += sparkle * 0.6 * rippleStrength * envelope * colorVar;
+              if (sparkle > 0) {
+                const sparkleEnvelope = sparkle * envelope;
+                scaleDelta += sparkleEnvelope * ripple.scaleScale;
+                lightDelta += sparkleEnvelope * ripple.lightScale;
+              }
             }
 
             if (activeEffect?.perPoint) {
