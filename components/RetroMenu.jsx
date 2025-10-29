@@ -114,48 +114,95 @@ export default function RetroMenu({
       return null;
     }
 
-    const viewportWidth = window.innerWidth || 0;
-    const safeMarginBase = viewportWidth * 0.04;
-    const safeMargin = Math.max(12, Math.min(48, safeMarginBase || 0));
+    const visualViewport = window.visualViewport;
+    const viewportWidth =
+      visualViewport?.width ?? window.innerWidth ?? menuRect.width;
+    const viewportHeight =
+      visualViewport?.height ?? window.innerHeight ?? menuRect.height;
+    const viewportOffsetLeft = visualViewport?.offsetLeft ?? 0;
+    const viewportOffsetTop = visualViewport?.offsetTop ?? 0;
 
-    let panelWidth = Math.min(menuRect.width, 420);
-    const maxWidth = viewportWidth - safeMargin * 2;
+    const layoutWidth = menuElement.offsetWidth || menuRect.width;
+    const fallbackWidth = layoutWidth > 0 ? layoutWidth : menuRect.width;
+    const desiredWidth = Math.min(Math.max(fallbackWidth, 0), 420);
+    const safeMarginBase = (fallbackWidth || viewportWidth || 0) * 0.04;
+    const maxMargin =
+      viewportWidth > 0 ? Math.max(12, Math.min(48, viewportWidth / 2 - 8)) : 48;
+    const safeMargin = Math.max(
+      12,
+      Math.min(
+        48,
+        Number.isFinite(safeMarginBase) ? safeMarginBase : 0,
+        maxMargin
+      )
+    );
 
-    if (Number.isFinite(maxWidth) && maxWidth > 0) {
-      panelWidth = Math.min(panelWidth, maxWidth);
+    const availableWidth =
+      viewportWidth > 0 ? viewportWidth - safeMargin * 2 : fallbackWidth;
+
+    let panelWidth = desiredWidth;
+    if (Number.isFinite(availableWidth) && availableWidth > 0) {
+      panelWidth = Math.min(panelWidth, availableWidth);
     } else if (Number.isFinite(viewportWidth) && viewportWidth > 0) {
       panelWidth = Math.min(panelWidth, viewportWidth);
     }
 
     if (!Number.isFinite(panelWidth) || panelWidth <= 0) {
-      panelWidth = menuRect.width;
+      const widthFallback =
+        fallbackWidth > 0
+          ? fallbackWidth
+          : Number.isFinite(viewportWidth) && viewportWidth > 0
+            ? viewportWidth
+            : 280;
+      panelWidth = widthFallback;
     }
 
-    if (Number.isFinite(viewportWidth) && viewportWidth > 0) {
-      panelWidth = Math.min(panelWidth, viewportWidth);
+    if (
+      Number.isFinite(viewportWidth) &&
+      viewportWidth > 0 &&
+      panelWidth > viewportWidth
+    ) {
+      panelWidth = viewportWidth;
     }
 
-    const menuCenterX = menuRect.left + menuRect.width / 2;
+    const menuCenterX =
+      viewportOffsetLeft + menuRect.left + menuRect.width / 2;
     let leftPos = menuCenterX - panelWidth / 2;
 
     if (Number.isFinite(viewportWidth) && viewportWidth > 0) {
-      const minLeft = safeMargin;
-      const maxLeft = viewportWidth - safeMargin - panelWidth;
+      const minLeft = viewportOffsetLeft + safeMargin;
+      const maxLeft =
+        viewportOffsetLeft + viewportWidth - safeMargin - panelWidth;
 
       if (Number.isFinite(maxLeft) && maxLeft >= minLeft) {
         leftPos = Math.min(Math.max(leftPos, minLeft), maxLeft);
       } else {
-        leftPos = Math.max((viewportWidth - panelWidth) / 2, 0);
+        leftPos =
+          viewportOffsetLeft + Math.max((viewportWidth - panelWidth) / 2, 0);
       }
     }
 
     const titlebar = menuElement.querySelector(".retro-menu__titlebar");
-    let topPos = menuRect.top;
+    let topPos = viewportOffsetTop + menuRect.top;
 
     if (titlebar) {
       const titlebarRect = titlebar.getBoundingClientRect();
       if (titlebarRect) {
-        topPos = titlebarRect.top;
+        topPos = viewportOffsetTop + titlebarRect.top;
+      }
+    }
+
+    if (!Number.isFinite(topPos)) {
+      topPos = viewportOffsetTop;
+    }
+
+    if (Number.isFinite(viewportHeight) && viewportHeight > 0) {
+      const maxTop = viewportOffsetTop + viewportHeight - safeMargin;
+      if (topPos > maxTop) {
+        topPos = maxTop;
+      }
+      if (topPos < viewportOffsetTop) {
+        topPos = viewportOffsetTop;
       }
     }
 

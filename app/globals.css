@@ -5332,6 +5332,18 @@ a {
     transform: translateY(0) scale(1);
   }
 
+  .retro-menu--centerpiece[data-panel-active="true"] {
+    transform: scale(0.92) !important;
+  }
+
+  .menu-overlay .retro-menu--centerpiece[data-panel-active="true"] {
+    transform: translateY(26px) scale(0.92) !important;
+  }
+
+  .menu-overlay.is-visible .retro-menu--centerpiece[data-panel-active="true"] {
+    transform: translateY(0) scale(0.92) !important;
+  }
+
   .menu-overlay .retro-menu__body {
     max-height: min(68vh, 26rem);
     overflow-y: auto;
