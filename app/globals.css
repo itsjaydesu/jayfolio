@@ -9336,9 +9336,11 @@ body[data-language-transitioning="true"] .language-transition-root {
     width: 100%;
     margin: 0;
     padding: 0 var(--shell-inline-pad);
-    display: grid;
+    display: flex;
+    flex-direction: column;
     gap: clamp(2rem, 6vw, 3.5rem);
     padding-top: var(--site-shell-header-offset);
+    min-height: 100vh;
     z-index: 0;
     isolation: isolate;
   }
@@ -9994,6 +9996,8 @@ body[data-language-transitioning="true"] .language-transition-root {
       calc(100vw - 2 * var(--shell-inline-pad))
     );
     max-width: 100%;
+    flex: 1 0 auto;
+    min-height: 0;
     /* Center main content within the grid container */
     margin: 0 auto;
     justify-self: center;
