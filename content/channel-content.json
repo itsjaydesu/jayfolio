@@ -141,9 +141,9 @@
     }
   },
   "sounds": {
-    "backgroundImage": "https://irq8pcmcsnz9tzjh.public.blob.vercel-storage.com/Generated-Image-October-29--2025---10_27PM-z1Ecgxd79DKJDjwiGES4HqiAq25HLh.png",
+    "backgroundImage": "https://irq8pcmcsnz9tzjh.public.blob.vercel-storage.com/Generated-Image-October-30--2025---12_25AM-ZXuuo54xaVcDGPIV6DKjfyYtAnoFji.png",
     "footerFadeSettings": {
-      "bgPosition": "center",
+      "bgPosition": "bottom",
       "bgScale": "auto",
       "topFadeHeight": "0",
       "topFadeOpacity": "0",
