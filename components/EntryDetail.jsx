@@ -10,6 +10,7 @@ import TabbedAudioPlayer from './TabbedAudioPlayer';
 import { useLanguage } from '../contexts/LanguageContext';
 import { t, getLocalizedContent } from '../lib/translations';
 import { useAdminStatus } from '../lib/useAdminStatus';
+import LanguageSwitcher from './LanguageSwitcher';
 
 const TRANSITION_DURATION_MS = 480;
 
@@ -17,16 +18,16 @@ export default function EntryDetail({ type, entry }) {
   const router = useRouter();
   const { language } = useLanguage();
   const { isAdmin } = useAdminStatus();
-  const [stageState, setStageState] = useState('idle');
+  const [stageState, setStageState] = useState('visible');
   const stageRef = useRef(null);
   const leaveTimeoutRef = useRef();
-  const enterTimeoutRef = useRef();
-  const stageStateRef = useRef('idle');
+  const stageStateRef = useRef('visible');
 
   const localizedContent = useMemo(() => getLocalizedContent(entry?.content, language) || '', [entry?.content, language]);
 
   const logLayoutMetrics = useCallback(
     (label, stateOverride) => {
+      if (process.env.NODE_ENV !== 'development') return;
       if (typeof window === 'undefined') return;
       const stageNode = stageRef.current;
       if (!stageNode) return;
@@ -69,20 +70,9 @@ export default function EntryDetail({ type, entry }) {
       node.scrollTo({ top: 0, behavior: 'auto' });
     }
 
-    logLayoutMetrics('mount-before-enter', 'idle');
-
-    setStageState('entering');
-    logLayoutMetrics('mount-after-enter-set', 'entering');
-
-    enterTimeoutRef.current = window.setTimeout(() => {
-      logLayoutMetrics('timeout-before-visible', 'entering');
-      setStageState('visible');
-    }, TRANSITION_DURATION_MS);
+    logLayoutMetrics('mount-visible', 'visible');
 
     return () => {
-      if (enterTimeoutRef.current) {
-        clearTimeout(enterTimeoutRef.current);
-      }
       if (leaveTimeoutRef.current) {
         clearTimeout(leaveTimeoutRef.current);
       }
@@ -228,12 +218,7 @@ export default function EntryDetail({ type, entry }) {
   // Get the localized back button label
   const backButtonLabel = navTypeKey ? t(`nav.${navTypeKey}`, language) : '';
 
-  if (stageState === 'entering') {
-    stageClasses.push('is-fading-in');
-  }
-  if (stageState === 'visible') {
-    stageClasses.push('is-visible');
-  }
+  stageClasses.push('is-visible');
   if (stageState === 'leaving') {
     stageClasses.push('is-fading-out');
   }
@@ -251,14 +236,17 @@ export default function EntryDetail({ type, entry }) {
           >
             {t('back.to', language, { section: backButtonLabel })}
           </Link>
-          <div className="detail-view__stamps">
-            {dateLabel && (
-              <div className="detail-view__published">
-                <span className="detail-view__published-label">{t('published.date', language)}</span>
-                <span className="detail-view__published-date">{dateLabel}</span>
-              </div>
-            )}
-            {typeLabel && <span className="detail-view__type-label">{typeLabel}</span>}
+          <div className="detail-view__nav-actions">
+            <div className="detail-view__stamps">
+              {dateLabel && (
+                <div className="detail-view__published">
+                  <span className="detail-view__published-label">{t('published.date', language)}</span>
+                  <span className="detail-view__published-date">{dateLabel}</span>
+                </div>
+              )}
+              {typeLabel && <span className="detail-view__type-label">{typeLabel}</span>}
+            </div>
+            <LanguageSwitcher className="detail-view__language-toggle" />
           </div>
         </nav>
 
