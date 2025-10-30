@@ -7,7 +7,7 @@ import dynamic from 'next/dynamic';
 import RetroMenu from "./RetroMenu";
 import LanguageSwitcher from "./LanguageSwitcher";
 import BrandWordmark from "./BrandWordmark";
-import { DotfieldIcon, XLogoIcon } from "./icons";
+import { DotfieldIcon, HamburgerIcon, XLogoIcon } from "./icons";
 import SiteFooter from "./SiteFooter";
 import { SITE_TEXT_DEFAULTS } from "../lib/siteTextDefaults";
 import { useAdminStatus } from "../lib/useAdminStatus";
@@ -19,6 +19,7 @@ const DOTFIELD_OVERLAY_FADE_MS = 520;
 // Minimum header backdrop opacity on subpages so the menu is readable
 // over content even at scroll position 0. Kept subtle to avoid a heavy box.
 const HEADER_BASE_SHADE = 0.16; // ~16% base, escalates with scroll
+const NAV_CONDENSED_BREAKPOINT = 600;
 const DOTFIELD_EFFECT_SEQUENCE = [
   'jitter',
   'swirlPulse',
@@ -293,6 +294,24 @@ export default function SiteShell({ children, channelContent }) {
 
     const headerElement = headerInnerRef.current;
     const navElement = navRef.current;
+
+    const viewportWidth =
+      window.innerWidth ||
+      document.documentElement?.clientWidth ||
+      0;
+    const smallViewportQuery =
+      typeof window.matchMedia === 'function'
+        ? window.matchMedia(`(max-width: ${NAV_CONDENSED_BREAKPOINT}px)`)
+        : null;
+    const shouldForceCondensed =
+      viewportWidth <= NAV_CONDENSED_BREAKPOINT ||
+      Boolean(smallViewportQuery?.matches);
+
+    if (shouldForceCondensed) {
+      setIsNavCondensed((previous) => (previous ? previous : true));
+      return;
+    }
+
     if (!headerElement || !navElement) {
       setIsNavCondensed(false);
       return;
@@ -2017,8 +2036,14 @@ export default function SiteShell({ children, channelContent }) {
                     ref={mobileMenuButtonRef}
                   >
                     <span
+                      className="site-shell__nav-dropdown-button-icon"
+                      aria-hidden="true"
+                    >
+                      <HamburgerIcon />
+                    </span>
+                    <span
                       id="site-shell-mobile-nav-button-text"
-                      className="site-shell__nav-dropdown-button-text"
+                      className="sr-only site-shell__nav-dropdown-button-text"
                     >
                       {dropdownDisplayLabel}
                     </span>
@@ -2062,6 +2087,7 @@ export default function SiteShell({ children, channelContent }) {
                                 onClick={() => handleMobileMenuSelect(item)}
                                 onMouseEnter={() => setMobileMenuFocusIndex(index)}
                                 onFocus={() => setMobileMenuFocusIndex(index)}
+                                style={{ "--option-index": index }}
                               >
                                 {item.label}
                               </button>
