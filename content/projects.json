@@ -1,38 +1,6 @@
 {
   "entries": [
     {
-      "slug": "calls-from-the-past",
-      "title": {
-        "en": "Calls From The Past",
-        "ja": "Calls From The Past（歴史との通話）"
-      },
-      "summary": {
-        "en": "AI-powered conversations with history's greatest minds, trained on primary sources for authentic interactions.",
-        "ja": "一次資料で鍛えたAIが歴史上の人物との対話を再現し、臨場感ある学びを届ける会話型プラットフォーム。"
-      },
-      "content": {
-        "en": "<p>Calls From The Past transforms historical education through real-time AI conversations with figures from antiquity to modern times. Each personality is meticulously trained on diaries, letters, and contemporary texts to recreate authentic voices—from Samuel Pepys describing the Great Fire of London to Lady Murasaki discussing life in 11th-century Japan's imperial court.</p><p>The platform features voice interactions that go beyond facts and dates, capturing the emotion and daily concerns that make history feel remarkably human. With over 1.9 million conversation minutes served and new historical figures regularly added, it offers an immersive alternative to traditional books and documentaries for curious minds and lifelong learners.</p>",
-        "ja": "<p>Calls From The Past は、古代から現代までの歴史的人物とリアルタイムに会話できるAI教材です。日記や書簡、当時の出版物といった一次資料を学習させることで、ロンドン大火を語るサミュエル・ピープスから、宮廷生活を振り返る紫式部まで、その時代の声と語り口を忠実に再構築します。</p><p>会話は年表の暗記にとどまらず、感情や日常の息づかいまで描き出します。提供開始から190万分以上の対話が行われ、新しい人物も続々追加。書籍やドキュメンタリーに代わる没入型の学習体験として、探究心旺盛な学習者を惹きつけています。</p>"
-      },
-      "tags": {
-        "en": [
-          "AI",
-          "Education",
-          "History",
-          "Tool"
-        ],
-        "ja": [
-          "AI",
-          "教育",
-          "歴史",
-          "ツール"
-        ]
-      },
-      "coverImage": null,
-      "status": "draft",
-      "createdAt": "2024-12-15"
-    },
-    {
       "slug": "generate-qr-code-free",
       "title": {
         "en": "QR Code Generator for 3D Printing",
@@ -67,6 +35,38 @@
       },
       "status": "draft",
       "createdAt": "2025-08-01"
+    },
+    {
+      "slug": "calls-from-the-past",
+      "title": {
+        "en": "Calls From The Past",
+        "ja": "Calls From The Past（歴史との通話）"
+      },
+      "summary": {
+        "en": "AI-powered conversations with history's greatest minds, trained on primary sources for authentic interactions.",
+        "ja": "一次資料で鍛えたAIが歴史上の人物との対話を再現し、臨場感ある学びを届ける会話型プラットフォーム。"
+      },
+      "content": {
+        "en": "<p>Calls From The Past transforms historical education through real-time AI conversations with figures from antiquity to modern times. Each personality is meticulously trained on diaries, letters, and contemporary texts to recreate authentic voices—from Samuel Pepys describing the Great Fire of London to Lady Murasaki discussing life in 11th-century Japan's imperial court.</p><p>The platform features voice interactions that go beyond facts and dates, capturing the emotion and daily concerns that make history feel remarkably human. With over 1.9 million conversation minutes served and new historical figures regularly added, it offers an immersive alternative to traditional books and documentaries for curious minds and lifelong learners.</p>",
+        "ja": "<p>Calls From The Past は、古代から現代までの歴史的人物とリアルタイムに会話できるAI教材です。日記や書簡、当時の出版物といった一次資料を学習させることで、ロンドン大火を語るサミュエル・ピープスから、宮廷生活を振り返る紫式部まで、その時代の声と語り口を忠実に再構築します。</p><p>会話は年表の暗記にとどまらず、感情や日常の息づかいまで描き出します。提供開始から190万分以上の対話が行われ、新しい人物も続々追加。書籍やドキュメンタリーに代わる没入型の学習体験として、探究心旺盛な学習者を惹きつけています。</p>"
+      },
+      "tags": {
+        "en": [
+          "AI",
+          "Education",
+          "History",
+          "Tool"
+        ],
+        "ja": [
+          "AI",
+          "教育",
+          "歴史",
+          "ツール"
+        ]
+      },
+      "coverImage": null,
+      "status": "draft",
+      "createdAt": "2024-12-15"
     },
     {
       "slug": "durwhirl",
@@ -105,6 +105,40 @@
       "createdAt": "2024-11-20"
     },
     {
+      "slug": "tokyo-tech-summit-2024",
+      "title": {
+        "en": "Tokyo Hacker News Tech meetup",
+        "ja": "Tokyo Tech Summit 2024"
+      },
+      "summary": {
+        "en": "Leading a workshop on cross-cultural product development at Japan's premier tech conference.",
+        "ja": "国内最大級テックカンファレンスで、異文化プロダクト開発をテーマにワークショップを担当。"
+      },
+      "content": {
+        "en": "<p>I co-founded the Tokyo Hacker News Tech meetup with Paul Oswald, the largest foreign developer meetup in Tokyo.</p>",
+        "ja": "<p>Tokyo Tech Summit 2024 にはアジア太平洋各地から5,000名を超える開発者・デザイナー・起業家が集まり、多文化な視点でのものづくりを議論しました。</p><p>私は東西のデザイン哲学を統合するプロダクト開発手法を紹介し、文化的背景の異なるチームで成果を出した事例や、陥りがちな認識のズレを共有しました。</p>"
+      },
+      "tags": {
+        "en": [
+          "event",
+          "conference",
+          "speaking"
+        ],
+        "ja": [
+          "イベント",
+          "カンファレンス",
+          "登壇"
+        ]
+      },
+      "coverImage": {
+        "url": "https://irq8pcmcsnz9tzjh.public.blob.vercel-storage.com/2025-10-30-at-17-5QK41i11exjPoQjYyAZDOVZZCdzIq0.jpg",
+        "alt": "2025 10 30 at 17"
+      },
+      "status": "published",
+      "createdAt": "2024-10-15",
+      "updatedAt": "2025-10-30T10:00:10.714Z"
+    },
+    {
       "slug": "word-battle-sim",
       "title": {
         "en": "WordBattle Simulator",
@@ -141,94 +175,34 @@
       "createdAt": "2024-10-01"
     },
     {
-      "slug": "makeleaps",
+      "slug": "creative-coding-workshop-london",
       "title": {
-        "en": "MakeLeaps",
-        "ja": "MakeLeaps（メイクリープス）"
+        "en": "Creative Coding Workshop London",
+        "ja": "Creative Coding Workshop London"
       },
       "summary": {
-        "en": "Cloud invoicing platform built in Tokyo to automate quotes, invoices, and postal delivery for bilingual teams.",
-        "ja": "東京発のクラウド請求管理プラットフォーム。見積から郵送手配までを自動化し、日英バイリンガル体制を支援します。"
+        "en": "Two-day intensive workshop on generative art and interactive installations.",
+        "ja": "ジェネレーティブアートとインタラクティブ作品に焦点を当てた2日間の集中ワークショップ。"
       },
       "content": {
-        "en": "<p>MakeLeaps is a Tokyo-based invoicing platform created to replace manual spreadsheets with automated document flows. The service lets teams draft quotes, invoices, and receipts in the browser, trigger postal fulfilment with a click, and keep status updates in sync for clients working across English and Japanese.</p><p>Originally bootstrapped inside Jay Winder's Webnet IT consultancy, MakeLeaps now operates as part of the Ricoh Group, pairing workflow approvals, bank integrations, and multi-language templates to cut administrative time by up to 80% for freelancers and companies across Japan.</p>",
-        "ja": "<p>MakeLeaps は、手作業のスプレッドシートを自動化されたワークフローに置き換えるために生まれた東京拠点の請求管理サービスです。ブラウザ上で見積・請求・領収書を作成し、ワンクリックで郵送依頼まで完了。日英両言語を行き来する取引先ともステータスを同期できます。</p><p>Jay Winder のコンサルティング会社 Webnet IT からスピンアウトし、現在はリコーグループの一員として運営。承認フロー、銀行連携、多言語テンプレートを備え、全国のフリーランスや企業の事務負荷を最大80%削減しています。</p>"
+        "en": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. This hands-on workshop introduced artists and designers to creative coding using Processing and p5.js. Sed vitae libero vitae metus sollicitudin dictum sed vel libero.</p><p>Participants created their own generative art pieces and learned to build interactive installations. Integer a porta eros. The workshop culminated in a public exhibition at the venue. Vivamus convallis massa sed nibh gravida, vel blandit augue gravida.</p>",
+        "ja": "<p>Processing と p5.js を用いて、アーティストとデザイナーにクリエイティブコーディングの基礎を体験してもらう実践型プログラムをロンドンで開催しました。ジェネレーティブ表現の構造を解説しながら、その場でスケッチを作成します。</p><p>参加者は最終的に独自のジェネレーティブ作品と、小規模なインタラクティブインスタレーションを制作。会場での公開展示で完成度を測り、来場者との対話から更なる改良点を学ぶ場となりました。</p>"
       },
       "tags": {
         "en": [
-          "SaaS",
-          "Fintech",
-          "Tokyo"
+          "event",
+          "workshop",
+          "creative coding"
         ],
         "ja": [
-          "SaaS",
-          "フィンテック",
-          "東京"
-        ]
-      },
-      "coverImage": null,
-      "status": "published",
-      "createdAt": "2015-02-09"
-    },
-    {
-      "slug": "webnet-it",
-      "title": {
-        "en": "Webnet IT",
-        "ja": "Webnet IT"
-      },
-      "summary": {
-        "en": "Bilingual IT consultancy supporting startups in Tokyo with infrastructure, support, and product experiments.",
-        "ja": "東京のスタートアップを支えるバイリンガルITコンサルティング。インフラから実験的プロダクトまで伴走します。"
-      },
-      "content": {
-        "en": "<p>Webnet IT began as Jay Winder's bilingual services firm, helping overseas-founded startups in Tokyo manage networks, hardware rollouts, and day-to-day support without language barriers. The team paired hands-on implementation with rapid troubleshooting so designers and developers could stay focused on product work.</p><p>The same operational pains Webnet IT solved for clients led to the in-house build that became MakeLeaps, giving the consultancy a reputation for spotting process friction and shipping pragmatic tools when the market came up short.</p>",
-        "ja": "<p>Webnet IT は Jay Winder が立ち上げたバイリンガルIT支援会社です。東京に進出した海外系スタートアップのために、ネットワーク構築やハードウェア展開、日々のサポートを言語の壁なく提供してきました。現場に入り込んだ実装と迅速なトラブルシューティングにより、デザイナーや開発者が本来の業務に集中できる環境をつくります。</p><p>顧客の課題と向き合う中で生まれたのが、のちにMakeLeapsとなる社内プロダクト。プロセスの歪みを察知し、必要なツールを自ら形にする社風がコンサルティングの強みになりました。</p>"
-      },
-      "tags": {
-        "en": [
-          "IT services",
-          "Consulting",
-          "Tokyo"
-        ],
-        "ja": [
-          "ITサービス",
-          "コンサルティング",
-          "東京"
-        ]
-      },
-      "coverImage": null,
-      "status": "published",
-      "createdAt": "2015-02-09"
-    },
-    {
-      "slug": "rabbit-hole-iykyk",
-      "title": {
-        "en": "Rabbit Hole — iykyk+",
-        "ja": "Rabbit Hole — iykyk+"
-      },
-      "summary": {
-        "en": "Immersive NFT exhibition at J/M Gallery linking physical installations with on-chain minting in London.",
-        "ja": "ロンドンのJ/Mギャラリーで開催した没入型NFT展示。会場のインスタレーションとオンチェーンのミント体験をつないだプロジェクト。"
-      },
-      "content": {
-        "en": "<p>Rabbit Hole brought iykyk+ to J/M Gallery in London for a two-week exploration of NFTs as a bridge between physical sculpture and blockchain-native art. Visitors moved through mixed-media installations, learned the stories behind Bitcoin and Ethereum-inspired pieces, and could mint new works on-site.</p><p>The curators paired educational talks with collaborative commissions, paying artists upfront and sharing secondary revenue to demystify how Web3 tools can sustain creative practice while keeping the experience playful and accessible.</p>",
-        "ja": "<p>Rabbit Hole はiykyk+をロンドンのJ/Mギャラリーに招き、フィジカルな彫刻とブロックチェーンのアートをつなぐ2週間の展示を実現しました。来場者はミクストメディアのインスタレーションを回遊し、ビットコインやイーサリアムに着想を得た作品の背景を学び、その場で新作NFTをミントできます。</p><p>キュレーターは教育トークと共同制作を組み合わせ、アーティストへ事前報酬を支払いながら二次流通益も共有。Web3ツールがどのように創作活動を支援できるかを、親しみやすく体験できるプログラムに仕立てました。</p>"
-      },
-      "tags": {
-        "en": [
-          "NFT",
-          "Exhibition",
-          "London"
-        ],
-        "ja": [
-          "NFT",
-          "展示",
-          "ロンドン"
+          "イベント",
+          "ワークショップ",
+          "クリエイティブコーディング"
         ]
       },
       "coverImage": null,
       "status": "draft",
-      "createdAt": "2023-05-10"
+      "createdAt": "2024-09-20"
     },
     {
       "slug": "ask-lucy-ai-travel-companion",
@@ -261,64 +235,102 @@
       "createdAt": "2024-01-01"
     },
     {
-      "slug": "tokyo-tech-summit-2024",
+      "slug": "rabbit-hole-iykyk",
       "title": {
-        "en": "Tokyo Tech Summit 2024",
-        "ja": "Tokyo Tech Summit 2024"
+        "en": "Rabbit Hole — iykyk+",
+        "ja": "Rabbit Hole — iykyk+"
       },
       "summary": {
-        "en": "Leading a workshop on cross-cultural product development at Japan's premier tech conference.",
-        "ja": "国内最大級テックカンファレンスで、異文化プロダクト開発をテーマにワークショップを担当。"
+        "en": "Immersive NFT exhibition at J/M Gallery linking physical installations with on-chain minting in London.",
+        "ja": "ロンドンのJ/Mギャラリーで開催した没入型NFT展示。会場のインスタレーションとオンチェーンのミント体験をつないだプロジェクト。"
       },
       "content": {
-        "en": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. The Tokyo Tech Summit brought together over 5,000 developers, designers, and entrepreneurs from across Asia-Pacific. Sed vitae libero vitae metus sollicitudin dictum sed vel libero.</p><p>My workshop focused on bridging Eastern and Western design philosophies in product development. Integer a porta eros. We explored case studies from successful cross-cultural launches and common pitfalls to avoid. Vivamus convallis massa sed nibh gravida, vel blandit augue gravida.</p>",
-        "ja": "<p>Tokyo Tech Summit 2024 にはアジア太平洋各地から5,000名を超える開発者・デザイナー・起業家が集まり、多文化な視点でのものづくりを議論しました。</p><p>私は東西のデザイン哲学を統合するプロダクト開発手法を紹介し、文化的背景の異なるチームで成果を出した事例や、陥りがちな認識のズレを共有しました。</p>"
+        "en": "<p>Rabbit Hole brought iykyk+ to J/M Gallery in London for a two-week exploration of NFTs as a bridge between physical sculpture and blockchain-native art. Visitors moved through mixed-media installations, learned the stories behind Bitcoin and Ethereum-inspired pieces, and could mint new works on-site.</p><p>The curators paired educational talks with collaborative commissions, paying artists upfront and sharing secondary revenue to demystify how Web3 tools can sustain creative practice while keeping the experience playful and accessible.</p>",
+        "ja": "<p>Rabbit Hole はiykyk+をロンドンのJ/Mギャラリーに招き、フィジカルな彫刻とブロックチェーンのアートをつなぐ2週間の展示を実現しました。来場者はミクストメディアのインスタレーションを回遊し、ビットコインやイーサリアムに着想を得た作品の背景を学び、その場で新作NFTをミントできます。</p><p>キュレーターは教育トークと共同制作を組み合わせ、アーティストへ事前報酬を支払いながら二次流通益も共有。Web3ツールがどのように創作活動を支援できるかを、親しみやすく体験できるプログラムに仕立てました。</p>"
       },
       "tags": {
         "en": [
-          "event",
-          "conference",
-          "speaking"
+          "NFT",
+          "Exhibition",
+          "London"
         ],
         "ja": [
-          "イベント",
-          "カンファレンス",
-          "登壇"
-        ]
-      },
-      "coverImage": null,
-      "status": "published",
-      "createdAt": "2024-10-15"
-    },
-    {
-      "slug": "creative-coding-workshop-london",
-      "title": {
-        "en": "Creative Coding Workshop London",
-        "ja": "Creative Coding Workshop London"
-      },
-      "summary": {
-        "en": "Two-day intensive workshop on generative art and interactive installations.",
-        "ja": "ジェネレーティブアートとインタラクティブ作品に焦点を当てた2日間の集中ワークショップ。"
-      },
-      "content": {
-        "en": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. This hands-on workshop introduced artists and designers to creative coding using Processing and p5.js. Sed vitae libero vitae metus sollicitudin dictum sed vel libero.</p><p>Participants created their own generative art pieces and learned to build interactive installations. Integer a porta eros. The workshop culminated in a public exhibition at the venue. Vivamus convallis massa sed nibh gravida, vel blandit augue gravida.</p>",
-        "ja": "<p>Processing と p5.js を用いて、アーティストとデザイナーにクリエイティブコーディングの基礎を体験してもらう実践型プログラムをロンドンで開催しました。ジェネレーティブ表現の構造を解説しながら、その場でスケッチを作成します。</p><p>参加者は最終的に独自のジェネレーティブ作品と、小規模なインタラクティブインスタレーションを制作。会場での公開展示で完成度を測り、来場者との対話から更なる改良点を学ぶ場となりました。</p>"
-      },
-      "tags": {
-        "en": [
-          "event",
-          "workshop",
-          "creative coding"
-        ],
-        "ja": [
-          "イベント",
-          "ワークショップ",
-          "クリエイティブコーディング"
+          "NFT",
+          "展示",
+          "ロンドン"
         ]
       },
       "coverImage": null,
       "status": "draft",
-      "createdAt": "2024-09-20"
+      "createdAt": "2023-05-10"
+    },
+    {
+      "slug": "makeleaps",
+      "title": {
+        "en": "MakeLeaps",
+        "ja": "MakeLeaps（メイクリープス）"
+      },
+      "summary": {
+        "en": "Cloud invoicing platform built in Tokyo to automate quotes, invoices, and postal delivery for bilingual teams.",
+        "ja": "東京発のクラウド請求管理プラットフォーム。見積から郵送手配までを自動化し、日英バイリンガル体制を支援します。"
+      },
+      "content": {
+        "en": "<p>MakeLeaps is a Tokyo-based invoicing platform created to replace manual spreadsheets with automated document flows. The service lets teams draft quotes, invoices, and receipts in the browser, trigger postal fulfilment with a click, and keep status updates in sync for clients working across English and Japanese.</p><p>Originally bootstrapped inside Jay Winder's Webnet IT consultancy, MakeLeaps now operates as part of the Ricoh Group, pairing workflow approvals, bank integrations, and multi-language templates to cut administrative time by up to 80% for freelancers and companies across Japan.</p>",
+        "ja": "<p>MakeLeaps は、手作業のスプレッドシートを自動化されたワークフローに置き換えるために生まれた東京拠点の請求管理サービスです。ブラウザ上で見積・請求・領収書を作成し、ワンクリックで郵送依頼まで完了。日英両言語を行き来する取引先ともステータスを同期できます。</p><p>Jay Winder のコンサルティング会社 Webnet IT からスピンアウトし、現在はリコーグループの一員として運営。承認フロー、銀行連携、多言語テンプレートを備え、全国のフリーランスや企業の事務負荷を最大80%削減しています。</p>"
+      },
+      "tags": {
+        "en": [
+          "SaaS",
+          "Fintech",
+          "Tokyo"
+        ],
+        "ja": [
+          "SaaS",
+          "フィンテック",
+          "東京"
+        ]
+      },
+      "coverImage": {
+        "url": "https://irq8pcmcsnz9tzjh.public.blob.vercel-storage.com/2025-10-30-at-17-dFIRAkUgTs9hIFWb2qaLBSNMeLAfVM.jpg",
+        "alt": "2025 10 30 at 17"
+      },
+      "status": "published",
+      "createdAt": "2015-02-09",
+      "updatedAt": "2025-10-30T10:00:45.002Z"
+    },
+    {
+      "slug": "webnet-it",
+      "title": {
+        "en": "Webnet IT",
+        "ja": "Webnet IT"
+      },
+      "summary": {
+        "en": "Bilingual IT consultancy supporting startups in Tokyo with infrastructure, support, and product experiments.",
+        "ja": "東京のスタートアップを支えるバイリンガルITコンサルティング。インフラから実験的プロダクトまで伴走します。"
+      },
+      "content": {
+        "en": "<p>Webnet IT began as Jay Winder's bilingual services firm, helping overseas-founded startups in Tokyo manage networks, hardware rollouts, and day-to-day support without language barriers. The team paired hands-on implementation with rapid troubleshooting so designers and developers could stay focused on product work.</p><p>The same operational pains Webnet IT solved for clients led to the in-house build that became MakeLeaps, giving the consultancy a reputation for spotting process friction and shipping pragmatic tools when the market came up short.</p>",
+        "ja": "<p>Webnet IT は Jay Winder が立ち上げたバイリンガルIT支援会社です。東京に進出した海外系スタートアップのために、ネットワーク構築やハードウェア展開、日々のサポートを言語の壁なく提供してきました。現場に入り込んだ実装と迅速なトラブルシューティングにより、デザイナーや開発者が本来の業務に集中できる環境をつくります。</p><p>顧客の課題と向き合う中で生まれたのが、のちにMakeLeapsとなる社内プロダクト。プロセスの歪みを察知し、必要なツールを自ら形にする社風がコンサルティングの強みになりました。</p>"
+      },
+      "tags": {
+        "en": [
+          "IT services",
+          "Consulting",
+          "Tokyo"
+        ],
+        "ja": [
+          "ITサービス",
+          "コンサルティング",
+          "東京"
+        ]
+      },
+      "coverImage": {
+        "url": "https://irq8pcmcsnz9tzjh.public.blob.vercel-storage.com/webnet-print-UxGMqbGLGmswPh7XdSx3NkTXf8Gkp8.jpg",
+        "alt": "webnet print"
+      },
+      "status": "published",
+      "createdAt": "2015-02-09",
+      "updatedAt": "2025-10-30T10:01:17.356Z"
     }
   ]
 }

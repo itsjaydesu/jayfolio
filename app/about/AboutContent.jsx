@@ -2,7 +2,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Fragment, useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useAdminStatus } from '../../lib/useAdminStatus';
 import { getLocalizedContent } from '../../lib/translations';
@@ -12,6 +12,7 @@ const FALLBACK_SUBTITLE = 'Creative Technologist';
 const FALLBACK_BODY = 'About details are coming soon.';
 const BLOCK_LEVEL_HTML_PATTERN = /<\/?(p|ul|ol|li|blockquote|h[1-6]|section|article|div|figure)[\s>]/i;
 const PLACEHOLDER_PATTERN = /\{([^{}]+)\}/g;
+const OPTIONS_DELIMITER = '⟡';
 const PRIMARY_LEAD_TEXT = `I am a technologist who loves making things. Generally software, but I also love exploring art, words, music and comedy. I love to use { new tools | old tools | vintage tools | weird tools | words | code | musical instruments } to make things that are { useful | stupid | interesting | surprising | funny | beautiful | thought-provoking }.`;
 const PRIMARY_BODY_TEXT = [
   `I am building this site to showcase some creations, and to find friends and co-collaborators. I have far (farrr) too many ideas and not enough time, and it'd be nice to hack on some ideas together. My goal is to build with people who I'd want to spend time with anyway.`,
@@ -73,7 +74,8 @@ function splitSegmentsWithAnimatedWords(text) {
     if (options.length) {
       segments.push({
         type: 'animated',
-        options
+        options,
+        signature: options.join(OPTIONS_DELIMITER)
       });
     } else {
       segments.push({
@@ -113,68 +115,119 @@ function renderTextSegment(text, key) {
   );
 }
 
-function AnimatedWordSwap({ options }) {
-  const sanitizedOptions = useMemo(() => {
-    if (!Array.isArray(options)) {
-      return [];
-    }
-    const trimmed = options
+function AnimatedWordSwap({ options, signature }) {
+  const optionsCacheRef = useRef({ key: '', value: [] });
+  const { sanitizedOptions, optionsSignature } = useMemo(() => {
+    const rawOptions = Array.isArray(options) ? options : [];
+    const trimmed = rawOptions
       .map((option) => option.trim())
       .filter((option) => option.length > 0);
-    return trimmed.filter((option, index) => trimmed.indexOf(option) === index);
-  }, [options]);
+    const normalized = trimmed.filter((option, index) => trimmed.indexOf(option) === index);
+    const cacheKey = signature || normalized.join(OPTIONS_DELIMITER);
+    if (optionsCacheRef.current.key === cacheKey) {
+      return {
+        sanitizedOptions: optionsCacheRef.current.value,
+        optionsSignature: cacheKey
+      };
+    }
+    const cachedValue = normalized.slice();
+    optionsCacheRef.current = { key: cacheKey, value: cachedValue };
+    return {
+      sanitizedOptions: cachedValue,
+      optionsSignature: cacheKey
+    };
+  }, [options, signature]);
 
-  const [current, setCurrent] = useState(() => {
-    if (!Array.isArray(options) || !options.length) {
-      return '';
-    }
-    const fallback = options
-      .map((option) => option.trim())
-      .filter((option) => option.length > 0);
-    if (!fallback.length) {
-      return '';
-    }
-    const randomIndex = Math.floor(Math.random() * fallback.length);
-    return fallback[randomIndex];
-  });
+  const [currentIndex, setCurrentIndex] = useState(() => (sanitizedOptions.length ? 0 : -1));
+  const [isHydrated, setIsHydrated] = useState(false);
+  const [isPulsing, setIsPulsing] = useState(false);
+  const randomizedRef = useRef(false);
+
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   useEffect(() => {
     if (!sanitizedOptions.length) {
-      setCurrent('');
+      randomizedRef.current = false;
+      setCurrentIndex(-1);
       return;
     }
 
-    if (!sanitizedOptions.includes(current)) {
-      setCurrent(sanitizedOptions[0]);
-    }
-  }, [sanitizedOptions, current]);
+    setCurrentIndex((previous) => {
+      if (previous < 0 || previous >= sanitizedOptions.length) {
+        return 0;
+      }
+      return previous;
+    });
+    randomizedRef.current = false;
+  }, [optionsSignature, sanitizedOptions.length]);
 
   useEffect(() => {
-    if (sanitizedOptions.length < 2) {
+    if (!isHydrated || sanitizedOptions.length < 2 || randomizedRef.current) {
+      return;
+    }
+    randomizedRef.current = true;
+    setCurrentIndex((previous) => {
+      if (sanitizedOptions.length < 2) {
+        return previous;
+      }
+      const pool = sanitizedOptions.map((_, index) => index).filter((index) => index !== previous);
+      const nextIndex = pool.length ? pool[Math.floor(Math.random() * pool.length)] : previous;
+      return typeof nextIndex === 'number' ? nextIndex : previous;
+    });
+  }, [isHydrated, optionsSignature, sanitizedOptions.length]);
+
+  useEffect(() => {
+    if (!isHydrated || sanitizedOptions.length < 2) {
       return undefined;
     }
 
-    const delay = 2000 + Math.random() * 2500;
+    const delay = 1400 + Math.random() * 2000;
     const timeoutId = window.setTimeout(() => {
-      setCurrent((previous) => {
-        const available = sanitizedOptions.filter((option) => option !== previous);
-        if (!available.length) {
+      setCurrentIndex((previous) => {
+        if (sanitizedOptions.length < 2) {
           return previous;
         }
-        const nextIndex = Math.floor(Math.random() * available.length);
-        return available[nextIndex];
+        const pool = sanitizedOptions.map((_, index) => index).filter((index) => index !== previous);
+        const nextIndex = pool.length ? pool[Math.floor(Math.random() * pool.length)] : previous;
+        return typeof nextIndex === 'number' ? nextIndex : previous;
       });
     }, delay);
 
     return () => window.clearTimeout(timeoutId);
-  }, [current, sanitizedOptions]);
+  }, [currentIndex, isHydrated, optionsSignature, sanitizedOptions.length]);
+
+  const current =
+    currentIndex >= 0 && currentIndex < sanitizedOptions.length ? sanitizedOptions[currentIndex] : '';
+
+  useEffect(() => {
+    if (!current) {
+      setIsPulsing(false);
+      return;
+    }
+    setIsPulsing(true);
+    const pulseTimeout = window.setTimeout(() => setIsPulsing(false), 520);
+    return () => window.clearTimeout(pulseTimeout);
+  }, [current]);
 
   if (!current) {
     return null;
   }
 
+  const swapClasses = ['about-page__word-swap'];
+  if (isPulsing) {
+    swapClasses.push('about-page__word-swap--pulse');
+  }
+
+  const maxChars = useMemo(
+    () => sanitizedOptions.reduce((max, option) => Math.max(max, option.length), 0),
+    [sanitizedOptions, optionsSignature]
+  );
+  const minWidth = Math.max(maxChars, current.length, 4.5);
+
   return (
-    <span className="about-page__word-swap">
+    <span className={swapClasses.join(' ')} style={minWidth ? { minWidth: `${minWidth}ch` } : undefined}>
       <span key={current} className="about-page__word-swap-inner">
         {current}
       </span>
@@ -284,7 +337,11 @@ export default function AboutContent({ initialContent }) {
       segments.length > 0
         ? segments.map((segment, index) =>
             segment.type === 'animated' ? (
-              <AnimatedWordSwap key={`${baseClassName}-${paragraph.id}-swap-${index}`} options={segment.options} />
+              <AnimatedWordSwap
+                key={`${baseClassName}-${paragraph.id}-swap-${index}`}
+                options={segment.options}
+                signature={segment.signature}
+              />
             ) : (
               renderTextSegment(segment.value, `${baseClassName}-${paragraph.id}-text-${index}`)
             )

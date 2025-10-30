@@ -19,10 +19,6 @@
       "en": "welcome, fellow internet traveller",
       "ja": "クリエイティブ・テクノロジスト"
     },
-    "aboutLead": {
-      "en": "I am a technologist who loves making things. Generally software, but I also love exploring art, words, music and comedy. I love to use { new tools | old tools | vintage tools | weird tools | words | code | musical instruments } to make things that are { useful | stupid | interesting | surprising | funny | beautiful | thought-provoking }.",
-      "ja": ""
-    },
     "aboutContent": {
       "en": "I am building this site to showcase some creations, and to find friends and co-collaborators. I have far (farrr) too many ideas and not enough time, and it'd be nice to hack on some ideas together. My goal is to build with people who I'd want to spend time with anyway.\n\nI'm good on the product side. I'm great at public speaking, fundraising and communicating. I'm pretty bad at coding, but I'm good at talking to an AI until I get what I want.\n\nIf any of my ideas are interesting to you and you'd like to collaborate, find a way to contact me and let's see if we click.",
       "ja": "クリエイティブ・テクノロジストとして、アンビエントOSや展示向けツール、シネマティックなサウンドスケープを設計しています。このドシエではスタジオの思想、コラボレーター、そして各プロジェクトを導くシグナルを紹介します。"
@@ -60,39 +56,64 @@
       }
     ],
     "aboutTags": {
-      "en": [
-        "these",
-        "are",
-        "tags"
-      ],
-      "ja": [
-        "デザイナー",
-        "コンポーザー",
-        "システムアーティスト"
-      ]
+      "en": ["these", "are", "tags"],
+      "ja": ["デザイナー", "コンポーザー", "システムアーティスト"]
     },
     "title": "",
-    "lead": "",
+    "lead": "Creative technologist guiding teams through ambient operating systems, tactile exhibition tooling, and cinematic web soundscapes. This dossier carries the studio ethos, collaborators, and signals shaping each commission. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
     "statusDate": "2024-11-01",
     "statusLabel": "CURRENT STATUS • AERIAL RESONANCE",
     "tags": "Designer • Composer • Systems Artist",
     "headline": "Sculpting Interfaces That Listen Back",
     "summary": "I am a technologist who loves making things. Generally software, but I also love exploring art, words, music and comedy.",
-    "practiceVectors": "",
+    "practiceVectors": "Cinematic UI systems, immersive spatial audio, sensor-driven choreography, and collaborative design research. Each commission blends physical staging with realtime web tooling for performers and exhibition teams.",
     "currentCollaborators": [
       "Signal Grid Lab — adaptive lighting for touring stages.",
       "Archive Atlas — sonic archives with tactile playback consoles.",
       "Field Lexicon Collective — language prototypes for future venues."
     ],
-    "operatingPrinciples": "",
-    "overview": [],
-    "history": [],
-    "signals": []
+    "operatingPrinciples": "Lead with listening, prototype in the open, and let every surface emit warmth. Projects hinge on calibrating atmosphere as carefully as code so collaborators feel invited into the signal.",
+    "overview": [
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Jay Winder weaves tactile computing, kinetic lighting, and sonic cartography into experiential systems that feel warmly sentient. Suspendisse potenti. Vestibulum vitae arcu eget sapien scelerisque aliquet quis sed justo. Maecenas egestas lacus eu vulputate bibendum, gravida risus euismod.",
+      "Phasellus euismod mi a nibh hendrerit, sit amet dapibus ipsum faucibus. Pellentesque in tempor nibh. Integer malesuada lorem ipsum dolor sit amet technologist auctor, malesuada augue quis, fermentum magna. Curabitur blandit, metus ac iaculis vulputate, est magna luctus risus, vitae posuere elit lectus quis augue."
+    ],
+    "history": [
+      {
+        "year": "2024",
+        "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Jay Winder launched a resonant lab for touring installations, experimenting with ambient operating systems that listen as performers move."
+      },
+      {
+        "year": "2021",
+        "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Crafted WebGL observatories for civic archives, translating sensor data into luminous sonic gradients for public play."
+      },
+      {
+        "year": "2017",
+        "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Embedded with research theaters to build responsive stage controls that blend composer gestures with adaptive lighting."
+      },
+      {
+        "year": "2012",
+        "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Began as a systems artist translating modular synthesis workflows into interactive exhibition tooling and haptic audio consoles."
+      }
+    ],
+    "signals": [
+      {
+        "term": "Primary Mediums",
+        "description": "Lorem ipsum interfaces, ambient OS prototypes, spatial sound choreography."
+      },
+      {
+        "term": "Operating Doctrine",
+        "description": "Lorem ipsum dolor sit amet technologist dictum—craft the atmosphere, prototype with hospitality, and release tools that invite co-authorship."
+      },
+      {
+        "term": "Open Invitations",
+        "description": "Lorem ipsum residencies, collaborative field recordings, and sensor-driven storytelling research."
+      }
+    ]
   },
   "projects": {
-    "backgroundImage": "",
+    "backgroundImage": "https://irq8pcmcsnz9tzjh.public.blob.vercel-storage.com/b58080b669d31934c1aa485d39fd94807683cf7c41e3f7c8494233a4edd7c89f-MUQ1XxArza1sWLxF0vQ5UuGjO3V6IN.jpg",
     "footerFadeSettings": {
-      "bgPosition": "bottom",
+      "bgPosition": "center",
       "bgScale": "contain",
       "topFadeHeight": "60",
       "topFadeOpacity": "1",
@@ -102,11 +123,11 @@
       "sideFadeOpacity": "0.8"
     },
     "title": {
-      "en": "Selected Builds",
+      "en": "Projects",
       "ja": "セレクト作品"
     },
     "lead": {
-      "en": "Explore interactive commissions, touring installations, and responsive tooling. Choose any dossier to open a full breakdown with media, credits, and embedded documentation.",
+      "en": "An inconclusive list of some things I've built.",
       "ja": "インタラクティブな受託案件、ツアー用インスタレーション、応答型ツール群を横断してご紹介。気になるプロジェクトを開くと、メディア・クレジット・資料までまとまった詳細を確認できます。"
     }
   },
@@ -127,7 +148,7 @@
       "ja": "コンテンツ＆ライティング"
     },
     "lead": {
-      "en": "Essays, blog posts, and comedy pieces exploring technology, culture, and the absurdity of modern life. Open any piece to read the full entry with embedded media and references.",
+      "en": "Essays, blog posts, and some comedy(coming soon).",
       "ja": "テクノロジー、文化、そして現代の不条理を探求するエッセイ、ブログ、コメディ作品。どの作品を開いても、埋め込みメディアと参考文献付きで全文をお読みいただけます。"
     }
   },
@@ -144,25 +165,25 @@
       "sideFadeOpacity": "0"
     },
     "title": {
-      "en": "Sound Experiments",
+      "en": "Sounds",
       "ja": "サウンド実験室"
     },
     "lead": {
-      "en": "Loops, drone suites, and live performance sketches. Dive into each archive entry to access liner notes and embedded media players.",
+      "en": "Some frequencies I found",
       "ja": "ループ、ドローン、ライブスケッチを収めたサウンドアーカイブ。各エントリーにはライナーノーツと埋め込みプレイヤーを用意しました。"
     }
   },
   "art": {
-    "backgroundImage": "",
+    "backgroundImage": "https://irq8pcmcsnz9tzjh.public.blob.vercel-storage.com/m-iN0bK2-NF6s0FEFAyx2I2f3oTqeQZXLvMkRFh.png",
     "footerFadeSettings": {
       "bgPosition": "bottom",
-      "bgScale": "contain",
-      "topFadeHeight": "60",
+      "bgScale": "cover",
+      "topFadeHeight": "75",
       "topFadeOpacity": "1",
-      "bottomFadeHeight": "40",
-      "bottomFadeOpacity": "0.95",
-      "sideFadeWidth": "30",
-      "sideFadeOpacity": "0.8"
+      "bottomFadeHeight": "0",
+      "bottomFadeOpacity": "0",
+      "sideFadeWidth": "0",
+      "sideFadeOpacity": "0"
     },
     "title": {
       "en": "Dot Field Studies",
