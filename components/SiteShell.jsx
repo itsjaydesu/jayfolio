@@ -539,7 +539,6 @@ export default function SiteShell({ children, channelContent }) {
       top: `${mobileMenuPosition.top}px`,
       left: `${mobileMenuPosition.left}px`,
       width: `${mobileMenuPosition.width}px`,
-      "--mobile-nav-arrow-offset": `${mobileMenuPosition.arrowOffset}px`,
     };
   }, [isMobileMenuOpen, mobileMenuPosition]);
 
@@ -929,7 +928,8 @@ export default function SiteShell({ children, channelContent }) {
       availableWidth
     );
 
-    let left = rect.left;
+    const anchorCenter = rect.left + rect.width / 2;
+    let left = anchorCenter - width / 2;
     const maxLeft = window.innerWidth - viewportPadding - width;
     if (left < viewportPadding) {
       left = viewportPadding;
@@ -937,18 +937,12 @@ export default function SiteShell({ children, channelContent }) {
       left = Math.max(viewportPadding, maxLeft);
     }
 
-    const top = rect.bottom + 12;
-    const anchorCenter = rect.left + rect.width / 2;
-    const arrowOffset = Math.min(
-      width - 12,
-      Math.max(12, anchorCenter - left)
-    );
+    const top = rect.bottom + 10;
 
     setMobileMenuPosition({
       top,
       left,
       width,
-      arrowOffset,
     });
   }, []);
 
