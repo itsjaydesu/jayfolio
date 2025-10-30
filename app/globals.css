@@ -10376,9 +10376,13 @@ body[data-language-transitioning="true"] .language-transition-root {
 
   @media (max-width: 540px) {
     .site-shell__header-inner {
-      grid-template-columns: auto minmax(0, 1fr) auto;
-      grid-template-rows: auto;
+      grid-template-columns: auto auto;
+      grid-template-rows: auto auto;
+      grid-template-areas:
+        "brand icons"
+        "nav nav";
       gap: 0.75rem;
+      align-items: center;
     }
 
     .site-shell__nav {
@@ -10387,29 +10391,40 @@ body[data-language-transitioning="true"] .language-transition-root {
 
     .site-shell__nav-dropdown {
       display: block;
-      grid-column: 2;
-      grid-row: 1;
+      grid-area: nav;
       align-self: stretch;
-      justify-self: start;
+      justify-self: stretch;
+      width: 100%;
+      margin-top: 0.25rem;
     }
 
     .site-shell__nav-dropdown-button {
-      min-height: 32px;
-      padding-top: 0.4rem;
-      padding-bottom: 0.4rem;
-      font-size: 0.7rem;
+      width: 100%;
+      min-height: 44px;
+      padding-top: 0.55rem;
+      padding-bottom: 0.55rem;
+      font-size: 0.78rem;
+      letter-spacing: 0.14em;
+    }
+
+    .site-shell__nav-dropdown-button-text {
+      text-overflow: initial;
+      white-space: nowrap;
     }
 
     .site-shell__brand {
-      grid-column: 1;
-      grid-row: 1;
+      grid-area: brand;
     }
 
     .site-shell__icon-group {
-      grid-column: 3;
-      grid-row: 1;
+      grid-area: icons;
       justify-self: end;
       gap: 0.5rem;
+    }
+
+    .site-shell__nav-dropdown-option {
+      padding: 0.75rem 1.1rem;
+      font-size: 0.74rem;
     }
 
   }
