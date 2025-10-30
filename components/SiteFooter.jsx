@@ -247,30 +247,32 @@ export default function SiteFooter({ className = '', channelContent = {} }) {
             
             <form className="site-footer__form" onSubmit={handleSubmit} noValidate>
               <div className="site-footer__input-wrapper">
-                <p className="site-footer__description" id="email-description">
-                  Receive very occasional updates when Jay releases something?<br />
-                  Enter your email to get maybe one email a month, amoth.
-                </p>
                 <svg className="site-footer__input-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.5"/>
                   <path d="M3 7L12 13L21 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
                 <input
-                type="email"
-                name="email"
-                autoComplete="email"
-                value={email}
-                onChange={(event) => {
-                  setEmail(event.target.value);
-                  if (status.type !== 'idle') {
-                    setStatus({ type: 'idle', message: '' });
-                  }
-                }}
-                placeholder="your@email.com"
-                className="site-footer__input"
-                aria-label="Email address"
-                aria-describedby="email-description"
-              />
+                  type="email"
+                  name="email"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(event) => {
+                    setEmail(event.target.value);
+                    if (status.type !== 'idle') {
+                      setStatus({ type: 'idle', message: '' });
+                    }
+                  }}
+                  placeholder="your@email.com"
+                  className="site-footer__input"
+                  aria-label="Email address"
+                  aria-describedby="email-description"
+                />
+                <p id="email-description" className="sr-only">
+                  Receive very occasional updates when Jay releases something. Enter your email to get maybe one email a month.
+                </p>
+                <div className="site-footer__helper" aria-hidden="true">
+                  Receive very occasional updates when Jay releases something. Enter your email to get maybe one email a month.
+                </div>
               </div>
               {status.message && (
                 <p
