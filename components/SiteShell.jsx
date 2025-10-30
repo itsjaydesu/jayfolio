@@ -94,6 +94,7 @@ export default function SiteShell({ children, channelContent }) {
   const mobileMenuButtonRef = useRef(null);
   const mobileMenuListRef = useRef(null);
   const mobileMenuContainerRef = useRef(null);
+  const headerRef = useRef(null);
   const headerInnerRef = useRef(null);
   const brandRef = useRef(null);
   const navRef = useRef(null);
@@ -102,6 +103,7 @@ export default function SiteShell({ children, channelContent }) {
   const [mobileMenuFocusIndex, setMobileMenuFocusIndex] = useState(-1);
   const [mobileMenuPosition, setMobileMenuPosition] = useState(null);
   const [isNavCondensed, setIsNavCondensed] = useState(false);
+  const [headerOffset, setHeaderOffset] = useState(null);
 
   const warmSceneChunk = useCallback(() => {
     if (scenePreloadTriggeredRef.current) {
@@ -285,6 +287,28 @@ export default function SiteShell({ children, channelContent }) {
     [language]
   );
 
+  const updateHeaderOffset = useCallback(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const headerElement = headerRef.current;
+    if (!headerElement) {
+      setHeaderOffset(null);
+      return;
+    }
+
+    const { height } = headerElement.getBoundingClientRect();
+    const nextOffset = Math.ceil(height);
+
+    setHeaderOffset((previous) => {
+      if (previous === null) {
+        return nextOffset;
+      }
+      return Math.abs(previous - nextOffset) > 0.5 ? nextOffset : previous;
+    });
+  }, []);
+
   const updateNavCondensed = useCallback(() => {
     if (typeof window === 'undefined') {
       return;
@@ -293,6 +317,7 @@ export default function SiteShell({ children, channelContent }) {
     const headerElement = headerInnerRef.current;
     const navElement = navRef.current;
     if (!headerElement || !navElement) {
+      updateHeaderOffset();
       setIsNavCondensed(false);
       return;
     }
@@ -307,9 +332,33 @@ export default function SiteShell({ children, channelContent }) {
     const gapValue = parseFloat(computedStyle.columnGap || computedStyle.gap || '0');
     const gap = Number.isNaN(gapValue) ? 0 : gapValue;
 
-    const availableNavWidth = headerWidth - brandWidth - iconWidth - gap * 2;
+    let brandMarginLeft = 0;
+    let brandMarginRight = 0;
+    if (brandElement) {
+      const brandStyle = window.getComputedStyle(brandElement);
+      const parsedLeft = parseFloat(brandStyle.marginLeft || '0');
+      const parsedRight = parseFloat(brandStyle.marginRight || '0');
+      brandMarginLeft = Number.isNaN(parsedLeft) ? 0 : parsedLeft;
+      brandMarginRight = Number.isNaN(parsedRight) ? 0 : parsedRight;
+    }
+
+    let iconMarginLeft = 0;
+    let iconMarginRight = 0;
+    if (iconElement) {
+      const iconStyle = window.getComputedStyle(iconElement);
+      const parsedLeft = parseFloat(iconStyle.marginLeft || '0');
+      const parsedRight = parseFloat(iconStyle.marginRight || '0');
+      iconMarginLeft = Number.isNaN(parsedLeft) ? 0 : parsedLeft;
+      iconMarginRight = Number.isNaN(parsedRight) ? 0 : parsedRight;
+    }
+
+    const brandTotalWidth = brandWidth + Math.max(0, brandMarginLeft) + Math.max(0, brandMarginRight);
+    const iconTotalWidth = iconWidth + Math.max(0, iconMarginLeft) + Math.max(0, iconMarginRight);
+
+    const availableNavWidth = headerWidth - brandTotalWidth - iconTotalWidth - gap * 2;
 
     if (availableNavWidth <= 0) {
+      updateHeaderOffset();
       setIsNavCondensed(true);
       return;
     }
@@ -317,6 +366,7 @@ export default function SiteShell({ children, channelContent }) {
     const navContentWidth = navElement.scrollWidth || navElement.getBoundingClientRect().width;
 
     if (navContentWidth === 0 && menuItems.length) {
+      updateHeaderOffset();
       setIsNavCondensed(true);
       return;
     }
@@ -325,7 +375,8 @@ export default function SiteShell({ children, channelContent }) {
       const needsCondensed = navContentWidth > availableNavWidth + 1;
       return previous === needsCondensed ? previous : needsCondensed;
     });
-  }, [menuItems.length]);
+    updateHeaderOffset();
+  }, [menuItems.length, updateHeaderOffset]);
 
   const updateHeaderShade = useCallback((value) => {
     // Clamp incoming value and enforce a baseline shade on subpages
@@ -369,6 +420,7 @@ export default function SiteShell({ children, channelContent }) {
     scheduleUpdate();
 
     const observedElements = [
+      headerRef.current,
       headerInnerRef.current,
       navRef.current,
       brandRef.current,
@@ -394,6 +446,10 @@ export default function SiteShell({ children, channelContent }) {
       }
     };
   }, [updateNavCondensed]);
+
+  useEffect(() => {
+    updateHeaderOffset();
+  }, [updateHeaderOffset, isMobileMenuOpen, isNavCondensed, headerVisible]);
 
   useEffect(() => {
     if (!isNavCondensed && isMobileMenuOpen) {
@@ -523,6 +579,12 @@ export default function SiteShell({ children, channelContent }) {
         transform: "translateY(var(--nav-initial-offset, -18px))",
       };
   const containerClassName = "site-shell__container";
+  const containerStyle = useMemo(() => {
+    if (headerOffset == null) {
+      return undefined;
+    }
+    return { '--computed-header-offset': `${headerOffset}px` };
+  }, [headerOffset]);
   const dropdownDisplayLabel =
     activeSection && activeMenuIndex >= 0
       ? menuItems[activeMenuIndex]?.label ?? mobileMenuPlaceholder
@@ -539,7 +601,6 @@ export default function SiteShell({ children, channelContent }) {
       top: `${mobileMenuPosition.top}px`,
       left: `${mobileMenuPosition.left}px`,
       width: `${mobileMenuPosition.width}px`,
-      "--mobile-nav-arrow-offset": `${mobileMenuPosition.arrowOffset}px`,
     };
   }, [isMobileMenuOpen, mobileMenuPosition]);
 
@@ -938,17 +999,11 @@ export default function SiteShell({ children, channelContent }) {
     }
 
     const top = rect.bottom + 12;
-    const anchorCenter = rect.left + rect.width / 2;
-    const arrowOffset = Math.min(
-      width - 12,
-      Math.max(12, anchorCenter - left)
-    );
 
     setMobileMenuPosition({
       top,
       left,
       width,
-      arrowOffset,
     });
   }, []);
 
@@ -1903,117 +1958,118 @@ export default function SiteShell({ children, channelContent }) {
           className={`site-shell${isDetailView ? " site-shell--detail" : ""}`}
           {...shellDataProps}
         >
-          <div className={containerClassName}>
+          <div className={containerClassName} style={containerStyle}>
             {/* Browser-safe top fade: sits above the header to avoid hard edge in browsers that ignore masks with backdrop-filter. */}
             {headerVisible ? (
               <div className="site-shell__top-fade" aria-hidden="true" />
             ) : null}
             {!isDetailView && headerVisible ? (
-            <header
-              className={headerClassName}
-              data-nav-ready={navReady ? "true" : "false"}
-              data-returning-home={isReturningHome ? "true" : "false"}
-              data-scrolled={isHeaderShaded ? "true" : "false"}
-              data-mobile-menu-open={isMobileMenuOpen ? "true" : "false"}
-              data-nav-condensed={isNavCondensed ? "true" : "false"}
-              style={headerStyle}
-            >
-              <div className="site-shell__header-inner" ref={headerInnerRef}>
-                <Link
-                  href="/"
-                  className="site-shell__brand"
-                  aria-label={brand}
-                  onClick={handleNavigateHome}
-                  onMouseEnter={warmSceneChunk}
-                  onFocus={warmSceneChunk}
-                  ref={brandRef}
-                  style={
-                    navReady
-                      ? undefined
-                      : {
-                          opacity: "var(--nav-item-initial-opacity, 0)",
-                          transform:
-                            "translateY(var(--nav-item-initial-offset, 8px))",
-                        }
-                  }
-                >
-                  <BrandWordmark className="site-shell__brand-wordmark" />
-                </Link>
-                <div
-                  className="site-shell__nav-dropdown"
-                  data-has-selection={activeSection ? "true" : "false"}
-                  data-open={isMobileMenuOpen ? "true" : "false"}
-                >
-                  <span id="site-shell-mobile-nav-label" className="sr-only">
-                    {mobileMenuLabel}
-                  </span>
-                  <button
-                    type="button"
-                    className="site-shell__nav-dropdown-button"
-                    aria-haspopup="listbox"
-                    aria-labelledby="site-shell-mobile-nav-label site-shell-mobile-nav-button-text"
-                    aria-expanded={isMobileMenuOpen ? "true" : "false"}
-                    aria-controls={isMobileMenuOpen ? "site-shell-mobile-nav-list" : undefined}
-                    onClick={handleMobileMenuToggle}
-                    onKeyDown={handleMobileMenuKeyDown}
-                    disabled={!menuItems.length}
-                    ref={mobileMenuButtonRef}
+              <header
+                className={headerClassName}
+                data-nav-ready={navReady ? "true" : "false"}
+                data-returning-home={isReturningHome ? "true" : "false"}
+                data-scrolled={isHeaderShaded ? "true" : "false"}
+                data-mobile-menu-open={isMobileMenuOpen ? "true" : "false"}
+                data-nav-condensed={isNavCondensed ? "true" : "false"}
+                style={headerStyle}
+                ref={headerRef}
+              >
+                <div className="site-shell__header-inner" ref={headerInnerRef}>
+                  <Link
+                    href="/"
+                    className="site-shell__brand"
+                    aria-label={brand}
+                    onClick={handleNavigateHome}
+                    onMouseEnter={warmSceneChunk}
+                    onFocus={warmSceneChunk}
+                    ref={brandRef}
+                    style={
+                      navReady
+                        ? undefined
+                        : {
+                            opacity: "var(--nav-item-initial-opacity, 0)",
+                            transform:
+                              "translateY(var(--nav-item-initial-offset, 8px))",
+                          }
+                    }
                   >
-                    <span
-                      id="site-shell-mobile-nav-button-text"
-                      className="site-shell__nav-dropdown-button-text"
-                    >
-                      {dropdownDisplayLabel}
+                    <BrandWordmark className="site-shell__brand-wordmark" />
+                  </Link>
+                  <div
+                    className="site-shell__nav-dropdown"
+                    data-has-selection={activeSection ? "true" : "false"}
+                    data-open={isMobileMenuOpen ? "true" : "false"}
+                  >
+                    <span id="site-shell-mobile-nav-label" className="sr-only">
+                      {mobileMenuLabel}
                     </span>
-                  </button>
-                  {isMobileMenuOpen ? (
-                    <div
-                      className="site-shell__nav-dropdown-menu"
-                      ref={mobileMenuContainerRef}
-                      style={mobileMenuInlineStyle}
+                    <button
+                      type="button"
+                      className="site-shell__nav-dropdown-button"
+                      aria-haspopup="listbox"
+                      aria-labelledby="site-shell-mobile-nav-label site-shell-mobile-nav-button-text"
+                      aria-expanded={isMobileMenuOpen ? "true" : "false"}
+                      aria-controls={isMobileMenuOpen ? "site-shell-mobile-nav-list" : undefined}
+                      onClick={handleMobileMenuToggle}
+                      onKeyDown={handleMobileMenuKeyDown}
+                      disabled={!menuItems.length}
+                      ref={mobileMenuButtonRef}
                     >
-                      <ul
-                        id="site-shell-mobile-nav-list"
-                        role="listbox"
-                        aria-labelledby="site-shell-mobile-nav-label"
-                        aria-activedescendant={
-                          menuItems.length
-                            ? mobileMenuFocusIndex >= 0
-                              ? `site-shell-mobile-nav-option-${menuItems[mobileMenuFocusIndex].id}`
-                              : activeMenuIndex >= 0
-                                ? `site-shell-mobile-nav-option-${menuItems[activeMenuIndex].id}`
-                                : undefined
-                            : undefined
-                        }
-                        className="site-shell__nav-dropdown-list"
-                        ref={mobileMenuListRef}
-                        tabIndex={-1}
-                        onKeyDown={handleMobileMenuKeyDown}
+                      <span
+                        id="site-shell-mobile-nav-button-text"
+                        className="site-shell__nav-dropdown-button-text"
                       >
-                        {menuItems.map((item, index) => {
-                          const isActiveOption = item.id === activeSection;
-                          const isFocusedOption = index === mobileMenuFocusIndex;
-                          return (
-                            <li key={item.id} role="presentation">
-                              <button
-                                type="button"
-                                role="option"
-                                id={`site-shell-mobile-nav-option-${item.id}`}
-                                className={`site-shell__nav-dropdown-option${isActiveOption ? " is-active" : ""}${isFocusedOption ? " is-focused" : ""}`}
-                                aria-selected={isActiveOption}
-                                data-focused={isFocusedOption ? "true" : "false"}
-                                onClick={() => handleMobileMenuSelect(item)}
-                                onMouseEnter={() => setMobileMenuFocusIndex(index)}
-                                onFocus={() => setMobileMenuFocusIndex(index)}
-                              >
-                                {item.label}
-                              </button>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    </div>
-                  ) : null}
+                        {dropdownDisplayLabel}
+                      </span>
+                    </button>
+                    {isMobileMenuOpen ? (
+                      <div
+                        className="site-shell__nav-dropdown-menu"
+                        ref={mobileMenuContainerRef}
+                        style={mobileMenuInlineStyle}
+                      >
+                        <ul
+                          id="site-shell-mobile-nav-list"
+                          role="listbox"
+                          aria-labelledby="site-shell-mobile-nav-label"
+                          aria-activedescendant={
+                            menuItems.length
+                              ? mobileMenuFocusIndex >= 0
+                                ? `site-shell-mobile-nav-option-${menuItems[mobileMenuFocusIndex].id}`
+                                : activeMenuIndex >= 0
+                                  ? `site-shell-mobile-nav-option-${menuItems[activeMenuIndex].id}`
+                                  : undefined
+                              : undefined
+                          }
+                          className="site-shell__nav-dropdown-list"
+                          ref={mobileMenuListRef}
+                          tabIndex={-1}
+                          onKeyDown={handleMobileMenuKeyDown}
+                        >
+                          {menuItems.map((item, index) => {
+                            const isActiveOption = item.id === activeSection;
+                            const isFocusedOption = index === mobileMenuFocusIndex;
+                            return (
+                              <li key={item.id} role="presentation">
+                                <button
+                                  type="button"
+                                  role="option"
+                                  id={`site-shell-mobile-nav-option-${item.id}`}
+                                  className={`site-shell__nav-dropdown-option${isActiveOption ? " is-active" : ""}${isFocusedOption ? " is-focused" : ""}`}
+                                  aria-selected={isActiveOption}
+                                  data-focused={isFocusedOption ? "true" : "false"}
+                                  onClick={() => handleMobileMenuSelect(item)}
+                                  onMouseEnter={() => setMobileMenuFocusIndex(index)}
+                                  onFocus={() => setMobileMenuFocusIndex(index)}
+                                >
+                                  {item.label}
+                                </button>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </div>
+                    ) : null}
                 </div>
                 <nav
                   className="site-shell__nav"
