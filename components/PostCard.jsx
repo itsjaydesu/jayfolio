@@ -132,10 +132,10 @@ export default function PostCard({
 
         {/* Visual/Figure Section */}
         <figure className={figureClassName} aria-hidden="true">
-          {entry.coverImage?.url && type === 'projects' ? (
+          {entry.coverImage?.url ? (
             <Image
               src={entry.coverImage.url}
-            alt={coverAlt || `${localizedTitle} cover image`}
+              alt={coverAlt || `${localizedTitle} cover image`}
               fill
               sizes="(max-width: 900px) 100vw, 420px"
               className="project-entry__image"
