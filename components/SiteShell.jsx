@@ -2037,9 +2037,17 @@ export default function SiteShell({ children, channelContent }) {
                   >
                     <span
                       id="site-shell-mobile-nav-button-text"
-                      className="site-shell__nav-dropdown-button-text"
+                      className="sr-only site-shell__nav-dropdown-button-text"
                     >
                       {dropdownDisplayLabel}
+                    </span>
+                    <span
+                      className="site-shell__nav-dropdown-button-icon"
+                      aria-hidden="true"
+                    >
+                      <span />
+                      <span />
+                      <span />
                     </span>
                   </button>
                   {isMobileMenuOpen ? (
