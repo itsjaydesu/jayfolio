@@ -6,6 +6,13 @@ import { useEffect, useRef, useState, useMemo } from 'react';
 import { usePathname } from 'next/navigation';
 import { InstagramIcon, XLogoIcon } from './icons';
 
+// Footer refactor plan:
+// 1. Preserve the dynamic image + fade configuration logic already powering the footer.
+// 2. Introduce an absolutely positioned foreground layer so the interactive controls stay
+//    anchored at the bottom edge without drifting into the hero illustration.
+// 3. Shield that layer with a blurred gradient (CSS handles the heavy lifting) so legibility is
+//    maintained even when the admin supplies bright artwork, while leaving a fallback for older browsers.
+
 function validateEmail(value) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 }
@@ -223,70 +230,73 @@ export default function SiteFooter({ className = '', channelContent = {} }) {
       <div className="site-footer__side-fade site-footer__side-fade--left" />
       <div className="site-footer__side-fade site-footer__side-fade--right" />
 
-      <div className="site-footer__container">
-        <div className="site-footer__content">
-          <div className="site-footer__links">
-            <nav className="site-footer__social" aria-label="Social links">
-              <ul className="site-footer__social-list">
-                {socialLinks.map(({ id, href, label, icon: Icon }) => (
-                  <li key={id} className="site-footer__social-item">
-                    <a
-                      href={href}
-                      className="site-footer__social-link"
-                      target="_blank"
-                      rel="noreferrer noopener"
-                      aria-label={label}
-                      title={label}
-                    >
-                      <Icon className="site-footer__social-icon" />
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-            
-            <form className="site-footer__form" onSubmit={handleSubmit} noValidate>
-              <div className="site-footer__input-wrapper">
-                <svg className="site-footer__input-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.5"/>
-                  <path d="M3 7L12 13L21 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                <input
-                  type="email"
-                  name="email"
-                  autoComplete="email"
-                  value={email}
-                  onChange={(event) => {
-                    setEmail(event.target.value);
-                    if (status.type !== 'idle') {
-                      setStatus({ type: 'idle', message: '' });
-                    }
-                  }}
-                  placeholder="your@email.com"
-                  className="site-footer__input"
-                  aria-label="Email address"
-                  aria-describedby="email-description"
-                />
-                <p id="email-description" className="sr-only">
-                  Receive very occasional updates when Jay releases something. Enter your email to get maybe one email a month.
-                </p>
-                <div className="site-footer__helper" aria-hidden="true">
-                  Receive very occasional updates when Jay releases something. Enter your email to get maybe one email a month.
+      {/* Foreground layer keeps interactive controls anchored above the artwork */}
+      <div className="site-footer__foreground">
+        <div className="site-footer__container">
+          <div className="site-footer__content">
+            <div className="site-footer__links">
+              <nav className="site-footer__social" aria-label="Social links">
+                <ul className="site-footer__social-list">
+                  {socialLinks.map(({ id, href, label, icon: Icon }) => (
+                    <li key={id} className="site-footer__social-item">
+                      <a
+                        href={href}
+                        className="site-footer__social-link"
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        aria-label={label}
+                        title={label}
+                      >
+                        <Icon className="site-footer__social-icon" />
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+
+              <form className="site-footer__form" onSubmit={handleSubmit} noValidate>
+                <div className="site-footer__input-wrapper">
+                  <svg className="site-footer__input-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.5"/>
+                    <path d="M3 7L12 13L21 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  <input
+                    type="email"
+                    name="email"
+                    autoComplete="email"
+                    value={email}
+                    onChange={(event) => {
+                      setEmail(event.target.value);
+                      if (status.type !== 'idle') {
+                        setStatus({ type: 'idle', message: '' });
+                      }
+                    }}
+                    placeholder="your@email.com"
+                    className="site-footer__input"
+                    aria-label="Email address"
+                    aria-describedby="email-description"
+                  />
+                  <p id="email-description" className="sr-only">
+                    Receive very occasional updates when Jay releases something. Enter your email to get maybe one email a month.
+                  </p>
+                  <div className="site-footer__helper" aria-hidden="true">
+                    Receive very occasional updates when Jay releases something. Enter your email to get maybe one email a month.
+                  </div>
                 </div>
-              </div>
-              {status.message && (
-                <p
-                  className={`site-footer__status${status.type === 'success' ? ' site-footer__status--success' : ''}${status.type === 'error' ? ' site-footer__status--error' : ''}`}
-                  aria-live="polite"
-                >
-                  {status.message}
-                </p>
-              )}
-            </form>
-            
-            <Link href="/work-with-me" className="site-footer__cta">
-              <span className="site-footer__cta-label">WORK WITH ME</span>
-            </Link>
+                {status.message && (
+                  <p
+                    className={`site-footer__status${status.type === 'success' ? ' site-footer__status--success' : ''}${status.type === 'error' ? ' site-footer__status--error' : ''}`}
+                    aria-live="polite"
+                  >
+                    {status.message}
+                  </p>
+                )}
+              </form>
+
+              <Link href="/work-with-me" className="site-footer__cta">
+                <span className="site-footer__cta-label">WORK WITH ME</span>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
