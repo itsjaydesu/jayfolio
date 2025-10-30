@@ -93,8 +93,10 @@ export default function SiteShell({ children, channelContent }) {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(initialReducedMotionPreference);
   const mobileMenuButtonRef = useRef(null);
   const mobileMenuListRef = useRef(null);
+  const mobileMenuContainerRef = useRef(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [mobileMenuFocusIndex, setMobileMenuFocusIndex] = useState(-1);
+  const [mobileMenuPosition, setMobileMenuPosition] = useState(null);
 
   const warmSceneChunk = useCallback(() => {
     if (scenePreloadTriggeredRef.current) {
@@ -422,6 +424,21 @@ export default function SiteShell({ children, channelContent }) {
     activeSection && activeMenuIndex >= 0
       ? menuItems[activeMenuIndex]?.label ?? mobileMenuPlaceholder
       : mobileMenuPlaceholder;
+
+  const mobileMenuInlineStyle = useMemo(() => {
+    if (!isMobileMenuOpen) {
+      return undefined;
+    }
+    if (!mobileMenuPosition) {
+      return { visibility: "hidden" };
+    }
+    return {
+      top: `${mobileMenuPosition.top}px`,
+      left: `${mobileMenuPosition.left}px`,
+      width: `${mobileMenuPosition.width}px`,
+      "--mobile-nav-arrow-offset": `${mobileMenuPosition.arrowOffset}px`,
+    };
+  }, [isMobileMenuOpen, mobileMenuPosition]);
 
   useEffect(() => {
     if (!isListingChannel) {
@@ -787,6 +804,51 @@ export default function SiteShell({ children, channelContent }) {
     setMobileMenuFocusIndex(activeMenuIndex >= 0 ? activeMenuIndex : 0);
   }, [menuItems, activeMenuIndex]);
 
+  const updateMobileMenuPosition = useCallback(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const buttonNode = mobileMenuButtonRef.current;
+    if (!buttonNode) {
+      return;
+    }
+
+    const rect = buttonNode.getBoundingClientRect();
+    const viewportPadding = 16;
+    const minWidth = 200; // match design width while allowing clamping on narrow screens
+    const availableWidth = Math.max(
+      window.innerWidth - viewportPadding * 2,
+      minWidth
+    );
+    const width = Math.min(
+      Math.max(rect.width, minWidth),
+      availableWidth
+    );
+
+    let left = rect.left;
+    const maxLeft = window.innerWidth - viewportPadding - width;
+    if (left < viewportPadding) {
+      left = viewportPadding;
+    } else if (left > maxLeft) {
+      left = Math.max(viewportPadding, maxLeft);
+    }
+
+    const top = rect.bottom + 12;
+    const anchorCenter = rect.left + rect.width / 2;
+    const arrowOffset = Math.min(
+      width - 12,
+      Math.max(12, anchorCenter - left)
+    );
+
+    setMobileMenuPosition({
+      top,
+      left,
+      width,
+      arrowOffset,
+    });
+  }, []);
+
   const handleMobileMenuToggle = useCallback(() => {
     if (isMobileMenuOpen) {
       closeMobileMenu();
@@ -899,7 +961,7 @@ export default function SiteShell({ children, channelContent }) {
     const handlePointerDown = (event) => {
       if (
         mobileMenuButtonRef.current?.contains(event.target) ||
-        mobileMenuListRef.current?.contains(event.target)
+        mobileMenuContainerRef.current?.contains(event.target)
       ) {
         return;
       }
@@ -920,6 +982,27 @@ export default function SiteShell({ children, channelContent }) {
       document.removeEventListener("keydown", handleGlobalKeyDown);
     };
   }, [closeMobileMenu, isMobileMenuOpen]);
+
+  useEffect(() => {
+    if (!isMobileMenuOpen) {
+      setMobileMenuPosition(null);
+      return undefined;
+    }
+
+    updateMobileMenuPosition();
+
+    const handleResize = () => {
+      updateMobileMenuPosition();
+    };
+
+    window.addEventListener("resize", handleResize);
+    window.addEventListener("scroll", handleResize, true);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("scroll", handleResize, true);
+    };
+  }, [isMobileMenuOpen, updateMobileMenuPosition]);
 
   useEffect(() => {
     if (!isMobileMenuOpen) {
@@ -1728,6 +1811,7 @@ export default function SiteShell({ children, channelContent }) {
               data-nav-ready={navReady ? "true" : "false"}
               data-returning-home={isReturningHome ? "true" : "false"}
               data-scrolled={isHeaderShaded ? "true" : "false"}
+              data-mobile-menu-open={isMobileMenuOpen ? "true" : "false"}
               style={headerStyle}
             >
               <div className="site-shell__header-inner">
@@ -1778,7 +1862,11 @@ export default function SiteShell({ children, channelContent }) {
                     </span>
                   </button>
                   {isMobileMenuOpen ? (
-                    <div className="site-shell__nav-dropdown-menu">
+                    <div
+                      className="site-shell__nav-dropdown-menu"
+                      ref={mobileMenuContainerRef}
+                      style={mobileMenuInlineStyle}
+                    >
                       <ul
                         id="site-shell-mobile-nav-list"
                         role="listbox"
