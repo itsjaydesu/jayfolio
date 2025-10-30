@@ -5330,11 +5330,20 @@ a {
   }
 
   .menu-overlay {
-    --retro-menu-mobile-pad: clamp(1.1rem, 8vw, 2rem);
-    padding: calc(env(safe-area-inset-top, 0px) + clamp(1.4rem, 8vw, 2.2rem))
-      var(--retro-menu-mobile-pad)
-      calc(env(safe-area-inset-bottom, 0px) + clamp(1.8rem, 10vw, 2.6rem));
+    --retro-menu-mobile-base-pad: clamp(1.2rem, 7.5vw, 2.2rem);
+    --retro-menu-mobile-inline-pad: max(
+      var(--retro-menu-mobile-base-pad),
+      env(safe-area-inset-left, 0px),
+      env(safe-area-inset-right, 0px)
+    );
+    padding-top: calc(env(safe-area-inset-top, 0px) + clamp(1.4rem, 8vw, 2.2rem));
+    padding-bottom: calc(
+      env(safe-area-inset-bottom, 0px) + clamp(1.8rem, 10vw, 2.6rem)
+    );
+    padding-left: var(--retro-menu-mobile-inline-pad);
+    padding-right: var(--retro-menu-mobile-inline-pad);
     align-content: center;
+    justify-items: center;
   }
 
   .retro-menu--centerpiece {
@@ -5342,9 +5351,9 @@ a {
     top: auto;
     left: auto;
     transform: none;
-    margin: 0;
-    width: min(420px, calc(100vw - 2 * var(--retro-menu-mobile-pad, 1.5rem)));
-    max-width: 100%;
+    margin: 0 auto;
+    width: min(420px, 100%);
+    max-width: min(420px, 100%);
   }
 
   .menu-overlay .retro-menu--centerpiece {
