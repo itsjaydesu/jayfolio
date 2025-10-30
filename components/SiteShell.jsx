@@ -95,13 +95,17 @@ export default function SiteShell({ children, channelContent }) {
   const mobileMenuListRef = useRef(null);
   const mobileMenuContainerRef = useRef(null);
   const headerInnerRef = useRef(null);
+  const headerRef = useRef(null);
   const brandRef = useRef(null);
   const navRef = useRef(null);
+  const navMeasureRef = useRef(null);
   const iconGroupRef = useRef(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [mobileMenuFocusIndex, setMobileMenuFocusIndex] = useState(-1);
   const [mobileMenuPosition, setMobileMenuPosition] = useState(null);
   const [isNavCondensed, setIsNavCondensed] = useState(false);
+  const baseHeaderOffsetRef = useRef(null);
+  const [dynamicHeaderOffset, setDynamicHeaderOffset] = useState(null);
 
   const warmSceneChunk = useCallback(() => {
     if (scenePreloadTriggeredRef.current) {
@@ -292,6 +296,7 @@ export default function SiteShell({ children, channelContent }) {
 
     const headerElement = headerInnerRef.current;
     const navElement = navRef.current;
+    const measureElement = navMeasureRef.current;
     if (!headerElement || !navElement) {
       setIsNavCondensed(false);
       return;
@@ -299,33 +304,97 @@ export default function SiteShell({ children, channelContent }) {
 
     const brandElement = brandRef.current;
     const iconElement = iconGroupRef.current;
+    const viewportWidth = window.innerWidth || 0;
+    if (viewportWidth && viewportWidth <= 560) {
+      setIsNavCondensed(true);
+      return;
+    }
+
+    const measuredNavWidth = (() => {
+      if (measureElement?.scrollWidth) {
+        return measureElement.scrollWidth;
+      }
+      if (navElement.scrollWidth) {
+        return navElement.scrollWidth;
+      }
+      const navRect = navElement.getBoundingClientRect();
+      return navRect.width;
+    })();
+
+    if (!measuredNavWidth) {
+      return;
+    }
 
     const headerWidth = headerElement.clientWidth;
-    const brandWidth = brandElement?.offsetWidth ?? 0;
-    const iconWidth = iconElement?.offsetWidth ?? 0;
+    const brandWidth = brandElement?.getBoundingClientRect().width ?? 0;
+    const iconWidth = iconElement?.getBoundingClientRect().width ?? 0;
     const computedStyle = window.getComputedStyle(headerElement);
     const gapValue = parseFloat(computedStyle.columnGap || computedStyle.gap || '0');
-    const gap = Number.isNaN(gapValue) ? 0 : gapValue;
+    const totalGapAllowance = Number.isNaN(gapValue) ? 0 : gapValue * 2;
 
-    const availableNavWidth = headerWidth - brandWidth - iconWidth - gap * 2;
+    let availableNavWidth = headerWidth - brandWidth - iconWidth - totalGapAllowance;
+    const liveNavWidth = navElement.clientWidth;
+    if (liveNavWidth > 0) {
+      availableNavWidth = Math.max(availableNavWidth, liveNavWidth);
+    }
 
     if (availableNavWidth <= 0) {
       setIsNavCondensed(true);
       return;
     }
 
-    const navContentWidth = navElement.scrollWidth || navElement.getBoundingClientRect().width;
+    const needsCondensed = measuredNavWidth - availableNavWidth > 6;
 
-    if (navContentWidth === 0 && menuItems.length) {
-      setIsNavCondensed(true);
-      return;
+    setIsNavCondensed((previous) =>
+      previous === needsCondensed ? previous : needsCondensed
+    );
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
     }
 
-    setIsNavCondensed((previous) => {
-      const needsCondensed = navContentWidth > availableNavWidth + 1;
-      return previous === needsCondensed ? previous : needsCondensed;
-    });
-  }, [menuItems.length]);
+    if (baseHeaderOffsetRef.current === null) {
+      const rootStyle = window.getComputedStyle(document.documentElement);
+      const fallback = parseFloat(
+        rootStyle.getPropertyValue('--site-shell-header-offset') || '0'
+      );
+      baseHeaderOffsetRef.current = Number.isNaN(fallback) ? 0 : fallback;
+    }
+
+    const headerElement = headerRef.current;
+    if (!headerElement) {
+      setDynamicHeaderOffset(null);
+      return undefined;
+    }
+
+    const updateOffset = () => {
+      const { height } = headerElement.getBoundingClientRect();
+      const baseline = baseHeaderOffsetRef.current ?? 0;
+      const computed = Math.max(height + 16, baseline);
+      setDynamicHeaderOffset((previous) =>
+        Math.abs((previous ?? 0) - computed) > 0.5 ? computed : previous
+      );
+    };
+
+    updateOffset();
+
+    let resizeObserver = null;
+    if (typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver(() => updateOffset());
+      resizeObserver.observe(headerElement);
+    }
+
+    window.addEventListener('resize', updateOffset);
+
+    return () => {
+      window.removeEventListener('resize', updateOffset);
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      }
+    };
+  }, [headerVisible, menuItems, isNavCondensed, isMobileMenuOpen]);
 
   const updateHeaderShade = useCallback((value) => {
     // Clamp incoming value and enforce a baseline shade on subpages
@@ -373,6 +442,7 @@ export default function SiteShell({ children, channelContent }) {
       navRef.current,
       brandRef.current,
       iconGroupRef.current,
+      navMeasureRef.current,
     ].filter(Boolean);
 
     let resizeObserver = null;
@@ -382,12 +452,14 @@ export default function SiteShell({ children, channelContent }) {
     }
 
     window.addEventListener('resize', scheduleUpdate);
+    window.addEventListener('load', scheduleUpdate);
 
     return () => {
       if (animationFrameId && typeof window !== 'undefined') {
         window.cancelAnimationFrame(animationFrameId);
       }
       window.removeEventListener('resize', scheduleUpdate);
+      window.removeEventListener('load', scheduleUpdate);
       if (resizeObserver) {
         observedElements.forEach((element) => resizeObserver.unobserve(element));
         resizeObserver.disconnect();
@@ -539,7 +611,6 @@ export default function SiteShell({ children, channelContent }) {
       top: `${mobileMenuPosition.top}px`,
       left: `${mobileMenuPosition.left}px`,
       width: `${mobileMenuPosition.width}px`,
-      "--mobile-nav-arrow-offset": `${mobileMenuPosition.arrowOffset}px`,
     };
   }, [isMobileMenuOpen, mobileMenuPosition]);
 
@@ -938,17 +1009,11 @@ export default function SiteShell({ children, channelContent }) {
     }
 
     const top = rect.bottom + 12;
-    const anchorCenter = rect.left + rect.width / 2;
-    const arrowOffset = Math.min(
-      width - 12,
-      Math.max(12, anchorCenter - left)
-    );
 
     setMobileMenuPosition({
       top,
       left,
       width,
-      arrowOffset,
     });
   }, []);
 
@@ -1903,7 +1968,14 @@ export default function SiteShell({ children, channelContent }) {
           className={`site-shell${isDetailView ? " site-shell--detail" : ""}`}
           {...shellDataProps}
         >
-          <div className={containerClassName}>
+          <div
+            className={containerClassName}
+            style={
+              dynamicHeaderOffset
+                ? { '--dynamic-header-offset': `${dynamicHeaderOffset}px` }
+                : undefined
+            }
+          >
             {/* Browser-safe top fade: sits above the header to avoid hard edge in browsers that ignore masks with backdrop-filter. */}
             {headerVisible ? (
               <div className="site-shell__top-fade" aria-hidden="true" />
@@ -1917,6 +1989,7 @@ export default function SiteShell({ children, channelContent }) {
               data-mobile-menu-open={isMobileMenuOpen ? "true" : "false"}
               data-nav-condensed={isNavCondensed ? "true" : "false"}
               style={headerStyle}
+              ref={headerRef}
             >
               <div className="site-shell__header-inner" ref={headerInnerRef}>
                 <Link
@@ -2054,6 +2127,17 @@ export default function SiteShell({ children, channelContent }) {
                     );
                   })}
                 </nav>
+                <div
+                  className="site-shell__nav-measure"
+                  aria-hidden="true"
+                  ref={navMeasureRef}
+                >
+                  {menuItems.map((item) => (
+                    <span key={`measure-${item.id}`} className="site-shell__nav-measure-item">
+                      {item.label}
+                    </span>
+                  ))}
+                </div>
                 <div className="site-shell__icon-group" ref={iconGroupRef}>
                   <button
                     type="button"
