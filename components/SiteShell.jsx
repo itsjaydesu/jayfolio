@@ -29,6 +29,7 @@ const DOTFIELD_EFFECT_SEQUENCE = [
   'harmonicPendulum',
   'starfield'
 ];
+
 // Removed: Header observer no longer needed without shaded background
 
 // Dynamically import SceneCanvas to reduce initial bundle size
@@ -90,6 +91,10 @@ export default function SiteShell({ children, channelContent }) {
   const { isAdmin: clientAdmin } = useAdminStatus();
   const isAdminActive = clientAdmin;
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(initialReducedMotionPreference);
+  const mobileMenuButtonRef = useRef(null);
+  const mobileMenuListRef = useRef(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [mobileMenuFocusIndex, setMobileMenuFocusIndex] = useState(-1);
 
   const warmSceneChunk = useCallback(() => {
     if (scenePreloadTriggeredRef.current) {
@@ -373,6 +378,12 @@ export default function SiteShell({ children, channelContent }) {
   );
   const activeSection = activeItem?.id ?? null;
   const isDetailView = pathSegments.length > 1 && Boolean(activeItem);
+  const mobileMenuLabel = t('nav.mobile-menu-label', language);
+  const mobileMenuPlaceholder = t('nav.mobile-menu-placeholder', language);
+  const activeMenuIndex = useMemo(
+    () => menuItems.findIndex((item) => item.id === activeSection),
+    [menuItems, activeSection]
+  );
 
   const activeStatus = useMemo(() => {
     if (activeItem) {
@@ -407,6 +418,10 @@ export default function SiteShell({ children, channelContent }) {
         transform: "translateY(var(--nav-initial-offset, -18px))",
       };
   const containerClassName = "site-shell__container";
+  const dropdownDisplayLabel =
+    activeSection && activeMenuIndex >= 0
+      ? menuItems[activeMenuIndex]?.label ?? mobileMenuPlaceholder
+      : mobileMenuPlaceholder;
 
   useEffect(() => {
     if (!isListingChannel) {
@@ -752,6 +767,204 @@ export default function SiteShell({ children, channelContent }) {
     const timer = setTimeout(logAlignment, 500);
     return () => clearTimeout(timer);
   }, [pathname]);
+
+  const closeMobileMenu = useCallback(
+    (returnFocus = false) => {
+      setIsMobileMenuOpen(false);
+      setMobileMenuFocusIndex(-1);
+      if (returnFocus && mobileMenuButtonRef.current) {
+        mobileMenuButtonRef.current.focus();
+      }
+    },
+    []
+  );
+
+  const openMobileMenu = useCallback(() => {
+    if (!menuItems.length) {
+      return;
+    }
+    setIsMobileMenuOpen(true);
+    setMobileMenuFocusIndex(activeMenuIndex >= 0 ? activeMenuIndex : 0);
+  }, [menuItems, activeMenuIndex]);
+
+  const handleMobileMenuToggle = useCallback(() => {
+    if (isMobileMenuOpen) {
+      closeMobileMenu();
+      return;
+    }
+    openMobileMenu();
+  }, [isMobileMenuOpen, closeMobileMenu, openMobileMenu]);
+
+  const handleMobileMenuSelect = useCallback(
+    (item) => {
+      if (!item) {
+        return;
+      }
+      closeMobileMenu(true);
+
+      if (pathname === item.href) {
+        return;
+      }
+
+      try {
+        router.push(item.href);
+      } catch (error) {
+        if (process.env.NODE_ENV !== "production") {
+          console.error("[SiteShell] Failed to navigate via mobile menu", error);
+        }
+      }
+    },
+    [closeMobileMenu, pathname, router]
+  );
+
+  const handleMobileMenuKeyDown = useCallback(
+    (event) => {
+      if (!isMobileMenuOpen) {
+        if ((event.key === "ArrowDown" || event.key === "ArrowUp") && menuItems.length) {
+          event.preventDefault();
+          openMobileMenu();
+        }
+        return;
+      }
+
+      if (!menuItems.length) {
+        return;
+      }
+
+      const lastIndex = menuItems.length - 1;
+
+      switch (event.key) {
+        case "ArrowDown": {
+          event.preventDefault();
+          setMobileMenuFocusIndex((prev) => {
+            const nextIndex = prev < 0 ? 0 : Math.min(prev + 1, lastIndex);
+            return nextIndex;
+          });
+          break;
+        }
+        case "ArrowUp": {
+          event.preventDefault();
+          setMobileMenuFocusIndex((prev) => {
+            const nextIndex = prev < 0 ? lastIndex : Math.max(prev - 1, 0);
+            return nextIndex;
+          });
+          break;
+        }
+        case "Home": {
+          event.preventDefault();
+          setMobileMenuFocusIndex(0);
+          break;
+        }
+        case "End": {
+          event.preventDefault();
+          setMobileMenuFocusIndex(lastIndex);
+          break;
+        }
+        case "Enter":
+        case " ": {
+          event.preventDefault();
+          const item = menuItems[mobileMenuFocusIndex >= 0 ? mobileMenuFocusIndex : activeMenuIndex >= 0 ? activeMenuIndex : 0];
+          handleMobileMenuSelect(item);
+          break;
+        }
+        case "Escape": {
+          event.preventDefault();
+          closeMobileMenu(true);
+          break;
+        }
+        case "Tab": {
+          closeMobileMenu();
+          break;
+        }
+        default:
+          break;
+      }
+    },
+    [
+      activeMenuIndex,
+      closeMobileMenu,
+      handleMobileMenuSelect,
+      isMobileMenuOpen,
+      menuItems,
+      mobileMenuFocusIndex,
+      openMobileMenu,
+    ]
+  );
+
+  useEffect(() => {
+    if (!isMobileMenuOpen) {
+      return undefined;
+    }
+
+    const handlePointerDown = (event) => {
+      if (
+        mobileMenuButtonRef.current?.contains(event.target) ||
+        mobileMenuListRef.current?.contains(event.target)
+      ) {
+        return;
+      }
+      closeMobileMenu();
+    };
+
+    const handleGlobalKeyDown = (event) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeMobileMenu(true);
+      }
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleGlobalKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleGlobalKeyDown);
+    };
+  }, [closeMobileMenu, isMobileMenuOpen]);
+
+  useEffect(() => {
+    if (!isMobileMenuOpen) {
+      return undefined;
+    }
+
+    const listElement = mobileMenuListRef.current;
+    if (listElement) {
+      listElement.focus();
+    }
+
+    return undefined;
+  }, [isMobileMenuOpen]);
+
+  useEffect(() => {
+    if (!isMobileMenuOpen) {
+      return;
+    }
+    if (!menuItems.length) {
+      setMobileMenuFocusIndex(-1);
+      return;
+    }
+    setMobileMenuFocusIndex(activeMenuIndex >= 0 ? activeMenuIndex : 0);
+  }, [activeMenuIndex, isMobileMenuOpen, menuItems.length]);
+
+  useEffect(() => {
+    if (!isMobileMenuOpen) {
+      return;
+    }
+    if (mobileMenuFocusIndex < 0 || mobileMenuFocusIndex >= menuItems.length) {
+      return;
+    }
+    const optionId = `site-shell-mobile-nav-option-${menuItems[mobileMenuFocusIndex].id}`;
+    const listNode = mobileMenuListRef.current;
+    const optionNode = optionId && listNode?.querySelector
+      ? listNode.querySelector(`#${optionId}`)
+      : null;
+    if (optionNode && optionNode.scrollIntoView) {
+      optionNode.scrollIntoView({ block: "nearest" });
+    }
+  }, [isMobileMenuOpen, menuItems, mobileMenuFocusIndex]);
+
+  useEffect(() => {
+    closeMobileMenu();
+  }, [closeMobileMenu, pathname]);
 
   // Enhanced scroll detection for header background fade effect
   // Uses requestAnimationFrame for better performance and multiple scroll sources
@@ -1537,6 +1750,78 @@ export default function SiteShell({ children, channelContent }) {
                 >
                   <BrandWordmark className="site-shell__brand-wordmark" />
                 </Link>
+                <div
+                  className="site-shell__nav-dropdown"
+                  data-has-selection={activeSection ? "true" : "false"}
+                  data-open={isMobileMenuOpen ? "true" : "false"}
+                >
+                  <span id="site-shell-mobile-nav-label" className="sr-only">
+                    {mobileMenuLabel}
+                  </span>
+                  <button
+                    type="button"
+                    className="site-shell__nav-dropdown-button"
+                    aria-haspopup="listbox"
+                    aria-labelledby="site-shell-mobile-nav-label site-shell-mobile-nav-button-text"
+                    aria-expanded={isMobileMenuOpen ? "true" : "false"}
+                    aria-controls={isMobileMenuOpen ? "site-shell-mobile-nav-list" : undefined}
+                    onClick={handleMobileMenuToggle}
+                    onKeyDown={handleMobileMenuKeyDown}
+                    disabled={!menuItems.length}
+                    ref={mobileMenuButtonRef}
+                  >
+                    <span
+                      id="site-shell-mobile-nav-button-text"
+                      className="site-shell__nav-dropdown-button-text"
+                    >
+                      {dropdownDisplayLabel}
+                    </span>
+                  </button>
+                  {isMobileMenuOpen ? (
+                    <div className="site-shell__nav-dropdown-menu">
+                      <ul
+                        id="site-shell-mobile-nav-list"
+                        role="listbox"
+                        aria-labelledby="site-shell-mobile-nav-label"
+                        aria-activedescendant={
+                          menuItems.length
+                            ? mobileMenuFocusIndex >= 0
+                              ? `site-shell-mobile-nav-option-${menuItems[mobileMenuFocusIndex].id}`
+                              : activeMenuIndex >= 0
+                                ? `site-shell-mobile-nav-option-${menuItems[activeMenuIndex].id}`
+                                : undefined
+                            : undefined
+                        }
+                        className="site-shell__nav-dropdown-list"
+                        ref={mobileMenuListRef}
+                        tabIndex={-1}
+                        onKeyDown={handleMobileMenuKeyDown}
+                      >
+                        {menuItems.map((item, index) => {
+                          const isActiveOption = item.id === activeSection;
+                          const isFocusedOption = index === mobileMenuFocusIndex;
+                          return (
+                            <li key={item.id} role="presentation">
+                              <button
+                                type="button"
+                                role="option"
+                                id={`site-shell-mobile-nav-option-${item.id}`}
+                                className={`site-shell__nav-dropdown-option${isActiveOption ? " is-active" : ""}${isFocusedOption ? " is-focused" : ""}`}
+                                aria-selected={isActiveOption}
+                                data-focused={isFocusedOption ? "true" : "false"}
+                                onClick={() => handleMobileMenuSelect(item)}
+                                onMouseEnter={() => setMobileMenuFocusIndex(index)}
+                                onFocus={() => setMobileMenuFocusIndex(index)}
+                              >
+                                {item.label}
+                              </button>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+                  ) : null}
+                </div>
                 <nav className="site-shell__nav" aria-label="Primary navigation">
                   {menuItems.map((item, index) => {
                     const isActive = item.id === activeSection;
