@@ -512,7 +512,7 @@ export default function RetroMenu({
         <div className="retro-menu__title-actions">
           <button
             type="button"
-            className="retro-menu__language-toggle"
+            className="retro-menu__language-toggle retro-menu__chrome-button"
             onClick={(event) => {
               const newLang = language === "en" ? "ja" : "en";
               const target = event?.currentTarget;
@@ -601,11 +601,11 @@ export default function RetroMenu({
             <button
               ref={toggleRef}
               type="button"
-              className={`retro-menu__settings-toggle${
-                panelState === "opening" || panelState === "open"
-                  ? " is-active"
-                  : ""
-              }`}
+            className={`retro-menu__settings-toggle retro-menu__chrome-button${
+              panelState === "opening" || panelState === "open"
+                ? " is-active"
+                : ""
+            }`}
               onClick={togglePanel}
               onMouseEnter={() => {
                 if (toggleRef.current && activeEffectInfo) {
@@ -701,7 +701,7 @@ export default function RetroMenu({
             href="https://x.com/itsjaydesu"
             target="_blank"
             rel="noreferrer noopener"
-            className="retro-menu__social"
+            className="retro-menu__social retro-menu__chrome-button"
             aria-label={t("menu.social.aria", language)}
           >
             <svg
@@ -743,7 +743,6 @@ export default function RetroMenu({
               />
             </svg>
           </Link>
-          <small>v4.1</small>
           <button
             type="button"
             className="retro-menu__dismiss"

@@ -3982,83 +3982,95 @@ a {
 }
 .retro-menu {
   position: relative;
-  width: min(340px, 100%);
-  --retro-menu-titlebar-inline: clamp(0.9rem, 2.4vw, 1.2rem);
-  border: 1.5px solid rgba(5, 52, 76, 0.65);
-  border-radius: 22px;
-  /* Remove gradient from here - it's now on the ::before pseudo-element */
-  background: transparent;
-  box-shadow: 0 18px 32px rgba(0, 0, 0, 0.48);
+  --retro-menu-width: clamp(17.5rem, 68vw, 22.5rem);
+  --retro-menu-radius: clamp(24px, 6vw, 32px);
+  --retro-menu-titlebar-inline: clamp(1rem, 3vw, 1.35rem);
+  --retro-menu-chrome-size: clamp(2.3rem, 6vw, 2.75rem);
+  --retro-menu-surface: linear-gradient(
+    180deg,
+    rgba(86, 235, 255, 0.98) 0%,
+    rgba(9, 123, 164, 0.86) 32%,
+    rgba(0, 40, 63, 0.92) 100%
+  );
+  width: min(100%, var(--retro-menu-width));
+  border-radius: var(--retro-menu-radius);
+  border: 1.5px solid rgba(76, 210, 255, 0.45);
+  box-shadow: 0 32px 48px rgba(0, 0, 0, 0.42), 0 12px 28px rgba(0, 0, 0, 0.32);
+  background: rgba(2, 27, 43, 0.7);
   color: #daf3f4;
   font-family: "IBM Plex Mono", "Lucida Console", "Courier New", monospace;
-  z-index: 1000; /* Ensure menu has proper stacking */
   letter-spacing: 0.04em;
   overflow: hidden;
-  backdrop-filter: blur(5px);
-  /* Transitions for properties that CAN animate */
-  transition: backdrop-filter 1.2s cubic-bezier(0.4, 0, 0.6, 1),
-    opacity 0.64s cubic-bezier(0.33, 1, 0.68, 1),
-    transform 0.64s cubic-bezier(0.33, 1, 0.68, 1),
-    filter 0.64s cubic-bezier(0.33, 1, 0.68, 1);
+  isolation: isolate;
+  backdrop-filter: saturate(140%) blur(18px);
+  transition: backdrop-filter 0.7s cubic-bezier(0.33, 1, 0.68, 1),
+    opacity 0.6s cubic-bezier(0.33, 1, 0.68, 1),
+    transform 0.6s cubic-bezier(0.33, 1, 0.68, 1),
+    filter 0.6s cubic-bezier(0.33, 1, 0.68, 1);
 }
 
-/* Create a duplicate background layer that can fade independently */
 .retro-menu::before {
   content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  /* Same gradient as the main menu */
-  background: linear-gradient(
-    180deg,
-    rgba(0, 133, 134, 0.92) 0%,
-    rgba(1, 60, 70, 0.86) 100%
-  );
-  opacity: 1;
-  transition: opacity 1.2s cubic-bezier(0.4, 0, 0.6, 1);
+  background: var(--retro-menu-surface);
+  opacity: 0.98;
   pointer-events: none;
-  z-index: 0;
+  z-index: -2;
+  transition: opacity 0.7s cubic-bezier(0.33, 1, 0.68, 1),
+    background 0.7s cubic-bezier(0.33, 1, 0.68, 1);
 }
 
-/* When effect is active, fade out the background to create true transparency */
+.retro-menu::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px rgba(179, 243, 255, 0.18),
+    inset 0 18px 48px rgba(119, 245, 255, 0.14);
+  pointer-events: none;
+  z-index: -1;
+  mix-blend-mode: screen;
+}
+
 .retro-menu[data-effect-active="true"]::before {
-  opacity: 0.08; /* Nearly transparent, letting the animation show through */
+  opacity: 0.18;
 }
 
-/* Smooth green fade effect when scrolled */
+.retro-menu[data-effect-active="true"]::after {
+  box-shadow: inset 0 0 0 1px rgba(179, 243, 255, 0.12),
+    inset 0 22px 54px rgba(119, 245, 255, 0.18);
+}
+
 .retro-menu[data-scrolled="true"]::before {
   background: linear-gradient(
     180deg,
-    rgba(16, 185, 129, 0.92) 0%,
-    rgba(5, 150, 105, 0.88) 100%
+    rgba(96, 255, 198, 0.95) 0%,
+    rgba(6, 140, 117, 0.9) 44%,
+    rgba(0, 54, 59, 0.9) 100%
   );
-  opacity: 1;
-  transition: background 0.6s cubic-bezier(0.4, 0, 0.6, 1),
-    opacity 0.6s cubic-bezier(0.4, 0, 0.6, 1);
-}
-
-/* Fade out when scrolling back to top */
-.retro-menu:not([data-scrolled="true"])::before {
-  transition: background 0.6s cubic-bezier(0.4, 0, 0.6, 1),
-    opacity 0.6s cubic-bezier(0.4, 0, 0.6, 1);
 }
 
 .retro-menu--sidebar {
   position: sticky;
   top: clamp(1rem, 6vh, 3rem);
   transition: transform 0.45s ease, opacity 0.3s ease;
+  margin-inline: clamp(1.2rem, 3vw, 1.6rem);
+  max-width: var(--retro-menu-width);
 }
 
 /* Sidebar variant handled by the new rules above */
 
 .retro-menu--centerpiece {
   position: absolute;
-  top: clamp(5rem, 25vh, 11rem);
+  top: clamp(5rem, 22vh, 10.5rem);
   left: 50%;
   transform: translateX(-50%);
-  width: min(420px, 94vw);
-  border-radius: 28px;
-  box-shadow: 0 0 0 1px rgba(5, 120, 140, 0.55), 0 18px 35px rgba(0, 0, 0, 0.55),
+  width: min(100%, var(--retro-menu-width));
+  max-width: var(--retro-menu-width);
+  border-radius: var(--retro-menu-radius);
+  box-shadow: 0 0 0 1px rgba(89, 224, 255, 0.5), 0 18px 35px rgba(0, 0, 0, 0.55),
     0 45px 80px rgba(0, 0, 0, 0.5);
   transition: transform 0.6s cubic-bezier(0.16, 0.84, 0.44, 1),
     box-shadow 0.4s ease;
@@ -4071,99 +4083,174 @@ a {
 
 .retro-menu__titlebar {
   position: relative;
-  /* Remove gradient - it's now on the ::before pseudo-element */
-  background: transparent;
-  color: #f4faff;
-  padding: 0.75rem var(--retro-menu-titlebar-inline);
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  border-bottom: 1px solid rgba(6, 6, 6, 0.35);
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  display: flex;
   align-items: center;
-  gap: 0.75rem;
-  /* Content stays above the pseudo-element */
-  /* Smooth transition for transparent/normal mode */
-  transition: border-color 1.2s cubic-bezier(0.4, 0, 0.6, 1),
-    color 1.2s cubic-bezier(0.4, 0, 0.6, 1);
+  justify-content: space-between;
+  gap: clamp(0.75rem, 3vw, 1rem);
+  padding: clamp(0.85rem, 3vw, 1rem)
+    var(--retro-menu-titlebar-inline)
+    clamp(0.75rem, 2.5vw, 0.9rem);
+  color: #f4faff;
+  text-transform: uppercase;
+  font-size: clamp(0.78rem, 2.3vw, 0.92rem);
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  border-bottom: 1px solid rgba(122, 237, 255, 0.25);
+  z-index: 1;
+  transition: border-color 0.7s cubic-bezier(0.33, 1, 0.68, 1),
+    color 0.7s cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.retro-menu__titlebar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: calc(var(--retro-menu-radius) - 1.5px)
+    calc(var(--retro-menu-radius) - 1.5px) 0 0;
+  background: linear-gradient(
+    110deg,
+    rgba(168, 245, 255, 0.45) 0%,
+    rgba(51, 164, 209, 0.35) 50%,
+    rgba(0, 80, 115, 0.55) 100%
+  );
+  opacity: 0.92;
+  pointer-events: none;
+  z-index: -1;
+  transition: opacity 0.6s cubic-bezier(0.33, 1, 0.68, 1),
+    background 0.6s cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.retro-menu__titlebar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: calc(var(--retro-menu-radius) - 1.5px)
+    calc(var(--retro-menu-radius) - 1.5px) 0 0;
+  box-shadow: inset 0 -1px 0 rgba(10, 36, 54, 0.55),
+    inset 0 1px 0 rgba(240, 255, 255, 0.18);
+  pointer-events: none;
+  z-index: -1;
 }
 
 .retro-menu__titlebar .retro-menu__title {
-  position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
-  font-size: 0.75rem;
-  letter-spacing: 0.12em;
-  z-index: 2; /* Above the pseudo-element */
-  min-width: 0;
+  gap: clamp(0.35rem, 1.6vw, 0.55rem);
+  font-size: clamp(0.8rem, 2.4vw, 0.92rem);
+  letter-spacing: 0.18em;
+  font-weight: 700;
 }
 
 .retro-menu__wordmark {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  padding: 0.12rem 0.4rem;
+  text-transform: uppercase;
+  font-weight: 700;
+  padding: 0.15rem 0.6rem;
   border-radius: 999px;
-  line-height: 1;
-  letter-spacing: inherit;
-  overflow: visible;
-  transition: color 0.35s ease, text-shadow 0.45s ease;
+  background: rgba(11, 51, 73, 0.45);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+  transition: color 0.35s ease, text-shadow 0.45s ease,
+    box-shadow 0.35s ease, background 0.35s ease;
 }
 
 .retro-menu__wordmark:hover,
 .retro-menu__title:hover .retro-menu__wordmark {
   color: #ffffff;
+  background: rgba(29, 108, 149, 0.55);
   text-shadow: 0 0 18px rgba(255, 255, 255, 0.55),
     0 0 36px rgba(255, 255, 255, 0.28);
-}
-
-.retro-menu__titlebar small {
-  font-size: 0.7rem;
-  letter-spacing: 0.2em;
-  opacity: 0.85;
 }
 
 .retro-menu__title-actions {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: clamp(0.4rem, 2vw, 0.6rem);
 }
 
 .retro-menu__title-actions > * {
   transition: opacity 0.5s cubic-bezier(0.33, 1, 0.68, 1);
 }
 
-.retro-menu__social {
+.retro-menu__chrome-button {
+  --retro-menu-chrome-shift: 0px;
+  --retro-menu-chrome-rotate: 0deg;
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
-  border: 1px solid rgba(244, 250, 255, 0.42);
-  color: #f4faff;
-  opacity: 0.88;
-  transition: opacity 150ms ease, transform 150ms ease;
+  width: var(--retro-menu-chrome-size);
+  height: var(--retro-menu-chrome-size);
+  border-radius: clamp(0.65rem, 3vw, 0.85rem);
+  border: 1px solid rgba(158, 255, 255, 0.38);
+  background: linear-gradient(
+    150deg,
+    rgba(255, 255, 255, 0.18) 0%,
+    rgba(19, 113, 159, 0.22) 60%,
+    rgba(0, 70, 105, 0.35) 100%
+  );
+  color: #e6fbff;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.35),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  overflow: hidden;
+  transform: translateY(var(--retro-menu-chrome-shift))
+    rotate(var(--retro-menu-chrome-rotate));
+  transform-origin: center;
+  transition: transform 0.24s cubic-bezier(0.33, 1, 0.68, 1),
+    box-shadow 0.24s ease, border-color 0.24s ease,
+    background 0.24s ease, color 0.24s ease;
+}
+
+.retro-menu__chrome-button::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    circle at 30% 20%,
+    rgba(255, 255, 255, 0.45),
+    transparent 58%
+  );
+  opacity: 0.45;
+  pointer-events: none;
+  transition: opacity 0.24s ease;
+}
+
+.retro-menu__chrome-button:hover,
+.retro-menu__chrome-button:focus-visible {
+  --retro-menu-chrome-shift: -2px;
+  border-color: rgba(180, 255, 255, 0.65);
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.4),
+    0 0 22px rgba(113, 250, 255, 0.35);
+  color: #ffffff;
+  background: linear-gradient(
+    150deg,
+    rgba(255, 255, 255, 0.28) 0%,
+    rgba(36, 164, 205, 0.34) 55%,
+    rgba(0, 86, 126, 0.45) 100%
+  );
+}
+
+.retro-menu__chrome-button:hover::after,
+.retro-menu__chrome-button:focus-visible::after {
+  opacity: 0.8;
+}
+
+.retro-menu__chrome-button:focus-visible {
+  outline: 2px solid rgba(147, 247, 255, 0.9);
+  outline-offset: 3px;
+}
+
+.retro-menu__social {
+  text-decoration: none;
 }
 
 .retro-menu__social svg {
-  width: 18px;
-  height: 18px;
+  width: clamp(1.1rem, 4vw, 1.35rem);
+  height: clamp(1.1rem, 4vw, 1.35rem);
   fill: currentColor;
-}
-
-.retro-menu__social:hover,
-.retro-menu__social:focus-visible {
-  opacity: 1;
-  transform: translateY(-1px);
-}
-
-.retro-menu__social:focus-visible {
-  outline: 2px solid rgba(244, 250, 255, 0.9);
-  outline-offset: 2px;
 }
 
 .retro-menu__dismiss {
@@ -4182,8 +4269,13 @@ a {
 
 .retro-menu__body {
   position: relative;
-  padding: 0.65rem 0.95rem 0.85rem;
-  z-index: 2; /* Above the pseudo-element */
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.9rem, 3vw, 1.1rem);
+  padding: clamp(1.05rem, 3.8vw, 1.35rem)
+    clamp(1.15rem, 4.2vw, 1.65rem)
+    clamp(1.3rem, 4.8vw, 1.8rem);
+  z-index: 2;
   transition: opacity 0.5s cubic-bezier(0.33, 1, 0.68, 1);
 }
 
@@ -4193,103 +4285,146 @@ a {
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  /* Keep list height stable - prevent layout shift during fade */
+  gap: clamp(0.75rem, 2.6vw, 1rem);
   min-height: fit-content;
   transition: opacity 0.5s cubic-bezier(0.33, 1, 0.68, 1);
 }
 
-/* Preserve list space even when faded out */
 .retro-menu[data-panel-active="true"] .retro-menu__list {
-  /* Still takes up space to prevent height collapse */
   min-height: inherit;
 }
 
 .retro-menu__item .retro-menu__button {
   width: 100%;
-  border: 1px solid rgba(5, 52, 76, 0.5);
-  background: rgba(4, 74, 90, 0.75);
+  border: 1.5px solid rgba(123, 233, 255, 0.22);
+  background: linear-gradient(
+    160deg,
+    rgba(1, 76, 109, 0.78) 0%,
+    rgba(0, 51, 72, 0.85) 45%,
+    rgba(0, 32, 47, 0.92) 100%
+  );
   color: inherit;
   font: inherit;
   text-transform: uppercase;
-  letter-spacing: 0.16em;
-  font-size: 0.85rem;
-  padding: 0.65rem 0.95rem;
+  letter-spacing: 0.24em;
+  font-size: clamp(0.9rem, 2.8vw, 1.02rem);
+  padding: clamp(0.95rem, 3.8vw, 1.15rem)
+    clamp(1.35rem, 4.5vw, 1.85rem);
+  padding-left: clamp(2.2rem, 5.8vw, 2.6rem);
   cursor: pointer;
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-decoration: none;
   position: relative;
-  border-radius: 14px;
-  /* Synchronized transition timing with menu for smooth effect changes */
-  transition: box-shadow 0.2s ease, background 1.2s cubic-bezier(0.4, 0, 0.6, 1),
-    border-color 0.25s ease;
+  border-radius: clamp(18px, 6vw, 24px);
+  overflow: hidden;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.35);
+  transition: transform 0.25s cubic-bezier(0.33, 1, 0.68, 1),
+    border-color 0.2s ease, box-shadow 0.25s ease,
+    background 0.35s ease, color 0.25s ease;
 }
 
 .retro-menu__item .retro-menu__button::before {
   content: "";
   position: absolute;
-  left: 14px;
+  left: clamp(1.15rem, 4vw, 1.5rem);
   top: 50%;
   transform: translateY(-50%);
-  width: 6px;
-  height: 6px;
+  width: clamp(0.45rem, 1.6vw, 0.55rem);
+  height: clamp(0.45rem, 1.6vw, 0.55rem);
   border-radius: 999px;
-  background: rgba(212, 244, 255, 0.55);
-  box-shadow: 0 0 10px rgba(212, 244, 255, 0.8);
-  opacity: 0;
-  transition: opacity 0.2s ease;
+  background: radial-gradient(
+    circle,
+    rgba(212, 244, 255, 0.9) 0%,
+    rgba(122, 237, 255, 0.75) 60%,
+    rgba(90, 210, 255, 0.4) 100%
+  );
+  box-shadow: 0 0 14px rgba(122, 237, 255, 0.75);
+  opacity: 0.5;
+  transition: opacity 0.25s ease, transform 0.25s ease;
 }
 
 .retro-menu__item .retro-menu__button::after {
   content: "";
   position: absolute;
   inset: 0;
-  border: 1px solid rgba(233, 253, 255, 0.2);
-  /* Match the pill shape and avoid squared corners */
+  border: 1px solid rgba(196, 249, 255, 0.2);
   border-radius: inherit;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.4);
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.25s ease;
 }
 
 .retro-menu__item .retro-menu__button:hover,
 .retro-menu__item .retro-menu__button:focus-visible {
-  background: rgba(4, 94, 110, 0.85);
-  border-color: rgba(5, 72, 96, 0.65);
-  box-shadow: 0 0 0 1px rgba(212, 244, 255, 0.25);
+  border-color: rgba(170, 250, 255, 0.6);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.45),
+    0 0 28px rgba(116, 244, 255, 0.4);
+  background: linear-gradient(
+    160deg,
+    rgba(9, 106, 150, 0.92) 0%,
+    rgba(0, 59, 86, 0.9) 45%,
+    rgba(0, 35, 52, 0.92) 100%
+  );
+  transform: translateY(-3px);
   outline: none;
+}
+
+.retro-menu__item .retro-menu__button:hover::before,
+.retro-menu__item .retro-menu__button:focus-visible::before,
+.retro-menu__item.is-active .retro-menu__button::before {
+  opacity: 1;
+  transform: translateY(-50%) scale(1.05);
 }
 
 .retro-menu__item .retro-menu__button:hover::after,
 .retro-menu__item .retro-menu__button:focus-visible::after,
-.retro-menu__item.is-active .retro-menu__button::after,
-.retro-menu__item.is-active .retro-menu__button::before {
+.retro-menu__item.is-active .retro-menu__button::after {
   opacity: 1;
 }
 
+.retro-menu__item .retro-menu__button:focus-visible {
+  outline: 2px solid rgba(147, 247, 255, 0.9);
+  outline-offset: 3px;
+}
+
 .retro-menu__item.is-active .retro-menu__button {
-  background: rgba(0, 116, 128, 0.92);
-  border-color: rgba(0, 200, 208, 0.4);
-  box-shadow: 0 0 0 1px rgba(212, 244, 255, 0.25);
+  border-color: rgba(147, 247, 255, 0.7);
+  background: linear-gradient(
+    160deg,
+    rgba(21, 151, 196, 0.95) 0%,
+    rgba(0, 82, 113, 0.92) 55%,
+    rgba(0, 43, 62, 0.94) 100%
+  );
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.5),
+    0 0 32px rgba(126, 250, 255, 0.45);
 }
 
 .retro-menu__status {
   position: relative;
   margin: 0;
-  padding: 0.75rem 0.9rem 0.9rem;
+  padding: clamp(1rem, 4vw, 1.25rem)
+    clamp(1.15rem, 4.2vw, 1.65rem)
+    clamp(1.05rem, 3.6vw, 1.45rem);
   font-size: 0.64rem;
   text-transform: uppercase;
   letter-spacing: 0.16em;
-  background: rgba(0, 48, 60, 0.7);
-  border-top: 1px solid rgba(5, 52, 76, 0.35);
-  min-height: 86px;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 53, 76, 0.82) 0%,
+    rgba(0, 29, 43, 0.92) 100%
+  );
+  border-top: 1px solid rgba(122, 237, 255, 0.18);
+  min-height: 92px;
   display: grid;
-  gap: 0.35rem;
-  /* Ensure height is maintained even during opacity transition */
+  gap: clamp(0.45rem, 2vw, 0.6rem);
+  color: rgba(228, 248, 255, 0.92);
   height: auto;
-  z-index: 2; /* Above the pseudo-element */
-  /* Synchronized transition timing for smooth effect changes */
-  transition: background 1.2s cubic-bezier(0.4, 0, 0.6, 1),
+  z-index: 2;
+  transition: background 0.7s cubic-bezier(0.33, 1, 0.68, 1),
     opacity 0.5s cubic-bezier(0.33, 1, 0.68, 1);
 }
 
@@ -4300,69 +4435,68 @@ a {
 }
 
 .retro-menu__status strong {
-  font-size: 0.76rem;
-  letter-spacing: 0.22em;
+  font-size: clamp(0.78rem, 2.4vw, 0.9rem);
+  letter-spacing: 0.28em;
   font-weight: 600;
 }
 
 .retro-menu__status em {
   font-style: normal;
   line-height: 1.5;
-  letter-spacing: 0.06em;
-  opacity: 0.86;
+  letter-spacing: 0.1em;
+  opacity: 0.9;
+  color: rgba(195, 243, 255, 0.92);
   white-space: pre-line;
 }
 
 .retro-menu__status span {
-  font-size: 0.64rem;
-  letter-spacing: 0.28em;
-  opacity: 0.65;
+  font-size: clamp(0.62rem, 2vw, 0.7rem);
+  letter-spacing: 0.32em;
+  opacity: 0.7;
+  text-transform: uppercase;
 }
 
 .retro-menu__status span::before {
   content: "status ▸ ";
-  opacity: 0.6;
+  opacity: 0.65;
 }
 
-/* Language Toggle Button - Ensure Always Visible */
-.retro-menu__language-toggle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
+/* Language & settings chrome buttons */
+.retro-menu__language-toggle,
+.retro-menu__settings-toggle {
+  background: none;
+  border: none;
+  color: inherit;
   padding: 0;
-  margin: 0 0.25rem;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
-  color: #daf3f4;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  /* Ensure visibility */
+  margin: 0;
+  position: relative;
+}
+
+.retro-menu__language-toggle {
   opacity: 1 !important;
   visibility: visible !important;
-  transform: none !important;
-  position: relative;
-  z-index: 10;
 }
 
-.retro-menu__language-toggle svg {
-  width: 18px;
-  height: 18px;
+.retro-menu__language-toggle svg,
+.retro-menu__settings-toggle svg {
+  width: clamp(1.1rem, 4vw, 1.35rem);
+  height: clamp(1.1rem, 4vw, 1.35rem);
   display: block;
 }
 
 .retro-menu__language-toggle svg path,
 .retro-menu__language-toggle svg circle,
-.retro-menu__language-toggle svg ellipse {
+.retro-menu__language-toggle svg ellipse,
+.retro-menu__settings-toggle svg path,
+.retro-menu__settings-toggle svg circle,
+.retro-menu__settings-toggle svg ellipse {
   stroke: currentColor;
   fill: none;
 }
 
 .retro-menu__icon {
-  width: 18px;
-  height: 18px;
+  width: clamp(1.1rem, 4vw, 1.35rem);
+  height: clamp(1.1rem, 4vw, 1.35rem);
   display: block;
   filter: drop-shadow(0 0 2px rgba(164, 244, 255, 0.25));
   transition: transform 0.32s cubic-bezier(0.33, 1, 0.68, 1),
@@ -4371,16 +4505,16 @@ a {
 }
 
 .retro-menu__icon-accent {
-  opacity: 0.6;
+  opacity: 0.65;
   transition: opacity 0.32s cubic-bezier(0.33, 1, 0.68, 1);
 }
 
 .retro-menu__icon-accent--faint {
-  opacity: 0.32;
+  opacity: 0.35;
 }
 
 .retro-menu__icon-accent--halo {
-  opacity: 0.18;
+  opacity: 0.2;
 }
 
 .retro-menu__icon-dot {
@@ -4388,36 +4522,24 @@ a {
   transition: opacity 0.32s cubic-bezier(0.33, 1, 0.68, 1);
 }
 
-.retro-menu__language-toggle:hover .retro-menu__icon--globe,
-.retro-menu__language-toggle:focus-visible .retro-menu__icon--globe,
-.retro-menu__settings-toggle:hover .retro-menu__icon--fx,
-.retro-menu__settings-toggle:focus-visible .retro-menu__icon--fx,
-.retro-menu__social:hover .retro-menu__icon--social,
-.retro-menu__social:focus-visible .retro-menu__icon--social {
-  filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.55));
-  transform: translateY(-0.5px);
+.retro-menu__chrome-button:hover .retro-menu__icon,
+.retro-menu__chrome-button:focus-visible .retro-menu__icon {
+  filter: drop-shadow(0 0 14px rgba(255, 255, 255, 0.55));
+  transform: translateY(-0.5px) scale(1.02);
 }
 
-.retro-menu__language-toggle:hover .retro-menu__icon-accent,
-.retro-menu__language-toggle:focus-visible .retro-menu__icon-accent,
-.retro-menu__settings-toggle:hover .retro-menu__icon-accent,
-.retro-menu__settings-toggle:focus-visible .retro-menu__icon-accent,
-.retro-menu__social:hover .retro-menu__icon-accent,
-.retro-menu__social:focus-visible .retro-menu__icon-accent {
-  opacity: 0.85;
+.retro-menu__chrome-button:hover .retro-menu__icon-accent,
+.retro-menu__chrome-button:focus-visible .retro-menu__icon-accent {
+  opacity: 0.88;
 }
 
-.retro-menu__language-toggle:hover .retro-menu__icon-accent--halo,
-.retro-menu__language-toggle:focus-visible .retro-menu__icon-accent--halo,
-.retro-menu__settings-toggle:hover .retro-menu__icon-accent--halo,
-.retro-menu__settings-toggle:focus-visible .retro-menu__icon-accent--halo,
-.retro-menu__social:hover .retro-menu__icon-accent--halo,
-.retro-menu__social:focus-visible .retro-menu__icon-accent--halo {
-  opacity: 0.33;
+.retro-menu__chrome-button:hover .retro-menu__icon-accent--halo,
+.retro-menu__chrome-button:focus-visible .retro-menu__icon-accent--halo {
+  opacity: 0.4;
 }
 
-.retro-menu__social:hover .retro-menu__icon-dot,
-.retro-menu__social:focus-visible .retro-menu__icon-dot {
+.retro-menu__chrome-button:hover .retro-menu__icon-dot,
+.retro-menu__chrome-button:focus-visible .retro-menu__icon-dot {
   opacity: 1;
 }
 
@@ -4430,51 +4552,32 @@ a {
 
 .retro-menu__language-toggle:hover,
 .retro-menu__language-toggle:focus-visible {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.3);
   color: #00f0f8;
-  transform: scale(1.05);
 }
 
 .retro-menu__settings-toggle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  padding: 0;
-  margin: 0 0.5rem;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
-  color: rgba(255, 255, 255, 0.7);
-  cursor: pointer;
-  transform-origin: center;
-  /* Smooth transition for effect active/inactive states */
-  transition: transform 0.2s ease, background 0.8s cubic-bezier(0.4, 0, 0.6, 1),
-    border-color 0.8s cubic-bezier(0.4, 0, 0.6, 1),
-    box-shadow 0.8s cubic-bezier(0.4, 0, 0.6, 1),
-    color 0.8s cubic-bezier(0.4, 0, 0.6, 1);
-}
-
-.retro-menu__settings-toggle svg {
-  width: 18px;
-  height: 18px;
+  --retro-menu-chrome-rotate: 0deg;
+  transition: color 0.35s ease;
 }
 
 .retro-menu__settings-toggle:hover,
 .retro-menu__settings-toggle:focus-visible {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.3);
-  color: rgba(255, 255, 255, 0.9);
-  transform: rotate(45deg);
+  --retro-menu-chrome-rotate: 35deg;
+  color: rgba(255, 255, 255, 0.95);
 }
 
 .retro-menu__settings-toggle.is-active {
-  background: rgba(0, 200, 208, 0.3);
-  border-color: rgba(0, 200, 208, 0.5);
-  color: #00c8d0;
-  transform: rotate(90deg);
+  --retro-menu-chrome-rotate: 90deg;
+  color: #00f0f8;
+  border-color: rgba(0, 200, 208, 0.6);
+  background: linear-gradient(
+    150deg,
+    rgba(0, 200, 208, 0.38) 0%,
+    rgba(0, 108, 140, 0.42) 55%,
+    rgba(0, 68, 104, 0.5) 100%
+  );
+  box-shadow: 0 0 25px rgba(0, 200, 208, 0.6), 0 0 50px rgba(0, 200, 208, 0.4),
+    inset 0 0 12px rgba(0, 240, 248, 0.25);
 }
 
 /* Tooltip for effect status */
@@ -4789,228 +4892,113 @@ a {
   backdrop-filter: blur(2px);
 }
 
-/* Titlebar gets its own pseudo-element for smooth fade */
-.retro-menu__titlebar::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, #003a63 0%, #008bb2 55%, #00c8d0 100%);
-  opacity: 1;
-  transition: opacity 1.2s cubic-bezier(0.4, 0, 0.6, 1);
-  z-index: 0;
-  pointer-events: none;
-}
-
-/* Fade out titlebar background when effect is active */
 .retro-menu[data-effect-active="true"] .retro-menu__titlebar::before {
-  opacity: 0.08;
+  opacity: 0.2;
+  background: linear-gradient(
+    110deg,
+    rgba(168, 245, 255, 0.25) 0%,
+    rgba(51, 164, 209, 0.18) 55%,
+    rgba(0, 80, 115, 0.32) 100%
+  );
 }
 
 .retro-menu[data-effect-active="true"] .retro-menu__titlebar {
-  border-bottom-color: rgba(6, 6, 6, 0.1);
+  border-bottom-color: rgba(122, 237, 255, 0.15);
+  color: rgba(228, 248, 255, 0.76);
 }
 
-/* When effect is active, make status bar transparent too */
 .retro-menu[data-effect-active="true"] .retro-menu__status {
-  background: rgba(0, 48, 60, 0.08);
-  transition: background 1.2s cubic-bezier(0.4, 0, 0.6, 1);
+  background: linear-gradient(
+    180deg,
+    rgba(0, 53, 76, 0.26) 0%,
+    rgba(0, 29, 43, 0.3) 100%
+  );
+  transition: background 0.7s cubic-bezier(0.33, 1, 0.68, 1);
 }
 
-/* Buttons also become more transparent when effect is active */
 .retro-menu[data-effect-active="true"] .retro-menu__item .retro-menu__button {
-  background: rgba(4, 74, 90, 0.08);
-  transition: background 1.2s cubic-bezier(0.4, 0, 0.6, 1);
+  background: linear-gradient(
+    160deg,
+    rgba(1, 76, 109, 0.3) 0%,
+    rgba(0, 51, 72, 0.32) 45%,
+    rgba(0, 32, 47, 0.38) 100%
+  );
+  border-color: rgba(123, 233, 255, 0.24);
+  transition: background 0.6s cubic-bezier(0.33, 1, 0.68, 1),
+    border-color 0.6s cubic-bezier(0.33, 1, 0.68, 1);
 }
 
-/* Glowing settings icon when effect is active - static glow */
 .retro-menu[data-effect-active="true"] .retro-menu__settings-toggle {
-  position: relative;
-  background: rgba(0, 200, 208, 0.35);
-  border-color: rgba(0, 200, 208, 0.6);
   color: #00f0f8;
+  border-color: rgba(0, 200, 208, 0.6);
+  background: linear-gradient(
+    150deg,
+    rgba(0, 200, 208, 0.38) 0%,
+    rgba(0, 108, 140, 0.42) 55%,
+    rgba(0, 68, 104, 0.5) 100%
+  );
   box-shadow: 0 0 25px rgba(0, 200, 208, 0.6), 0 0 50px rgba(0, 200, 208, 0.4),
     inset 0 0 12px rgba(0, 240, 248, 0.25);
-  transform: scale(1.05);
-  z-index: 10001;
 }
 
 .retro-menu[data-effect-active="true"] .retro-menu__settings-toggle:hover {
-  transform: rotate(45deg) scale(1.1);
   box-shadow: 0 0 35px rgba(0, 240, 248, 0.8), 0 0 70px rgba(0, 200, 208, 0.5),
     inset 0 0 20px rgba(0, 240, 248, 0.4);
 }
 
 @media (max-width: 640px) {
   .retro-menu {
-    width: 100%;
-    border-radius: 22px;
-    border-width: 1.5px;
-    box-shadow: 0 18px 32px rgba(0, 0, 0, 0.48);
-    --retro-menu-titlebar-inline: clamp(0.85rem, 4.5vw, 1.1rem);
+    --retro-menu-width: clamp(17rem, 92vw, 20rem);
+    --retro-menu-titlebar-inline: clamp(0.9rem, 6vw, 1.2rem);
+    border-radius: clamp(20px, 8vw, 26px);
+    box-shadow: 0 24px 36px rgba(0, 0, 0, 0.45);
   }
 
   .retro-menu__titlebar {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.62rem var(--retro-menu-titlebar-inline);
-    font-size: 0.62rem;
-    letter-spacing: 0.18em;
+    padding: clamp(0.75rem, 4vw, 0.9rem)
+      var(--retro-menu-titlebar-inline)
+      clamp(0.65rem, 3.6vw, 0.8rem);
+    font-size: clamp(0.72rem, 2.8vw, 0.82rem);
+    letter-spacing: 0.16em;
+    gap: clamp(0.55rem, 3vw, 0.75rem);
   }
 
   .retro-menu__titlebar .retro-menu__title {
-    justify-content: flex-start;
-    font-size: 0.68rem;
-    letter-spacing: 0.12em;
-    min-width: 0;
-    white-space: nowrap;
-  }
-
-  .retro-menu__titlebar small,
-  .retro-menu__title-actions .retro-menu__social,
-  .retro-menu__title-actions small,
-  .retro-menu__title-actions .retro-menu__dismiss {
-    display: none;
+    font-size: clamp(0.74rem, 3vw, 0.86rem);
   }
 
   .retro-menu__title-actions {
-    display: inline-flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 0.35rem;
-    flex-wrap: nowrap;
+    gap: clamp(0.35rem, 3vw, 0.5rem);
   }
 
-  .retro-menu__language-toggle {
-    width: 28px;
-    height: 28px;
-    margin: 0;
-    /* Ensure visibility on mobile too */
-    opacity: 1 !important;
-    visibility: visible !important;
-  }
-
-  .retro-menu__language-toggle svg {
-    width: 18px;
-    height: 18px;
-    stroke: currentColor;
-  }
-
-  .retro-menu__settings-toggle {
-    width: 28px;
-    height: 28px;
-    margin: 0;
+  .retro-menu__chrome-button {
+    --retro-menu-chrome-size: clamp(2.35rem, 8vw, 2.6rem);
   }
 
   .retro-menu__body {
-    padding: 0.55rem 0.6rem 0.8rem;
+    padding: clamp(0.85rem, 5vw, 1.1rem)
+      clamp(1rem, 6vw, 1.35rem)
+      clamp(1.05rem, 6vw, 1.4rem);
+    gap: clamp(0.75rem, 3vw, 0.95rem);
   }
 
   .retro-menu__list {
-    gap: 0.45rem;
+    gap: clamp(0.65rem, 3vw, 0.85rem);
   }
 
   .retro-menu__item .retro-menu__button {
-    width: 100%;
-    padding: 0.6rem 0.85rem;
-    font-size: 0.88rem;
-    letter-spacing: 0.14em;
-    border-radius: 14px;
-    transform: none;
-  }
-
-  .retro-menu__item .retro-menu__button::before,
-  .retro-menu__item .retro-menu__button::after {
-    display: none;
-  }
-
-  .retro-menu__item .retro-menu__button:hover,
-  .retro-menu__item .retro-menu__button:focus-visible,
-  .retro-menu__item.is-active .retro-menu__button {
-    transform: none;
-    box-shadow: 0 0 0 1px rgba(212, 244, 255, 0.25);
+    font-size: clamp(0.86rem, 3.2vw, 0.96rem);
+    letter-spacing: 0.2em;
+    padding: clamp(0.85rem, 4vw, 1.05rem)
+      clamp(1.2rem, 6vw, 1.6rem);
+    padding-left: clamp(1.9rem, 6vw, 2.3rem);
+    border-radius: clamp(16px, 8vw, 22px);
   }
 
   .retro-menu__status {
     display: none;
   }
 
-  .retro-menu[data-panel-active="true"] .retro-menu__titlebar {
-    background: linear-gradient(
-      90deg,
-      rgba(0, 58, 99, 0.44) 0%,
-      rgba(0, 139, 178, 0.36) 55%,
-      rgba(0, 200, 208, 0.28) 100%
-    );
-    border-bottom-color: rgba(6, 6, 6, 0.28);
-    color: rgba(244, 250, 255, 0.58);
-  }
-
-  .retro-menu[data-panel-active="true"]
-    .retro-menu__titlebar
-    .retro-menu__title {
-    color: rgba(244, 250, 255, 0.58);
-    opacity: 0.8;
-  }
-
-  .retro-menu[data-panel-active="true"] .retro-menu__titlebar .indicator {
-    opacity: 0.44;
-  }
-
-  .retro-menu[data-panel-active="true"]
-    .retro-menu__title-actions
-    > *:not(.retro-menu__settings-toggle):not(.retro-menu__language-toggle) {
-    opacity: 0.44;
-  }
-
-  /* Keep language toggle visible in all states on mobile */
-  .retro-menu[data-panel-active="true"] .retro-menu__language-toggle,
-  .retro-menu[data-effect-active="true"] .retro-menu__language-toggle {
-    opacity: 1 !important;
-  }
-
-  .retro-menu[data-panel-active="true"] .retro-menu__settings-toggle {
-    opacity: 1;
-    filter: none;
-  }
-
-  /* Effect active styles for mobile - transparent backgrounds */
-  .retro-menu[data-effect-active="true"] {
-    backdrop-filter: blur(2px);
-  }
-
-  .retro-menu[data-effect-active="true"] .retro-menu__titlebar {
-    border-bottom-color: rgba(6, 6, 6, 0.1);
-  }
-
-  .retro-menu[data-effect-active="true"] .retro-menu__titlebar::before {
-    opacity: 0.08;
-  }
-
-  .retro-menu[data-effect-active="true"] .retro-menu__status {
-    background: rgba(0, 48, 60, 0.08);
-  }
-
-  .retro-menu[data-effect-active="true"] .retro-menu__item .retro-menu__button {
-    background: rgba(4, 74, 90, 0.08);
-  }
-
-  /* Glowing settings icon when effect is active - mobile version */
-  .retro-menu[data-effect-active="true"] .retro-menu__settings-toggle {
-    background: rgba(0, 200, 208, 0.35);
-    border-color: rgba(0, 200, 208, 0.6);
-    color: #00f0f8;
-    box-shadow: 0 0 25px rgba(0, 200, 208, 0.6), 0 0 50px rgba(0, 200, 208, 0.4),
-      inset 0 0 12px rgba(0, 240, 248, 0.25);
-    transform: scale(1.05);
-  }
-
-  .retro-menu[data-effect-active="true"] .retro-menu__settings-toggle:hover {
-    transform: rotate(45deg) scale(1.1);
-    box-shadow: 0 0 35px rgba(0, 240, 248, 0.8), 0 0 70px rgba(0, 200, 208, 0.5),
-      inset 0 0 20px rgba(0, 240, 248, 0.4);
-  }
 }
 
 @keyframes slideDown {
@@ -5328,11 +5316,20 @@ a {
   }
 
   .menu-overlay {
-    --retro-menu-mobile-pad: clamp(1.1rem, 8vw, 2rem);
-    padding: calc(env(safe-area-inset-top, 0px) + clamp(1.4rem, 8vw, 2.2rem))
-      var(--retro-menu-mobile-pad)
-      calc(env(safe-area-inset-bottom, 0px) + clamp(1.8rem, 10vw, 2.6rem));
+    --retro-menu-mobile-base-pad: clamp(1.2rem, 7.5vw, 2.2rem);
+    --retro-menu-mobile-inline-pad: max(
+      var(--retro-menu-mobile-base-pad),
+      env(safe-area-inset-left, 0px),
+      env(safe-area-inset-right, 0px)
+    );
+    padding-top: calc(env(safe-area-inset-top, 0px) + clamp(1.4rem, 8vw, 2.2rem));
+    padding-bottom: calc(
+      env(safe-area-inset-bottom, 0px) + clamp(1.8rem, 10vw, 2.6rem)
+    );
+    padding-left: var(--retro-menu-mobile-inline-pad);
+    padding-right: var(--retro-menu-mobile-inline-pad);
     align-content: center;
+    justify-items: center;
   }
 
   .retro-menu--centerpiece {
@@ -5340,9 +5337,9 @@ a {
     top: auto;
     left: auto;
     transform: none;
-    margin: 0;
-    width: min(420px, calc(100vw - 2 * var(--retro-menu-mobile-pad, 1.5rem)));
-    max-width: 100%;
+    margin: 0 auto;
+    width: min(420px, 100%);
+    max-width: min(420px, 100%);
   }
 
   .menu-overlay .retro-menu--centerpiece {
