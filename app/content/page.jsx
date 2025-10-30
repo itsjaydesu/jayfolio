@@ -19,5 +19,6 @@ export default async function ContentPage() {
     readChannelContent()
   ]);
   const hero = channelContent.content || channelContent.words; // Fallback to words for compatibility
-  return <ContentContent entries={entries} hero={hero} />;
+  const publishedEntries = entries.filter((entry) => entry?.status === 'published');
+  return <ContentContent entries={publishedEntries} hero={hero} />;
 }

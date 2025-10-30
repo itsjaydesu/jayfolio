@@ -9,7 +9,7 @@ export async function generateMetadata({ params }) {
   const { slug } = await params;
   const entry = await readEntry('projects', slug);
   
-  if (!entry) {
+  if (!entry || entry.status !== 'published') {
     return {};
   }
   
@@ -19,7 +19,7 @@ export async function generateMetadata({ params }) {
 export async function generateViewport({ params }) {
   const { slug } = await params;
   const entry = await readEntry('projects', slug);
-  if (!entry) {
+  if (!entry || entry.status !== 'published') {
     return await generateViewportData('projects');
   }
   return await generateViewportData('projects', entry, 'projects');
@@ -27,13 +27,15 @@ export async function generateViewport({ params }) {
 
 export async function generateStaticParams() {
   const entries = await readEntries('projects');
-  return entries.map((entry) => ({ slug: entry.slug }));
+  return entries
+    .filter((entry) => entry?.status === 'published')
+    .map((entry) => ({ slug: entry.slug }));
 }
 
 export default async function ProjectDetailPage({ params }) {
   const { slug } = await params;
   const entry = await readEntry('projects', slug);
-  if (!entry) {
+  if (!entry || entry.status !== 'published') {
     notFound();
   }
 

@@ -19,5 +19,6 @@ export default async function ProjectsPage() {
     readChannelContent()
   ]);
   const hero = channelContent.projects;
-  return <ProjectsContent entries={entries} hero={hero} />;
+  const publishedEntries = entries.filter((entry) => entry?.status === 'published');
+  return <ProjectsContent entries={publishedEntries} hero={hero} />;
 }

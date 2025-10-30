@@ -70,8 +70,7 @@ function formatDateValue(value) {
 
 function formatListMeta(entry) {
   const dateLabel = entry?.createdAt ? listDateFormatter.format(new Date(entry.createdAt)) : 'Unknown';
-  const statusLabel = entry?.status === 'published' ? 'Published' : 'Draft';
-  return `${dateLabel} • ${statusLabel}`;
+  return dateLabel;
 }
 
 function ensureLocalizedField(value, defaultEn = '') {
@@ -541,15 +540,30 @@ export default function AdminPage() {
             {entries.map((entry) => {
               const isActive = selectedSlug === entry.slug;
               const displayTitle = getLocalizedContent(entry.title, 'en') || 'Untitled entry';
+              const isDraft = entry.status !== 'published';
+              const itemClasses = ['admin-console__list-item'];
+              if (isActive) {
+                itemClasses.push('is-selected');
+              }
+              if (isDraft) {
+                itemClasses.push('admin-console__list-item--draft');
+              }
               return (
                 <li key={entry.slug}>
                   <button
                     type="button"
-                    className={`admin-console__list-item${isActive ? ' is-selected' : ''}`}
+                    className={itemClasses.join(' ')}
                     onClick={() => handleSelect(entry)}
                   >
                     <span className="admin-console__list-title">{displayTitle}</span>
-                    <span className="admin-console__list-meta">{formatListMeta(entry)}</span>
+                    <span className="admin-console__list-meta">
+                      {formatListMeta(entry)}
+                      {isDraft ? (
+                        <span className="admin-console__list-badge" aria-label="Draft entry status">
+                          Draft
+                        </span>
+                      ) : null}
+                    </span>
                   </button>
                 </li>
               );

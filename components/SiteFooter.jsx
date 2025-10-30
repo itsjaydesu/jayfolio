@@ -100,27 +100,27 @@ export default function SiteFooter({ className = '', channelContent = {} }) {
       label: `Follow Jay on X`,
       icon: XLogoIcon
     },
-    {
-      id: 'instagram',
-      href: 'https://instagram.com/itsjaydesu',
-      label: `See Jay on Instagram`,
-      icon: InstagramIcon
-    },
-    {
-      id: 'are.na',
-      href: 'https://www.are.na/jay',
-      label: `Jay on Are.na`,
-      icon: () => (
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          className="site-footer__social-icon"
-        >
-          <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" />
-        </svg>
-      )
-    }
+    // {
+    //   id: 'instagram',
+    //   href: 'https://instagram.com/itsjaydesu',
+    //   label: `See Jay on Instagram`,
+    //   icon: InstagramIcon
+    // },
+    // {
+    //   id: 'are.na',
+    //   href: 'https://www.are.na/jay',
+    //   label: `Jay on Are.na`,
+    //   icon: () => (
+    //     <svg
+    //       viewBox="0 0 24 24"
+    //       fill="none"
+    //       xmlns="http://www.w3.org/2000/svg"
+    //       className="site-footer__social-icon"
+    //     >
+    //       <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" />
+    //     </svg>
+    //   )
+    // }
   ];
 
   const handleSubmit = (event) => {
@@ -284,9 +284,9 @@ export default function SiteFooter({ className = '', channelContent = {} }) {
               )}
             </form>
             
-            <Link href="/work-with-me" className="site-footer__cta">
+            {/* <Link href="/work-with-me" className="site-footer__cta">
               <span className="site-footer__cta-label">WORK WITH ME</span>
-            </Link>
+            </Link> */}
           </div>
         </div>
       </div>

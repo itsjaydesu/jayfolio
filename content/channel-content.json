@@ -12,15 +12,19 @@
       "sideFadeOpacity": "0"
     },
     "aboutTitle": {
-      "en": "the jayFolio",
+      "en": "about",
       "ja": "プロフィール"
     },
     "aboutSubtitle": {
-      "en": "thanks for coming",
+      "en": "welcome, fellow internet traveller",
       "ja": "クリエイティブ・テクノロジスト"
     },
+    "aboutLead": {
+      "en": "I am a technologist who loves making things. Generally software, but I also love exploring art, words, music and comedy. I love to use { new tools | old tools | vintage tools | weird tools | words | code | musical instruments } to make things that are { useful | stupid | interesting | surprising | funny | beautiful | thought-provoking }.",
+      "ja": ""
+    },
     "aboutContent": {
-      "en": "Here's a website designed to explain some things, in an attempt to <a href=\"https://x.com/theJayAlto/status/1974598773776187798\">die empty</a>.\n\nOk so",
+      "en": "I am building this site to showcase some creations, and to find friends and co-collaborators. I have far (farrr) too many ideas and not enough time, and it'd be nice to hack on some ideas together. My goal is to build with people who I'd want to spend time with anyway.\n\nI'm good on the product side. I'm great at public speaking, fundraising and communicating. I'm pretty bad at coding, but I'm good at talking to an AI until I get what I want.\n\nIf any of my ideas are interesting to you and you'd like to collaborate, find a way to contact me and let's see if we click.",
       "ja": "クリエイティブ・テクノロジストとして、アンビエントOSや展示向けツール、シネマティックなサウンドスケープを設計しています。このドシエではスタジオの思想、コラボレーター、そして各プロジェクトを導くシグナルを紹介します。"
     },
     "aboutDetailCards": [
@@ -68,35 +72,22 @@
       ]
     },
     "title": "",
-    "lead": "Creative technologist guiding teams through ambient operating systems, tactile exhibition tooling, and cinematic web soundscapes. This dossier carries the studio ethos, collaborators, and signals shaping each commission. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    "lead": "",
     "statusDate": "2024-11-01",
     "statusLabel": "CURRENT STATUS • AERIAL RESONANCE",
     "tags": "Designer • Composer • Systems Artist",
     "headline": "Sculpting Interfaces That Listen Back",
-    "summary": "Jay prototypes responsive worlds where light, audio, and interface gestures share the same pulse. The practice involves building sensing rigs, translating data to lush WebGL canvases, and composing sound to steer spatial storytelling. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-    "practiceVectors": "Cinematic UI systems, immersive spatial audio, sensor-driven choreography, and collaborative design research. Each commission blends physical staging with realtime web tooling for performers and exhibition teams.",
+    "summary": "I am a technologist who loves making things. Generally software, but I also love exploring art, words, music and comedy.",
+    "practiceVectors": "",
     "currentCollaborators": [
       "Signal Grid Lab — adaptive lighting for touring stages.",
       "Archive Atlas — sonic archives with tactile playback consoles.",
       "Field Lexicon Collective — language prototypes for future venues."
     ],
-    "operatingPrinciples": "Lead with listening, prototype in the open, and let every surface emit warmth. Projects hinge on calibrating atmosphere as carefully as code so collaborators feel invited into the signal.",
-    "overview": [
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Jay Winder weaves tactile computing, kinetic lighting, and sonic cartography into experiential systems that feel warmly sentient. Suspendisse potenti. Vestibulum vitae arcu eget sapien scelerisque aliquet quis sed justo. Maecenas egestas lacus eu vulputate bibendum, gravida risus euismod.",
-      "Phasellus euismod mi a nibh hendrerit, sit amet dapibus ipsum faucibus. Pellentesque in tempor nibh. Integer malesuada lorem ipsum dolor sit amet technologist auctor, malesuada augue quis, fermentum magna. Curabitur blandit, metus ac iaculis vulputate, est magna luctus risus, vitae posuere elit lectus quis augue."
-    ],
-    "history": [
-      {
-        "year": "2024",
-        "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Jay Winder launched a resonant lab for touring installations, experimenting with ambient operating systems that listen as performers move."
-      }
-    ],
-    "signals": [
-      {
-        "term": "Primary Mediums",
-        "description": "Lorem ipsum interfaces, ambient OS prototypes, spatial sound choreography."
-      }
-    ]
+    "operatingPrinciples": "",
+    "overview": [],
+    "history": [],
+    "signals": []
   },
   "projects": {
     "backgroundImage": "",

@@ -9,7 +9,7 @@ export async function generateMetadata({ params }) {
   const { slug } = await params;
   const entry = await readEntry('content', slug);
   
-  if (!entry) {
+  if (!entry || entry.status !== 'published') {
     return {};
   }
   
@@ -19,7 +19,7 @@ export async function generateMetadata({ params }) {
 export async function generateViewport({ params }) {
   const { slug } = await params;
   const entry = await readEntry('content', slug);
-  if (!entry) {
+  if (!entry || entry.status !== 'published') {
     return await generateViewportData('content');
   }
   return await generateViewportData('content', entry, 'content');
@@ -27,13 +27,15 @@ export async function generateViewport({ params }) {
 
 export async function generateStaticParams() {
   const entries = await readEntries('content');
-  return entries.map((entry) => ({ slug: entry.slug }));
+  return entries
+    .filter((entry) => entry?.status === 'published')
+    .map((entry) => ({ slug: entry.slug }));
 }
 
 export default async function ContentDetailPage({ params }) {
   const { slug } = await params;
   const entry = await readEntry('content', slug);
-  if (!entry) {
+  if (!entry || entry.status !== 'published') {
     notFound();
   }
 
