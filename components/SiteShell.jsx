@@ -98,6 +98,7 @@ export default function SiteShell({ children, channelContent }) {
   const brandRef = useRef(null);
   const navRef = useRef(null);
   const iconGroupRef = useRef(null);
+  const headerOffsetRef = useRef(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [mobileMenuFocusIndex, setMobileMenuFocusIndex] = useState(-1);
   const [mobileMenuPosition, setMobileMenuPosition] = useState(null);
@@ -285,6 +286,37 @@ export default function SiteShell({ children, channelContent }) {
     [language]
   );
 
+  const updateHeaderOffset = useCallback(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const root = document.documentElement;
+    const headerElement = headerInnerRef.current?.parentElement ?? null;
+
+    if (!headerElement || !headerVisible) {
+      if (headerOffsetRef.current !== null) {
+        root.style.removeProperty('--site-shell-header-offset-dynamic');
+        headerOffsetRef.current = null;
+      }
+      return;
+    }
+
+    const rect = headerElement.getBoundingClientRect();
+    const computedStyle = window.getComputedStyle(headerElement);
+    const marginBottomValue = parseFloat(computedStyle.marginBottom || '0');
+    const marginBottom = Number.isNaN(marginBottomValue) ? 0 : marginBottomValue;
+    const measuredHeight = rect.height + marginBottom;
+    const nextOffset = Math.ceil(measuredHeight);
+
+    if (headerOffsetRef.current === nextOffset) {
+      return;
+    }
+
+    root.style.setProperty('--site-shell-header-offset-dynamic', `${nextOffset}px`);
+    headerOffsetRef.current = nextOffset;
+  }, [headerVisible]);
+
   const updateNavCondensed = useCallback(() => {
     if (typeof window === 'undefined') {
       return;
@@ -307,25 +339,45 @@ export default function SiteShell({ children, channelContent }) {
     const gapValue = parseFloat(computedStyle.columnGap || computedStyle.gap || '0');
     const gap = Number.isNaN(gapValue) ? 0 : gapValue;
 
-    const availableNavWidth = headerWidth - brandWidth - iconWidth - gap * 2;
+    const availableNavWidth = Math.max(
+      0,
+      headerWidth - brandWidth - iconWidth - gap * 2,
+    );
 
     if (availableNavWidth <= 0) {
       setIsNavCondensed(true);
+      updateHeaderOffset();
       return;
     }
 
-    const navContentWidth = navElement.scrollWidth || navElement.getBoundingClientRect().width;
+    const navChildren = Array.from(navElement.children || []);
+    let navContentWidth = 0;
+
+    if (navChildren.length) {
+      const navComputedStyle = window.getComputedStyle(navElement);
+      const gapValue = parseFloat(navComputedStyle.columnGap || navComputedStyle.gap || '0');
+      const gapWidth = Number.isNaN(gapValue) ? 0 : gapValue * Math.max(navChildren.length - 1, 0);
+      navContentWidth = navChildren.reduce(
+        (total, child) => total + child.getBoundingClientRect().width,
+        0,
+      );
+      navContentWidth += gapWidth;
+    } else {
+      navContentWidth = navElement.getBoundingClientRect().width;
+    }
 
     if (navContentWidth === 0 && menuItems.length) {
       setIsNavCondensed(true);
+      updateHeaderOffset();
       return;
     }
 
-    setIsNavCondensed((previous) => {
-      const needsCondensed = navContentWidth > availableNavWidth + 1;
-      return previous === needsCondensed ? previous : needsCondensed;
-    });
-  }, [menuItems.length]);
+    const needsCondensed = navContentWidth > availableNavWidth;
+    setIsNavCondensed((previous) =>
+      previous === needsCondensed ? previous : needsCondensed
+    );
+    updateHeaderOffset();
+  }, [menuItems.length, updateHeaderOffset]);
 
   const updateHeaderShade = useCallback((value) => {
     // Clamp incoming value and enforce a baseline shade on subpages
@@ -362,6 +414,7 @@ export default function SiteShell({ children, channelContent }) {
       }
       animationFrameId = window.requestAnimationFrame(() => {
         updateNavCondensed();
+        updateHeaderOffset();
         animationFrameId = null;
       });
     };
@@ -393,7 +446,19 @@ export default function SiteShell({ children, channelContent }) {
         resizeObserver.disconnect();
       }
     };
-  }, [updateNavCondensed]);
+  }, [updateHeaderOffset, updateNavCondensed]);
+
+  useEffect(() => {
+    updateHeaderOffset();
+  }, [headerVisible, isNavCondensed, isMobileMenuOpen, menuItems.length, updateHeaderOffset]);
+
+  useEffect(() => () => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+    document.documentElement.style.removeProperty('--site-shell-header-offset-dynamic');
+    headerOffsetRef.current = null;
+  }, []);
 
   useEffect(() => {
     if (!isNavCondensed && isMobileMenuOpen) {
@@ -539,7 +604,6 @@ export default function SiteShell({ children, channelContent }) {
       top: `${mobileMenuPosition.top}px`,
       left: `${mobileMenuPosition.left}px`,
       width: `${mobileMenuPosition.width}px`,
-      "--mobile-nav-arrow-offset": `${mobileMenuPosition.arrowOffset}px`,
     };
   }, [isMobileMenuOpen, mobileMenuPosition]);
 
@@ -938,17 +1002,11 @@ export default function SiteShell({ children, channelContent }) {
     }
 
     const top = rect.bottom + 12;
-    const anchorCenter = rect.left + rect.width / 2;
-    const arrowOffset = Math.min(
-      width - 12,
-      Math.max(12, anchorCenter - left)
-    );
 
     setMobileMenuPosition({
       top,
       left,
       width,
-      arrowOffset,
     });
   }, []);
 
