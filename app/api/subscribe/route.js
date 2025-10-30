@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { renderToStaticMarkup } from 'react-dom/server';
 import SubscriptionConfirmation from '../../../lib/emails/SubscriptionConfirmation';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -38,6 +37,7 @@ export async function POST(request) {
   }
 
   const fromAddress = process.env.RESEND_FROM_EMAIL || 'Jay <updates@jayfolio.com>';
+  const { renderToStaticMarkup } = await import('react-dom/server');
   const emailMarkup = renderToStaticMarkup(<SubscriptionConfirmation subscriberEmail={email} />);
   const html = emailMarkup.startsWith('<!DOCTYPE html>') ? emailMarkup : `<!DOCTYPE html>${emailMarkup}`;
 
