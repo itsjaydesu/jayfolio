@@ -94,6 +94,7 @@ export default function SiteShell({ children, channelContent }) {
   const mobileMenuButtonRef = useRef(null);
   const mobileMenuListRef = useRef(null);
   const mobileMenuContainerRef = useRef(null);
+  const headerRef = useRef(null);
   const headerInnerRef = useRef(null);
   const brandRef = useRef(null);
   const navRef = useRef(null);
@@ -301,31 +302,76 @@ export default function SiteShell({ children, channelContent }) {
     const iconElement = iconGroupRef.current;
 
     const headerWidth = headerElement.clientWidth;
-    const brandWidth = brandElement?.offsetWidth ?? 0;
-    const iconWidth = iconElement?.offsetWidth ?? 0;
+    const brandWidth = brandElement?.getBoundingClientRect?.().width ?? 0;
+    const iconWidth = iconElement?.getBoundingClientRect?.().width ?? 0;
     const computedStyle = window.getComputedStyle(headerElement);
     const gapValue = parseFloat(computedStyle.columnGap || computedStyle.gap || '0');
+    const paddingLeft = parseFloat(computedStyle.paddingLeft || '0');
+    const paddingRight = parseFloat(computedStyle.paddingRight || '0');
     const gap = Number.isNaN(gapValue) ? 0 : gapValue;
 
-    const availableNavWidth = headerWidth - brandWidth - iconWidth - gap * 2;
+    const availableNavWidth = headerWidth - brandWidth - iconWidth - paddingLeft - paddingRight - gap * 2;
 
     if (availableNavWidth <= 0) {
       setIsNavCondensed(true);
       return;
     }
 
-    const navContentWidth = navElement.scrollWidth || navElement.getBoundingClientRect().width;
+    const navChildren = Array.from(navElement?.children ?? []);
+    const navStyles = window.getComputedStyle(navElement);
+    const navGapValue = parseFloat(navStyles.columnGap || navStyles.gap || '0');
+    const navGap = Number.isNaN(navGapValue) ? 0 : navGapValue;
 
-    if (navContentWidth === 0 && menuItems.length) {
-      setIsNavCondensed(true);
+    const navContentWidth = navChildren.reduce((total, child, index) => {
+      const childWidth = child?.getBoundingClientRect?.().width ?? 0;
+      if (childWidth === 0) {
+        return total;
+      }
+      const gapContribution = index > 0 ? navGap : 0;
+      return total + childWidth + gapContribution;
+    }, 0);
+
+    const measuredNavWidth = navContentWidth || navElement.scrollWidth || 0;
+    if (measuredNavWidth === 0) {
       return;
     }
 
+    const tolerance = 4;
     setIsNavCondensed((previous) => {
-      const needsCondensed = navContentWidth > availableNavWidth + 1;
+      const needsCondensed = measuredNavWidth > Math.max(0, availableNavWidth - tolerance);
       return previous === needsCondensed ? previous : needsCondensed;
     });
-  }, [menuItems.length]);
+  }, []);
+
+  const updateHeaderClearance = useCallback(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const root = document.documentElement;
+    if (!root) {
+      return;
+    }
+
+    const headerElement = headerRef.current;
+    if (!headerElement || !headerVisible) {
+      root.style.removeProperty('--site-shell-header-clearance');
+      return;
+    }
+
+    const rect = headerElement.getBoundingClientRect();
+    if (!rect || !rect.height) {
+      return;
+    }
+
+    const additionalClearance = Math.max(20, rect.height * 0.12);
+    const clearance = Math.round(rect.height + additionalClearance);
+    const nextValue = `${clearance}px`;
+
+    if (root.style.getPropertyValue('--site-shell-header-clearance') !== nextValue) {
+      root.style.setProperty('--site-shell-header-clearance', nextValue);
+    }
+  }, [headerVisible]);
 
   const updateHeaderShade = useCallback((value) => {
     // Clamp incoming value and enforce a baseline shade on subpages
@@ -347,7 +393,8 @@ export default function SiteShell({ children, channelContent }) {
 
   useEffect(() => {
     updateNavCondensed();
-  }, [menuItems, updateNavCondensed]);
+    updateHeaderClearance();
+  }, [menuItems, updateNavCondensed, updateHeaderClearance]);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -362,6 +409,7 @@ export default function SiteShell({ children, channelContent }) {
       }
       animationFrameId = window.requestAnimationFrame(() => {
         updateNavCondensed();
+        updateHeaderClearance();
         animationFrameId = null;
       });
     };
@@ -369,6 +417,7 @@ export default function SiteShell({ children, channelContent }) {
     scheduleUpdate();
 
     const observedElements = [
+      headerRef.current,
       headerInnerRef.current,
       navRef.current,
       brandRef.current,
@@ -393,7 +442,21 @@ export default function SiteShell({ children, channelContent }) {
         resizeObserver.disconnect();
       }
     };
-  }, [updateNavCondensed]);
+  }, [updateNavCondensed, updateHeaderClearance]);
+
+  useEffect(() => {
+    updateHeaderClearance();
+  }, [isMobileMenuOpen, isNavCondensed, headerVisible, updateHeaderClearance]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+
+    return () => {
+      document.documentElement?.style?.removeProperty('--site-shell-header-clearance');
+    };
+  }, []);
 
   useEffect(() => {
     if (!isNavCondensed && isMobileMenuOpen) {
@@ -539,7 +602,6 @@ export default function SiteShell({ children, channelContent }) {
       top: `${mobileMenuPosition.top}px`,
       left: `${mobileMenuPosition.left}px`,
       width: `${mobileMenuPosition.width}px`,
-      "--mobile-nav-arrow-offset": `${mobileMenuPosition.arrowOffset}px`,
     };
   }, [isMobileMenuOpen, mobileMenuPosition]);
 
@@ -938,17 +1000,11 @@ export default function SiteShell({ children, channelContent }) {
     }
 
     const top = rect.bottom + 12;
-    const anchorCenter = rect.left + rect.width / 2;
-    const arrowOffset = Math.min(
-      width - 12,
-      Math.max(12, anchorCenter - left)
-    );
 
     setMobileMenuPosition({
       top,
       left,
       width,
-      arrowOffset,
     });
   }, []);
 
@@ -1910,6 +1966,7 @@ export default function SiteShell({ children, channelContent }) {
             ) : null}
             {!isDetailView && headerVisible ? (
             <header
+              ref={headerRef}
               className={headerClassName}
               data-nav-ready={navReady ? "true" : "false"}
               data-returning-home={isReturningHome ? "true" : "false"}
