@@ -44,6 +44,7 @@ export default function SiteFooter({ className = '', channelContent = {} }) {
   const pathname = usePathname();
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState({ type: 'idle', message: '' });
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const footerRef = useRef(null);
 
@@ -122,15 +123,43 @@ export default function SiteFooter({ className = '', channelContent = {} }) {
     // }
   ];
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
+    if (isSubmitting) {
+      return;
+    }
+
     if (!validateEmail(email)) {
       setStatus({ type: 'error', message: 'Enter a valid email address.' });
       return;
     }
 
-    setStatus({ type: 'success', message: "You're on the list. Thanks for tuning in." });
-    setEmail('');
+    setIsSubmitting(true);
+    setStatus({ type: 'pending', message: 'Sending something lovely to your inbox…' });
+
+    try {
+      const response = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim() })
+      });
+
+      const result = await response.json().catch(() => null);
+
+      if (!response.ok || !result?.success) {
+        const message = result?.message || 'Something went wrong. Please try again shortly.';
+        setStatus({ type: 'error', message });
+        return;
+      }
+
+      setStatus({ type: 'success', message: result.message || "You're on the list. Thanks for tuning in." });
+      setEmail('');
+    } catch (error) {
+      console.error('Failed to subscribe email', error);
+      setStatus({ type: 'error', message: 'We could not reach the server. Please try again soon.' });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const footerClasses = ['site-footer'];
@@ -244,7 +273,12 @@ export default function SiteFooter({ className = '', channelContent = {} }) {
               </ul>
             </nav>
             
-            <form className="site-footer__form" onSubmit={handleSubmit} noValidate>
+            <form
+              className="site-footer__form"
+              onSubmit={handleSubmit}
+              noValidate
+              aria-busy={isSubmitting ? 'true' : 'false'}
+            >
               <div className="site-footer__input-wrapper">
                 <svg className="site-footer__input-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.5"/>
@@ -265,6 +299,8 @@ export default function SiteFooter({ className = '', channelContent = {} }) {
                   className="site-footer__input"
                   aria-label="Email address"
                   aria-describedby="email-description"
+                  aria-disabled={isSubmitting ? 'true' : undefined}
+                  disabled={isSubmitting}
                 />
                 <p id="email-description" className="sr-only">
                   Receive very occasional updates when Jay releases something. Enter your email to get maybe one email a month.

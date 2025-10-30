@@ -7499,9 +7499,9 @@ body.qr-intro-active .site-shell__icon-button {
   position: relative;
   text-align: center;
   white-space: nowrap;
-  padding: 0.05em 0.32em;
-  margin: -0.04em 0.1em;
-  border-radius: 0.5em;
+  padding: 0.04em 0.28em;
+  margin: 0.05em 0.22em;
+  border-radius: 0.48em;
   background: rgba(26, 82, 108, 0.32);
   color: rgba(164, 236, 255, 0.94);
   font-weight: 500;
