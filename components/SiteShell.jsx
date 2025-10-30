@@ -94,9 +94,14 @@ export default function SiteShell({ children, channelContent }) {
   const mobileMenuButtonRef = useRef(null);
   const mobileMenuListRef = useRef(null);
   const mobileMenuContainerRef = useRef(null);
+  const headerInnerRef = useRef(null);
+  const brandRef = useRef(null);
+  const navRef = useRef(null);
+  const iconGroupRef = useRef(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [mobileMenuFocusIndex, setMobileMenuFocusIndex] = useState(-1);
   const [mobileMenuPosition, setMobileMenuPosition] = useState(null);
+  const [isNavCondensed, setIsNavCondensed] = useState(false);
 
   const warmSceneChunk = useCallback(() => {
     if (scenePreloadTriggeredRef.current) {
@@ -280,6 +285,48 @@ export default function SiteShell({ children, channelContent }) {
     [language]
   );
 
+  const updateNavCondensed = useCallback(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const headerElement = headerInnerRef.current;
+    const navElement = navRef.current;
+    if (!headerElement || !navElement) {
+      setIsNavCondensed(false);
+      return;
+    }
+
+    const brandElement = brandRef.current;
+    const iconElement = iconGroupRef.current;
+
+    const headerWidth = headerElement.clientWidth;
+    const brandWidth = brandElement?.offsetWidth ?? 0;
+    const iconWidth = iconElement?.offsetWidth ?? 0;
+    const computedStyle = window.getComputedStyle(headerElement);
+    const gapValue = parseFloat(computedStyle.columnGap || computedStyle.gap || '0');
+    const gap = Number.isNaN(gapValue) ? 0 : gapValue;
+
+    const availableNavWidth = headerWidth - brandWidth - iconWidth - gap * 2;
+
+    if (availableNavWidth <= 0) {
+      setIsNavCondensed(true);
+      return;
+    }
+
+    const navContentWidth = navElement.scrollWidth || navElement.getBoundingClientRect().width;
+
+    if (navContentWidth === 0 && menuItems.length) {
+      setIsNavCondensed(true);
+      return;
+    }
+
+    setIsNavCondensed((previous) => {
+      const needsCondensed = navContentWidth > availableNavWidth + 1;
+      return previous === needsCondensed ? previous : needsCondensed;
+    });
+  }, [menuItems.length]);
+
   const updateHeaderShade = useCallback((value) => {
     // Clamp incoming value and enforce a baseline shade on subpages
     const clamped = Math.min(Math.max(value, 0), 1);
@@ -297,6 +344,62 @@ export default function SiteShell({ children, channelContent }) {
       setHeaderShade(0);
     }
   }, [isHome, headerVisible]);
+
+  useEffect(() => {
+    updateNavCondensed();
+  }, [menuItems, updateNavCondensed]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+
+    let animationFrameId = null;
+
+    const scheduleUpdate = () => {
+      if (animationFrameId && typeof window !== 'undefined') {
+        window.cancelAnimationFrame(animationFrameId);
+      }
+      animationFrameId = window.requestAnimationFrame(() => {
+        updateNavCondensed();
+        animationFrameId = null;
+      });
+    };
+
+    scheduleUpdate();
+
+    const observedElements = [
+      headerInnerRef.current,
+      navRef.current,
+      brandRef.current,
+      iconGroupRef.current,
+    ].filter(Boolean);
+
+    let resizeObserver = null;
+    if (typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver(scheduleUpdate);
+      observedElements.forEach((element) => resizeObserver.observe(element));
+    }
+
+    window.addEventListener('resize', scheduleUpdate);
+
+    return () => {
+      if (animationFrameId && typeof window !== 'undefined') {
+        window.cancelAnimationFrame(animationFrameId);
+      }
+      window.removeEventListener('resize', scheduleUpdate);
+      if (resizeObserver) {
+        observedElements.forEach((element) => resizeObserver.unobserve(element));
+        resizeObserver.disconnect();
+      }
+    };
+  }, [updateNavCondensed]);
+
+  useEffect(() => {
+    if (!isNavCondensed && isMobileMenuOpen) {
+      setIsMobileMenuOpen(false);
+    }
+  }, [isNavCondensed, isMobileMenuOpen]);
 
   const openDotfieldOverlay = useCallback(() => {
     if (prefersReducedMotionRef.current) {
@@ -1812,9 +1915,10 @@ export default function SiteShell({ children, channelContent }) {
               data-returning-home={isReturningHome ? "true" : "false"}
               data-scrolled={isHeaderShaded ? "true" : "false"}
               data-mobile-menu-open={isMobileMenuOpen ? "true" : "false"}
+              data-nav-condensed={isNavCondensed ? "true" : "false"}
               style={headerStyle}
             >
-              <div className="site-shell__header-inner">
+              <div className="site-shell__header-inner" ref={headerInnerRef}>
                 <Link
                   href="/"
                   className="site-shell__brand"
@@ -1822,6 +1926,7 @@ export default function SiteShell({ children, channelContent }) {
                   onClick={handleNavigateHome}
                   onMouseEnter={warmSceneChunk}
                   onFocus={warmSceneChunk}
+                  ref={brandRef}
                   style={
                     navReady
                       ? undefined
@@ -1910,7 +2015,12 @@ export default function SiteShell({ children, channelContent }) {
                     </div>
                   ) : null}
                 </div>
-                <nav className="site-shell__nav" aria-label="Primary navigation">
+                <nav
+                  className="site-shell__nav"
+                  aria-label="Primary navigation"
+                  ref={navRef}
+                  aria-hidden={isNavCondensed ? "true" : undefined}
+                >
                   {menuItems.map((item, index) => {
                     const isActive = item.id === activeSection;
                     return (
@@ -1926,6 +2036,7 @@ export default function SiteShell({ children, channelContent }) {
                         onMouseLeave={handleReset}
                         onFocus={() => handlePreview(item, isActive)}
                         onBlur={handleReset}
+                        tabIndex={isNavCondensed ? -1 : undefined}
                         style={
                           navReady
                             ? {
@@ -1943,7 +2054,7 @@ export default function SiteShell({ children, channelContent }) {
                     );
                   })}
                 </nav>
-                <div className="site-shell__icon-group">
+                <div className="site-shell__icon-group" ref={iconGroupRef}>
                   <button
                     type="button"
                     className={`site-shell__icon-button site-shell__icon-button--action${(isDotfieldOverlayOpen || isDotfieldOverlayMounted) ? " is-active" : ""}`}

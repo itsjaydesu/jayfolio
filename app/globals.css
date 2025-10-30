@@ -12,7 +12,7 @@
   --shell-inline-pad: clamp(1.5rem, 5vw, 4rem);
   --layout-max-width: 1180px;
   --site-shell-header-offset: calc(
-    clamp(1.4rem, 4vh, 2.4rem) + clamp(1rem, 2.4vw, 1.35rem) * 2 + 2rem
+    clamp(1rem, 3vh, 1.9rem) + clamp(0.75rem, 2vw, 1.1rem) * 2 + 1.2rem
   );
   --surface-base: #030405;
   --surface-elevated: rgba(15, 18, 22, 0.78);
@@ -8823,7 +8823,7 @@ body[data-language-transitioning="true"] .language-transition-root {
   .site-shell__brand {
     --brand-hitpad-inline: clamp(0.6rem, 4vw, 0.85rem);
     --brand-hitpad-block: clamp(0.28rem, 3vw, 0.48rem);
-    --brand-left-offset: 0.18em;
+    --brand-left-offset: 0.24em;
     font-size: clamp(0.8rem, 2vw, 1.1rem);
     letter-spacing: 0.16em;
   }
@@ -9377,8 +9377,8 @@ body[data-language-transitioning="true"] .language-transition-root {
     left: 0;
     right: 0;
     width: 100%;
-    padding: clamp(1.4rem, 4vh, 2.4rem) var(--shell-inline-pad)
-      clamp(1rem, 2vh, 1.5rem);
+    padding: clamp(1.05rem, 3vh, 1.9rem) var(--shell-inline-pad)
+      clamp(0.75rem, 1.8vh, 1.2rem);
     z-index: 32;
     opacity: 0;
     transform: translateY(-18px);
@@ -9501,10 +9501,10 @@ body[data-language-transitioning="true"] .language-transition-root {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: clamp(2rem, 4vw, 3rem);
+    gap: clamp(1.4rem, 3vw, 2.4rem);
     position: relative; /* keep content above the header's top fade */
     z-index: 1;
-    padding: clamp(1rem, 2.4vw, 1.35rem) 0;
+    padding: clamp(0.75rem, 1.8vw, 1.1rem) 0;
     border: none;
     border-radius: 0;
     background: transparent;
@@ -9633,7 +9633,7 @@ body[data-language-transitioning="true"] .language-transition-root {
   .site-shell__brand {
     --brand-hitpad-inline: clamp(0.8rem, 2vw, 1.2rem);
     --brand-hitpad-block: clamp(0.35rem, 1vw, 0.6rem);
-    --brand-left-offset: 0.28em;
+    --brand-left-offset: 0.36em;
     font-size: clamp(1rem, 2.2vw, 1.5rem);
     letter-spacing: 0.18em;
     text-transform: uppercase;
@@ -9763,6 +9763,27 @@ body[data-language-transitioning="true"] .language-transition-root {
     flex: 1;
     justify-content: center;
     height: 100%;
+  }
+
+  .site-shell__header[data-nav-condensed="true"] .site-shell__nav {
+    position: absolute;
+    left: -9999px;
+    top: auto;
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+  }
+
+  .site-shell__header[data-nav-condensed="true"] .site-shell__nav-dropdown {
+    display: block;
+  }
+
+  .site-shell__header[data-nav-condensed="true"] .site-shell__header-inner {
+    gap: clamp(1.1rem, 2.4vw, 2rem);
+  }
+
+  .site-shell__header[data-nav-condensed="true"] .site-shell__icon-group {
+    margin-left: auto;
   }
 
   .site-shell__nav-dropdown {
