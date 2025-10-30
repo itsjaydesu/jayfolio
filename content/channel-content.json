@@ -56,8 +56,16 @@
       }
     ],
     "aboutTags": {
-      "en": ["these", "are", "tags"],
-      "ja": ["デザイナー", "コンポーザー", "システムアーティスト"]
+      "en": [
+        "these",
+        "are",
+        "tags"
+      ],
+      "ja": [
+        "デザイナー",
+        "コンポーザー",
+        "システムアーティスト"
+      ]
     },
     "title": "",
     "lead": "Creative technologist guiding teams through ambient operating systems, tactile exhibition tooling, and cinematic web soundscapes. This dossier carries the studio ethos, collaborators, and signals shaping each commission. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
@@ -178,7 +186,7 @@
     "footerFadeSettings": {
       "bgPosition": "bottom",
       "bgScale": "cover",
-      "topFadeHeight": "75",
+      "topFadeHeight": "20",
       "topFadeOpacity": "1",
       "bottomFadeHeight": "0",
       "bottomFadeOpacity": "0",
