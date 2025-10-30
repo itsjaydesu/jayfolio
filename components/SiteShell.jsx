@@ -539,7 +539,6 @@ export default function SiteShell({ children, channelContent }) {
       top: `${mobileMenuPosition.top}px`,
       left: `${mobileMenuPosition.left}px`,
       width: `${mobileMenuPosition.width}px`,
-      "--mobile-nav-arrow-offset": `${mobileMenuPosition.arrowOffset}px`,
     };
   }, [isMobileMenuOpen, mobileMenuPosition]);
 
@@ -920,8 +919,9 @@ export default function SiteShell({ children, channelContent }) {
     const rect = buttonNode.getBoundingClientRect();
     const viewportPadding = 16;
     const minWidth = 200; // match design width while allowing clamping on narrow screens
+    const viewportWidth = window.innerWidth || 0;
     const availableWidth = Math.max(
-      window.innerWidth - viewportPadding * 2,
+      viewportWidth - viewportPadding * 2,
       minWidth
     );
     const width = Math.min(
@@ -929,26 +929,17 @@ export default function SiteShell({ children, channelContent }) {
       availableWidth
     );
 
-    let left = rect.left;
-    const maxLeft = window.innerWidth - viewportPadding - width;
-    if (left < viewportPadding) {
-      left = viewportPadding;
-    } else if (left > maxLeft) {
-      left = Math.max(viewportPadding, maxLeft);
-    }
-
-    const top = rect.bottom + 12;
-    const anchorCenter = rect.left + rect.width / 2;
-    const arrowOffset = Math.min(
-      width - 12,
-      Math.max(12, anchorCenter - left)
-    );
+    const buttonCenter = rect.left + rect.width / 2;
+    const proposedLeft = buttonCenter - width / 2;
+    const maxLeft = viewportWidth - viewportPadding - width;
+    const minLeft = viewportPadding;
+    const left = Math.max(minLeft, Math.min(proposedLeft, maxLeft));
+    const top = rect.bottom + 16;
 
     setMobileMenuPosition({
       top,
       left,
       width,
-      arrowOffset,
     });
   }, []);
 
