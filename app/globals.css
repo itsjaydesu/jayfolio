@@ -4047,6 +4047,8 @@ a {
   position: sticky;
   top: clamp(1rem, 6vh, 3rem);
   transition: transform 0.45s ease, opacity 0.3s ease;
+  margin-left: clamp(1.2rem, 3vw, 1.6rem);
+  margin-right: clamp(1.2rem, 3vw, 1.6rem);
 }
 
 /* Sidebar variant handled by the new rules above */
@@ -4129,7 +4131,7 @@ a {
 .retro-menu__title-actions {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 0.5rem;
 }
 
 .retro-menu__title-actions > * {
@@ -4140,8 +4142,8 @@ a {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   border-radius: 6px;
   border: 1px solid rgba(244, 250, 255, 0.42);
   color: #f4faff;
@@ -4150,8 +4152,8 @@ a {
 }
 
 .retro-menu__social svg {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   fill: currentColor;
 }
 
@@ -4329,10 +4331,10 @@ a {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   padding: 0;
-  margin: 0 0.25rem;
+  margin: 0 0.2rem;
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 4px;
@@ -4348,8 +4350,8 @@ a {
 }
 
 .retro-menu__language-toggle svg {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   display: block;
 }
 
@@ -4361,8 +4363,8 @@ a {
 }
 
 .retro-menu__icon {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   display: block;
   filter: drop-shadow(0 0 2px rgba(164, 244, 255, 0.25));
   transition: transform 0.32s cubic-bezier(0.33, 1, 0.68, 1),
@@ -4440,10 +4442,10 @@ a {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   padding: 0;
-  margin: 0 0.5rem;
+  margin: 0 0.35rem;
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 4px;
@@ -4458,8 +4460,8 @@ a {
 }
 
 .retro-menu__settings-toggle svg {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
 }
 
 .retro-menu__settings-toggle:hover,
@@ -4878,13 +4880,13 @@ a {
     display: inline-flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 0.35rem;
+    gap: 0.3rem;
     flex-wrap: nowrap;
   }
 
   .retro-menu__language-toggle {
-    width: 28px;
-    height: 28px;
+    width: 30px;
+    height: 30px;
     margin: 0;
     /* Ensure visibility on mobile too */
     opacity: 1 !important;
@@ -4892,14 +4894,14 @@ a {
   }
 
   .retro-menu__language-toggle svg {
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
     stroke: currentColor;
   }
 
   .retro-menu__settings-toggle {
-    width: 28px;
-    height: 28px;
+    width: 30px;
+    height: 30px;
     margin: 0;
   }
 

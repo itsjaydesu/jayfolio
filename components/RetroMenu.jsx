@@ -743,7 +743,6 @@ export default function RetroMenu({
               />
             </svg>
           </Link>
-          <small>v4.1</small>
           <button
             type="button"
             className="retro-menu__dismiss"
