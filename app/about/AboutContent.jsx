@@ -161,7 +161,7 @@ function AnimatedWordSwap({ options, signature }) {
       return previous;
     });
     randomizedRef.current = false;
-  }, [optionsSignature, sanitizedOptions.length]);
+  }, [optionsSignature, sanitizedOptions]);
 
   useEffect(() => {
     if (!isHydrated || sanitizedOptions.length < 2 || randomizedRef.current) {
@@ -176,7 +176,7 @@ function AnimatedWordSwap({ options, signature }) {
       const nextIndex = pool.length ? pool[Math.floor(Math.random() * pool.length)] : previous;
       return typeof nextIndex === 'number' ? nextIndex : previous;
     });
-  }, [isHydrated, optionsSignature, sanitizedOptions.length]);
+  }, [isHydrated, optionsSignature, sanitizedOptions]);
 
   useEffect(() => {
     if (!isHydrated || sanitizedOptions.length < 2) {
@@ -196,7 +196,7 @@ function AnimatedWordSwap({ options, signature }) {
     }, delay);
 
     return () => window.clearTimeout(timeoutId);
-  }, [currentIndex, isHydrated, optionsSignature, sanitizedOptions.length]);
+  }, [currentIndex, isHydrated, optionsSignature, sanitizedOptions]);
 
   const current =
     currentIndex >= 0 && currentIndex < sanitizedOptions.length ? sanitizedOptions[currentIndex] : '';
@@ -211,10 +211,6 @@ function AnimatedWordSwap({ options, signature }) {
     return () => window.clearTimeout(pulseTimeout);
   }, [current]);
 
-  if (!current) {
-    return null;
-  }
-
   const swapClasses = ['about-page__word-swap'];
   if (isPulsing) {
     swapClasses.push('about-page__word-swap--pulse');
@@ -222,9 +218,13 @@ function AnimatedWordSwap({ options, signature }) {
 
   const maxChars = useMemo(
     () => sanitizedOptions.reduce((max, option) => Math.max(max, option.length), 0),
-    [sanitizedOptions, optionsSignature]
+    [sanitizedOptions]
   );
   const minWidth = Math.max(maxChars, current.length, 4.5);
+
+  if (!current) {
+    return null;
+  }
 
   return (
     <span className={swapClasses.join(' ')} style={minWidth ? { minWidth: `${minWidth}ch` } : undefined}>
