@@ -9978,11 +9978,32 @@ body[data-language-transitioning="true"] .language-transition-root {
   }
 
   .site-shell__header[data-nav-condensed="true"] .site-shell__header-inner {
-    gap: clamp(1.1rem, 2.4vw, 2rem);
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      "brand icons"
+      "menu menu";
+    align-items: center;
+    align-content: center;
+    gap: clamp(1rem, 2.2vw, 1.8rem);
+  }
+
+  .site-shell__header[data-nav-condensed="true"] .site-shell__brand {
+    grid-area: brand;
   }
 
   .site-shell__header[data-nav-condensed="true"] .site-shell__icon-group {
+    grid-area: icons;
     justify-self: end;
+    align-self: center;
+  }
+
+  .site-shell__header[data-nav-condensed="true"] .site-shell__nav-dropdown {
+    grid-area: menu;
+    justify-self: center;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin-top: clamp(0.35rem, 1.2vw, 0.75rem);
   }
 
   .site-shell__nav-dropdown {
@@ -10019,6 +10040,24 @@ body[data-language-transitioning="true"] .language-transition-root {
     box-shadow: 0 12px 30px rgba(6, 18, 26, 0.48);
   }
 
+  .site-shell__nav-dropdown-button::after {
+    content: "";
+    position: absolute;
+    inset: -0.35rem;
+    border-radius: inherit;
+    background: radial-gradient(
+      circle at 50% 50%,
+      rgba(138, 248, 255, 0.18),
+      rgba(12, 28, 36, 0)
+    );
+    opacity: 0;
+    transform: scale(0.92);
+    transition: opacity 0.32s cubic-bezier(0.33, 1, 0.68, 1),
+      transform 0.32s cubic-bezier(0.33, 1, 0.68, 1);
+    pointer-events: none;
+    z-index: -1;
+  }
+
   .site-shell__nav-dropdown[data-open="true"]
     .site-shell__nav-dropdown-button {
     border-color: rgba(138, 248, 255, 0.52);
@@ -10040,6 +10079,14 @@ body[data-language-transitioning="true"] .language-transition-root {
     color: rgba(236, 252, 255, 0.96);
     box-shadow: 0 16px 34px rgba(4, 14, 20, 0.6),
       0 0 22px rgba(138, 248, 255, 0.22);
+  }
+
+  .site-shell__nav-dropdown-button:hover::after,
+  .site-shell__nav-dropdown-button:focus-visible::after,
+  .site-shell__nav-dropdown[data-open="true"]
+    .site-shell__nav-dropdown-button::after {
+    opacity: 1;
+    transform: scale(1);
   }
 
   .site-shell__nav-dropdown-button:focus-visible {
@@ -10135,6 +10182,7 @@ body[data-language-transitioning="true"] .language-transition-root {
   }
 
   .site-shell__nav-dropdown-option {
+    --option-stagger: 0s;
     width: 100%;
     display: inline-flex;
     align-items: center;
@@ -10151,21 +10199,23 @@ body[data-language-transitioning="true"] .language-transition-root {
     font-family: inherit;
     line-height: 1.1;
     cursor: pointer;
-    transition: color 0.2s ease, background 0.2s ease,
-      box-shadow 0.2s ease, transform 0.24s cubic-bezier(0.22, 1, 0.36, 1),
-      opacity 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+    transition:
+      color 0.18s ease 0s,
+      background 0.18s ease 0s,
+      box-shadow 0.2s ease 0s,
+      opacity 0.28s cubic-bezier(0.22, 1, 0.36, 1) var(--option-stagger),
+      transform 0.28s cubic-bezier(0.22, 1, 0.36, 1) var(--option-stagger);
     outline: none;
     opacity: 0;
     transform: translateY(10px);
     will-change: opacity, transform;
-    transition-delay: 0s;
   }
 
   .site-shell__nav-dropdown[data-open="true"]
     .site-shell__nav-dropdown-option {
+    --option-stagger: calc(var(--option-index, 0) * 55ms + 90ms);
     opacity: 1;
     transform: translateY(0);
-    transition-delay: calc(var(--option-index, 0) * 55ms + 90ms);
   }
 
   .site-shell__nav-dropdown-option:hover,
@@ -10207,11 +10257,11 @@ body[data-language-transitioning="true"] .language-transition-root {
 
     .site-shell__nav-dropdown-option {
       transition: none;
-      transition-delay: 0s;
     }
 
     .site-shell__nav-dropdown[data-open="true"]
       .site-shell__nav-dropdown-option {
+      --option-stagger: 0s;
       opacity: 1;
       transform: none;
     }
@@ -10459,7 +10509,7 @@ body[data-language-transitioning="true"] .language-transition-root {
 
     .site-shell__nav-dropdown {
       display: block;
-      grid-area: nav;
+      grid-area: menu;
       justify-self: center;
       margin-top: 0;
     }
