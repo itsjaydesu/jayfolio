@@ -165,9 +165,18 @@ export default function RetroMenu({
       panelWidth = viewportWidth;
     }
 
-    const menuCenterX =
-      viewportOffsetLeft + menuRect.left + menuRect.width / 2;
-    let leftPos = menuCenterX - panelWidth / 2;
+    // Center panel relative to the toggle button, not the entire menu
+    const toggleRect = toggleElement.getBoundingClientRect();
+    let leftPos;
+    if (!toggleRect || toggleRect.width === 0) {
+      // Fallback to menu center if toggle rect is invalid
+      const menuCenterX =
+        viewportOffsetLeft + menuRect.left + menuRect.width / 2;
+      leftPos = menuCenterX - panelWidth / 2;
+    } else {
+      const toggleCenterX = viewportOffsetLeft + toggleRect.left + toggleRect.width / 2;
+      leftPos = toggleCenterX - panelWidth / 2;
+    }
 
     if (Number.isFinite(viewportWidth) && viewportWidth > 0) {
       const minLeft = viewportOffsetLeft + safeMargin;
