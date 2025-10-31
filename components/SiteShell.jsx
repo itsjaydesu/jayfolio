@@ -104,6 +104,7 @@ export default function SiteShell({ children, channelContent }) {
   const [mobileMenuFocusIndex, setMobileMenuFocusIndex] = useState(-1);
   const [mobileMenuPosition, setMobileMenuPosition] = useState(null);
   const [isNavCondensed, setIsNavCondensed] = useState(false);
+  const [navBalanceOffset, setNavBalanceOffset] = useState(0);
 
   const warmSceneChunk = useCallback(() => {
     if (scenePreloadTriggeredRef.current) {
@@ -294,6 +295,14 @@ export default function SiteShell({ children, channelContent }) {
 
     const headerElement = headerInnerRef.current;
     const navElement = navRef.current;
+    const brandElement = brandRef.current;
+    const iconElement = iconGroupRef.current;
+
+    const brandWidth = brandElement?.getBoundingClientRect?.().width ?? 0;
+    const iconWidth = iconElement?.getBoundingClientRect?.().width ?? 0;
+    const rawBalance = (iconWidth - brandWidth) / 2;
+    const computedBalance =
+      Number.isFinite(rawBalance) && Math.abs(rawBalance) > 0.5 ? rawBalance : 0;
 
     const viewportWidth =
       window.innerWidth ||
@@ -308,21 +317,20 @@ export default function SiteShell({ children, channelContent }) {
       Boolean(smallViewportQuery?.matches);
 
     if (shouldForceCondensed) {
+      setNavBalanceOffset((previous) =>
+        Math.abs(previous - computedBalance) > 0.5 ? computedBalance : previous
+      );
       setIsNavCondensed((previous) => (previous ? previous : true));
       return;
     }
 
     if (!headerElement || !navElement) {
+      setNavBalanceOffset((previous) => (previous !== 0 ? 0 : previous));
       setIsNavCondensed(false);
       return;
     }
 
-    const brandElement = brandRef.current;
-    const iconElement = iconGroupRef.current;
-
     const headerWidth = headerElement.clientWidth;
-    const brandWidth = brandElement?.getBoundingClientRect?.().width ?? 0;
-    const iconWidth = iconElement?.getBoundingClientRect?.().width ?? 0;
     const computedStyle = window.getComputedStyle(headerElement);
     const gapValue = parseFloat(computedStyle.columnGap || computedStyle.gap || '0');
     const paddingLeft = parseFloat(computedStyle.paddingLeft || '0');
@@ -332,6 +340,9 @@ export default function SiteShell({ children, channelContent }) {
     const availableNavWidth = headerWidth - brandWidth - iconWidth - paddingLeft - paddingRight - gap * 2;
 
     if (availableNavWidth <= 0) {
+      setNavBalanceOffset((previous) =>
+        Math.abs(previous - computedBalance) > 0.5 ? computedBalance : previous
+      );
       setIsNavCondensed(true);
       return;
     }
@@ -356,6 +367,13 @@ export default function SiteShell({ children, channelContent }) {
     }
 
     const tolerance = 4;
+    setNavBalanceOffset((previous) => {
+      const target = measuredNavWidth > Math.max(0, availableNavWidth - tolerance)
+        ? computedBalance
+        : 0;
+      return Math.abs(previous - target) > 0.5 ? target : previous;
+    });
+
     setIsNavCondensed((previous) => {
       const needsCondensed = measuredNavWidth > Math.max(0, availableNavWidth - tolerance);
       return previous === needsCondensed ? previous : needsCondensed;
@@ -623,6 +641,16 @@ export default function SiteShell({ children, channelContent }) {
       width: `${mobileMenuPosition.width}px`,
     };
   }, [isMobileMenuOpen, mobileMenuPosition]);
+
+  const navDropdownStyle = useMemo(() => {
+    if (!isNavCondensed) {
+      return undefined;
+    }
+    const offsetValue = Number.isFinite(navBalanceOffset)
+      ? (Math.abs(navBalanceOffset) > 0.5 ? navBalanceOffset : 0)
+      : 0;
+    return { "--nav-balance-offset": `${offsetValue}px` };
+  }, [isNavCondensed, navBalanceOffset]);
 
   useEffect(() => {
     if (!isListingChannel) {
@@ -991,10 +1019,14 @@ export default function SiteShell({ children, channelContent }) {
     }
 
     const rect = buttonNode.getBoundingClientRect();
-    const viewportPadding = 16;
+    const viewportWidth = window.innerWidth || 0;
+    const basePadding = viewportWidth * 0.04;
+    const viewportPadding = Number.isFinite(basePadding)
+      ? Math.max(16, Math.min(32, basePadding))
+      : 16;
     const minWidth = 200; // match design width while allowing clamping on narrow screens
     const availableWidth = Math.max(
-      window.innerWidth - viewportPadding * 2,
+      viewportWidth - viewportPadding * 2,
       minWidth
     );
     const width = Math.min(
@@ -1002,8 +1034,9 @@ export default function SiteShell({ children, channelContent }) {
       availableWidth
     );
 
-    let left = rect.left;
-    const maxLeft = window.innerWidth - viewportPadding - width;
+    const buttonCenter = rect.left + rect.width / 2;
+    let left = buttonCenter - width / 2;
+    const maxLeft = viewportWidth - viewportPadding - width;
     if (left < viewportPadding) {
       left = viewportPadding;
     } else if (left > maxLeft) {
@@ -1182,7 +1215,7 @@ export default function SiteShell({ children, channelContent }) {
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("scroll", handleResize, true);
     };
-  }, [isMobileMenuOpen, updateMobileMenuPosition]);
+  }, [isMobileMenuOpen, navBalanceOffset, updateMobileMenuPosition]);
 
   useEffect(() => {
     if (!isMobileMenuOpen) {
@@ -2021,6 +2054,7 @@ export default function SiteShell({ children, channelContent }) {
                   className="site-shell__nav-dropdown"
                   data-has-selection={activeSection ? "true" : "false"}
                   data-open={isMobileMenuOpen ? "true" : "false"}
+                  style={navDropdownStyle}
                 >
                   <span id="site-shell-mobile-nav-label" className="sr-only">
                     {mobileMenuLabel}
