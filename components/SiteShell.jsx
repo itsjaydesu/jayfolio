@@ -19,7 +19,7 @@ const DOTFIELD_OVERLAY_FADE_MS = 520;
 // Minimum header backdrop opacity on subpages so the menu is readable
 // over content even at scroll position 0. Kept subtle to avoid a heavy box.
 const HEADER_BASE_SHADE = 0.16; // ~16% base, escalates with scroll
-const NAV_CONDENSED_BREAKPOINT = 600;
+const NAV_CONDENSED_BREAKPOINT = 540;
 const DOTFIELD_EFFECT_SEQUENCE = [
   'jitter',
   'swirlPulse',
@@ -618,8 +618,8 @@ export default function SiteShell({ children, channelContent }) {
       ? menuItems[activeMenuIndex]?.label ?? mobileMenuPlaceholder
       : mobileMenuPlaceholder;
   const visibleNavLinkCount = isNavCondensed ? 0 : menuItems.length;
-  const navLinkStartIndex = isNavCondensed ? 2 : 1;
-  const navSequenceBaseIndex = visibleNavLinkCount + navLinkStartIndex;
+  const navLinkStartIndex = 0;
+  const navSequenceBaseIndex = visibleNavLinkCount;
 
   const mobileMenuInlineStyle = useMemo(() => {
     if (!isMobileMenuOpen) {
@@ -2163,7 +2163,7 @@ export default function SiteShell({ children, channelContent }) {
                         style={
                           navReady
                             ? {
-                                "--nav-item-index": navLinkStartIndex + index,
+                                "--nav-item-index": index,
                               }
                             : navItemInitialStyle
                         }
