@@ -10100,11 +10100,11 @@ body[data-language-transitioning="true"] .language-transition-root {
     max-width: min(22rem, calc(100vw - 2rem));
     min-width: min(13.5rem, calc(100vw - 2rem));
     opacity: 0;
-    transform: translateY(-14px) scale(0.94);
-    transform-origin: top center;
-    transition: opacity 0.32s cubic-bezier(0.22, 1, 0.36, 1),
-      transform 0.34s cubic-bezier(0.22, 1, 0.36, 1),
-      box-shadow 0.34s cubic-bezier(0.22, 1, 0.36, 1);
+    transform: translateY(-20px) scale(0.96);
+    transform-origin: center center;
+    transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     will-change: opacity, transform, box-shadow;
     pointer-events: none;
   }
@@ -10128,6 +10128,7 @@ body[data-language-transitioning="true"] .language-transition-root {
     overflow-y: auto;
     scrollbar-width: none;
     outline: none;
+    align-items: stretch;
   }
 
   .site-shell__nav-dropdown-list::-webkit-scrollbar {
@@ -10138,7 +10139,7 @@ body[data-language-transitioning="true"] .language-transition-root {
     width: 100%;
     display: inline-flex;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: center;
     gap: 0.35rem;
     padding: 0.6rem 0.9rem;
     border: none;
@@ -10152,20 +10153,21 @@ body[data-language-transitioning="true"] .language-transition-root {
     line-height: 1.1;
     cursor: pointer;
     transition: color 0.2s ease, background 0.2s ease,
-      box-shadow 0.2s ease, transform 0.24s cubic-bezier(0.22, 1, 0.36, 1),
-      opacity 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+      box-shadow 0.2s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+      opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     outline: none;
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(8px);
     will-change: opacity, transform;
     transition-delay: 0s;
+    text-align: center;
   }
 
   .site-shell__nav-dropdown[data-open="true"]
     .site-shell__nav-dropdown-option {
     opacity: 1;
     transform: translateY(0);
-    transition-delay: calc(var(--option-index, 0) * 55ms + 90ms);
+    transition-delay: calc(var(--option-index, 0) * 40ms + 60ms);
   }
 
   .site-shell__nav-dropdown-option:hover,

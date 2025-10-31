@@ -985,32 +985,25 @@ export default function SiteShell({ children, channelContent }) {
       return;
     }
 
-    const buttonNode = mobileMenuButtonRef.current;
-    if (!buttonNode) {
-      return;
-    }
-
-    const rect = buttonNode.getBoundingClientRect();
     const viewportPadding = 16;
     const minWidth = 200; // match design width while allowing clamping on narrow screens
+    const maxWidth = 22 * 16; // 22rem in pixels
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    
+    // Calculate centered width
     const availableWidth = Math.max(
-      window.innerWidth - viewportPadding * 2,
+      viewportWidth - viewportPadding * 2,
       minWidth
     );
-    const width = Math.min(
-      Math.max(rect.width, minWidth),
-      availableWidth
-    );
+    const width = Math.min(maxWidth, availableWidth);
 
-    let left = rect.left;
-    const maxLeft = window.innerWidth - viewportPadding - width;
-    if (left < viewportPadding) {
-      left = viewportPadding;
-    } else if (left > maxLeft) {
-      left = Math.max(viewportPadding, maxLeft);
-    }
+    // Center horizontally
+    const left = (viewportWidth - width) / 2;
 
-    const top = rect.bottom + 12;
+    // Center vertically with some spacing from top
+    const verticalPadding = Math.max(80, viewportHeight * 0.1);
+    const top = verticalPadding;
 
     setMobileMenuPosition({
       top,
