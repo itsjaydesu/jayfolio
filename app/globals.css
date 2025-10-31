@@ -9974,7 +9974,10 @@ body[data-language-transitioning="true"] .language-transition-root {
   }
 
   .site-shell__header[data-nav-condensed="true"] .site-shell__nav-dropdown {
-    display: block;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
   }
 
   .site-shell__header[data-nav-condensed="true"] .site-shell__header-inner {
@@ -9990,6 +9993,9 @@ body[data-language-transitioning="true"] .language-transition-root {
     position: relative;
     min-width: 0;
     width: auto;
+    transform: translateX(var(--nav-balance-offset, 0px));
+    transition: transform 0.4s cubic-bezier(0.33, 1, 0.68, 1);
+    will-change: transform;
   }
 
   .site-shell__nav-dropdown-button {
@@ -10151,21 +10157,24 @@ body[data-language-transitioning="true"] .language-transition-root {
     font-family: inherit;
     line-height: 1.1;
     cursor: pointer;
-    transition: color 0.2s ease, background 0.2s ease,
-      box-shadow 0.2s ease, transform 0.24s cubic-bezier(0.22, 1, 0.36, 1),
-      opacity 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+    --option-delay: 0s;
+    transition:
+      color 0.16s ease 0s,
+      background 0.22s ease 0s,
+      box-shadow 0.28s cubic-bezier(0.22, 1, 0.36, 1) 0s,
+      transform 0.4s cubic-bezier(0.22, 1, 0.36, 1) var(--option-delay),
+      opacity 0.35s cubic-bezier(0.22, 1, 0.36, 1) var(--option-delay);
     outline: none;
     opacity: 0;
     transform: translateY(10px);
     will-change: opacity, transform;
-    transition-delay: 0s;
   }
 
   .site-shell__nav-dropdown[data-open="true"]
     .site-shell__nav-dropdown-option {
     opacity: 1;
     transform: translateY(0);
-    transition-delay: calc(var(--option-index, 0) * 55ms + 90ms);
+    --option-delay: calc(var(--option-index, 0) * 55ms + 90ms);
   }
 
   .site-shell__nav-dropdown-option:hover,
@@ -10207,13 +10216,14 @@ body[data-language-transitioning="true"] .language-transition-root {
 
     .site-shell__nav-dropdown-option {
       transition: none;
-      transition-delay: 0s;
+      --option-delay: 0s;
     }
 
     .site-shell__nav-dropdown[data-open="true"]
       .site-shell__nav-dropdown-option {
       opacity: 1;
       transform: none;
+      --option-delay: 0s;
     }
   }
 
