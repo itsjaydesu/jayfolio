@@ -74,12 +74,14 @@ export function HamburgerIcon({ className }) {
       className={["icon", className].filter(Boolean).join(" ")}
       fill="none"
       stroke="currentColor"
-      strokeWidth="1.6"
+      strokeWidth="1.8"
       strokeLinecap="round"
+      strokeLinejoin="round"
+      shapeRendering="geometricPrecision"
     >
-      <line x1="4" y1="7" x2="20" y2="7" />
-      <line x1="6" y1="12" x2="18" y2="12" />
-      <line x1="4" y1="17" x2="20" y2="17" />
+      <line x1="5" y1="6" x2="19" y2="6" vectorEffect="non-scaling-stroke" />
+      <line x1="5" y1="12" x2="19" y2="12" vectorEffect="non-scaling-stroke" />
+      <line x1="5" y1="18" x2="19" y2="18" vectorEffect="non-scaling-stroke" />
     </svg>
   );
 }
