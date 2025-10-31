@@ -10451,6 +10451,18 @@ body[data-language-transitioning="true"] .language-transition-root {
     }
   }
 
+  @media (max-width: 720px) and (min-width: 541px) {
+    .site-shell__header[data-nav-condensed="true"] .site-shell__nav-dropdown {
+      grid-column: 1 / -1;
+      grid-row: 2;
+      justify-self: center;
+    }
+
+    .site-shell__header[data-nav-condensed="true"] .site-shell__nav-dropdown-button {
+      margin-inline: auto;
+    }
+  }
+
   @media (max-width: 540px) {
     .site-shell__header-inner {
       grid-template-columns: auto minmax(0, 1fr) auto;
