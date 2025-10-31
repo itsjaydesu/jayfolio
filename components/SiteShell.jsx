@@ -991,31 +991,53 @@ export default function SiteShell({ children, channelContent }) {
     }
 
     const rect = buttonNode.getBoundingClientRect();
-    const viewportPadding = 16;
-    const minWidth = 200; // match design width while allowing clamping on narrow screens
-    const availableWidth = Math.max(
-      window.innerWidth - viewportPadding * 2,
-      minWidth
-    );
-    const width = Math.min(
-      Math.max(rect.width, minWidth),
-      availableWidth
-    );
+    const visualViewport = window.visualViewport;
 
-    let left = rect.left;
-    const maxLeft = window.innerWidth - viewportPadding - width;
-    if (left < viewportPadding) {
-      left = viewportPadding;
-    } else if (left > maxLeft) {
-      left = Math.max(viewportPadding, maxLeft);
+    const viewportWidth = Math.max(
+      0,
+      visualViewport?.width ?? window.innerWidth ?? rect.width
+    );
+    const viewportLeft = visualViewport?.offsetLeft ?? 0;
+    const viewportTop = visualViewport?.offsetTop ?? 0;
+
+    const safeMargin = Math.max(16, Math.min(40, viewportWidth * 0.06));
+    let availableWidth = viewportWidth - safeMargin * 2;
+    if (!Number.isFinite(availableWidth) || availableWidth <= 0) {
+      availableWidth = rect.width;
     }
 
-    const top = rect.bottom + 12;
+    const minimumComfortWidth = 220;
+    const idealWidth = Math.min(
+      360,
+      Math.max(rect.width + 32, minimumComfortWidth)
+    );
+    const width = availableWidth >= minimumComfortWidth
+      ? Math.min(idealWidth, availableWidth)
+      : Math.max(
+          availableWidth,
+          Math.min(rect.width + 16, minimumComfortWidth)
+        );
+
+    const buttonCenterX = viewportLeft + rect.left + rect.width / 2;
+    let left = buttonCenterX - width / 2;
+
+    const minLeft = viewportLeft + safeMargin;
+    const maxLeft = viewportLeft + viewportWidth - safeMargin - width;
+
+    if (Number.isFinite(minLeft) && Number.isFinite(maxLeft)) {
+      if (left < minLeft) {
+        left = minLeft;
+      } else if (left > maxLeft) {
+        left = maxLeft;
+      }
+    }
+
+    const top = viewportTop + rect.bottom + 14;
 
     setMobileMenuPosition({
-      top,
-      left,
-      width,
+      top: Math.round(top),
+      left: Math.round(Math.max(left, viewportLeft)),
+      width: Math.round(width),
     });
   }, []);
 
