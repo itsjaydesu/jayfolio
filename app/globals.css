@@ -284,10 +284,15 @@ a {
   pointer-events: auto;
 }
 
+.menu-overlay .retro-menu__list {
+  --menu-item-stagger-base: 0.22s;
+  --menu-item-stagger-step: 0.06s;
+}
+
 .menu-overlay .retro-menu__list,
 .menu-overlay .retro-menu__status {
   opacity: 0;
-  transform: translateY(18px);
+  transform: translateY(-18px);
   transition: opacity 0.52s cubic-bezier(0.33, 1, 0.68, 1),
     transform 0.52s cubic-bezier(0.33, 1, 0.68, 1);
 }
@@ -300,7 +305,7 @@ a {
 
 .menu-overlay .retro-menu__item {
   opacity: 0;
-  transform: translateY(16px) scale(0.94);
+  transform: translateY(-16px) scale(0.94);
   transition: opacity 0.42s cubic-bezier(0.33, 1, 0.68, 1),
     transform 0.42s cubic-bezier(0.33, 1, 0.68, 1);
   transform-origin: center center;
@@ -309,31 +314,17 @@ a {
 .menu-overlay.is-visible .retro-menu__item {
   opacity: 1;
   transform: translateY(0) scale(1);
-}
-
-.menu-overlay.is-visible .retro-menu__item:nth-child(1) {
-  transition-delay: 0.22s;
-}
-
-.menu-overlay.is-visible .retro-menu__item:nth-child(2) {
-  transition-delay: 0.28s;
-}
-
-.menu-overlay.is-visible .retro-menu__item:nth-child(3) {
-  transition-delay: 0.34s;
-}
-
-.menu-overlay.is-visible .retro-menu__item:nth-child(4) {
-  transition-delay: 0.4s;
-}
-
-/* Art menu item - 5th child */
-.menu-overlay.is-visible .retro-menu__item:nth-child(5) {
-  transition-delay: 0.46s;
+  transition-delay: calc(
+    var(--menu-item-stagger-base, 0.22s) +
+      var(--menu-item-index, 0) * var(--menu-item-stagger-step, 0.06s)
+  );
 }
 
 .menu-overlay.is-visible .retro-menu__status {
-  transition-delay: 0.52s;
+  transition-delay: calc(
+    var(--menu-item-stagger-base, 0.22s) +
+      (var(--menu-item-count, 0) + 1) * var(--menu-item-stagger-step, 0.06s)
+  );
 }
 
 .content-stage {
@@ -6113,9 +6104,12 @@ body:not([data-language-transitioning="true"])
     row-gap: clamp(0.75rem, 3vw, 1.1rem);
   }
 
-  .site-shell__nav,
-  .site-shell__nav-dropdown {
+  .site-shell__nav {
     justify-self: stretch;
+  }
+
+  .site-shell__nav-dropdown {
+    justify-self: center;
   }
 
   .site-shell__nav {
@@ -7178,7 +7172,7 @@ body.qr-intro-active .site-shell__icon-button {
   position: relative;
   width: 100%;
   opacity: 0;
-  transform: translateY(10px);
+  transform: translateY(-10px);
   transition: opacity 0.6s ease-out, transform 0.6s ease-out;
   background: transparent;
   /* Ensure single scroll - no overflow on this container */
@@ -10108,6 +10102,7 @@ body[data-language-transitioning="true"] .language-transition-root {
   .site-shell__nav-dropdown-button-icon svg {
     width: 100%;
     height: 100%;
+    display: block;
   }
 
   .site-shell__nav-dropdown-button-text {
@@ -10520,9 +10515,11 @@ body[data-language-transitioning="true"] .language-transition-root {
     }
 
     .site-shell__nav-dropdown {
-      display: block;
+      display: flex;
       grid-area: nav;
       justify-self: center;
+      justify-content: center;
+      align-items: center;
       margin-top: 0;
     }
 

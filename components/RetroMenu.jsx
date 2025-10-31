@@ -497,6 +497,9 @@ export default function RetroMenu({
     }
   };
 
+  const menuItems = Array.isArray(items) ? items : [];
+  const totalMenuItems = menuItems.length;
+
   return (
     <nav
       id={id}
@@ -512,6 +515,7 @@ export default function RetroMenu({
       }
       data-effect-active={hasActiveEffect ? "true" : "false"}
       aria-label="Main navigation"
+      style={{ "--menu-item-count": String(totalMenuItems) }}
     >
       <div className="retro-menu__titlebar">
         <span className="retro-menu__title">
@@ -763,8 +767,15 @@ export default function RetroMenu({
         </div>
       </div>
       <div className="retro-menu__body">
-        <ul className="retro-menu__list">
-          {items.map((item) => {
+        {/* Plan for sequential animation & status delays:
+            1. Share the total item count with CSS so we avoid hard-coded nth-child rules.
+            2. Tag each menu item with its index so transitions can cascade from top to bottom.
+            3. Keep navigation handlers intact to preserve existing behavior on every screen size. */}
+        <ul
+          className="retro-menu__list"
+          style={{ "--menu-item-count": String(totalMenuItems) }}
+        >
+          {menuItems.map((item, index) => {
             const isActive = item.id === activeSection;
             const handlePreview = () => {
               if (!onStatusChange) return;
@@ -786,6 +797,7 @@ export default function RetroMenu({
                 key={item.id}
                 className={`retro-menu__item${isActive ? " is-active" : ""}`}
                 data-section={item.id}
+                style={{ "--menu-item-index": String(index) }}
               >
                 <Link
                   href={item.href}
