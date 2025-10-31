@@ -122,6 +122,9 @@ export default function RetroMenu({
     const viewportOffsetLeft = visualViewport?.offsetLeft ?? 0;
     const viewportOffsetTop = visualViewport?.offsetTop ?? 0;
 
+    // Check if we're on mobile (max-width: 640px)
+    const isMobile = viewportWidth <= 640;
+
     const layoutWidth = menuElement.offsetWidth || menuRect.width;
     const fallbackWidth = layoutWidth > 0 ? layoutWidth : menuRect.width;
     const desiredWidth = Math.min(Math.max(fallbackWidth, 0), 420);
@@ -165,44 +168,76 @@ export default function RetroMenu({
       panelWidth = viewportWidth;
     }
 
-    const menuCenterX =
-      viewportOffsetLeft + menuRect.left + menuRect.width / 2;
-    let leftPos = menuCenterX - panelWidth / 2;
-
-    if (Number.isFinite(viewportWidth) && viewportWidth > 0) {
+    // On mobile, center the panel horizontally
+    let leftPos;
+    if (isMobile) {
+      // Center the panel on the screen
+      leftPos = viewportOffsetLeft + (viewportWidth - panelWidth) / 2;
+      // Ensure it doesn't go outside viewport bounds
       const minLeft = viewportOffsetLeft + safeMargin;
-      const maxLeft =
-        viewportOffsetLeft + viewportWidth - safeMargin - panelWidth;
-
+      const maxLeft = viewportOffsetLeft + viewportWidth - safeMargin - panelWidth;
       if (Number.isFinite(maxLeft) && maxLeft >= minLeft) {
         leftPos = Math.min(Math.max(leftPos, minLeft), maxLeft);
-      } else {
-        leftPos =
-          viewportOffsetLeft + Math.max((viewportWidth - panelWidth) / 2, 0);
+      }
+    } else {
+      // Desktop: position relative to menu
+      const menuCenterX =
+        viewportOffsetLeft + menuRect.left + menuRect.width / 2;
+      leftPos = menuCenterX - panelWidth / 2;
+
+      if (Number.isFinite(viewportWidth) && viewportWidth > 0) {
+        const minLeft = viewportOffsetLeft + safeMargin;
+        const maxLeft =
+          viewportOffsetLeft + viewportWidth - safeMargin - panelWidth;
+
+        if (Number.isFinite(maxLeft) && maxLeft >= minLeft) {
+          leftPos = Math.min(Math.max(leftPos, minLeft), maxLeft);
+        } else {
+          leftPos =
+            viewportOffsetLeft + Math.max((viewportWidth - panelWidth) / 2, 0);
+        }
       }
     }
 
-    const titlebar = menuElement.querySelector(".retro-menu__titlebar");
-    let topPos = viewportOffsetTop + menuRect.top;
-
-    if (titlebar) {
-      const titlebarRect = titlebar.getBoundingClientRect();
-      if (titlebarRect) {
-        topPos = viewportOffsetTop + titlebarRect.top;
+    // On mobile, center the panel vertically as well
+    let topPos;
+    if (isMobile) {
+      // Center vertically on screen
+      const menuHeight = menuRect.height;
+      topPos = viewportOffsetTop + (viewportHeight - menuHeight) / 2;
+      
+      // Ensure it doesn't go outside viewport bounds
+      if (Number.isFinite(viewportHeight) && viewportHeight > 0) {
+        const minTop = viewportOffsetTop + safeMargin;
+        const maxTop = viewportOffsetTop + viewportHeight - safeMargin - menuHeight;
+        if (Number.isFinite(maxTop) && maxTop >= minTop) {
+          topPos = Math.min(Math.max(topPos, minTop), maxTop);
+        }
       }
-    }
+    } else {
+      // Desktop: position relative to titlebar
+      const titlebar = menuElement.querySelector(".retro-menu__titlebar");
+      topPos = viewportOffsetTop + menuRect.top;
 
-    if (!Number.isFinite(topPos)) {
-      topPos = viewportOffsetTop;
-    }
-
-    if (Number.isFinite(viewportHeight) && viewportHeight > 0) {
-      const maxTop = viewportOffsetTop + viewportHeight - safeMargin;
-      if (topPos > maxTop) {
-        topPos = maxTop;
+      if (titlebar) {
+        const titlebarRect = titlebar.getBoundingClientRect();
+        if (titlebarRect) {
+          topPos = viewportOffsetTop + titlebarRect.top;
+        }
       }
-      if (topPos < viewportOffsetTop) {
+
+      if (!Number.isFinite(topPos)) {
         topPos = viewportOffsetTop;
+      }
+
+      if (Number.isFinite(viewportHeight) && viewportHeight > 0) {
+        const maxTop = viewportOffsetTop + viewportHeight - safeMargin;
+        if (topPos > maxTop) {
+          topPos = maxTop;
+        }
+        if (topPos < viewportOffsetTop) {
+          topPos = viewportOffsetTop;
+        }
       }
     }
 
