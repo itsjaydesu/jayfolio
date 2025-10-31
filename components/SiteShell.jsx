@@ -557,6 +557,13 @@ export default function SiteShell({ children, channelContent }) {
   const [navReady, setNavReady] = useState(false);
   const [hasActiveEffect, setHasActiveEffect] = useState(false);
   const [activeEffectInfo, setActiveEffectInfo] = useState(null); // { name, startTime, duration }
+  const navItemInitialStyle = useMemo(
+    () => ({
+      opacity: "var(--nav-item-initial-opacity, 0)",
+      transform: "translateY(var(--nav-item-initial-offset, -20px))",
+    }),
+    []
+  );
 
   // Active menu item computation
   const activeItem = useMemo(
@@ -609,6 +616,9 @@ export default function SiteShell({ children, channelContent }) {
     activeSection && activeMenuIndex >= 0
       ? menuItems[activeMenuIndex]?.label ?? mobileMenuPlaceholder
       : mobileMenuPlaceholder;
+  const visibleNavLinkCount = isNavCondensed ? 0 : menuItems.length;
+  const navLinkStartIndex = isNavCondensed ? 2 : 1;
+  const navSequenceBaseIndex = visibleNavLinkCount + navLinkStartIndex;
 
   const mobileMenuInlineStyle = useMemo(() => {
     if (!isMobileMenuOpen) {
@@ -2021,7 +2031,7 @@ export default function SiteShell({ children, channelContent }) {
               <div className="site-shell__header-inner" ref={headerInnerRef}>
                 <Link
                   href="/"
-                  className="site-shell__brand"
+                  className="site-shell__brand site-shell__nav-sequence-item"
                   aria-label={brand}
                   onClick={handleNavigateHome}
                   onMouseEnter={warmSceneChunk}
@@ -2029,12 +2039,8 @@ export default function SiteShell({ children, channelContent }) {
                   ref={brandRef}
                   style={
                     navReady
-                      ? undefined
-                      : {
-                          opacity: "var(--nav-item-initial-opacity, 0)",
-                          transform:
-                            "translateY(var(--nav-item-initial-offset, 8px))",
-                        }
+                      ? { "--nav-item-index": 0 }
+                      : navItemInitialStyle
                   }
                 >
                   <BrandWordmark className="site-shell__brand-wordmark" />
@@ -2049,7 +2055,7 @@ export default function SiteShell({ children, channelContent }) {
                   </span>
                   <button
                     type="button"
-                    className="site-shell__nav-dropdown-button"
+                    className="site-shell__nav-dropdown-button site-shell__nav-sequence-item"
                     aria-haspopup="listbox"
                     aria-labelledby="site-shell-mobile-nav-label site-shell-mobile-nav-button-text"
                     aria-expanded={isMobileMenuOpen ? "true" : "false"}
@@ -2058,6 +2064,15 @@ export default function SiteShell({ children, channelContent }) {
                     onKeyDown={handleMobileMenuKeyDown}
                     disabled={!menuItems.length}
                     ref={mobileMenuButtonRef}
+                    style={
+                      navReady
+                        ? {
+                            "--nav-item-index": isNavCondensed
+                              ? 1
+                              : navLinkStartIndex,
+                          }
+                        : navItemInitialStyle
+                    }
                   >
                     <span
                       className="site-shell__nav-dropdown-button-icon"
@@ -2135,7 +2150,7 @@ export default function SiteShell({ children, channelContent }) {
                         key={item.id}
                         href={item.href}
                         prefetch
-                        className={`site-shell__nav-link${
+                        className={`site-shell__nav-link site-shell__nav-sequence-item${
                           isActive ? " is-active" : ""
                         }`}
                         aria-current={isActive ? "page" : undefined}
@@ -2147,13 +2162,9 @@ export default function SiteShell({ children, channelContent }) {
                         style={
                           navReady
                             ? {
-                                transitionDelay: `${index * 60}ms`,
+                                "--nav-item-index": navLinkStartIndex + index,
                               }
-                            : {
-                                opacity: "var(--nav-item-initial-opacity, 0)",
-                                transform:
-                                  "translateY(var(--nav-item-initial-offset, 12px))",
-                              }
+                            : navItemInitialStyle
                         }
                       >
                         {item.label}
@@ -2164,43 +2175,44 @@ export default function SiteShell({ children, channelContent }) {
                 <div className="site-shell__icon-group" ref={iconGroupRef}>
                   <button
                     type="button"
-                    className={`site-shell__icon-button site-shell__icon-button--action${(isDotfieldOverlayOpen || isDotfieldOverlayMounted) ? " is-active" : ""}`}
+                    className={`site-shell__icon-button site-shell__icon-button--action site-shell__nav-sequence-item${
+                      (isDotfieldOverlayOpen || isDotfieldOverlayMounted) ? " is-active" : ""
+                    }`}
                     onClick={toggleDotfieldOverlay}
                     aria-pressed={isDotfieldOverlayOpen}
                     aria-label={t('dotfield.open', language)}
                     title={t('dotfield.open', language)}
                     style={
                       navReady
-                        ? undefined
-                        : {
-                            opacity: "var(--nav-item-initial-opacity, 0)",
-                            transform:
-                              "translateY(var(--nav-item-initial-offset, 8px))",
-                          }
+                        ? { "--nav-item-index": navSequenceBaseIndex }
+                        : navItemInitialStyle
                     }
                   >
                     <DotfieldIcon className="site-shell__icon-svg" />
                   </button>
                   <Link
                     href="https://x.com/itsjaydesu"
-                    className="site-shell__icon-button site-shell__icon-button--link"
+                    className="site-shell__icon-button site-shell__icon-button--link site-shell__nav-sequence-item"
                     target="_blank"
                     rel="noreferrer noopener"
                     aria-label={t('menu.social.aria', language)}
                     title={t('menu.social.aria', language)}
                     style={
                       navReady
-                        ? undefined
-                        : {
-                            opacity: "var(--nav-item-initial-opacity, 0)",
-                            transform:
-                              "translateY(var(--nav-item-initial-offset, 8px))",
-                          }
+                        ? { "--nav-item-index": navSequenceBaseIndex + 1 }
+                        : navItemInitialStyle
                     }
                   >
                     <XLogoIcon className="site-shell__icon-svg" />
                   </Link>
-                  <LanguageSwitcher className="site-shell__icon-button site-shell__header-language-toggle" />
+                  <LanguageSwitcher
+                    className="site-shell__icon-button site-shell__header-language-toggle site-shell__nav-sequence-item"
+                    style={
+                      navReady
+                        ? { "--nav-item-index": navSequenceBaseIndex + 2 }
+                        : navItemInitialStyle
+                    }
+                  />
                 </div>
               </div>
             </header>
