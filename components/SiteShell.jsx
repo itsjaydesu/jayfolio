@@ -2045,98 +2045,98 @@ export default function SiteShell({ children, channelContent }) {
                 >
                   <BrandWordmark className="site-shell__brand-wordmark" />
                 </Link>
-                <div
-                  className="site-shell__nav-dropdown"
-                  data-has-selection={activeSection ? "true" : "false"}
-                  data-open={isMobileMenuOpen ? "true" : "false"}
-                >
-                  <span id="site-shell-mobile-nav-label" className="sr-only">
-                    {mobileMenuLabel}
-                  </span>
-                  <button
-                    type="button"
-                    className="site-shell__nav-dropdown-button site-shell__nav-sequence-item"
-                    aria-haspopup="listbox"
-                    aria-labelledby="site-shell-mobile-nav-label site-shell-mobile-nav-button-text"
-                    aria-expanded={isMobileMenuOpen ? "true" : "false"}
-                    aria-controls={isMobileMenuOpen ? "site-shell-mobile-nav-list" : undefined}
-                    onClick={handleMobileMenuToggle}
-                    onKeyDown={handleMobileMenuKeyDown}
-                    disabled={!menuItems.length}
-                    ref={mobileMenuButtonRef}
-                    style={
-                      navReady
-                        ? {
-                            "--nav-item-index": isNavCondensed
-                              ? 1
-                              : navLinkStartIndex,
-                          }
-                        : navItemInitialStyle
-                    }
+                {isNavCondensed ? (
+                  <div
+                    className="site-shell__nav-dropdown"
+                    data-has-selection={activeSection ? "true" : "false"}
+                    data-open={isMobileMenuOpen ? "true" : "false"}
                   >
-                    <span
-                      className="site-shell__nav-dropdown-button-icon"
-                      aria-hidden="true"
-                    >
-                      <HamburgerIcon />
+                    <span id="site-shell-mobile-nav-label" className="sr-only">
+                      {mobileMenuLabel}
                     </span>
-                    <span
-                      id="site-shell-mobile-nav-button-text"
-                      className="sr-only site-shell__nav-dropdown-button-text"
+                    <button
+                      type="button"
+                      className="site-shell__nav-dropdown-button site-shell__nav-sequence-item"
+                      aria-haspopup="listbox"
+                      aria-labelledby="site-shell-mobile-nav-label site-shell-mobile-nav-button-text"
+                      aria-expanded={isMobileMenuOpen ? "true" : "false"}
+                      aria-controls={isMobileMenuOpen ? "site-shell-mobile-nav-list" : undefined}
+                      onClick={handleMobileMenuToggle}
+                      onKeyDown={handleMobileMenuKeyDown}
+                      disabled={!menuItems.length}
+                      ref={mobileMenuButtonRef}
+                      style={
+                        navReady
+                          ? {
+                              "--nav-item-index": 1,
+                            }
+                          : navItemInitialStyle
+                      }
                     >
-                      {dropdownDisplayLabel}
-                    </span>
-                  </button>
-                  {isMobileMenuOpen ? (
-                    <div
-                      className="site-shell__nav-dropdown-menu"
-                      ref={mobileMenuContainerRef}
-                      style={mobileMenuInlineStyle}
-                    >
-                      <ul
-                        id="site-shell-mobile-nav-list"
-                        role="listbox"
-                        aria-labelledby="site-shell-mobile-nav-label"
-                        aria-activedescendant={
-                          menuItems.length
-                            ? mobileMenuFocusIndex >= 0
-                              ? `site-shell-mobile-nav-option-${menuItems[mobileMenuFocusIndex].id}`
-                              : activeMenuIndex >= 0
-                                ? `site-shell-mobile-nav-option-${menuItems[activeMenuIndex].id}`
-                                : undefined
-                            : undefined
-                        }
-                        className="site-shell__nav-dropdown-list"
-                        ref={mobileMenuListRef}
-                        tabIndex={-1}
-                        onKeyDown={handleMobileMenuKeyDown}
+                      <span
+                        className="site-shell__nav-dropdown-button-icon"
+                        aria-hidden="true"
                       >
-                        {menuItems.map((item, index) => {
-                          const isActiveOption = item.id === activeSection;
-                          const isFocusedOption = index === mobileMenuFocusIndex;
-                          return (
-                            <li key={item.id} role="presentation">
-                              <button
-                                type="button"
-                                role="option"
-                                id={`site-shell-mobile-nav-option-${item.id}`}
-                                className={`site-shell__nav-dropdown-option${isActiveOption ? " is-active" : ""}${isFocusedOption ? " is-focused" : ""}`}
-                                aria-selected={isActiveOption}
-                                data-focused={isFocusedOption ? "true" : "false"}
-                                onClick={() => handleMobileMenuSelect(item)}
-                                onMouseEnter={() => setMobileMenuFocusIndex(index)}
-                                onFocus={() => setMobileMenuFocusIndex(index)}
-                                style={{ "--option-index": index }}
-                              >
-                                {item.label}
-                              </button>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    </div>
-                  ) : null}
-                </div>
+                        <HamburgerIcon />
+                      </span>
+                      <span
+                        id="site-shell-mobile-nav-button-text"
+                        className="sr-only site-shell__nav-dropdown-button-text"
+                      >
+                        {dropdownDisplayLabel}
+                      </span>
+                    </button>
+                    {isMobileMenuOpen ? (
+                      <div
+                        className="site-shell__nav-dropdown-menu"
+                        ref={mobileMenuContainerRef}
+                        style={mobileMenuInlineStyle}
+                      >
+                        <ul
+                          id="site-shell-mobile-nav-list"
+                          role="listbox"
+                          aria-labelledby="site-shell-mobile-nav-label"
+                          aria-activedescendant={
+                            menuItems.length
+                              ? mobileMenuFocusIndex >= 0
+                                ? `site-shell-mobile-nav-option-${menuItems[mobileMenuFocusIndex].id}`
+                                : activeMenuIndex >= 0
+                                  ? `site-shell-mobile-nav-option-${menuItems[activeMenuIndex].id}`
+                                  : undefined
+                              : undefined
+                          }
+                          className="site-shell__nav-dropdown-list"
+                          ref={mobileMenuListRef}
+                          tabIndex={-1}
+                          onKeyDown={handleMobileMenuKeyDown}
+                        >
+                          {menuItems.map((item, index) => {
+                            const isActiveOption = item.id === activeSection;
+                            const isFocusedOption = index === mobileMenuFocusIndex;
+                            return (
+                              <li key={item.id} role="presentation">
+                                <button
+                                  type="button"
+                                  role="option"
+                                  id={`site-shell-mobile-nav-option-${item.id}`}
+                                  className={`site-shell__nav-dropdown-option${isActiveOption ? " is-active" : ""}${isFocusedOption ? " is-focused" : ""}`}
+                                  aria-selected={isActiveOption}
+                                  data-focused={isFocusedOption ? "true" : "false"}
+                                  onClick={() => handleMobileMenuSelect(item)}
+                                  onMouseEnter={() => setMobileMenuFocusIndex(index)}
+                                  onFocus={() => setMobileMenuFocusIndex(index)}
+                                  style={{ "--option-index": index }}
+                                >
+                                  {item.label}
+                                </button>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
                 <nav
                   className="site-shell__nav"
                   aria-label="Primary navigation"
