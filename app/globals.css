@@ -287,9 +287,10 @@ a {
 .menu-overlay .retro-menu__list,
 .menu-overlay .retro-menu__status {
   opacity: 0;
-  transform: translateY(18px);
+  transform: translateY(-18px);
   transition: opacity 0.52s cubic-bezier(0.33, 1, 0.68, 1),
     transform 0.52s cubic-bezier(0.33, 1, 0.68, 1);
+  animation: none;
 }
 
 .menu-overlay.is-visible .retro-menu__list,
@@ -300,40 +301,42 @@ a {
 
 .menu-overlay .retro-menu__item {
   opacity: 0;
-  transform: translateY(16px) scale(0.94);
-  transition: opacity 0.42s cubic-bezier(0.33, 1, 0.68, 1),
-    transform 0.42s cubic-bezier(0.33, 1, 0.68, 1);
+  transform: translateY(-18px) scale(0.94);
   transform-origin: center center;
+  animation: none;
+  will-change: opacity, transform;
 }
 
 .menu-overlay.is-visible .retro-menu__item {
-  opacity: 1;
-  transform: translateY(0) scale(1);
-}
-
-.menu-overlay.is-visible .retro-menu__item:nth-child(1) {
-  transition-delay: 0.22s;
-}
-
-.menu-overlay.is-visible .retro-menu__item:nth-child(2) {
-  transition-delay: 0.28s;
-}
-
-.menu-overlay.is-visible .retro-menu__item:nth-child(3) {
-  transition-delay: 0.34s;
-}
-
-.menu-overlay.is-visible .retro-menu__item:nth-child(4) {
-  transition-delay: 0.4s;
-}
-
-/* Art menu item - 5th child */
-.menu-overlay.is-visible .retro-menu__item:nth-child(5) {
-  transition-delay: 0.46s;
+  animation: retro-menu-item-enter 0.48s cubic-bezier(0.33, 1, 0.68, 1) forwards;
+  animation-delay: calc(0.18s + var(--menu-item-index, 0) * 0.12s);
 }
 
 .menu-overlay.is-visible .retro-menu__status {
-  transition-delay: 0.52s;
+  animation: retro-menu-item-enter 0.48s cubic-bezier(0.33, 1, 0.68, 1) forwards;
+  animation-delay: calc(0.18s + (var(--retro-menu-item-count, 0) + 1) * 0.12s);
+}
+
+@keyframes retro-menu-item-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(-18px) scale(0.94);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menu-overlay .retro-menu__list,
+  .menu-overlay .retro-menu__status,
+  .menu-overlay .retro-menu__item {
+    transition-duration: 0s !important;
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }
 
 .content-stage {
@@ -6113,14 +6116,18 @@ body:not([data-language-transitioning="true"])
     row-gap: clamp(0.75rem, 3vw, 1.1rem);
   }
 
-  .site-shell__nav,
-  .site-shell__nav-dropdown {
-    justify-self: stretch;
-  }
-
   .site-shell__nav {
     gap: clamp(0.9rem, 3vw, 1.4rem);
     justify-content: center;
+  }
+
+  .site-shell__nav-dropdown {
+    display: flex;
+    justify-self: center;
+    align-items: center;
+    justify-content: center;
+    width: min(100%, max-content);
+    margin-inline: auto;
   }
 
   .site-shell__nav-link::after {
@@ -7178,7 +7185,7 @@ body.qr-intro-active .site-shell__icon-button {
   position: relative;
   width: 100%;
   opacity: 0;
-  transform: translateY(10px);
+  transform: translateY(-12px);
   transition: opacity 0.6s ease-out, transform 0.6s ease-out;
   background: transparent;
   /* Ensure single scroll - no overflow on this container */
@@ -9977,7 +9984,8 @@ body[data-language-transitioning="true"] .language-transition-root {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 100%;
+    width: min(100%, max-content);
+    margin-inline: auto;
   }
 
   .site-shell__header[data-nav-condensed="true"] .site-shell__header-inner {
@@ -9994,6 +10002,9 @@ body[data-language-transitioning="true"] .language-transition-root {
     min-width: 0;
     width: auto;
     justify-content: center;
+    align-items: center;
+    margin-inline: auto;
+    flex: 0 0 auto;
   }
 
   .site-shell__nav-dropdown-button {
@@ -10023,6 +10034,8 @@ body[data-language-transitioning="true"] .language-transition-root {
     outline: none;
     box-shadow: 0 12px 28px rgba(4, 14, 22, 0.55);
     isolation: isolate;
+    margin: 0 auto;
+    flex-shrink: 0;
   }
 
   .site-shell__nav-dropdown-button::after {
@@ -10520,10 +10533,13 @@ body[data-language-transitioning="true"] .language-transition-root {
     }
 
     .site-shell__nav-dropdown {
-      display: block;
+      display: flex;
       grid-area: nav;
       justify-self: center;
+      align-items: center;
+      justify-content: center;
       margin-top: 0;
+      width: min(100%, max-content);
     }
 
     .site-shell__nav-dropdown-button {
@@ -10642,11 +10658,13 @@ body[data-language-transitioning="true"] .language-transition-root {
     .menu-overlay .retro-menu__status {
       opacity: 1;
       transform: none;
+      animation: none !important;
     }
 
     .menu-overlay .retro-menu__item {
       opacity: 1;
       transform: none;
+      animation: none !important;
     }
 
     .site-shell__header:not(.is-leaving[data-nav-ready="true"]) {

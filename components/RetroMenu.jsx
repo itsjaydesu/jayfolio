@@ -34,6 +34,13 @@ export default function RetroMenu({
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
   const tooltipTimerRef = useRef(null);
   const [scrolled, setScrolled] = useState(false);
+  // Normalize items to keep animation math predictable even if a nullish value slips in.
+  const safeItems = useMemo(() => (Array.isArray(items) ? items : []), [items]);
+  const itemCount = safeItems.length;
+  const menuStyle = useMemo(
+    () => ({ "--retro-menu-item-count": itemCount }),
+    [itemCount]
+  );
 
   // Language context
   const { language, changeLanguage } = useLanguage();
@@ -512,6 +519,7 @@ export default function RetroMenu({
       }
       data-effect-active={hasActiveEffect ? "true" : "false"}
       aria-label="Main navigation"
+      style={menuStyle}
     >
       <div className="retro-menu__titlebar">
         <span className="retro-menu__title">
@@ -764,7 +772,7 @@ export default function RetroMenu({
       </div>
       <div className="retro-menu__body">
         <ul className="retro-menu__list">
-          {items.map((item) => {
+          {safeItems.map((item, index) => {
             const isActive = item.id === activeSection;
             const handlePreview = () => {
               if (!onStatusChange) return;
@@ -781,12 +789,13 @@ export default function RetroMenu({
               handleRestore();
             };
 
-            return (
-              <li
-                key={item.id}
-                className={`retro-menu__item${isActive ? " is-active" : ""}`}
-                data-section={item.id}
-              >
+              return (
+                <li
+                  key={item.id}
+                  className={`retro-menu__item${isActive ? " is-active" : ""}`}
+                  data-section={item.id}
+                  style={{ "--menu-item-index": index }}
+                >
                 <Link
                   href={item.href}
                   className="retro-menu__button"
