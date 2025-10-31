@@ -51,6 +51,15 @@ html {
   scroll-behavior: smooth;
   /* Ensure HTML is the scrolling element for consistent behavior */
   overflow-y: auto;
+  /* Remove scrollbar chrome while preserving scrollability */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  scrollbar-gutter: stable both-edges;
+}
+
+html::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 
 body {
@@ -70,6 +79,11 @@ body {
   --language-transition-easing: cubic-bezier(0.33, 1, 0.68, 1);
   --lang-origin-x: 50vw;
   --lang-origin-y: 50vh;
+}
+
+body::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 
 a {
