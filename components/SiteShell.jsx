@@ -114,6 +114,7 @@ export default function SiteShell({ children, channelContent }) {
   const [mobileMenuFocusIndex, setMobileMenuFocusIndex] = useState(-1);
   const [mobileMenuPosition, setMobileMenuPosition] = useState(null);
   const [isNavCondensed, setIsNavCondensed] = useState(false);
+  const [navReady, setNavReady] = useState(false);
 
   const getNavItemStyle = useCallback(
     (sequenceIndex) => {
@@ -579,7 +580,6 @@ export default function SiteShell({ children, channelContent }) {
   }, []);
 
   const [status, setStatus] = useState(waitingStatus);
-  const [navReady, setNavReady] = useState(false);
   const [hasActiveEffect, setHasActiveEffect] = useState(false);
   const [activeEffectInfo, setActiveEffectInfo] = useState(null); // { name, startTime, duration }
 
