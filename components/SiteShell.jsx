@@ -20,6 +20,16 @@ const DOTFIELD_OVERLAY_FADE_MS = 520;
 // over content even at scroll position 0. Kept subtle to avoid a heavy box.
 const HEADER_BASE_SHADE = 0.16; // ~16% base, escalates with scroll
 const NAV_CONDENSED_BREAKPOINT = 600;
+const NAV_SLIDE_BASE_DELAY_MS = 280;
+const NAV_SLIDE_DELAY_INCREMENT_MS = 80;
+const getNavDelayValue = (sequenceIndex) =>
+  NAV_SLIDE_BASE_DELAY_MS + sequenceIndex * NAV_SLIDE_DELAY_INCREMENT_MS;
+const NAV_ITEM_INITIAL_STYLE = Object.freeze({
+  opacity: "var(--nav-item-initial-opacity, 0)",
+  transform: "translateY(calc(-1 * var(--nav-item-slide-distance, 20px)))",
+  transitionDelay: "0ms",
+  "--nav-item-stagger-delay": "0ms",
+});
 const DOTFIELD_EFFECT_SEQUENCE = [
   'jitter',
   'swirlPulse',
@@ -104,6 +114,21 @@ export default function SiteShell({ children, channelContent }) {
   const [mobileMenuFocusIndex, setMobileMenuFocusIndex] = useState(-1);
   const [mobileMenuPosition, setMobileMenuPosition] = useState(null);
   const [isNavCondensed, setIsNavCondensed] = useState(false);
+
+  const getNavItemStyle = useCallback(
+    (sequenceIndex) => {
+      if (!navReady) {
+        return NAV_ITEM_INITIAL_STYLE;
+      }
+
+      const delay = getNavDelayValue(sequenceIndex);
+      return {
+        transitionDelay: `${delay}ms`,
+        "--nav-item-stagger-delay": `${delay}ms`,
+      };
+    },
+    [navReady]
+  );
 
   const warmSceneChunk = useCallback(() => {
     if (scenePreloadTriggeredRef.current) {
@@ -609,6 +634,9 @@ export default function SiteShell({ children, channelContent }) {
     activeSection && activeMenuIndex >= 0
       ? menuItems[activeMenuIndex]?.label ?? mobileMenuPlaceholder
       : mobileMenuPlaceholder;
+
+  const navSequenceLength = menuItems.length;
+  const iconSequenceStart = navSequenceLength + 1;
 
   const mobileMenuInlineStyle = useMemo(() => {
     if (!isMobileMenuOpen) {
@@ -2027,15 +2055,7 @@ export default function SiteShell({ children, channelContent }) {
                   onMouseEnter={warmSceneChunk}
                   onFocus={warmSceneChunk}
                   ref={brandRef}
-                  style={
-                    navReady
-                      ? undefined
-                      : {
-                          opacity: "var(--nav-item-initial-opacity, 0)",
-                          transform:
-                            "translateY(var(--nav-item-initial-offset, 8px))",
-                        }
-                  }
+                  style={getNavItemStyle(0)}
                 >
                   <BrandWordmark className="site-shell__brand-wordmark" />
                 </Link>
@@ -2099,6 +2119,7 @@ export default function SiteShell({ children, channelContent }) {
                         {menuItems.map((item, index) => {
                           const isActiveOption = item.id === activeSection;
                           const isFocusedOption = index === mobileMenuFocusIndex;
+                          const optionDelay = getNavDelayValue(index);
                           return (
                             <li key={item.id} role="presentation">
                               <button
@@ -2111,7 +2132,12 @@ export default function SiteShell({ children, channelContent }) {
                                 onClick={() => handleMobileMenuSelect(item)}
                                 onMouseEnter={() => setMobileMenuFocusIndex(index)}
                                 onFocus={() => setMobileMenuFocusIndex(index)}
-                                style={{ "--option-index": index }}
+                                style={{
+                                  "--option-index": index,
+                                  "--option-stagger-delay": isMobileMenuOpen
+                                    ? `${optionDelay}ms`
+                                    : "0ms",
+                                }}
                               >
                                 {item.label}
                               </button>
@@ -2144,17 +2170,7 @@ export default function SiteShell({ children, channelContent }) {
                         onFocus={() => handlePreview(item, isActive)}
                         onBlur={handleReset}
                         tabIndex={isNavCondensed ? -1 : undefined}
-                        style={
-                          navReady
-                            ? {
-                                transitionDelay: `${index * 60}ms`,
-                              }
-                            : {
-                                opacity: "var(--nav-item-initial-opacity, 0)",
-                                transform:
-                                  "translateY(var(--nav-item-initial-offset, 12px))",
-                              }
-                        }
+                        style={getNavItemStyle(index + 1)}
                       >
                         {item.label}
                       </Link>
@@ -2169,15 +2185,7 @@ export default function SiteShell({ children, channelContent }) {
                     aria-pressed={isDotfieldOverlayOpen}
                     aria-label={t('dotfield.open', language)}
                     title={t('dotfield.open', language)}
-                    style={
-                      navReady
-                        ? undefined
-                        : {
-                            opacity: "var(--nav-item-initial-opacity, 0)",
-                            transform:
-                              "translateY(var(--nav-item-initial-offset, 8px))",
-                          }
-                    }
+                    style={getNavItemStyle(iconSequenceStart)}
                   >
                     <DotfieldIcon className="site-shell__icon-svg" />
                   </button>
@@ -2188,19 +2196,14 @@ export default function SiteShell({ children, channelContent }) {
                     rel="noreferrer noopener"
                     aria-label={t('menu.social.aria', language)}
                     title={t('menu.social.aria', language)}
-                    style={
-                      navReady
-                        ? undefined
-                        : {
-                            opacity: "var(--nav-item-initial-opacity, 0)",
-                            transform:
-                              "translateY(var(--nav-item-initial-offset, 8px))",
-                          }
-                    }
+                    style={getNavItemStyle(iconSequenceStart + 1)}
                   >
                     <XLogoIcon className="site-shell__icon-svg" />
                   </Link>
-                  <LanguageSwitcher className="site-shell__icon-button site-shell__header-language-toggle" />
+                  <LanguageSwitcher
+                    className="site-shell__icon-button site-shell__header-language-toggle"
+                    style={getNavItemStyle(iconSequenceStart + 2)}
+                  />
                 </div>
               </div>
             </header>
