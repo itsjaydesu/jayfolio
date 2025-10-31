@@ -122,6 +122,9 @@ export default function RetroMenu({
     const viewportOffsetLeft = visualViewport?.offsetLeft ?? 0;
     const viewportOffsetTop = visualViewport?.offsetTop ?? 0;
 
+    // Detect mobile screens (640px breakpoint matches CSS)
+    const isMobile = viewportWidth <= 640;
+
     const layoutWidth = menuElement.offsetWidth || menuRect.width;
     const fallbackWidth = layoutWidth > 0 ? layoutWidth : menuRect.width;
     const desiredWidth = Math.min(Math.max(fallbackWidth, 0), 420);
@@ -165,58 +168,82 @@ export default function RetroMenu({
       panelWidth = viewportWidth;
     }
 
-    const menuCenterX =
-      viewportOffsetLeft + menuRect.left + menuRect.width / 2;
-    let leftPos = menuCenterX - panelWidth / 2;
+    let leftPos;
+    let topPos;
+    let useMobileCentering = false;
 
-    if (Number.isFinite(viewportWidth) && viewportWidth > 0) {
-      const minLeft = viewportOffsetLeft + safeMargin;
-      const maxLeft =
-        viewportOffsetLeft + viewportWidth - safeMargin - panelWidth;
+    if (isMobile) {
+      // On mobile: use CSS centering with translateX(-50%)
+      // Set left to 50% so CSS can center it properly
+      leftPos = "50%";
+      useMobileCentering = true;
+      topPos = viewportOffsetTop + (viewportHeight - 300) / 2; // Approximate panel height, will be adjusted
+      
+      // Ensure panel stays within viewport bounds
+      const minTop = viewportOffsetTop + safeMargin;
+      const maxTop = viewportOffsetTop + viewportHeight - safeMargin - 300;
+      topPos = Math.max(minTop, Math.min(topPos, maxTop));
+    } else {
+      // Desktop: position relative to menu
+      const menuCenterX =
+        viewportOffsetLeft + menuRect.left + menuRect.width / 2;
+      leftPos = menuCenterX - panelWidth / 2;
 
-      if (Number.isFinite(maxLeft) && maxLeft >= minLeft) {
-        leftPos = Math.min(Math.max(leftPos, minLeft), maxLeft);
-      } else {
-        leftPos =
-          viewportOffsetLeft + Math.max((viewportWidth - panelWidth) / 2, 0);
+      if (Number.isFinite(viewportWidth) && viewportWidth > 0) {
+        const minLeft = viewportOffsetLeft + safeMargin;
+        const maxLeft =
+          viewportOffsetLeft + viewportWidth - safeMargin - panelWidth;
+
+        if (Number.isFinite(maxLeft) && maxLeft >= minLeft) {
+          leftPos = Math.min(Math.max(leftPos, minLeft), maxLeft);
+        } else {
+          leftPos =
+            viewportOffsetLeft + Math.max((viewportWidth - panelWidth) / 2, 0);
+        }
       }
-    }
 
-    const titlebar = menuElement.querySelector(".retro-menu__titlebar");
-    let topPos = viewportOffsetTop + menuRect.top;
+      const titlebar = menuElement.querySelector(".retro-menu__titlebar");
+      topPos = viewportOffsetTop + menuRect.top;
 
-    if (titlebar) {
-      const titlebarRect = titlebar.getBoundingClientRect();
-      if (titlebarRect) {
-        topPos = viewportOffsetTop + titlebarRect.top;
+      if (titlebar) {
+        const titlebarRect = titlebar.getBoundingClientRect();
+        if (titlebarRect) {
+          topPos = viewportOffsetTop + titlebarRect.top;
+        }
       }
-    }
 
-    if (!Number.isFinite(topPos)) {
-      topPos = viewportOffsetTop;
-    }
-
-    if (Number.isFinite(viewportHeight) && viewportHeight > 0) {
-      const maxTop = viewportOffsetTop + viewportHeight - safeMargin;
-      if (topPos > maxTop) {
-        topPos = maxTop;
-      }
-      if (topPos < viewportOffsetTop) {
+      if (!Number.isFinite(topPos)) {
         topPos = viewportOffsetTop;
+      }
+
+      if (Number.isFinite(viewportHeight) && viewportHeight > 0) {
+        const maxTop = viewportOffsetTop + viewportHeight - safeMargin;
+        if (topPos > maxTop) {
+          topPos = maxTop;
+        }
+        if (topPos < viewportOffsetTop) {
+          topPos = viewportOffsetTop;
+        }
       }
     }
 
     const nextPosition = {
       top: Math.max(topPos, 0),
-      left: Math.max(leftPos, 0),
+      left: useMobileCentering ? leftPos : Math.max(leftPos, 0),
       width: panelWidth,
+      isMobile: useMobileCentering,
     };
 
     setPanelPosition((prev) => {
       if (
         prev &&
         Math.abs(prev.top - nextPosition.top) < 0.5 &&
-        Math.abs(prev.left - nextPosition.left) < 0.5 &&
+        (useMobileCentering
+          ? prev.left === nextPosition.left
+          : Math.abs(
+              (typeof prev.left === "number" ? prev.left : 0) -
+                (typeof nextPosition.left === "number" ? nextPosition.left : 0)
+            ) < 0.5) &&
         Math.abs(prev.width - nextPosition.width) < 0.5
       ) {
         return prev;
@@ -811,7 +838,10 @@ export default function RetroMenu({
               display: "block",
               position: "fixed",
               top: `${panelPosition.top}px`,
-              left: `${panelPosition.left}px`,
+              left:
+                typeof panelPosition.left === "string"
+                  ? panelPosition.left
+                  : `${panelPosition.left}px`,
               width: `${panelPosition.width}px`,
               zIndex: 99999,
               background:
