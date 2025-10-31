@@ -9854,7 +9854,7 @@ body[data-language-transitioning="true"] .language-transition-root {
     font-family: "IBM Plex Mono", "Lucida Console", "Courier New", monospace;
     color: var(--text-primary);
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(-20px);
     transition: color 0.2s ease, opacity 0.5s cubic-bezier(0.33, 1, 0.68, 1),
       transform 0.5s cubic-bezier(0.33, 1, 0.68, 1);
     white-space: nowrap;
@@ -9867,11 +9867,14 @@ body[data-language-transitioning="true"] .language-transition-root {
     align-items: center;
     justify-content: flex-start;
     border-radius: clamp(1.5rem, 4vw, 2.75rem);
+    --nav-item-delay: 0s;
   }
 
   .site-shell__header[data-nav-ready="true"] .site-shell__brand {
     opacity: 1;
     transform: translateY(0);
+    animation: slideDown 0.68s cubic-bezier(0.33, 1, 0.68, 1) forwards;
+    animation-delay: var(--nav-item-delay, 0s);
   }
 
   .site-shell__brand:hover,
@@ -10114,11 +10117,17 @@ body[data-language-transitioning="true"] .language-transition-root {
       rgba(14, 36, 48, 0.16)
     );
     color: currentColor;
+    padding: clamp(0.16rem, 0.5vw, 0.22rem);
+    aspect-ratio: 1 / 1;
+    box-sizing: content-box;
+    pointer-events: none;
   }
 
   .site-shell__nav-dropdown-button-icon svg {
     width: 100%;
     height: 100%;
+    display: block;
+    transform: translateZ(0);
   }
 
   .site-shell__nav-dropdown-button-text {
@@ -10209,19 +10218,24 @@ body[data-language-transitioning="true"] .language-transition-root {
     transition-duration: 0.12s, 0.12s, 0.2s, 0.34s, 0.34s;
     transition-timing-function: ease, ease, ease, cubic-bezier(0.22, 1, 0.36, 1),
       cubic-bezier(0.22, 1, 0.36, 1);
-    transition-delay: 0s, 0s, 0s, var(--option-stagger, 0s),
-      var(--option-stagger, 0s);
     outline: none;
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(-20px);
     will-change: opacity, transform;
     position: relative;
+    --option-stagger: 0s;
+    animation: none;
   }
 
   .site-shell__nav-dropdown[data-open="true"] .site-shell__nav-dropdown-option {
     opacity: 1;
     transform: translateY(0);
-    --option-stagger: calc(var(--option-index, 0) * 45ms + 70ms);
+    animation: slideDown 0.68s cubic-bezier(0.33, 1, 0.68, 1) forwards;
+    animation-delay: calc(0.28s + var(--option-index, 0) * 0.08s);
+  }
+
+  .site-shell__nav-dropdown[data-open="false"] .site-shell__nav-dropdown-option {
+    animation: none;
   }
 
   .site-shell__nav-dropdown-option:hover,
@@ -10278,12 +10292,15 @@ body[data-language-transitioning="true"] .language-transition-root {
     .site-shell__nav-dropdown-option {
       transition: none;
       --option-stagger: 0s;
+      animation: none !important;
+      animation-delay: 0s !important;
     }
 
     .site-shell__nav-dropdown[data-open="true"]
       .site-shell__nav-dropdown-option {
       opacity: 1;
       transform: none;
+      animation: none !important;
     }
   }
 
@@ -10296,18 +10313,21 @@ body[data-language-transitioning="true"] .language-transition-root {
     text-decoration: none;
     color: var(--text-tertiary);
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(-20px);
     transition: color 0.2s ease, opacity 0.45s cubic-bezier(0.33, 1, 0.68, 1),
       transform 0.45s cubic-bezier(0.33, 1, 0.68, 1);
     white-space: nowrap;
     display: flex;
     align-items: center;
     height: 100%;
+    --nav-item-delay: 0s;
   }
 
   .site-shell__header[data-nav-ready="true"] .site-shell__nav-link {
     opacity: 1;
     transform: translateY(0);
+    animation: slideDown 0.68s cubic-bezier(0.33, 1, 0.68, 1) forwards;
+    animation-delay: var(--nav-item-delay, 0s);
   }
 
   .site-shell__nav-link::after {
@@ -10362,16 +10382,19 @@ body[data-language-transitioning="true"] .language-transition-root {
     );
     color: rgba(210, 236, 244, 0.88);
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(-20px);
     transition: color 0.2s ease, opacity 0.5s cubic-bezier(0.33, 1, 0.68, 1),
       transform 0.5s cubic-bezier(0.33, 1, 0.68, 1), border-color 0.2s ease,
       box-shadow 0.2s ease, background 0.2s ease;
     flex-shrink: 0;
+    --nav-item-delay: 0s;
   }
 
   .site-shell__header[data-nav-ready="true"] .site-shell__icon-button {
     opacity: 1;
     transform: translateY(0);
+    animation: slideDown 0.68s cubic-bezier(0.33, 1, 0.68, 1) forwards;
+    animation-delay: var(--nav-item-delay, 0s);
   }
 
   .site-shell__icon-button:hover,

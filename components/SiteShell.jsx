@@ -20,6 +20,12 @@ const DOTFIELD_OVERLAY_FADE_MS = 520;
 // over content even at scroll position 0. Kept subtle to avoid a heavy box.
 const HEADER_BASE_SHADE = 0.16; // ~16% base, escalates with scroll
 const NAV_CONDENSED_BREAKPOINT = 600;
+const NAV_ANIMATION_BASE_DELAY_MS = 280;
+const NAV_ANIMATION_STEP_MS = 80;
+
+function getNavSequenceDelay(sequenceIndex = 0) {
+  return `${NAV_ANIMATION_BASE_DELAY_MS + sequenceIndex * NAV_ANIMATION_STEP_MS}ms`;
+}
 const DOTFIELD_EFFECT_SEQUENCE = [
   'jitter',
   'swirlPulse',
@@ -609,6 +615,7 @@ export default function SiteShell({ children, channelContent }) {
     activeSection && activeMenuIndex >= 0
       ? menuItems[activeMenuIndex]?.label ?? mobileMenuPlaceholder
       : mobileMenuPlaceholder;
+  const navIconSequenceBaseIndex = 1 + menuItems.length;
 
   const mobileMenuInlineStyle = useMemo(() => {
     if (!isMobileMenuOpen) {
@@ -2029,11 +2036,13 @@ export default function SiteShell({ children, channelContent }) {
                   ref={brandRef}
                   style={
                     navReady
-                      ? undefined
+                      ? {
+                          "--nav-item-delay": getNavSequenceDelay(0),
+                        }
                       : {
                           opacity: "var(--nav-item-initial-opacity, 0)",
                           transform:
-                            "translateY(var(--nav-item-initial-offset, 8px))",
+                            "translateY(var(--nav-item-initial-offset, -20px))",
                         }
                   }
                 >
@@ -2130,6 +2139,8 @@ export default function SiteShell({ children, channelContent }) {
                 >
                   {menuItems.map((item, index) => {
                     const isActive = item.id === activeSection;
+                    const sequenceIndex = 1 + index;
+                    const delayValue = getNavSequenceDelay(sequenceIndex);
                     return (
                       <Link
                         key={item.id}
@@ -2147,12 +2158,13 @@ export default function SiteShell({ children, channelContent }) {
                         style={
                           navReady
                             ? {
-                                transitionDelay: `${index * 60}ms`,
+                                "--nav-item-delay": delayValue,
+                                transitionDelay: delayValue,
                               }
                             : {
                                 opacity: "var(--nav-item-initial-opacity, 0)",
                                 transform:
-                                  "translateY(var(--nav-item-initial-offset, 12px))",
+                                  "translateY(var(--nav-item-initial-offset, -20px))",
                               }
                         }
                       >
@@ -2171,11 +2183,15 @@ export default function SiteShell({ children, channelContent }) {
                     title={t('dotfield.open', language)}
                     style={
                       navReady
-                        ? undefined
+                        ? {
+                            "--nav-item-delay": getNavSequenceDelay(
+                              navIconSequenceBaseIndex
+                            ),
+                          }
                         : {
                             opacity: "var(--nav-item-initial-opacity, 0)",
                             transform:
-                              "translateY(var(--nav-item-initial-offset, 8px))",
+                              "translateY(var(--nav-item-initial-offset, -20px))",
                           }
                     }
                   >
@@ -2190,17 +2206,36 @@ export default function SiteShell({ children, channelContent }) {
                     title={t('menu.social.aria', language)}
                     style={
                       navReady
-                        ? undefined
+                        ? {
+                            "--nav-item-delay": getNavSequenceDelay(
+                              navIconSequenceBaseIndex + 1
+                            ),
+                          }
                         : {
                             opacity: "var(--nav-item-initial-opacity, 0)",
                             transform:
-                              "translateY(var(--nav-item-initial-offset, 8px))",
+                              "translateY(var(--nav-item-initial-offset, -20px))",
                           }
                     }
                   >
                     <XLogoIcon className="site-shell__icon-svg" />
                   </Link>
-                  <LanguageSwitcher className="site-shell__icon-button site-shell__header-language-toggle" />
+                  <LanguageSwitcher
+                    className="site-shell__icon-button site-shell__header-language-toggle"
+                    style={
+                      navReady
+                        ? {
+                            "--nav-item-delay": getNavSequenceDelay(
+                              navIconSequenceBaseIndex + 2
+                            ),
+                          }
+                        : {
+                            opacity: "var(--nav-item-initial-opacity, 0)",
+                            transform:
+                              "translateY(var(--nav-item-initial-offset, -20px))",
+                          }
+                    }
+                  />
                 </div>
               </div>
             </header>
