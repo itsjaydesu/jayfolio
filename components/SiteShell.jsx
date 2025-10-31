@@ -7,7 +7,7 @@ import dynamic from 'next/dynamic';
 import RetroMenu from "./RetroMenu";
 import LanguageSwitcher from "./LanguageSwitcher";
 import BrandWordmark from "./BrandWordmark";
-import { DotfieldIcon, XLogoIcon } from "./icons";
+import { DotfieldIcon, HamburgerIcon, XLogoIcon } from "./icons";
 import SiteFooter from "./SiteFooter";
 import { SITE_TEXT_DEFAULTS } from "../lib/siteTextDefaults";
 import { useAdminStatus } from "../lib/useAdminStatus";
@@ -19,6 +19,7 @@ const DOTFIELD_OVERLAY_FADE_MS = 520;
 // Minimum header backdrop opacity on subpages so the menu is readable
 // over content even at scroll position 0. Kept subtle to avoid a heavy box.
 const HEADER_BASE_SHADE = 0.16; // ~16% base, escalates with scroll
+const NAV_CONDENSED_BREAKPOINT = 600;
 const DOTFIELD_EFFECT_SEQUENCE = [
   'jitter',
   'swirlPulse',
@@ -293,6 +294,24 @@ export default function SiteShell({ children, channelContent }) {
 
     const headerElement = headerInnerRef.current;
     const navElement = navRef.current;
+
+    const viewportWidth =
+      window.innerWidth ||
+      document.documentElement?.clientWidth ||
+      0;
+    const smallViewportQuery =
+      typeof window.matchMedia === 'function'
+        ? window.matchMedia(`(max-width: ${NAV_CONDENSED_BREAKPOINT}px)`)
+        : null;
+    const shouldForceCondensed =
+      viewportWidth <= NAV_CONDENSED_BREAKPOINT ||
+      Boolean(smallViewportQuery?.matches);
+
+    if (shouldForceCondensed) {
+      setIsNavCondensed((previous) => (previous ? previous : true));
+      return;
+    }
+
     if (!headerElement || !navElement) {
       setIsNavCondensed(false);
       return;
@@ -592,16 +611,16 @@ export default function SiteShell({ children, channelContent }) {
       : mobileMenuPlaceholder;
 
   const mobileMenuInlineStyle = useMemo(() => {
-    if (!isMobileMenuOpen) {
+    if (!isMobileMenuOpen || !mobileMenuPosition) {
       return undefined;
     }
-    if (!mobileMenuPosition) {
-      return { visibility: "hidden" };
-    }
+
+    const { top, left, width } = mobileMenuPosition;
+
     return {
-      top: `${mobileMenuPosition.top}px`,
-      left: `${mobileMenuPosition.left}px`,
-      width: `${mobileMenuPosition.width}px`,
+      top: `${top}px`,
+      left: `${left}px`,
+      width: `${width}px`,
     };
   }, [isMobileMenuOpen, mobileMenuPosition]);
 
@@ -961,25 +980,56 @@ export default function SiteShell({ children, channelContent }) {
     []
   );
 
-  const openMobileMenu = useCallback(() => {
-    if (!menuItems.length) {
-      return;
+  const computeMobileMenuFallbackPosition = useCallback(() => {
+    const viewportPadding = 16;
+    const minWidth = 200;
+
+    if (typeof window === "undefined") {
+      const headerHeight = headerRef.current?.offsetHeight ?? 64;
+      return {
+        top: headerHeight + 12,
+        left: viewportPadding,
+        width: minWidth,
+        mode: "fallback",
+      };
     }
-    setIsMobileMenuOpen(true);
-    setMobileMenuFocusIndex(activeMenuIndex >= 0 ? activeMenuIndex : 0);
-  }, [menuItems, activeMenuIndex]);
+
+    const availableWidth = Math.max(
+      window.innerWidth - viewportPadding * 2,
+      minWidth
+    );
+    const width = Math.min(Math.max(minWidth, availableWidth), availableWidth);
+    const headerRect = headerRef.current?.getBoundingClientRect?.();
+    const top = (headerRect?.bottom ?? 72) + 12;
+    const centeredLeft = (window.innerWidth - width) / 2;
+    const maxLeft = window.innerWidth - viewportPadding - width;
+    const left = Math.max(viewportPadding, Math.min(centeredLeft, maxLeft));
+
+    return {
+      top,
+      left,
+      width,
+      mode: "fallback",
+    };
+  }, []);
 
   const updateMobileMenuPosition = useCallback(() => {
     if (typeof window === "undefined") {
+      setMobileMenuPosition(computeMobileMenuFallbackPosition());
       return;
     }
 
     const buttonNode = mobileMenuButtonRef.current;
     if (!buttonNode) {
+      setMobileMenuPosition(computeMobileMenuFallbackPosition());
       return;
     }
 
     const rect = buttonNode.getBoundingClientRect();
+    if (!rect || rect.width === 0 || rect.height === 0) {
+      setMobileMenuPosition(computeMobileMenuFallbackPosition());
+      return;
+    }
     const viewportPadding = 16;
     const minWidth = 200; // match design width while allowing clamping on narrow screens
     const availableWidth = Math.max(
@@ -991,8 +1041,12 @@ export default function SiteShell({ children, channelContent }) {
       availableWidth
     );
 
-    let left = rect.left;
+    const centeredLeft = rect.left + rect.width / 2 - width / 2;
     const maxLeft = window.innerWidth - viewportPadding - width;
+    let left = centeredLeft;
+    if (!Number.isFinite(left)) {
+      left = viewportPadding;
+    }
     if (left < viewportPadding) {
       left = viewportPadding;
     } else if (left > maxLeft) {
@@ -1001,12 +1055,40 @@ export default function SiteShell({ children, channelContent }) {
 
     const top = rect.bottom + 12;
 
+    if (!Number.isFinite(top) || !Number.isFinite(left) || !Number.isFinite(width)) {
+      setMobileMenuPosition(computeMobileMenuFallbackPosition());
+      return;
+    }
+
     setMobileMenuPosition({
       top,
       left,
       width,
+      mode: "computed",
     });
-  }, []);
+  }, [computeMobileMenuFallbackPosition]);
+
+  const openMobileMenu = useCallback(() => {
+    if (!menuItems.length) {
+      return;
+    }
+
+    setMobileMenuPosition(computeMobileMenuFallbackPosition());
+    setIsMobileMenuOpen(true);
+    setMobileMenuFocusIndex(activeMenuIndex >= 0 ? activeMenuIndex : 0);
+    if (typeof window !== "undefined") {
+      window.requestAnimationFrame(() => {
+        updateMobileMenuPosition();
+      });
+    } else {
+      updateMobileMenuPosition();
+    }
+  }, [
+    menuItems.length,
+    activeMenuIndex,
+    computeMobileMenuFallbackPosition,
+    updateMobileMenuPosition,
+  ]);
 
   const handleMobileMenuToggle = useCallback(() => {
     if (isMobileMenuOpen) {
@@ -1150,6 +1232,10 @@ export default function SiteShell({ children, channelContent }) {
 
     updateMobileMenuPosition();
 
+    const rafId = window.requestAnimationFrame(() => {
+      updateMobileMenuPosition();
+    });
+
     const handleResize = () => {
       updateMobileMenuPosition();
     };
@@ -1158,6 +1244,7 @@ export default function SiteShell({ children, channelContent }) {
     window.addEventListener("scroll", handleResize, true);
 
     return () => {
+      window.cancelAnimationFrame(rafId);
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("scroll", handleResize, true);
     };
@@ -2017,8 +2104,14 @@ export default function SiteShell({ children, channelContent }) {
                     ref={mobileMenuButtonRef}
                   >
                     <span
+                      className="site-shell__nav-dropdown-button-icon"
+                      aria-hidden="true"
+                    >
+                      <HamburgerIcon />
+                    </span>
+                    <span
                       id="site-shell-mobile-nav-button-text"
-                      className="site-shell__nav-dropdown-button-text"
+                      className="sr-only site-shell__nav-dropdown-button-text"
                     >
                       {dropdownDisplayLabel}
                     </span>
@@ -2028,6 +2121,7 @@ export default function SiteShell({ children, channelContent }) {
                       className="site-shell__nav-dropdown-menu"
                       ref={mobileMenuContainerRef}
                       style={mobileMenuInlineStyle}
+                      data-position-mode={mobileMenuPosition?.mode ?? undefined}
                     >
                       <ul
                         id="site-shell-mobile-nav-list"
@@ -2062,6 +2156,7 @@ export default function SiteShell({ children, channelContent }) {
                                 onClick={() => handleMobileMenuSelect(item)}
                                 onMouseEnter={() => setMobileMenuFocusIndex(index)}
                                 onFocus={() => setMobileMenuFocusIndex(index)}
+                                style={{ "--option-index": index }}
                               >
                                 {item.label}
                               </button>
