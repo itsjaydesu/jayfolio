@@ -619,6 +619,15 @@ export default function SiteShell({ children, channelContent }) {
   const visibleNavLinkCount = isNavCondensed ? 0 : menuItems.length;
   const navLinkStartIndex = isNavCondensed ? 2 : 1;
   const navSequenceBaseIndex = visibleNavLinkCount + navLinkStartIndex;
+  const dropdownNavIndex = isNavCondensed ? 1 : navLinkStartIndex;
+  const dropdownButtonClassName = `site-shell__nav-dropdown-button${
+    isNavCondensed ? " site-shell__nav-sequence-item" : ""
+  }`;
+  const dropdownButtonStyle = isNavCondensed
+    ? navReady
+      ? { "--nav-item-index": dropdownNavIndex }
+      : navItemInitialStyle
+    : undefined;
 
   const mobileMenuInlineStyle = useMemo(() => {
     if (!isMobileMenuOpen) {
@@ -2055,7 +2064,7 @@ export default function SiteShell({ children, channelContent }) {
                   </span>
                   <button
                     type="button"
-                    className="site-shell__nav-dropdown-button site-shell__nav-sequence-item"
+                    className={dropdownButtonClassName}
                     aria-haspopup="listbox"
                     aria-labelledby="site-shell-mobile-nav-label site-shell-mobile-nav-button-text"
                     aria-expanded={isMobileMenuOpen ? "true" : "false"}
@@ -2064,15 +2073,7 @@ export default function SiteShell({ children, channelContent }) {
                     onKeyDown={handleMobileMenuKeyDown}
                     disabled={!menuItems.length}
                     ref={mobileMenuButtonRef}
-                    style={
-                      navReady
-                        ? {
-                            "--nav-item-index": isNavCondensed
-                              ? 1
-                              : navLinkStartIndex,
-                          }
-                        : navItemInitialStyle
-                    }
+                    style={dropdownButtonStyle}
                   >
                     <span
                       className="site-shell__nav-dropdown-button-icon"

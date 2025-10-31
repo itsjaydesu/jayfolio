@@ -9924,6 +9924,8 @@ body[data-language-transitioning="true"] .language-transition-root {
     align-items: center;
     justify-content: center;
     width: 100%;
+    grid-area: nav;
+    justify-self: center;
   }
 
   .site-shell__header[data-nav-condensed="true"] .site-shell__header-inner {
@@ -10395,6 +10397,12 @@ body[data-language-transitioning="true"] .language-transition-root {
       margin-left: 0;
       margin-right: 0;
       gap: 0.7rem;
+    }
+
+    .site-shell__nav-dropdown {
+      grid-column: 1 / -1;
+      grid-row: 2;
+      justify-self: center;
     }
 
     .site-shell__nav {
