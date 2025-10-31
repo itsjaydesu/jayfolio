@@ -201,7 +201,7 @@ export default function SubscriptionConfirmation({ subscriberEmail = '' }) {
                             lineHeight: '1.6'
                           }}
                         >
-                          You’re receiving this email because you subscribed at jay.fyi. If you’d rather not get these updates,
+                          You’re receiving this email because you subscribed at jay.winder.io. If you’d rather not get these updates,
                           you can reply with “unsubscribe” and I’ll take care of it.
                         </div>
                       </td>

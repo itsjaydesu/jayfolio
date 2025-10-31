@@ -66,7 +66,7 @@ function buildPlainTextEmail(subscriberEmail) {
     '',
     '— Jay',
     '',
-    "You’re receiving this message because you signed up at jay.fyi. Reply with 'unsubscribe' to opt out."
+    "You’re receiving this message because you signed up at jay.winder.io. Reply with 'unsubscribe' to opt out."
   ].join('\n');
 }
 
