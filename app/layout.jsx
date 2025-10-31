@@ -23,6 +23,34 @@ export default async function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
+        <style
+          id="initial-scrollbar-hider"
+          data-debug-scrollbar="initial"
+          dangerouslySetInnerHTML={{
+            __html: `
+              html,
+              body,
+              .content-stage__body {
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+              }
+
+              html {
+                overflow-y: hidden;
+              }
+
+              body {
+                overflow-y: auto;
+              }
+
+              html::-webkit-scrollbar,
+              body::-webkit-scrollbar,
+              .content-stage__body::-webkit-scrollbar {
+                display: none;
+              }
+            `,
+          }}
+        />
         {structuredData.map((data, index) => (
           <script
             key={index}

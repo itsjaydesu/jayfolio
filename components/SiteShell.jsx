@@ -578,6 +578,7 @@ export default function SiteShell({ children, channelContent }) {
     }
     return waitingStatus;
   }, [activeItem, createStatus, waitingStatus]);
+
   
   // Update status when active item changes or language changes
   useEffect(() => {

@@ -49,8 +49,10 @@ html {
   overflow-x: hidden;
   /* Enable smooth scrolling for better UX */
   scroll-behavior: smooth;
-  /* Ensure HTML is the scrolling element for consistent behavior */
-  overflow-y: auto;
+  /* Delegate vertical scrolling to body to prevent early scrollbar flash */
+  overflow-y: hidden;
+  /* Hide scrollbar while preserving scrollability (Firefox) */
+  scrollbar-width: none;
 }
 
 body {
@@ -60,16 +62,25 @@ body {
   font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
   background: #000000; /* Pure black, no gradient */
   color: var(--text-primary);
-  /* Body should not scroll - HTML handles it */
+  /* Body is now the scrolling container */
   overflow-x: hidden;
-  overflow-y: visible;
+  overflow-y: auto;
+  scroll-behavior: smooth;
   position: relative;
   /* Prevent horizontal scroll on mobile */
   max-width: 100vw;
+  /* Hide scrollbar while preserving scrollability (IE/Edge legacy) */
+  -ms-overflow-style: none;
   --language-transition-duration: 2s;
   --language-transition-easing: cubic-bezier(0.33, 1, 0.68, 1);
   --lang-origin-x: 50vw;
   --lang-origin-y: 50vh;
+}
+
+/* Hide scrollbar while preserving scrollability (WebKit/Blink) */
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;
 }
 
 a {
@@ -507,15 +518,17 @@ a {
   overflow-y: auto;
   padding-right: 0.35rem;
   flex: 1 1 auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 .content-stage__body::-webkit-scrollbar {
-  width: 6px;
+  display: none;
+  width: 0;
 }
 
 .content-stage__body::-webkit-scrollbar-thumb {
-  background: rgba(180, 180, 180, 0.25);
-  border-radius: 999px;
+  background: transparent;
 }
 
 .content-stage__body > * {
