@@ -287,7 +287,7 @@ a {
 .menu-overlay .retro-menu__list,
 .menu-overlay .retro-menu__status {
   opacity: 0;
-  transform: translateY(18px);
+  transform: translateY(-18px);
   transition: opacity 0.52s cubic-bezier(0.33, 1, 0.68, 1),
     transform 0.52s cubic-bezier(0.33, 1, 0.68, 1);
 }
@@ -300,7 +300,7 @@ a {
 
 .menu-overlay .retro-menu__item {
   opacity: 0;
-  transform: translateY(16px) scale(0.94);
+  transform: translateY(-16px) scale(0.94);
   transition: opacity 0.42s cubic-bezier(0.33, 1, 0.68, 1),
     transform 0.42s cubic-bezier(0.33, 1, 0.68, 1);
   transform-origin: center center;
@@ -7178,7 +7178,7 @@ body.qr-intro-active .site-shell__icon-button {
   position: relative;
   width: 100%;
   opacity: 0;
-  transform: translateY(10px);
+  transform: translateY(-10px);
   transition: opacity 0.6s ease-out, transform 0.6s ease-out;
   background: transparent;
   /* Ensure single scroll - no overflow on this container */
