@@ -1002,13 +1002,14 @@ export default function SiteShell({ children, channelContent }) {
       availableWidth
     );
 
-    let left = rect.left;
-    const maxLeft = window.innerWidth - viewportPadding - width;
-    if (left < viewportPadding) {
-      left = viewportPadding;
-    } else if (left > maxLeft) {
-      left = Math.max(viewportPadding, maxLeft);
-    }
+    const centeredLeft = (window.innerWidth - width) / 2;
+    const maxLeft = Math.max(
+      viewportPadding,
+      window.innerWidth - viewportPadding - width
+    );
+    const left = Math.round(
+      Math.min(Math.max(centeredLeft, viewportPadding), maxLeft)
+    );
 
     const top = rect.bottom + 12;
 
