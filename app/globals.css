@@ -51,6 +51,15 @@ html {
   scroll-behavior: smooth;
   /* Ensure HTML is the scrolling element for consistent behavior */
   overflow-y: auto;
+  /* Reserve gutter space so content never shifts when scrollbars hide */
+  scrollbar-gutter: stable both-edges;
+  /* Hide scrollbars across browsers while retaining scrollability */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+html::-webkit-scrollbar {
+  display: none;
 }
 
 body {
