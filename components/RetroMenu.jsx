@@ -743,7 +743,6 @@ export default function RetroMenu({
               />
             </svg>
           </Link>
-          <small>v4.1</small>
           <button
             type="button"
             className="retro-menu__dismiss"
@@ -815,11 +814,14 @@ export default function RetroMenu({
               width: `${panelPosition.width}px`,
               zIndex: 99999,
               background:
-                "linear-gradient(180deg, rgba(0, 58, 99, 0.96), rgba(0, 139, 178, 0.92))",
-              border: "1.5px solid rgba(0, 200, 208, 0.5)",
-              borderRadius: "20px",
-              padding: "1rem",
-              boxShadow: "0 12px 32px rgba(0, 0, 0, 0.5)",
+                "linear-gradient(180deg, rgba(12, 92, 150, 0.96), rgba(4, 36, 62, 0.94))",
+              border: "1.5px solid rgba(162, 249, 255, 0.45)",
+              borderRadius: "24px",
+              padding: "1.1rem",
+              boxShadow:
+                "0 26px 54px rgba(0, 0, 0, 0.55), 0 14px 32px rgba(24, 146, 196, 0.35)",
+              backdropFilter: "blur(18px)",
+              WebkitBackdropFilter: "blur(18px)",
             }}
           >
             <div className="retro-menu__settings-header">
