@@ -43,6 +43,12 @@
 
 /* ===== GLOBAL SCROLL BEHAVIOR ===== */
 /* Consistent scrolling across all browsers - HTML handles vertical scroll */
+/*
+ * Scrollbar visibility plan:
+ * 1. Suppress the native viewport scrollbar without impacting wheel/touch scrolling.
+ * 2. Use vendor-specific selectors so nested scroll regions keep their bespoke styling.
+ * 3. Keep the body as a safe fallback when overlays temporarily become the scroll container.
+ */
 html {
   height: 100%;
   /* Prevent horizontal scroll globally */
@@ -51,6 +57,15 @@ html {
   scroll-behavior: smooth;
   /* Ensure HTML is the scrolling element for consistent behavior */
   overflow-y: auto;
+  /* Step 1: hide the native scrollbar while preserving scroll behaviour */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  /* Step 2: suppress scrollbars in WebKit/Blink while leaving custom scrollers intact */
+  display: none;
 }
 
 body {
@@ -70,6 +85,9 @@ body {
   --language-transition-easing: cubic-bezier(0.33, 1, 0.68, 1);
   --lang-origin-x: 50vw;
   --lang-origin-y: 50vh;
+  /* Step 3: keep parity when body temporarily scrolls (e.g., overlays) */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 a {
