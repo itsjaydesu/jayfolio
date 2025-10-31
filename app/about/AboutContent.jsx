@@ -1,27 +1,27 @@
+"use client";
 
-'use client';
+import Link from "next/link";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { useLanguage } from "../../contexts/LanguageContext";
+import { useAdminStatus } from "../../lib/useAdminStatus";
+import { getLocalizedContent } from "../../lib/translations";
 
-import Link from 'next/link';
-import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
-import { useLanguage } from '../../contexts/LanguageContext';
-import { useAdminStatus } from '../../lib/useAdminStatus';
-import { getLocalizedContent } from '../../lib/translations';
-
-const FALLBACK_TITLE = 'About';
-const FALLBACK_SUBTITLE = 'Creative Technologist';
-const FALLBACK_BODY = 'About details are coming soon.';
-const BLOCK_LEVEL_HTML_PATTERN = /<\/?(p|ul|ol|li|blockquote|h[1-6]|section|article|div|figure)[\s>]/i;
+const FALLBACK_TITLE = "About";
+const FALLBACK_SUBTITLE = "Creative Technologist";
+const FALLBACK_BODY = "About details are coming soon.";
+const BLOCK_LEVEL_HTML_PATTERN =
+  /<\/?(p|ul|ol|li|blockquote|h[1-6]|section|article|div|figure)[\s>]/i;
 const PLACEHOLDER_PATTERN = /\{([^{}]+)\}/g;
-const OPTIONS_DELIMITER = '⟡';
-const PRIMARY_LEAD_TEXT = `I am a technologist who loves making things. Generally software, but I also love exploring art, words, music and comedy. I love to use { new tools | old tools | vintage tools | weird tools | words | code | musical instruments } to make things that are { useful | stupid | interesting | surprising | funny | beautiful | thought-provoking }.`;
+const OPTIONS_DELIMITER = "⟡";
+const PRIMARY_LEAD_TEXT = `I am a technologist who loves making things. Generally software, but I also love exploring art, words, music and comedy. I love to use { new tools | old tools | vintage tools | weird tools | words | code | musical instruments } to make things that are { useful | stupid | interesting | surprising | funny | beautiful | thought-provoking }`;
 const PRIMARY_BODY_TEXT = [
   `I am building this site to showcase some creations, and to find friends and co-collaborators. I have far (farrr) too many ideas and not enough time, and it'd be nice to hack on some ideas together. My goal is to build with people who I'd want to spend time with anyway.`,
   `I'm good on the product side. I'm great at public speaking, fundraising and communicating. I'm pretty bad at coding, but I'm good at talking to an AI until I get what I want.`,
-  `If any of my ideas are interesting to you and you'd like to collaborate, find a way to contact me and let's see if we click.`
+  `If any of my ideas are interesting to you and you'd like to collaborate, find a way to contact me and let's see if we click.`,
 ];
 
 function normalize(value) {
-  return typeof value === 'string' ? value.trim() : '';
+  return typeof value === "string" ? value.trim() : "";
 }
 
 function toParagraphs(raw) {
@@ -43,9 +43,9 @@ function toParagraphs(raw) {
 
   return safeSegments.map((segment, index) => ({
     id: index,
-    html: segment.replace(/\n/g, '<br />'),
+    html: segment.replace(/\n/g, "<br />"),
     text: segment,
-    isBlock: false
+    isBlock: false,
   }));
 }
 
@@ -61,26 +61,26 @@ function splitSegmentsWithAnimatedWords(text) {
   while ((match = PLACEHOLDER_PATTERN.exec(text)) !== null) {
     if (match.index > lastIndex) {
       segments.push({
-        type: 'text',
-        value: text.slice(lastIndex, match.index)
+        type: "text",
+        value: text.slice(lastIndex, match.index),
       });
     }
 
     const options = match[1]
-      .split('|')
+      .split("|")
       .map((option) => option.trim())
       .filter(Boolean);
 
     if (options.length) {
       segments.push({
-        type: 'animated',
+        type: "animated",
         options,
-        signature: options.join(OPTIONS_DELIMITER)
+        signature: options.join(OPTIONS_DELIMITER),
       });
     } else {
       segments.push({
-        type: 'text',
-        value: match[0]
+        type: "text",
+        value: match[0],
       });
     }
 
@@ -89,8 +89,8 @@ function splitSegmentsWithAnimatedWords(text) {
 
   if (lastIndex < text.length) {
     segments.push({
-      type: 'text',
-      value: text.slice(lastIndex)
+      type: "text",
+      value: text.slice(lastIndex),
     });
   }
 
@@ -98,11 +98,11 @@ function splitSegmentsWithAnimatedWords(text) {
 }
 
 function renderTextSegment(text, key) {
-  if (!text || !text.includes('\n')) {
+  if (!text || !text.includes("\n")) {
     return <Fragment key={key}>{text}</Fragment>;
   }
 
-  const lines = text.split('\n');
+  const lines = text.split("\n");
   return (
     <Fragment key={key}>
       {lines.map((line, index) => (
@@ -116,29 +116,33 @@ function renderTextSegment(text, key) {
 }
 
 function AnimatedWordSwap({ options, signature }) {
-  const optionsCacheRef = useRef({ key: '', value: [] });
+  const optionsCacheRef = useRef({ key: "", value: [] });
   const { sanitizedOptions, optionsSignature } = useMemo(() => {
     const rawOptions = Array.isArray(options) ? options : [];
     const trimmed = rawOptions
       .map((option) => option.trim())
       .filter((option) => option.length > 0);
-    const normalized = trimmed.filter((option, index) => trimmed.indexOf(option) === index);
+    const normalized = trimmed.filter(
+      (option, index) => trimmed.indexOf(option) === index
+    );
     const cacheKey = signature || normalized.join(OPTIONS_DELIMITER);
     if (optionsCacheRef.current.key === cacheKey) {
       return {
         sanitizedOptions: optionsCacheRef.current.value,
-        optionsSignature: cacheKey
+        optionsSignature: cacheKey,
       };
     }
     const cachedValue = normalized.slice();
     optionsCacheRef.current = { key: cacheKey, value: cachedValue };
     return {
       sanitizedOptions: cachedValue,
-      optionsSignature: cacheKey
+      optionsSignature: cacheKey,
     };
   }, [options, signature]);
 
-  const [currentIndex, setCurrentIndex] = useState(() => (sanitizedOptions.length ? 0 : -1));
+  const [currentIndex, setCurrentIndex] = useState(() =>
+    sanitizedOptions.length ? 0 : -1
+  );
   const [isHydrated, setIsHydrated] = useState(false);
   const [isPulsing, setIsPulsing] = useState(false);
   const randomizedRef = useRef(false);
@@ -172,9 +176,13 @@ function AnimatedWordSwap({ options, signature }) {
       if (sanitizedOptions.length < 2) {
         return previous;
       }
-      const pool = sanitizedOptions.map((_, index) => index).filter((index) => index !== previous);
-      const nextIndex = pool.length ? pool[Math.floor(Math.random() * pool.length)] : previous;
-      return typeof nextIndex === 'number' ? nextIndex : previous;
+      const pool = sanitizedOptions
+        .map((_, index) => index)
+        .filter((index) => index !== previous);
+      const nextIndex = pool.length
+        ? pool[Math.floor(Math.random() * pool.length)]
+        : previous;
+      return typeof nextIndex === "number" ? nextIndex : previous;
     });
   }, [isHydrated, optionsSignature, sanitizedOptions]);
 
@@ -189,9 +197,13 @@ function AnimatedWordSwap({ options, signature }) {
         if (sanitizedOptions.length < 2) {
           return previous;
         }
-        const pool = sanitizedOptions.map((_, index) => index).filter((index) => index !== previous);
-        const nextIndex = pool.length ? pool[Math.floor(Math.random() * pool.length)] : previous;
-        return typeof nextIndex === 'number' ? nextIndex : previous;
+        const pool = sanitizedOptions
+          .map((_, index) => index)
+          .filter((index) => index !== previous);
+        const nextIndex = pool.length
+          ? pool[Math.floor(Math.random() * pool.length)]
+          : previous;
+        return typeof nextIndex === "number" ? nextIndex : previous;
       });
     }, delay);
 
@@ -199,7 +211,9 @@ function AnimatedWordSwap({ options, signature }) {
   }, [currentIndex, isHydrated, optionsSignature, sanitizedOptions]);
 
   const current =
-    currentIndex >= 0 && currentIndex < sanitizedOptions.length ? sanitizedOptions[currentIndex] : '';
+    currentIndex >= 0 && currentIndex < sanitizedOptions.length
+      ? sanitizedOptions[currentIndex]
+      : "";
 
   useEffect(() => {
     if (!current) {
@@ -211,13 +225,14 @@ function AnimatedWordSwap({ options, signature }) {
     return () => window.clearTimeout(pulseTimeout);
   }, [current]);
 
-  const swapClasses = ['about-page__word-swap'];
+  const swapClasses = ["about-page__word-swap"];
   if (isPulsing) {
-    swapClasses.push('about-page__word-swap--pulse');
+    swapClasses.push("about-page__word-swap--pulse");
   }
 
   const maxChars = useMemo(
-    () => sanitizedOptions.reduce((max, option) => Math.max(max, option.length), 0),
+    () =>
+      sanitizedOptions.reduce((max, option) => Math.max(max, option.length), 0),
     [sanitizedOptions]
   );
   const minWidth = Math.max(maxChars, current.length, 4.5);
@@ -227,7 +242,10 @@ function AnimatedWordSwap({ options, signature }) {
   }
 
   return (
-    <span className={swapClasses.join(' ')} style={minWidth ? { minWidth: `${minWidth}ch` } : undefined}>
+    <span
+      className={swapClasses.join(" ")}
+      style={minWidth ? { minWidth: `${minWidth}ch` } : undefined}
+    >
       <span key={current} className="about-page__word-swap-inner">
         {current}
       </span>
@@ -245,7 +263,10 @@ export default function AboutContent({ initialContent }) {
   }, []);
 
   const { title, subtitle, lead, body } = useMemo(() => {
-    const content = initialContent && typeof initialContent === 'object' ? initialContent : {};
+    const content =
+      initialContent && typeof initialContent === "object"
+        ? initialContent
+        : {};
 
     const title =
       normalize(getLocalizedContent(content.aboutTitle, language)) ||
@@ -261,17 +282,17 @@ export default function AboutContent({ initialContent }) {
       getLocalizedContent(content.aboutLead, language) ||
       getLocalizedContent(content.lead, language) ||
       content.lead ||
-      '';
+      "";
 
     const overviewFallback = Array.isArray(content.overview)
-      ? content.overview.map(normalize).filter(Boolean).join('\n\n')
-      : '';
+      ? content.overview.map(normalize).filter(Boolean).join("\n\n")
+      : "";
 
     const localizedBody =
       getLocalizedContent(content.aboutContent, language) ||
       getLocalizedContent(content.summary, language) ||
       overviewFallback ||
-      '';
+      "";
 
     let leadParagraphs = toParagraphs(localizedLead);
     let bodyParagraphs = toParagraphs(localizedBody);
@@ -290,17 +311,17 @@ export default function AboutContent({ initialContent }) {
     if (
       !leadParagraphs.length ||
       leadParagraphs.some((paragraph) =>
-        /creative technologist guiding teams/i.test(paragraph?.text || '')
+        /creative technologist guiding teams/i.test(paragraph?.text || "")
       )
     ) {
       leadParagraphs = defaultLeadParagraphs;
     }
 
-    const defaultBodyParagraphs = toParagraphs(PRIMARY_BODY_TEXT.join('\n\n'));
+    const defaultBodyParagraphs = toParagraphs(PRIMARY_BODY_TEXT.join("\n\n"));
     if (
       !bodyParagraphs.length ||
       bodyParagraphs.some((paragraph) =>
-        /this dossier carries/i.test(paragraph?.text || '')
+        /this dossier carries/i.test(paragraph?.text || "")
       )
     ) {
       bodyParagraphs = defaultBodyParagraphs;
@@ -310,17 +331,19 @@ export default function AboutContent({ initialContent }) {
       title,
       subtitle,
       lead: leadParagraphs,
-      body: bodyParagraphs
+      body: bodyParagraphs,
     };
   }, [initialContent, language]);
 
-  const editHref = '/administratorrrr/settings/channel/about';
+  const editHref = "/administratorrrr/settings/channel/about";
   const hasLead = lead.length > 0;
   const hasBody = body.length > 0;
 
   const renderParagraph = (paragraph, baseClassName) => {
-    const Element = paragraph.isBlock ? 'div' : 'p';
-    const className = paragraph.isBlock ? `${baseClassName} ${baseClassName}--block` : baseClassName;
+    const Element = paragraph.isBlock ? "div" : "p";
+    const className = paragraph.isBlock
+      ? `${baseClassName} ${baseClassName}--block`
+      : baseClassName;
 
     if (paragraph.isBlock) {
       return (
@@ -332,21 +355,29 @@ export default function AboutContent({ initialContent }) {
       );
     }
 
-    const segments = splitSegmentsWithAnimatedWords(paragraph.text || paragraph.html || '');
+    const segments = splitSegmentsWithAnimatedWords(
+      paragraph.text || paragraph.html || ""
+    );
     const content =
       segments.length > 0
         ? segments.map((segment, index) =>
-            segment.type === 'animated' ? (
+            segment.type === "animated" ? (
               <AnimatedWordSwap
                 key={`${baseClassName}-${paragraph.id}-swap-${index}`}
                 options={segment.options}
                 signature={segment.signature}
               />
             ) : (
-              renderTextSegment(segment.value, `${baseClassName}-${paragraph.id}-text-${index}`)
+              renderTextSegment(
+                segment.value,
+                `${baseClassName}-${paragraph.id}-text-${index}`
+              )
             )
           )
-        : renderTextSegment(paragraph.text || paragraph.html || '', `${baseClassName}-${paragraph.id}-text`);
+        : renderTextSegment(
+            paragraph.text || paragraph.html || "",
+            `${baseClassName}-${paragraph.id}-text`
+          );
 
     return (
       <Element key={`${baseClassName}-${paragraph.id}`} className={className}>
@@ -356,9 +387,13 @@ export default function AboutContent({ initialContent }) {
   };
 
   return (
-    <section className={`about-page ${isReady ? 'is-ready' : ''}`}>
+    <section className={`about-page ${isReady ? "is-ready" : ""}`}>
       <div className="about-page__inner">
-        <header className={`about-page__header${isAdmin ? ' about-page__header--editable' : ''}`}>
+        <header
+          className={`about-page__header${
+            isAdmin ? " about-page__header--editable" : ""
+          }`}
+        >
           <div className="about-page__title-group">
             <h1 className="about-page__title">{title}</h1>
             <p className="about-page__subtitle">{subtitle}</p>
@@ -373,13 +408,17 @@ export default function AboutContent({ initialContent }) {
         <div className="about-page__content">
           {hasLead ? (
             <div className="about-page__lead" aria-label="Lead description">
-              {lead.map((paragraph) => renderParagraph(paragraph, 'about-page__lead-paragraph'))}
+              {lead.map((paragraph) =>
+                renderParagraph(paragraph, "about-page__lead-paragraph")
+              )}
             </div>
           ) : null}
 
           {hasBody ? (
             <article className="about-page__body" aria-label="About body copy">
-              {body.map((paragraph) => renderParagraph(paragraph, 'about-page__body-paragraph'))}
+              {body.map((paragraph) =>
+                renderParagraph(paragraph, "about-page__body-paragraph")
+              )}
             </article>
           ) : null}
         </div>
