@@ -74,7 +74,7 @@ export function HamburgerIcon({ className }) {
       className={["icon", className].filter(Boolean).join(" ")}
       fill="none"
       stroke="currentColor"
-      strokeWidth="1.8"
+      strokeWidth="1.6"
       strokeLinecap="round"
     >
       <line x1="4" y1="7" x2="20" y2="7" />

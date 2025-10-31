@@ -9993,18 +9993,18 @@ body[data-language-transitioning="true"] .language-transition-root {
   }
 
   .site-shell__nav-dropdown-button {
-    width: clamp(2.85rem, 7.2vw, 3.35rem);
-    height: clamp(2.85rem, 7.2vw, 3.35rem);
+    width: clamp(2.5rem, 6.2vw, 3.05rem);
+    height: clamp(2.5rem, 6.2vw, 3.05rem);
     min-width: 0;
     padding: 0;
     border-radius: 999px;
-    border: 1px solid rgba(126, 255, 206, 0.4);
+    border: 1px solid rgba(138, 248, 255, 0.25);
     background: radial-gradient(
-      circle at 45% 30%,
-      rgba(16, 48, 40, 0.94),
-      rgba(10, 32, 28, 0.88)
+      circle at 30% 20%,
+      rgba(12, 28, 36, 0.92),
+      rgba(6, 18, 26, 0.78)
     );
-    color: rgba(140, 255, 210, 0.95);
+    color: rgba(210, 236, 244, 0.88);
     cursor: pointer;
     transition: border-color 0.22s ease,
       box-shadow 0.28s cubic-bezier(0.33, 1, 0.68, 1),
@@ -10016,30 +10016,30 @@ body[data-language-transitioning="true"] .language-transition-root {
     justify-content: center;
     position: relative;
     outline: none;
-    box-shadow: 0 10px 28px rgba(10, 36, 28, 0.5);
+    box-shadow: 0 12px 30px rgba(6, 18, 26, 0.48);
   }
 
   .site-shell__nav-dropdown[data-open="true"]
     .site-shell__nav-dropdown-button {
-    border-color: rgba(156, 255, 220, 0.75);
-    color: rgba(188, 255, 230, 0.98);
+    border-color: rgba(138, 248, 255, 0.52);
+    color: rgba(236, 252, 255, 0.98);
     background: radial-gradient(
-      circle at 50% 32%,
-      rgba(24, 80, 64, 0.98),
-      rgba(12, 40, 32, 0.92) 60%,
-      rgba(8, 26, 22, 0.88) 100%
+      circle at 35% 28%,
+      rgba(18, 42, 52, 0.95),
+      rgba(8, 24, 32, 0.86) 60%,
+      rgba(4, 14, 20, 0.82) 100%
     );
-    box-shadow: 0 16px 42px rgba(8, 30, 24, 0.65),
-      0 0 32px rgba(122, 255, 206, 0.38);
+    box-shadow: 0 18px 38px rgba(4, 14, 20, 0.62),
+      0 0 26px rgba(138, 248, 255, 0.28);
     transform: translateY(-1px);
   }
 
   .site-shell__nav-dropdown-button:hover,
   .site-shell__nav-dropdown-button:focus-visible {
-    border-color: rgba(156, 255, 220, 0.65);
-    color: rgba(188, 255, 230, 0.98);
-    box-shadow: 0 14px 34px rgba(8, 30, 24, 0.58),
-      0 0 24px rgba(110, 255, 202, 0.3);
+    border-color: rgba(138, 248, 255, 0.4);
+    color: rgba(236, 252, 255, 0.96);
+    box-shadow: 0 16px 34px rgba(4, 14, 20, 0.6),
+      0 0 22px rgba(138, 248, 255, 0.22);
   }
 
   .site-shell__nav-dropdown-button:focus-visible {
@@ -10056,13 +10056,13 @@ body[data-language-transitioning="true"] .language-transition-root {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: clamp(1.45rem, 4.2vw, 1.75rem);
-    height: clamp(1.45rem, 4.2vw, 1.75rem);
+    width: clamp(1.35rem, 3.6vw, 1.65rem);
+    height: clamp(1.35rem, 3.6vw, 1.65rem);
     border-radius: 50%;
     background: radial-gradient(
       circle at 50% 40%,
-      rgba(42, 112, 88, 0.45),
-      rgba(18, 52, 44, 0.1)
+      rgba(28, 64, 78, 0.38),
+      rgba(10, 28, 38, 0.12)
     );
     color: currentColor;
   }

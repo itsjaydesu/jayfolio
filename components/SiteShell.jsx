@@ -980,14 +980,6 @@ export default function SiteShell({ children, channelContent }) {
     []
   );
 
-  const openMobileMenu = useCallback(() => {
-    if (!menuItems.length) {
-      return;
-    }
-    setIsMobileMenuOpen(true);
-    setMobileMenuFocusIndex(activeMenuIndex >= 0 ? activeMenuIndex : 0);
-  }, [menuItems, activeMenuIndex]);
-
   const updateMobileMenuPosition = useCallback(() => {
     if (typeof window === "undefined") {
       return;
@@ -1026,6 +1018,16 @@ export default function SiteShell({ children, channelContent }) {
       width,
     });
   }, []);
+
+  const openMobileMenu = useCallback(() => {
+    if (!menuItems.length) {
+      return;
+    }
+
+    updateMobileMenuPosition();
+    setIsMobileMenuOpen(true);
+    setMobileMenuFocusIndex(activeMenuIndex >= 0 ? activeMenuIndex : 0);
+  }, [menuItems.length, activeMenuIndex, updateMobileMenuPosition]);
 
   const handleMobileMenuToggle = useCallback(() => {
     if (isMobileMenuOpen) {
