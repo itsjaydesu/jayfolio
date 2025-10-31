@@ -1002,19 +1002,20 @@ export default function SiteShell({ children, channelContent }) {
       availableWidth
     );
 
-    let left = rect.left;
+    // Center the dropdown horizontally on the screen
+    const viewportCenter = window.innerWidth / 2;
+    const left = viewportCenter - width / 2;
+    
+    // Ensure dropdown stays within viewport bounds
+    const minLeft = viewportPadding;
     const maxLeft = window.innerWidth - viewportPadding - width;
-    if (left < viewportPadding) {
-      left = viewportPadding;
-    } else if (left > maxLeft) {
-      left = Math.max(viewportPadding, maxLeft);
-    }
+    const clampedLeft = Math.max(minLeft, Math.min(left, maxLeft));
 
     const top = rect.bottom + 12;
 
     setMobileMenuPosition({
       top,
-      left,
+      left: clampedLeft,
       width,
     });
   }, []);
