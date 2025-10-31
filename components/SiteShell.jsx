@@ -102,7 +102,6 @@ export default function SiteShell({ children, channelContent }) {
   const iconGroupRef = useRef(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [mobileMenuFocusIndex, setMobileMenuFocusIndex] = useState(-1);
-  const [mobileMenuPosition, setMobileMenuPosition] = useState(null);
   const [isNavCondensed, setIsNavCondensed] = useState(false);
 
   const warmSceneChunk = useCallback(() => {
@@ -610,19 +609,6 @@ export default function SiteShell({ children, channelContent }) {
       ? menuItems[activeMenuIndex]?.label ?? mobileMenuPlaceholder
       : mobileMenuPlaceholder;
 
-  const mobileMenuInlineStyle = useMemo(() => {
-    if (!isMobileMenuOpen) {
-      return undefined;
-    }
-    if (!mobileMenuPosition) {
-      return { visibility: "hidden" };
-    }
-    return {
-      top: `${mobileMenuPosition.top}px`,
-      left: `${mobileMenuPosition.left}px`,
-      width: `${mobileMenuPosition.width}px`,
-    };
-  }, [isMobileMenuOpen, mobileMenuPosition]);
 
   useEffect(() => {
     if (!isListingChannel) {
@@ -980,54 +966,14 @@ export default function SiteShell({ children, channelContent }) {
     []
   );
 
-  const updateMobileMenuPosition = useCallback(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    const buttonNode = mobileMenuButtonRef.current;
-    if (!buttonNode) {
-      return;
-    }
-
-    const rect = buttonNode.getBoundingClientRect();
-    const viewportPadding = 16;
-    const minWidth = 200; // match design width while allowing clamping on narrow screens
-    const availableWidth = Math.max(
-      window.innerWidth - viewportPadding * 2,
-      minWidth
-    );
-    const width = Math.min(
-      Math.max(rect.width, minWidth),
-      availableWidth
-    );
-
-    let left = rect.left;
-    const maxLeft = window.innerWidth - viewportPadding - width;
-    if (left < viewportPadding) {
-      left = viewportPadding;
-    } else if (left > maxLeft) {
-      left = Math.max(viewportPadding, maxLeft);
-    }
-
-    const top = rect.bottom + 12;
-
-    setMobileMenuPosition({
-      top,
-      left,
-      width,
-    });
-  }, []);
-
   const openMobileMenu = useCallback(() => {
     if (!menuItems.length) {
       return;
     }
 
-    updateMobileMenuPosition();
     setIsMobileMenuOpen(true);
     setMobileMenuFocusIndex(activeMenuIndex >= 0 ? activeMenuIndex : 0);
-  }, [menuItems.length, activeMenuIndex, updateMobileMenuPosition]);
+  }, [menuItems.length, activeMenuIndex]);
 
   const handleMobileMenuToggle = useCallback(() => {
     if (isMobileMenuOpen) {
@@ -1165,24 +1111,21 @@ export default function SiteShell({ children, channelContent }) {
 
   useEffect(() => {
     if (!isMobileMenuOpen) {
-      setMobileMenuPosition(null);
       return undefined;
     }
 
-    updateMobileMenuPosition();
-
-    const handleResize = () => {
-      updateMobileMenuPosition();
+    const handleViewportChange = () => {
+      closeMobileMenu();
     };
 
-    window.addEventListener("resize", handleResize);
-    window.addEventListener("scroll", handleResize, true);
+    window.addEventListener("resize", handleViewportChange);
+    window.addEventListener("scroll", handleViewportChange, true);
 
     return () => {
-      window.removeEventListener("resize", handleResize);
-      window.removeEventListener("scroll", handleResize, true);
+      window.removeEventListener("resize", handleViewportChange);
+      window.removeEventListener("scroll", handleViewportChange, true);
     };
-  }, [isMobileMenuOpen, updateMobileMenuPosition]);
+  }, [closeMobileMenu, isMobileMenuOpen]);
 
   useEffect(() => {
     if (!isMobileMenuOpen) {
@@ -2054,7 +1997,6 @@ export default function SiteShell({ children, channelContent }) {
                     <div
                       className="site-shell__nav-dropdown-menu"
                       ref={mobileMenuContainerRef}
-                      style={mobileMenuInlineStyle}
                     >
                       <ul
                         id="site-shell-mobile-nav-list"
