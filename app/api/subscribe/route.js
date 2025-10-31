@@ -3,6 +3,7 @@ import SubscriptionConfirmation from '../../../lib/emails/SubscriptionConfirmati
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const RESEND_ENDPOINT = 'https://api.resend.com/emails';
+const REQUIRED_FROM_DOMAIN = 'jay.winder.io';
 
 function isValidEmail(value) {
   return EMAIL_PATTERN.test((value || '').trim());
@@ -11,7 +12,7 @@ function isValidEmail(value) {
 function extractErrorMessage(errorPayload) {
   if (!errorPayload) {
     return null;
-}
+  }
 
   if (typeof errorPayload === 'string') {
     return errorPayload;
@@ -29,6 +30,23 @@ function extractErrorMessage(errorPayload) {
   }
 
   return null;
+}
+
+function extractDomain(address) {
+  if (!address) {
+    return null;
+  }
+
+  const trimmed = address.trim();
+  const bracketMatch = trimmed.match(/<\s*([^>]+)\s*>$/);
+  const emailPortion = bracketMatch ? bracketMatch[1] : trimmed;
+  const atIndex = emailPortion.lastIndexOf('@');
+
+  if (atIndex === -1 || atIndex === emailPortion.length - 1) {
+    return null;
+  }
+
+  return emailPortion.slice(atIndex + 1).toLowerCase();
 }
 
 function buildPlainTextEmail(subscriberEmail) {
@@ -80,10 +98,27 @@ export async function POST(request) {
     );
   }
 
-  const fromAddress = process.env.RESEND_FROM_EMAIL;
+  const fromAddress = process.env.RESEND_FROM_EMAIL?.trim();
 
   if (!fromAddress) {
     console.error('Missing RESEND_FROM_EMAIL environment variable.');
+    return NextResponse.json(
+      {
+        success: false,
+        message: 'Email is temporarily unavailable. Please try again later.'
+      },
+      { status: 500 }
+    );
+  }
+
+  const fromDomain = extractDomain(fromAddress);
+
+  if (fromDomain !== REQUIRED_FROM_DOMAIN) {
+    console.error(
+      `Configured RESEND_FROM_EMAIL must belong to ${REQUIRED_FROM_DOMAIN}, received:`,
+      fromAddress
+    );
+
     return NextResponse.json(
       {
         success: false,
