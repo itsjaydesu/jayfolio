@@ -7,7 +7,7 @@ import dynamic from 'next/dynamic';
 import RetroMenu from "./RetroMenu";
 import LanguageSwitcher from "./LanguageSwitcher";
 import BrandWordmark from "./BrandWordmark";
-import { DotfieldIcon, XLogoIcon } from "./icons";
+import { DotfieldIcon, HamburgerIcon, XLogoIcon } from "./icons";
 import SiteFooter from "./SiteFooter";
 import { SITE_TEXT_DEFAULTS } from "../lib/siteTextDefaults";
 import { useAdminStatus } from "../lib/useAdminStatus";
@@ -19,6 +19,7 @@ const DOTFIELD_OVERLAY_FADE_MS = 520;
 // Minimum header backdrop opacity on subpages so the menu is readable
 // over content even at scroll position 0. Kept subtle to avoid a heavy box.
 const HEADER_BASE_SHADE = 0.16; // ~16% base, escalates with scroll
+const NAV_CONDENSED_BREAKPOINT = 600;
 const DOTFIELD_EFFECT_SEQUENCE = [
   'jitter',
   'swirlPulse',
@@ -101,7 +102,6 @@ export default function SiteShell({ children, channelContent }) {
   const iconGroupRef = useRef(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [mobileMenuFocusIndex, setMobileMenuFocusIndex] = useState(-1);
-  const [mobileMenuPosition, setMobileMenuPosition] = useState(null);
   const [isNavCondensed, setIsNavCondensed] = useState(false);
 
   const warmSceneChunk = useCallback(() => {
@@ -293,6 +293,24 @@ export default function SiteShell({ children, channelContent }) {
 
     const headerElement = headerInnerRef.current;
     const navElement = navRef.current;
+
+    const viewportWidth =
+      window.innerWidth ||
+      document.documentElement?.clientWidth ||
+      0;
+    const smallViewportQuery =
+      typeof window.matchMedia === 'function'
+        ? window.matchMedia(`(max-width: ${NAV_CONDENSED_BREAKPOINT}px)`)
+        : null;
+    const shouldForceCondensed =
+      viewportWidth <= NAV_CONDENSED_BREAKPOINT ||
+      Boolean(smallViewportQuery?.matches);
+
+    if (shouldForceCondensed) {
+      setIsNavCondensed((previous) => (previous ? previous : true));
+      return;
+    }
+
     if (!headerElement || !navElement) {
       setIsNavCondensed(false);
       return;
@@ -591,19 +609,6 @@ export default function SiteShell({ children, channelContent }) {
       ? menuItems[activeMenuIndex]?.label ?? mobileMenuPlaceholder
       : mobileMenuPlaceholder;
 
-  const mobileMenuInlineStyle = useMemo(() => {
-    if (!isMobileMenuOpen) {
-      return undefined;
-    }
-    if (!mobileMenuPosition) {
-      return { visibility: "hidden" };
-    }
-    return {
-      top: `${mobileMenuPosition.top}px`,
-      left: `${mobileMenuPosition.left}px`,
-      width: `${mobileMenuPosition.width}px`,
-    };
-  }, [isMobileMenuOpen, mobileMenuPosition]);
 
   useEffect(() => {
     if (!isListingChannel) {
@@ -965,48 +970,10 @@ export default function SiteShell({ children, channelContent }) {
     if (!menuItems.length) {
       return;
     }
+
     setIsMobileMenuOpen(true);
     setMobileMenuFocusIndex(activeMenuIndex >= 0 ? activeMenuIndex : 0);
-  }, [menuItems, activeMenuIndex]);
-
-  const updateMobileMenuPosition = useCallback(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    const buttonNode = mobileMenuButtonRef.current;
-    if (!buttonNode) {
-      return;
-    }
-
-    const rect = buttonNode.getBoundingClientRect();
-    const viewportPadding = 16;
-    const minWidth = 200; // match design width while allowing clamping on narrow screens
-    const availableWidth = Math.max(
-      window.innerWidth - viewportPadding * 2,
-      minWidth
-    );
-    const width = Math.min(
-      Math.max(rect.width, minWidth),
-      availableWidth
-    );
-
-    let left = rect.left;
-    const maxLeft = window.innerWidth - viewportPadding - width;
-    if (left < viewportPadding) {
-      left = viewportPadding;
-    } else if (left > maxLeft) {
-      left = Math.max(viewportPadding, maxLeft);
-    }
-
-    const top = rect.bottom + 12;
-
-    setMobileMenuPosition({
-      top,
-      left,
-      width,
-    });
-  }, []);
+  }, [menuItems.length, activeMenuIndex]);
 
   const handleMobileMenuToggle = useCallback(() => {
     if (isMobileMenuOpen) {
@@ -1144,24 +1111,21 @@ export default function SiteShell({ children, channelContent }) {
 
   useEffect(() => {
     if (!isMobileMenuOpen) {
-      setMobileMenuPosition(null);
       return undefined;
     }
 
-    updateMobileMenuPosition();
-
-    const handleResize = () => {
-      updateMobileMenuPosition();
+    const handleViewportChange = () => {
+      closeMobileMenu();
     };
 
-    window.addEventListener("resize", handleResize);
-    window.addEventListener("scroll", handleResize, true);
+    window.addEventListener("resize", handleViewportChange);
+    window.addEventListener("scroll", handleViewportChange, true);
 
     return () => {
-      window.removeEventListener("resize", handleResize);
-      window.removeEventListener("scroll", handleResize, true);
+      window.removeEventListener("resize", handleViewportChange);
+      window.removeEventListener("scroll", handleViewportChange, true);
     };
-  }, [isMobileMenuOpen, updateMobileMenuPosition]);
+  }, [closeMobileMenu, isMobileMenuOpen]);
 
   useEffect(() => {
     if (!isMobileMenuOpen) {
@@ -2017,8 +1981,14 @@ export default function SiteShell({ children, channelContent }) {
                     ref={mobileMenuButtonRef}
                   >
                     <span
+                      className="site-shell__nav-dropdown-button-icon"
+                      aria-hidden="true"
+                    >
+                      <HamburgerIcon />
+                    </span>
+                    <span
                       id="site-shell-mobile-nav-button-text"
-                      className="site-shell__nav-dropdown-button-text"
+                      className="sr-only site-shell__nav-dropdown-button-text"
                     >
                       {dropdownDisplayLabel}
                     </span>
@@ -2027,7 +1997,6 @@ export default function SiteShell({ children, channelContent }) {
                     <div
                       className="site-shell__nav-dropdown-menu"
                       ref={mobileMenuContainerRef}
-                      style={mobileMenuInlineStyle}
                     >
                       <ul
                         id="site-shell-mobile-nav-list"
@@ -2062,6 +2031,7 @@ export default function SiteShell({ children, channelContent }) {
                                 onClick={() => handleMobileMenuSelect(item)}
                                 onMouseEnter={() => setMobileMenuFocusIndex(index)}
                                 onFocus={() => setMobileMenuFocusIndex(index)}
+                                style={{ "--option-index": index }}
                               >
                                 {item.label}
                               </button>
