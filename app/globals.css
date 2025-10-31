@@ -51,6 +51,15 @@ html {
   scroll-behavior: smooth;
   /* Ensure HTML is the scrolling element for consistent behavior */
   overflow-y: auto;
+  /* Reserve consistent viewport width to avoid layout shifts */
+  scrollbar-gutter: stable both-edges;
+  /* Hide scrollbars across modern browsers while preserving scroll */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+html::-webkit-scrollbar {
+  display: none;
 }
 
 body {
@@ -66,10 +75,17 @@ body {
   position: relative;
   /* Prevent horizontal scroll on mobile */
   max-width: 100vw;
+  /* Ensure consistent scrollbar hiding for legacy engines */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
   --language-transition-duration: 2s;
   --language-transition-easing: cubic-bezier(0.33, 1, 0.68, 1);
   --lang-origin-x: 50vw;
   --lang-origin-y: 50vh;
+}
+
+body::-webkit-scrollbar {
+  display: none;
 }
 
 a {
