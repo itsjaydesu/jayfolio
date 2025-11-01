@@ -617,9 +617,11 @@ export default function SiteShell({ children, channelContent }) {
     activeSection && activeMenuIndex >= 0
       ? menuItems[activeMenuIndex]?.label ?? mobileMenuPlaceholder
       : mobileMenuPlaceholder;
-  const visibleNavLinkCount = isNavCondensed ? 0 : menuItems.length;
-  const navLinkStartIndex = 0;
-  const navSequenceBaseIndex = visibleNavLinkCount;
+  
+  // Simplified animation sequencing: 
+  // When condensed: dropdown(0) -> icons(1,2,3)
+  // When expanded: nav-items(0-4) -> icons(5,6,7)
+  const iconGroupStartIndex = isNavCondensed ? 1 : menuItems.length;
 
   const mobileMenuInlineStyle = useMemo(() => {
     if (!isMobileMenuOpen) {
@@ -2032,17 +2034,12 @@ export default function SiteShell({ children, channelContent }) {
               <div className="site-shell__header-inner" ref={headerInnerRef}>
                 <Link
                   href="/"
-                  className="site-shell__brand site-shell__nav-sequence-item"
+                  className="site-shell__brand"
                   aria-label={brand}
                   onClick={handleNavigateHome}
                   onMouseEnter={warmSceneChunk}
                   onFocus={warmSceneChunk}
                   ref={brandRef}
-                  style={
-                    navReady
-                      ? { "--nav-item-index": 0 }
-                      : navItemInitialStyle
-                  }
                 >
                   <BrandWordmark className="site-shell__brand-wordmark" />
                 </Link>
@@ -2068,9 +2065,7 @@ export default function SiteShell({ children, channelContent }) {
                     style={
                       navReady
                         ? {
-                            "--nav-item-index": isNavCondensed
-                              ? 1
-                              : navLinkStartIndex,
+                            "--nav-item-index": 0,
                           }
                         : navItemInitialStyle
                     }
@@ -2185,7 +2180,7 @@ export default function SiteShell({ children, channelContent }) {
                     title={t('dotfield.open', language)}
                     style={
                       navReady
-                        ? { "--nav-item-index": navSequenceBaseIndex }
+                        ? { "--nav-item-index": iconGroupStartIndex }
                         : navItemInitialStyle
                     }
                   >
@@ -2200,7 +2195,7 @@ export default function SiteShell({ children, channelContent }) {
                     title={t('menu.social.aria', language)}
                     style={
                       navReady
-                        ? { "--nav-item-index": navSequenceBaseIndex + 1 }
+                        ? { "--nav-item-index": iconGroupStartIndex + 1 }
                         : navItemInitialStyle
                     }
                   >
@@ -2210,7 +2205,7 @@ export default function SiteShell({ children, channelContent }) {
                     className="site-shell__icon-button site-shell__header-language-toggle site-shell__nav-sequence-item"
                     style={
                       navReady
-                        ? { "--nav-item-index": navSequenceBaseIndex + 2 }
+                        ? { "--nav-item-index": iconGroupStartIndex + 2 }
                         : navItemInitialStyle
                     }
                   />
