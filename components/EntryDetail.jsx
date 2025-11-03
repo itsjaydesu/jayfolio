@@ -201,48 +201,104 @@ export default function EntryDetail({ type, entry }) {
     return doc.body.innerHTML;
   }, [audioData, localizedContent, entry?.content]);
 
-  const galleryImages = useMemo(() => {
-    if (!Array.isArray(entry?.galleryImages)) {
-      return [];
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return undefined;
+    const handleFullscreenChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement));
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, []);
+
+  const galleries = useMemo(() => {
+    const normalizeSettings = (input) => {
+      const base = {
+        columns: 4,
+        spacing: 18,
+        showArrows: true,
+        toolbarView: 'visible'
+      };
+
+      if (!input || typeof input !== 'object') {
+        return base;
+      }
+
+      const columnsRaw = Number.isFinite(input.columns) ? input.columns : Number.parseInt(input.columns, 10);
+      if (Number.isFinite(columnsRaw) && columnsRaw > 0) {
+        base.columns = Math.min(columnsRaw, 12);
+      }
+
+      const spacingRaw = Number.isFinite(input.spacing) ? input.spacing : Number.parseFloat(input.spacing);
+      if (Number.isFinite(spacingRaw) && spacingRaw >= 0) {
+        base.spacing = spacingRaw;
+      }
+
+      if (typeof input.showArrows === 'boolean') {
+        base.showArrows = input.showArrows;
+      }
+
+      if (typeof input.toolbarView === 'string') {
+        const trimmedToolbar = input.toolbarView.trim();
+        if (['hidden', 'hover', 'visible'].includes(trimmedToolbar)) {
+          base.toolbarView = trimmedToolbar;
+        }
+      }
+
+      return base;
+    };
+
+    const normalizeImages = (input) => {
+      if (!Array.isArray(input)) {
+        return [];
+      }
+      return input
+        .map((item) => {
+          if (typeof item === 'string') {
+            const url = item.trim();
+            return url ? { url, thumbnail: url } : null;
+          }
+          if (item && typeof item === 'object' && typeof item.url === 'string') {
+            const url = item.url.trim();
+            if (!url) return null;
+            const thumbnail =
+              typeof item.thumbnailUrl === 'string' && item.thumbnailUrl.trim()
+                ? item.thumbnailUrl.trim()
+                : url;
+            return { url, thumbnail };
+          }
+          return null;
+        })
+        .filter(Boolean);
+    };
+
+    const normalized = [];
+
+    if (Array.isArray(entry?.galleries) && entry.galleries.length) {
+      entry.galleries.forEach((gallery) => {
+        if (!gallery || typeof gallery !== 'object') return;
+        const images = normalizeImages(gallery.images);
+        if (!images.length) return;
+        normalized.push({
+          images,
+          settings: normalizeSettings(gallery.settings)
+        });
+      });
+    } else if (Array.isArray(entry?.galleryImages) && entry.galleryImages.length) {
+      const images = normalizeImages(entry.galleryImages);
+      if (images.length) {
+        normalized.push({
+          images,
+          settings: normalizeSettings(entry.gallerySettings)
+        });
+      }
     }
 
-    return entry.galleryImages
-      .map((item) => {
-        if (!item) return null;
-
-        if (typeof item === 'string') {
-          const url = item.trim();
-          return url ? { url } : null;
-        }
-
-        if (typeof item !== 'object') {
-          return null;
-        }
-
-        const url = typeof item.url === 'string' ? item.url.trim() : '';
-        if (!url) {
-          return null;
-        }
-
-        return {
-          url,
-          alt: item.alt ?? '',
-          caption: item.caption ?? '',
-          thumbnailUrl: typeof item.thumbnailUrl === 'string' ? item.thumbnailUrl.trim() : '',
-          blurDataURL: typeof item.blurDataURL === 'string' ? item.blurDataURL.trim() : '',
-          width: typeof item.width === 'number' ? item.width : undefined,
-          height: typeof item.height === 'number' ? item.height : undefined
-        };
-      })
-      .filter(Boolean);
-  }, [entry?.galleryImages]);
-
-  const galleryHeading = useMemo(() => (language === 'ja' ? 'フォトギャラリー' : 'Photo gallery'), [language]);
-
-  const galleryCountLabel = useMemo(() => {
-    if (!galleryImages.length) return '';
-    return language === 'ja' ? `${galleryImages.length}枚` : `${galleryImages.length} images`;
-  }, [galleryImages.length, language]);
+    return normalized;
+  }, [entry?.galleries, entry?.galleryImages, entry?.gallerySettings]);
 
   const galleryTitleFallback = useMemo(() => {
     if (typeof localizedTitle === 'string' && localizedTitle.trim()) {
@@ -257,6 +313,233 @@ export default function EntryDetail({ type, entry }) {
     }
     return entry?.slug || 'Gallery';
   }, [entry?.slug, entry?.title, localizedTitle]);
+
+  const contentHtml = useMemo(() => {
+    const html = processedContent || localizedContent || '';
+    return html.replace(/<\/image-gallery-\d+\s*>/gi, '');
+  }, [localizedContent, processedContent]);
+
+  const gallerySegments = useMemo(() => {
+    const segments = [];
+    const usedIndexes = [];
+    if (!contentHtml) {
+      return { segments, usedIndexes };
+    }
+
+    const regex = /<image-gallery-(\d+)\s*\/?>/gi;
+    let lastIndex = 0;
+    let match;
+
+    const pruneEmptyParagraphs = (htmlChunk) =>
+      htmlChunk.replace(/<p>[\s\u00A0]*<\/p>/gi, '').trim();
+
+    while ((match = regex.exec(contentHtml)) !== null) {
+      const index = match.index;
+      if (index > lastIndex) {
+        const htmlChunk = contentHtml.slice(lastIndex, index);
+        if (pruneEmptyParagraphs(htmlChunk)) {
+          segments.push({ type: 'html', content: htmlChunk });
+        }
+      }
+      const galleryNumber = Number.parseInt(match[1], 10);
+      if (!Number.isNaN(galleryNumber)) {
+        const galleryIndex = galleryNumber - 1;
+        usedIndexes.push(galleryIndex);
+        segments.push({ type: 'gallery', galleryIndex });
+      }
+      lastIndex = regex.lastIndex;
+    }
+
+    const trailing = contentHtml.slice(lastIndex);
+    if (pruneEmptyParagraphs(trailing)) {
+      segments.push({ type: 'html', content: trailing });
+    }
+
+    if (!segments.length && pruneEmptyParagraphs(contentHtml)) {
+      segments.push({ type: 'html', content: contentHtml });
+    }
+
+    return { segments, usedIndexes };
+  }, [contentHtml]);
+
+  const unusedGalleryIndexes = useMemo(() => {
+    if (!galleries.length) {
+      return [];
+    }
+    const usedSet = new Set(gallerySegments.usedIndexes);
+    return galleries
+      .map((_, index) => index)
+      .filter((index) => !usedSet.has(index));
+  }, [galleries, gallerySegments.usedIndexes]);
+
+  const updateGalleryViewerState = useCallback((visible, settings) => {
+    if (typeof document === 'undefined') return;
+    const body = document.body;
+    if (!body) return;
+    if (visible) {
+      body.dataset.photoGalleryArrows = settings.showArrows ? 'on' : 'off';
+      body.dataset.photoGalleryToolbar = settings.toolbarView;
+    } else {
+      delete body.dataset.photoGalleryArrows;
+      delete body.dataset.photoGalleryToolbar;
+    }
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (typeof document === 'undefined') return;
+      delete document.body.dataset.photoGalleryArrows;
+      delete document.body.dataset.photoGalleryToolbar;
+    };
+  }, []);
+
+  const getGalleryAriaLabel = useCallback((galleryIndex) => {
+    const galleryNumber = galleryIndex + 1;
+    if (language === 'ja') {
+      return `${galleryTitleFallback} ギャラリー${galleryNumber}`;
+    }
+    return `${galleryTitleFallback} gallery ${galleryNumber}`;
+  }, [galleryTitleFallback, language]);
+
+  const getImageAriaLabel = useCallback((galleryIndex, imageIndex) => {
+    const galleryNumber = galleryIndex + 1;
+    const imageNumber = imageIndex + 1;
+    if (language === 'ja') {
+      return `${galleryTitleFallback} ギャラリー${galleryNumber}の写真 ${imageNumber}`;
+    }
+    return `${galleryTitleFallback} gallery ${galleryNumber} image ${imageNumber}`;
+  }, [galleryTitleFallback, language]);
+
+  const renderGallerySection = useCallback((galleryIndex, key) => {
+    const gallery = galleries[galleryIndex];
+    if (!gallery || !gallery.images.length) {
+      return null;
+    }
+
+    const { images, settings } = gallery;
+    const { columns, spacing, toolbarView } = settings;
+
+    const gridStyle = {};
+    if (Number.isFinite(columns) && columns > 0) {
+      gridStyle.gridTemplateColumns = `repeat(${columns}, minmax(0, 1fr))`;
+    }
+    if (Number.isFinite(spacing) && spacing >= 0) {
+      gridStyle.gap = `${spacing}px`;
+    }
+
+    const ariaLabel = getGalleryAriaLabel(galleryIndex);
+    const toolbarShouldRender = toolbarView !== 'hidden';
+
+    const renderToolbar = (toolbarProps) => {
+      if (!toolbarShouldRender) {
+        return null;
+      }
+
+      const { scale = 1, onScale, onClose } = toolbarProps;
+      const clampScale = (nextScale) => {
+        if (typeof onScale !== 'function') return;
+        const clamped = Math.min(Math.max(nextScale, 0.5), 8);
+        onScale(clamped);
+      };
+
+      const zoomOut = () => clampScale(scale - 0.4);
+      const zoomIn = () => clampScale(scale + 0.4);
+      const resetZoom = () => clampScale(1);
+
+      const toggleFullscreen = () => {
+        if (typeof document === 'undefined') return;
+        if (document.fullscreenElement) {
+          document.exitFullscreen?.();
+          return;
+        }
+        (document.documentElement || document.body)?.requestFullscreen?.();
+      };
+
+      return (
+        <div className="detail-view__gallery-toolbar" role="toolbar" aria-label="Gallery controls">
+          <button
+            type="button"
+            className="detail-view__gallery-toolbar-button"
+            onClick={zoomOut}
+            aria-label={language === 'ja' ? 'ズームアウト' : 'Zoom out'}
+          >
+            −
+          </button>
+          <button
+            type="button"
+            className="detail-view__gallery-toolbar-button"
+            onClick={resetZoom}
+            aria-label={language === 'ja' ? 'ズームリセット' : 'Reset zoom'}
+          >
+            1×
+          </button>
+          <button
+            type="button"
+            className="detail-view__gallery-toolbar-button"
+            onClick={zoomIn}
+            aria-label={language === 'ja' ? 'ズームイン' : 'Zoom in'}
+          >
+            ＋
+          </button>
+          <button
+            type="button"
+            className="detail-view__gallery-toolbar-button"
+            onClick={toggleFullscreen}
+            aria-label={isFullscreen ? (language === 'ja' ? 'フルスクリーンを終了' : 'Exit fullscreen') : (language === 'ja' ? 'フルスクリーン' : 'Enter fullscreen')}
+          >
+            ⤢
+          </button>
+          <button
+            type="button"
+            className="detail-view__gallery-toolbar-button"
+            onClick={() => onClose?.()}
+            aria-label={language === 'ja' ? '閉じる' : 'Close viewer'}
+          >
+            ×
+          </button>
+        </div>
+      );
+    };
+
+    return (
+      <section key={key} className="detail-view__gallery" aria-label={ariaLabel}>
+        <PhotoProvider
+          maskOpacity={0.92}
+          bannerVisible={toolbarView !== 'hidden'}
+          speed={(type) => (type === 2 ? 280 : 320)}
+          easing={() => 'cubic-bezier(0.22, 1, 0.36, 1)'}
+          className="detail-view__gallery-provider"
+          maskClassName="detail-view__gallery-mask"
+          onVisibleChange={(visible) => updateGalleryViewerState(visible, settings)}
+          toolbarRender={toolbarShouldRender ? renderToolbar : undefined}
+        >
+          <ul className="detail-view__gallery-grid" style={gridStyle}>
+            {images.map((image, imageIndex) => {
+              const ariaLabelForImage = getImageAriaLabel(galleryIndex, imageIndex);
+              return (
+                <li key={`${image.url}-${imageIndex}`} className="detail-view__gallery-item">
+                  <PhotoView src={image.url}>
+                    <button
+                      type="button"
+                      className="detail-view__gallery-thumb"
+                      aria-label={ariaLabelForImage}
+                    >
+                      <img
+                        src={image.thumbnail}
+                        alt=""
+                        loading="lazy"
+                        className="detail-view__gallery-image"
+                      />
+                    </button>
+                  </PhotoView>
+                </li>
+              );
+            })}
+          </ul>
+        </PhotoProvider>
+      </section>
+    );
+  }, [galleries, getGalleryAriaLabel, getImageAriaLabel, isFullscreen, language, updateGalleryViewerState]);
 
   if (!entry) return null;
 
@@ -347,65 +630,33 @@ export default function EntryDetail({ type, entry }) {
         )}
 
         <article className="detail-view__body">
-          {galleryImages.length ? (
-            <section className="detail-view__gallery" aria-label={galleryHeading}>
-              <div className="detail-view__gallery-header">
-                <h2 className="detail-view__gallery-title">{galleryHeading}</h2>
-                {galleryCountLabel ? (
-                  <span className="detail-view__gallery-count">{galleryCountLabel}</span>
-                ) : null}
-              </div>
-              <PhotoProvider
-                maskOpacity={0.92}
-                bannerVisible={false}
-                speed={(type) => (type === 2 ? 280 : 320)}
-                easing={() => 'cubic-bezier(0.22, 1, 0.36, 1)'}
-                maskClassName="detail-view__gallery-mask"
-              >
-                <ul className="detail-view__gallery-grid">
-                  {galleryImages.map((image, index) => {
-                    const localizedAlt = getLocalizedContent(image.alt, language) || '';
-                    const fallbackLabel = language === 'ja' ? `写真${index + 1}` : `Photo ${index + 1}`;
-                    const altText =
-                      (localizedAlt && localizedAlt.trim()) ||
-                      `${galleryTitleFallback ? `${galleryTitleFallback} ` : ''}${fallbackLabel}`;
-                    const localizedCaption = getLocalizedContent(image.caption, language) || '';
-                    const captionText = typeof localizedCaption === 'string' ? localizedCaption.trim() : '';
-                    const normalizedAlt = typeof altText === 'string' ? altText.trim() : '';
-                    const displayText = captionText || normalizedAlt || fallbackLabel;
-                    const overlayNode = captionText ? (
-                      <div className="detail-view__gallery-overlay">
-                        <p>{captionText}</p>
-                      </div>
-                    ) : null;
-                    const thumbUrl = image.thumbnailUrl || image.url;
-                    return (
-                      <li key={`${image.url}-${index}`} className="detail-view__gallery-item">
-                        <PhotoView src={image.url} overlay={overlayNode}>
-                          <button
-                            type="button"
-                            className="detail-view__gallery-thumb"
-                            aria-label={displayText}
-                          >
-                            <img
-                              src={thumbUrl}
-                              alt=""
-                              loading="lazy"
-                              className="detail-view__gallery-image"
-                            />
-                          </button>
-                        </PhotoView>
-                        {displayText ? (
-                          <p className="detail-view__gallery-caption">{displayText}</p>
-                        ) : null}
-                      </li>
-                    );
-                  })}
-                </ul>
-              </PhotoProvider>
-            </section>
-          ) : null}
-          <div className="detail-view__content" dangerouslySetInnerHTML={{ __html: processedContent || localizedContent || '' }} />
+          {gallerySegments.segments.map((segment, index) => {
+            if (segment.type === 'html') {
+              const htmlChunk = segment.content;
+              if (!htmlChunk || !htmlChunk.trim()) {
+                return null;
+              }
+              return (
+                <div
+                  key={`detail-html-${index}`}
+                  className="detail-view__content"
+                  dangerouslySetInnerHTML={{ __html: htmlChunk }}
+                />
+              );
+            }
+
+            if (segment.type === 'gallery') {
+              return renderGallerySection(segment.galleryIndex, `detail-gallery-${index}`);
+            }
+
+            return null;
+          })}
+
+          {gallerySegments.usedIndexes.length
+            ? unusedGalleryIndexes.map((galleryIndex) =>
+                renderGallerySection(galleryIndex, `detail-gallery-tail-${galleryIndex}`)
+              )
+            : null}
         </article>
       </div>
     </div>

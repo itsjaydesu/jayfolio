@@ -127,67 +127,20 @@ function normalizeCoverImage(input) {
   return cover;
 }
 
-function normalizeGalleryImages(input) {
+function normalizeGalleryImageUrls(input) {
   if (!Array.isArray(input)) {
     return [];
   }
 
   return input
     .map((item) => {
-      if (!item) return null;
-
       if (typeof item === 'string') {
-        const url = item.trim();
-        return url ? { url } : null;
+        return item.trim();
       }
-
-      if (typeof item !== 'object') {
-        return null;
+      if (item && typeof item === 'object' && typeof item.url === 'string') {
+        return item.url.trim();
       }
-
-      const url = typeof item.url === 'string' ? item.url.trim() : '';
-      if (!url) {
-        return null;
-      }
-
-      const galleryItem = { url };
-
-      const alt = normalizeLocalizedTextField(item.alt);
-      if (hasLocalizedValue(alt)) {
-        galleryItem.alt = alt;
-      }
-
-      const caption = normalizeLocalizedTextField(item.caption);
-      if (hasLocalizedValue(caption)) {
-        galleryItem.caption = caption;
-      }
-
-      const width = Number.parseInt(item.width, 10);
-      if (Number.isFinite(width) && width > 0) {
-        galleryItem.width = width;
-      }
-
-      const height = Number.parseInt(item.height, 10);
-      if (Number.isFinite(height) && height > 0) {
-        galleryItem.height = height;
-      }
-
-      const blurDataURL = typeof item.blurDataURL === 'string' ? item.blurDataURL.trim() : '';
-      if (blurDataURL) {
-        galleryItem.blurDataURL = blurDataURL;
-      }
-
-      const placeholder = typeof item.placeholder === 'string' ? item.placeholder.trim() : '';
-      if (placeholder) {
-        galleryItem.placeholder = placeholder;
-      }
-
-      const thumbnailUrl = typeof item.thumbnailUrl === 'string' ? item.thumbnailUrl.trim() : '';
-      if (thumbnailUrl) {
-        galleryItem.thumbnailUrl = thumbnailUrl;
-      }
-
-      return galleryItem;
+      return '';
     })
     .filter(Boolean);
 }
@@ -197,6 +150,62 @@ function normalizeBackgroundImage(value) {
     return '';
   }
   return value.trim();
+}
+
+function normalizeGallerySettings(input) {
+  if (!input || typeof input !== 'object' || Array.isArray(input)) {
+    return null;
+  }
+
+  const result = {};
+
+  const columnsValue = input.columns;
+  const parsedColumns = Number.parseInt(columnsValue, 10);
+  if (Number.isFinite(parsedColumns) && parsedColumns >= 0) {
+    result.columns = parsedColumns;
+  }
+
+  const spacingValue = input.spacing;
+  const parsedSpacing = Number.parseFloat(spacingValue);
+  if (Number.isFinite(parsedSpacing) && parsedSpacing >= 0) {
+    result.spacing = parsedSpacing;
+  }
+
+  if (typeof input.showArrows === 'boolean') {
+    result.showArrows = input.showArrows;
+  }
+
+  const allowedToolbarViews = new Set(['hidden', 'hover', 'visible']);
+  if (typeof input.toolbarView === 'string') {
+    const trimmedToolbar = input.toolbarView.trim();
+    if (allowedToolbarViews.has(trimmedToolbar)) {
+      result.toolbarView = trimmedToolbar;
+    }
+  }
+
+  return Object.keys(result).length ? result : null;
+}
+
+function normalizeGalleries(input) {
+  if (!Array.isArray(input)) {
+    return [];
+  }
+
+  return input
+    .map((gallery) => {
+      if (!gallery || typeof gallery !== 'object') {
+        return null;
+      }
+
+      const images = normalizeGalleryImageUrls(gallery.images);
+      if (!images.length) {
+        return null;
+      }
+
+      const settings = normalizeGallerySettings(gallery.settings);
+      return settings ? { images, settings } : { images };
+    })
+    .filter(Boolean);
 }
 
 function normalizeDate(value) {
@@ -234,8 +243,16 @@ function normalizeEntry(payload) {
   const coverImage = normalizeCoverImage(payload.coverImage);
   const status = payload.status === 'published' ? 'published' : 'draft';
   const createdAt = normalizeDate(payload.createdAt);
-  const galleryImages = normalizeGalleryImages(payload.galleryImages);
+  const galleries = normalizeGalleries(payload.galleries);
   const backgroundImage = normalizeBackgroundImage(payload.backgroundImage);
+
+  if (!galleries.length) {
+    const legacyImages = normalizeGalleryImageUrls(payload.galleryImages);
+    if (legacyImages.length) {
+      const legacySettings = normalizeGallerySettings(payload.gallerySettings);
+      galleries.push(legacySettings ? { images: legacyImages, settings: legacySettings } : { images: legacyImages });
+    }
+  }
 
   return {
     slug,
@@ -244,7 +261,7 @@ function normalizeEntry(payload) {
     content: content ?? '',
     tags,
     coverImage,
-    galleryImages,
+    galleries,
     backgroundImage,
     status,
     createdAt,

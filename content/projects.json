@@ -134,55 +134,26 @@
         "url": "https://irq8pcmcsnz9tzjh.public.blob.vercel-storage.com/2025-10-30-at-17-5QK41i11exjPoQjYyAZDOVZZCdzIq0.jpg",
         "alt": "2025 10 30 at 17"
       },
-      "galleryImages": [
+      "galleries": [
         {
-          "url": "https://irq8pcmcsnz9tzjh.public.blob.vercel-storage.com/2025-10-30-at-19-SNJ3JUvi5btrUxlzVxTJI262GwjX5u.jpg",
-          "alt": {
-            "en": "Attendees networking under neon signage at Tokyo Tech Summit",
-            "ja": "ネオン看板が光る会場で交流する参加者たち"
-          },
-          "caption": {
-            "en": "Opening night networking in the 27th-floor atrium.",
-            "ja": "初日の夜、27階アトリウムで始まったネットワーキング。"
-          }
-        },
-        {
-          "url": "https://irq8pcmcsnz9tzjh.public.blob.vercel-storage.com/2025-10-30-at-17-03WqlguBExAyShe0BIeNPdLXCZanxb.jpg",
-          "alt": {
-            "en": "Jay presenting cross-cultural product lessons on stage",
-            "ja": "ステージで越境プロダクトの事例を紹介するジェイ"
-          },
-          "caption": {
-            "en": "Sharing the bilingual product playbook with 400 founders.",
-            "ja": "400名の起業家に向けてバイリンガルプロダクトの知見を共有。"
-          }
-        },
-        {
-          "url": "https://irq8pcmcsnz9tzjh.public.blob.vercel-storage.com/2025-10-30-at-17-dFIRAkUgTs9hIFWb2qaLBSNMeLAfVM.jpg",
-          "alt": {
-            "en": "Workshop participants co-creating around laptops during a breakout",
-            "ja": "ブレイクアウトセッションでノートPCを囲んで議論する参加者"
-          },
-          "caption": {
-            "en": "Hands-on breakout pairing founders with researchers.",
-            "ja": "創業者とリサーチャーがペアになって議論するハンズオンセッション。"
-          }
-        },
-        {
-          "url": "https://irq8pcmcsnz9tzjh.public.blob.vercel-storage.com/webnet-print-UxGMqbGLGmswPh7XdSx3NkTXf8Gkp8.jpg",
-          "alt": {
-            "en": "Printed orange signage for the Hacker News Tokyo meetup",
-            "ja": "Hacker News Tokyoミートアップ用のオレンジ色のサイネージ"
-          },
-          "caption": {
-            "en": "Wayfinding signage we printed overnight to guide attendees.",
-            "ja": "来場者の導線を整えるために徹夜で印刷したサイネージ。"
+          "images": [
+            "https://irq8pcmcsnz9tzjh.public.blob.vercel-storage.com/2025-10-30-at-19-SNJ3JUvi5btrUxlzVxTJI262GwjX5u.jpg",
+            "https://irq8pcmcsnz9tzjh.public.blob.vercel-storage.com/2025-10-30-at-17-03WqlguBExAyShe0BIeNPdLXCZanxb.jpg",
+            "https://irq8pcmcsnz9tzjh.public.blob.vercel-storage.com/2025-10-30-at-17-dFIRAkUgTs9hIFWb2qaLBSNMeLAfVM.jpg",
+            "https://irq8pcmcsnz9tzjh.public.blob.vercel-storage.com/webnet-print-UxGMqbGLGmswPh7XdSx3NkTXf8Gkp8.jpg"
+          ],
+          "settings": {
+            "columns": 4,
+            "spacing": 18,
+            "showArrows": true,
+            "toolbarView": "visible"
           }
         }
       ],
       "status": "published",
       "createdAt": "2024-10-15",
-      "updatedAt": "2025-11-03T07:48:15.891Z"
+      "updatedAt": "2025-11-03T08:47:23.890Z",
+      "backgroundImage": ""
     },
     {
       "slug": "word-battle-sim",

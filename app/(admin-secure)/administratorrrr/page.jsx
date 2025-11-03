@@ -37,6 +37,13 @@ const LANGUAGE_OPTIONS = [
 
 const INITIAL_CONTENT = '<p></p>';
 
+const DEFAULT_GALLERY_SETTINGS = Object.freeze({
+  columns: '4',
+  spacing: '18',
+  showArrows: true,
+  toolbarView: 'visible'
+});
+
 const listDateFormatter = new Intl.DateTimeFormat('en-US', {
   month: 'short',
   day: 'numeric',
@@ -115,69 +122,93 @@ function ensureLocalizedTags(value) {
   return { en: toString(value), ja: '' };
 }
 
-function buildEmptyGalleryImage() {
+function buildEmptyGallery() {
   return {
-    url: '',
-    alt: { en: '', ja: '' },
-    caption: { en: '', ja: '' },
-    width: '',
-    height: '',
-    blurDataURL: '',
-    placeholder: '',
-    thumbnailUrl: ''
+    images: [''],
+    settings: { ...DEFAULT_GALLERY_SETTINGS }
   };
 }
 
-function ensureGalleryImages(value) {
-  if (!Array.isArray(value)) {
-    return [];
+function ensureGallerySettings(value) {
+  const base = { ...DEFAULT_GALLERY_SETTINGS };
+
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return base;
   }
 
-  return value
+  if (Number.isFinite(value.columns)) {
+    base.columns = String(value.columns);
+  } else if (typeof value.columns === 'string') {
+    base.columns = value.columns;
+  }
+
+  if (Number.isFinite(value.spacing)) {
+    base.spacing = String(value.spacing);
+  } else if (typeof value.spacing === 'string') {
+    base.spacing = value.spacing;
+  }
+
+  if (typeof value.showArrows === 'boolean') {
+    base.showArrows = value.showArrows;
+  }
+
+  if (typeof value.toolbarView === 'string') {
+    const trimmed = value.toolbarView.trim();
+    if (trimmed) {
+      base.toolbarView = trimmed;
+    }
+  }
+
+  return base;
+}
+
+function ensureGalleryImageList(value) {
+  if (!Array.isArray(value)) {
+    return [''];
+  }
+
+  const images = value
     .map((item) => {
-      if (!item) return null;
-
       if (typeof item === 'string') {
-        const url = item.trim();
-        if (!url) return null;
-        const baseStringItem = buildEmptyGalleryImage();
-        baseStringItem.url = url;
-        return baseStringItem;
+        return item.trim();
       }
-
-      if (typeof item !== 'object') {
-        return null;
+      if (item && typeof item === 'object' && typeof item.url === 'string') {
+        return item.url.trim();
       }
-
-      const url = typeof item.url === 'string' ? item.url.trim() : '';
-      if (!url) {
-        return null;
-      }
-
-      const base = buildEmptyGalleryImage();
-      base.url = url;
-      base.alt = ensureLocalizedField(item.alt, '');
-      base.caption = ensureLocalizedField(item.caption, '');
-
-      if (item.width) {
-        base.width = item.width;
-      }
-      if (item.height) {
-        base.height = item.height;
-      }
-      if (item.blurDataURL) {
-        base.blurDataURL = item.blurDataURL;
-      }
-      if (item.placeholder) {
-        base.placeholder = item.placeholder;
-      }
-      if (item.thumbnailUrl) {
-        base.thumbnailUrl = item.thumbnailUrl;
-      }
-
-      return base;
+      return '';
     })
     .filter(Boolean);
+
+  if (!images.length) {
+    images.push('');
+  }
+
+  return images;
+}
+
+function ensureGalleries(entry) {
+  const galleries = [];
+
+  const sourceGalleries = Array.isArray(entry?.galleries) ? entry.galleries : null;
+
+  if (sourceGalleries && sourceGalleries.length) {
+    sourceGalleries.forEach((gallery) => {
+      if (!gallery || typeof gallery !== 'object') return;
+      const images = ensureGalleryImageList(gallery.images);
+      const settings = ensureGallerySettings(gallery.settings);
+      galleries.push({ images, settings });
+    });
+  } else if (Array.isArray(entry?.galleryImages) && entry.galleryImages.length) {
+    const images = ensureGalleryImageList(entry.galleryImages);
+    const settings = ensureGallerySettings(entry.gallerySettings);
+    galleries.push({ images, settings });
+  }
+
+  if (!galleries.length) {
+    galleries.push(buildEmptyGallery());
+  }
+
+  return galleries;
 }
 
 function prepareLocalizedField(field) {
@@ -206,59 +237,61 @@ function prepareLocalizedField(field) {
   return result;
 }
 
-function prepareGalleryImages(field) {
+function prepareGallerySettings(field) {
+  if (!field || typeof field !== 'object' || Array.isArray(field)) {
+    return null;
+  }
+
+  const result = {};
+
+  const columnsValue = Number.parseInt(field.columns, 10);
+  if (Number.isFinite(columnsValue) && columnsValue >= 0) {
+    result.columns = columnsValue;
+  }
+
+  const spacingValue = Number.parseFloat(field.spacing);
+  if (Number.isFinite(spacingValue) && spacingValue >= 0) {
+    result.spacing = spacingValue;
+  }
+
+  if (typeof field.showArrows === 'boolean') {
+    result.showArrows = field.showArrows;
+  }
+
+  if (typeof field.toolbarView === 'string') {
+    const trimmedToolbar = field.toolbarView.trim();
+    if (['hidden', 'hover', 'visible'].includes(trimmedToolbar)) {
+      result.toolbarView = trimmedToolbar;
+    }
+  }
+
+  return Object.keys(result).length ? result : null;
+}
+
+function prepareGalleries(field) {
   if (!Array.isArray(field)) {
     return [];
   }
 
   return field
-    .map((item) => {
-      if (!item) return null;
-
-      if (typeof item === 'string') {
-        const url = item.trim();
-        return url ? { url } : null;
-      }
-
-      const url = typeof item.url === 'string' ? item.url.trim() : '';
-      if (!url) {
+    .map((gallery) => {
+      if (!gallery || typeof gallery !== 'object') {
         return null;
       }
 
-      const prepared = { url };
-      const alt = prepareLocalizedField(item.alt);
-      if (hasFieldValue(alt)) {
-        prepared.alt = alt;
+      const images = Array.isArray(gallery.images)
+        ? gallery.images
+            .map((item) => (typeof item === 'string' ? item.trim() : ''))
+            .filter((url) => Boolean(url))
+        : [];
+
+      if (!images.length) {
+        return null;
       }
 
-      const caption = prepareLocalizedField(item.caption);
-      if (hasFieldValue(caption)) {
-        prepared.caption = caption;
-      }
+      const settings = prepareGallerySettings(gallery.settings);
 
-      const width = Number.parseInt(item.width, 10);
-      if (Number.isFinite(width) && width > 0) {
-        prepared.width = width;
-      }
-
-      const height = Number.parseInt(item.height, 10);
-      if (Number.isFinite(height) && height > 0) {
-        prepared.height = height;
-      }
-
-      if (typeof item.blurDataURL === 'string' && item.blurDataURL.trim()) {
-        prepared.blurDataURL = item.blurDataURL.trim();
-      }
-
-      if (typeof item.placeholder === 'string' && item.placeholder.trim()) {
-        prepared.placeholder = item.placeholder.trim();
-      }
-
-      if (typeof item.thumbnailUrl === 'string' && item.thumbnailUrl.trim()) {
-        prepared.thumbnailUrl = item.thumbnailUrl.trim();
-      }
-
-      return prepared;
+      return settings ? { images, settings } : { images };
     })
     .filter(Boolean);
 }
@@ -306,7 +339,7 @@ function buildInitialForm() {
     coverImageUrl: '',
     coverImageAlt: { en: '', ja: '' },
     backgroundImageUrl: '',
-    galleryImages: [],
+    galleries: [buildEmptyGallery()],
     createdAt: today,
     content: { en: INITIAL_CONTENT, ja: INITIAL_CONTENT }
   };
@@ -425,7 +458,7 @@ export default function AdminPage() {
       coverImageUrl: entry.coverImage?.url || '',
       coverImageAlt: ensureLocalizedField(entry.coverImage?.alt, ''),
       backgroundImageUrl: entry.backgroundImage || '',
-      galleryImages: ensureGalleryImages(entry.galleryImages),
+      galleries: ensureGalleries(entry),
       createdAt: formatDateValue(entry.createdAt),
       content: ensureLocalizedRichText(entry.content || INITIAL_CONTENT)
     });
@@ -521,79 +554,161 @@ export default function AdminPage() {
     });
   }, [activeLanguage]);
 
-  const handleGalleryUrlChange = useCallback((index, value) => {
+  const handleGalleryImageChange = useCallback((galleryIndex, imageIndex, value) => {
     setForm((prev) => {
-      const previous = Array.isArray(prev.galleryImages) ? prev.galleryImages : [];
-      const nextGallery = [...previous];
-      const current = previous[index]
-        ? { ...previous[index] }
-        : { ...buildEmptyGalleryImage() };
-      nextGallery[index] = {
-        ...current,
-        url: value
-      };
+      const previousGalleries = Array.isArray(prev.galleries) ? prev.galleries : [];
+      if (!previousGalleries[galleryIndex]) {
+        return prev;
+      }
+      const nextGalleries = previousGalleries.map((gallery, index) => {
+        if (index !== galleryIndex) {
+          return gallery;
+        }
+        const images = Array.isArray(gallery?.images) ? [...gallery.images] : [''];
+        const nextImages = [...images];
+        nextImages[imageIndex] = value;
+        return {
+          ...gallery,
+          images: nextImages
+        };
+      });
+
       return {
         ...prev,
-        galleryImages: nextGallery
+        galleries: nextGalleries
       };
     });
   }, []);
 
-  const handleGalleryAltChange = useCallback((index, language, value) => {
+  const handleAddGalleryImage = useCallback((galleryIndex) => {
     setForm((prev) => {
-      const previous = Array.isArray(prev.galleryImages) ? prev.galleryImages : [];
-      const nextGallery = [...previous];
-      const current = previous[index]
-        ? { ...previous[index] }
-        : { ...buildEmptyGalleryImage() };
-      const baseAlt = ensureLocalizedField(current.alt, '');
-      nextGallery[index] = {
-        ...current,
-        alt: { ...baseAlt, [language]: value }
-      };
+      const previousGalleries = Array.isArray(prev.galleries) ? prev.galleries : [];
+      if (!previousGalleries[galleryIndex]) {
+        return prev;
+      }
+      const nextGalleries = previousGalleries.map((gallery, index) => {
+        if (index !== galleryIndex) {
+          return gallery;
+        }
+        const images = Array.isArray(gallery?.images) ? [...gallery.images] : [];
+        return {
+          ...gallery,
+          images: [...images, '']
+        };
+      });
+
       return {
         ...prev,
-        galleryImages: nextGallery
+        galleries: nextGalleries
       };
     });
   }, []);
 
-  const handleGalleryCaptionChange = useCallback((index, language, value) => {
+  const handleRemoveGalleryImage = useCallback((galleryIndex, imageIndex) => {
     setForm((prev) => {
-      const previous = Array.isArray(prev.galleryImages) ? prev.galleryImages : [];
-      const nextGallery = [...previous];
-      const current = previous[index]
-        ? { ...previous[index] }
-        : { ...buildEmptyGalleryImage() };
-      const baseCaption = ensureLocalizedField(current.caption, '');
-      nextGallery[index] = {
-        ...current,
-        caption: { ...baseCaption, [language]: value }
-      };
+      const previousGalleries = Array.isArray(prev.galleries) ? prev.galleries : [];
+      if (!previousGalleries[galleryIndex]) {
+        return prev;
+      }
+      const nextGalleries = previousGalleries.map((gallery, index) => {
+        if (index !== galleryIndex) {
+          return gallery;
+        }
+        const images = Array.isArray(gallery?.images) ? gallery.images.filter((_, itemIndex) => itemIndex !== imageIndex) : [];
+        const nextImages = images.length ? images : [''];
+        return {
+          ...gallery,
+          images: nextImages
+        };
+      });
+
       return {
         ...prev,
-        galleryImages: nextGallery
+        galleries: nextGalleries
       };
     });
   }, []);
 
-  const handleAddGalleryImage = useCallback(() => {
+  const handleAddGallery = useCallback(() => {
     setForm((prev) => {
-      const previous = Array.isArray(prev.galleryImages) ? prev.galleryImages : [];
+      const previousGalleries = Array.isArray(prev.galleries) ? prev.galleries : [];
       return {
         ...prev,
-        galleryImages: [...previous, buildEmptyGalleryImage()]
+        galleries: [...previousGalleries, buildEmptyGallery()]
       };
     });
   }, []);
 
-  const handleRemoveGalleryImage = useCallback((index) => {
+  const handleRemoveGallery = useCallback((galleryIndex) => {
     setForm((prev) => {
-      const previous = Array.isArray(prev.galleryImages) ? prev.galleryImages : [];
-      const nextGallery = previous.filter((_, itemIndex) => itemIndex !== index);
+      const previousGalleries = Array.isArray(prev.galleries) ? prev.galleries : [];
+      const nextGalleries = previousGalleries.filter((_, index) => index !== galleryIndex);
+      if (!nextGalleries.length) {
+        nextGalleries.push(buildEmptyGallery());
+      }
       return {
         ...prev,
-        galleryImages: nextGallery
+        galleries: nextGalleries
+      };
+    });
+  }, []);
+
+  const handleGallerySettingsChange = useCallback((galleryIndex, field, value) => {
+    setForm((prev) => {
+      const previousGalleries = Array.isArray(prev.galleries) ? prev.galleries : [];
+      if (!previousGalleries[galleryIndex]) {
+        return prev;
+      }
+      const nextGalleries = previousGalleries.map((gallery, index) => {
+        if (index !== galleryIndex) {
+          return gallery;
+        }
+        const currentSettings = {
+          ...DEFAULT_GALLERY_SETTINGS,
+          ...(gallery.settings && typeof gallery.settings === 'object' ? gallery.settings : {})
+        };
+        return {
+          ...gallery,
+          settings: {
+            ...currentSettings,
+            [field]: value
+          }
+        };
+      });
+
+      return {
+        ...prev,
+        galleries: nextGalleries
+      };
+    });
+  }, []);
+
+  const handleGallerySettingsToggle = useCallback((galleryIndex, field, checked) => {
+    setForm((prev) => {
+      const previousGalleries = Array.isArray(prev.galleries) ? prev.galleries : [];
+      if (!previousGalleries[galleryIndex]) {
+        return prev;
+      }
+      const nextGalleries = previousGalleries.map((gallery, index) => {
+        if (index !== galleryIndex) {
+          return gallery;
+        }
+        const currentSettings = {
+          ...DEFAULT_GALLERY_SETTINGS,
+          ...(gallery.settings && typeof gallery.settings === 'object' ? gallery.settings : {})
+        };
+        return {
+          ...gallery,
+          settings: {
+            ...currentSettings,
+            [field]: checked
+          }
+        };
+      });
+
+      return {
+        ...prev,
+        galleries: nextGalleries
       };
     });
   }, []);
@@ -628,7 +743,7 @@ export default function AdminPage() {
             }
           : null,
         backgroundImage: form.backgroundImageUrl?.trim() || '',
-        galleryImages: prepareGalleryImages(form.galleryImages),
+        galleries: prepareGalleries(form.galleries),
         createdAt: formatDateValue(form.createdAt) || new Date().toISOString().slice(0, 10)
       };
 
@@ -981,71 +1096,125 @@ export default function AdminPage() {
 
             <section className="editor-panel editor-panel--full">
               <header className="editor-panel__header">
-                <h2>Image Gallery</h2>
+                <h2>Image Galleries</h2>
               </header>
               <div className="editor-panel__body">
                 <div className="editor-gallery">
-                  {Array.isArray(form.galleryImages) && form.galleryImages.map((image, index) => {
-                    const altValue =
-                      typeof image?.alt === 'string'
-                        ? (image?.alt ?? '')
-                        : image?.alt?.[activeLanguage] ?? '';
-                    const captionValue =
-                      typeof image?.caption === 'string'
-                        ? (image?.caption ?? '')
-                        : image?.caption?.[activeLanguage] ?? '';
+                  {Array.isArray(form.galleries) && form.galleries.map((gallery, galleryIndex) => {
+                    const settings = {
+                      ...DEFAULT_GALLERY_SETTINGS,
+                      ...(gallery?.settings && typeof gallery.settings === 'object' ? gallery.settings : {})
+                    };
+                    const images = Array.isArray(gallery?.images) ? gallery.images : [''];
                     return (
-                      <div key={`gallery-${index}`} className="editor-gallery__item">
-                        <Suspense fallback={<div className="uploader-loading">Loading selector...</div>}>
-                          <MediaSelector
-                            value={image?.url || ''}
-                            onChange={(value) => handleGalleryUrlChange(index, value)}
-                            label={`Gallery Image ${index + 1}`}
-                            placeholder="Select or paste image URL"
-                          />
-                        </Suspense>
-                        <div className="editor-field">
-                          <label className="editor-field__label" htmlFor={`gallery-alt-${index}`}>
-                            Alt text ({activeLanguage.toUpperCase()})
-                          </label>
-                          <input
-                            id={`gallery-alt-${index}`}
-                            type="text"
-                            className="editor-input"
-                            value={altValue}
-                            onChange={(event) => handleGalleryAltChange(index, activeLanguage, event.target.value)}
-                            placeholder="Describe this image"
-                          />
+                      <div key={`gallery-group-${galleryIndex}`} className="editor-gallery__group">
+                        <div className="editor-gallery__group-header">
+                          <h3>Gallery {galleryIndex + 1}</h3>
+                          {Array.isArray(form.galleries) && form.galleries.length > 1 ? (
+                            <button
+                              type="button"
+                              className="admin-ghost"
+                              onClick={() => handleRemoveGallery(galleryIndex)}
+                            >
+                              Remove gallery
+                            </button>
+                          ) : null}
                         </div>
-                        <div className="editor-field">
-                          <label className="editor-field__label" htmlFor={`gallery-caption-${index}`}>
-                            Caption ({activeLanguage.toUpperCase()})
-                          </label>
-                          <textarea
-                            id={`gallery-caption-${index}`}
-                            className="editor-textarea"
-                            rows={2}
-                            value={captionValue}
-                            onChange={(event) => handleGalleryCaptionChange(index, activeLanguage, event.target.value)}
-                            placeholder="Optional caption shown below the image"
-                          />
+                        <div className="editor-gallery__images">
+                          {images.map((imageUrl, imageIndex) => (
+                            <div key={`gallery-${galleryIndex}-image-${imageIndex}`} className="editor-gallery__item">
+                              <Suspense fallback={<div className="uploader-loading">Loading selector...</div>}>
+                                <MediaSelector
+                                  value={imageUrl || ''}
+                                  onChange={(value) => handleGalleryImageChange(galleryIndex, imageIndex, value)}
+                                  label={`Gallery ${galleryIndex + 1} Image ${imageIndex + 1}`}
+                                  placeholder="Select or paste image URL"
+                                />
+                              </Suspense>
+                              <button
+                                type="button"
+                                className="admin-ghost"
+                                onClick={() => handleRemoveGalleryImage(galleryIndex, imageIndex)}
+                              >
+                                Remove image
+                              </button>
+                            </div>
+                          ))}
+                          <button
+                            type="button"
+                            className="admin-primary"
+                            onClick={() => handleAddGalleryImage(galleryIndex)}
+                          >
+                            Add image
+                          </button>
                         </div>
-                        <button
-                          type="button"
-                          className="admin-ghost"
-                          onClick={() => handleRemoveGalleryImage(index)}
-                        >
-                          Remove
-                        </button>
+                        <div className="editor-gallery__settings">
+                          <div className="editor-field">
+                            <label className="editor-field__label" htmlFor={`gallery-columns-${galleryIndex}`}>
+                              Columns
+                            </label>
+                            <input
+                              id={`gallery-columns-${galleryIndex}`}
+                              type="number"
+                              min="0"
+                              className="editor-input"
+                              value={settings.columns}
+                              onChange={(event) => handleGallerySettingsChange(galleryIndex, 'columns', event.target.value)}
+                              placeholder="Auto"
+                            />
+                          </div>
+                          <div className="editor-field">
+                            <label className="editor-field__label" htmlFor={`gallery-spacing-${galleryIndex}`}>
+                              Spacing (px)
+                            </label>
+                            <input
+                              id={`gallery-spacing-${galleryIndex}`}
+                              type="number"
+                              min="0"
+                              step="1"
+                              className="editor-input"
+                              value={settings.spacing}
+                              onChange={(event) => handleGallerySettingsChange(galleryIndex, 'spacing', event.target.value)}
+                              placeholder="16"
+                            />
+                          </div>
+                          <div className="editor-field editor-field--inline">
+                            <label className="editor-field__label" htmlFor={`gallery-show-arrows-${galleryIndex}`}>
+                              Show arrows in viewer
+                            </label>
+                            <input
+                              id={`gallery-show-arrows-${galleryIndex}`}
+                              type="checkbox"
+                              className="editor-checkbox"
+                              checked={Boolean(settings.showArrows)}
+                              onChange={(event) => handleGallerySettingsToggle(galleryIndex, 'showArrows', event.target.checked)}
+                            />
+                          </div>
+                          <div className="editor-field">
+                            <label className="editor-field__label" htmlFor={`gallery-toolbar-${galleryIndex}`}>
+                              Toolbar view
+                            </label>
+                            <select
+                              id={`gallery-toolbar-${galleryIndex}`}
+                              className="editor-input"
+                              value={settings.toolbarView || 'hover'}
+                              onChange={(event) => handleGallerySettingsChange(galleryIndex, 'toolbarView', event.target.value)}
+                            >
+                              <option value="hover">Hover</option>
+                              <option value="visible">Visible</option>
+                              <option value="hidden">Hidden</option>
+                            </select>
+                          </div>
+                        </div>
                       </div>
                     );
                   })}
                   <button
                     type="button"
                     className="admin-primary"
-                    onClick={handleAddGalleryImage}
+                    onClick={handleAddGallery}
                   >
-                    Add Gallery Image
+                    Add image gallery
                   </button>
                 </div>
               </div>
