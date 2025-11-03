@@ -44,6 +44,49 @@ const DEFAULT_GALLERY_SETTINGS = Object.freeze({
   toolbarView: 'visible'
 });
 
+const GALLERY_PLACEHOLDER_OPEN_ENTITY = /&lt;(image-gallery-\d+)\s*&gt;/gi;
+const GALLERY_PLACEHOLDER_CLOSE_ENTITY = /&lt;\/(image-gallery-\d+)\s*&gt;/gi;
+const GALLERY_PLACEHOLDER_OPEN = /<(image-gallery-\d+)\s*>/gi;
+const GALLERY_PLACEHOLDER_CLOSE = /<\/(image-gallery-\d+)\s*>/gi;
+
+function decodeGalleryPlaceholders(value) {
+  if (typeof value === 'string') {
+    return value
+      .replace(GALLERY_PLACEHOLDER_OPEN_ENTITY, '<$1>')
+      .replace(GALLERY_PLACEHOLDER_CLOSE_ENTITY, '</$1>');
+  }
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    const result = {};
+    for (const key of Object.keys(value)) {
+      const decoded = decodeGalleryPlaceholders(value[key]);
+      if (decoded !== undefined) {
+        result[key] = decoded;
+      }
+    }
+    return result;
+  }
+  return value;
+}
+
+function encodeGalleryPlaceholders(value) {
+  if (typeof value === 'string') {
+    return value
+      .replace(GALLERY_PLACEHOLDER_OPEN, '&lt;$1&gt;')
+      .replace(GALLERY_PLACEHOLDER_CLOSE, '&lt;/$1&gt;');
+  }
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    const result = {};
+    for (const key of Object.keys(value)) {
+      const encoded = encodeGalleryPlaceholders(value[key]);
+      if (encoded !== undefined) {
+        result[key] = encoded;
+      }
+    }
+    return result;
+  }
+  return value;
+}
+
 const listDateFormatter = new Intl.DateTimeFormat('en-US', {
   month: 'short',
   day: 'numeric',
@@ -460,7 +503,7 @@ export default function AdminPage() {
       backgroundImageUrl: entry.backgroundImage || '',
       galleries: ensureGalleries(entry),
       createdAt: formatDateValue(entry.createdAt),
-      content: ensureLocalizedRichText(entry.content || INITIAL_CONTENT)
+      content: encodeGalleryPlaceholders(ensureLocalizedRichText(entry.content || INITIAL_CONTENT))
     });
     setStatusMessage('');
     updateUrlState(activeType, entry.slug);
@@ -733,7 +776,7 @@ export default function AdminPage() {
         title: prepareLocalizedField(form.title),
         slug: form.slug.trim(),
         summary: prepareLocalizedField(form.summary),
-        content: prepareLocalizedField(form.content),
+        content: decodeGalleryPlaceholders(prepareLocalizedField(form.content)),
         tags: prepareLocalizedTags(form.tagsText),
         status: form.status === 'published' ? 'published' : 'draft',
         coverImage: form.coverImageUrl

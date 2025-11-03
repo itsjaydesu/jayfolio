@@ -115,7 +115,7 @@
         "ja": "国内最大級テックカンファレンスで、異文化プロダクト開発をテーマにワークショップを担当。"
       },
       "content": {
-        "en": "<p>Hacker News Tokyo is a recurring meetup and networking community in Tokyo aimed at technologists, founders, and entrepreneurs. It was founded by Jay &amp; Paul who also co-founded MakeLeaps.</p>",
+        "en": "<p><a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://hntokyo.io/en/\">Hacker News Tokyo</a> is a recurring meetup and networking community in Tokyo aimed at technologists, founders, and entrepreneurs. It was founded by Jay &amp; Paul who also co-founded MakeLeaps. It's the largest and longest running foreign developer community in Tokyo, and has a community slack with over 5,000 members.</p><p><image-gallery-1></image-gallery-1></p>",
         "ja": "<p>Tokyo Tech Summit 2024 にはアジア太平洋各地から5,000名を超える開発者・デザイナー・起業家が集まり、多文化な視点でのものづくりを議論しました。</p><p>私は東西のデザイン哲学を統合するプロダクト開発手法を紹介し、文化的背景の異なるチームで成果を出した事例や、陥りがちな認識のズレを共有しました。</p>"
       },
       "tags": {
@@ -137,10 +137,11 @@
       "galleries": [
         {
           "images": [
-            "https://irq8pcmcsnz9tzjh.public.blob.vercel-storage.com/2025-10-30-at-19-SNJ3JUvi5btrUxlzVxTJI262GwjX5u.jpg",
-            "https://irq8pcmcsnz9tzjh.public.blob.vercel-storage.com/2025-10-30-at-17-03WqlguBExAyShe0BIeNPdLXCZanxb.jpg",
-            "https://irq8pcmcsnz9tzjh.public.blob.vercel-storage.com/2025-10-30-at-17-dFIRAkUgTs9hIFWb2qaLBSNMeLAfVM.jpg",
-            "https://irq8pcmcsnz9tzjh.public.blob.vercel-storage.com/webnet-print-UxGMqbGLGmswPh7XdSx3NkTXf8Gkp8.jpg"
+            "https://irq8pcmcsnz9tzjh.public.blob.vercel-storage.com/DSC02727-Rs2KKuT3YDKwjZ4mhmhXPrj1e13zsZ.JPG",
+            "https://irq8pcmcsnz9tzjh.public.blob.vercel-storage.com/2014-03-13-18.51.32-LiUoion8MuanaP2zmSUouj788F7SSz.jpg",
+            "https://irq8pcmcsnz9tzjh.public.blob.vercel-storage.com/2014-03-13-20.36.55-sF8gXnnGLSkmyMU2x1KkjBlN25vnBd.jpg",
+            "https://irq8pcmcsnz9tzjh.public.blob.vercel-storage.com/IMG_5970-bk6jhX1Pc6qHNrdKNai4vTfDx2yDrN.jpg",
+            "https://irq8pcmcsnz9tzjh.public.blob.vercel-storage.com/2014-03-13-20.55.35-Zn3bkRW3u3uGEp7BQh1fTFdzLVZQkz.jpg"
           ],
           "settings": {
             "columns": 4,
@@ -152,7 +153,7 @@
       ],
       "status": "published",
       "createdAt": "2024-10-15",
-      "updatedAt": "2025-11-03T08:47:23.890Z",
+      "updatedAt": "2025-11-03T11:40:28.867Z",
       "backgroundImage": ""
     },
     {

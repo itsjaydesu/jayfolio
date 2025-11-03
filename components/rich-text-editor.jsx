@@ -88,6 +88,45 @@ const INLINE_MEDIA_WIDTH_OPTIONS = [
   { label: '100%', value: '100' }
 ];
 
+function LinkIconGlyph() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      className="icon"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M13.5 10.5 10.5 13.5" />
+      <path d="M9 16a3 3 0 0 1 0-4.24l3.76-3.76a3 3 0 1 1 4.24 4.24l-.76.76" />
+      <path d="M15 8a3 3 0 0 1 0 4.24l-3.76 3.76a3 3 0 1 1-4.24-4.24l.76-.76" />
+    </svg>
+  );
+}
+
+function UnlinkIconGlyph() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      className="icon"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M9.5 14.5 7 17" />
+      <path d="m17 7-2.5 2.5" />
+      <path d="M12.5 9.5 10 12a3 3 0 0 1-4.24-4.24l1.24-1.24" />
+      <path d="M14.5 12.5 17 10a3 3 0 0 1 0 4.24l-1.24 1.24" />
+    </svg>
+  );
+}
+
 const InlineMedia = Node.create({
   name: 'inlineMedia',
   group: 'block',
@@ -340,6 +379,28 @@ function buildHtmlForFile({ file, response, editor }) {
   return `<p><a href="${safeUrl}" target="_blank" rel="noopener noreferrer">${linkLabel}</a></p>`;
 }
 
+function normalizeLinkUrl(input) {
+  if (!input || typeof input !== 'string') {
+    return null;
+  }
+  let candidate = input.trim();
+  if (!candidate) {
+    return '';
+  }
+  if (!/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(candidate)) {
+    candidate = `https://${candidate}`;
+  }
+  try {
+    const url = new URL(candidate);
+    if (!['http:', 'https:'].includes(url.protocol)) {
+      return null;
+    }
+    return url.toString();
+  } catch {
+    return null;
+  }
+}
+
 function ToolbarButton({ label, icon, onClick, disabled, active, ariaLabel }) {
   return (
     <button
@@ -455,7 +516,15 @@ export default function RichTextEditor({
       TableHeader,
       TableCell,
       Image.configure({ allowBase64: false }),
-      Link.configure({ openOnClick: false, autolink: true, linkOnPaste: true }),
+      Link.configure({
+        openOnClick: false,
+        autolink: true,
+        linkOnPaste: true,
+        HTMLAttributes: {
+          rel: 'noopener noreferrer',
+          target: '_blank'
+        }
+      }),
       Placeholder.configure({ placeholder }),
       FileHandler.configure({
         onDrop: (_editor, files) => uploadFilesRef.current?.(files),
@@ -981,6 +1050,38 @@ export default function RichTextEditor({
     applyCommand((chain) => chain.unsetHighlight().run());
   }, [applyCommand]);
 
+  const handleSetLink = useCallback(() => {
+    if (!editor || editor.isDestroyed) return;
+    const previousHref = editor.getAttributes('link')?.href || '';
+    const nextInput = window.prompt('Enter link URL', previousHref);
+    if (nextInput === null) {
+      return;
+    }
+
+    const normalized = normalizeLinkUrl(nextInput);
+    if (normalized === '') {
+      editor.chain().focus().extendMarkRange('link').unsetLink().run();
+      return;
+    }
+    if (!normalized) {
+      window.alert('Please enter a valid HTTP or HTTPS URL.');
+      return;
+    }
+
+    editor
+      .chain()
+      .focus()
+      .extendMarkRange('link')
+      .setLink({ href: normalized, target: '_blank', rel: 'noopener noreferrer' })
+      .run();
+  }, [editor]);
+
+  const handleRemoveLink = useCallback(() => {
+    if (!editor || editor.isDestroyed) return;
+    if (!editor.isActive('link')) return;
+    editor.chain().focus().extendMarkRange('link').unsetLink().run();
+  }, [editor]);
+
   const captureSnapshot = useCallback(() => {
     if (!editor || editor.isDestroyed) return;
     setSnapshot({ html: editor.getHTML(), createdAt: Date.now() });
@@ -1091,6 +1192,7 @@ export default function RichTextEditor({
     : null;
 
   const editorClassName = `admin-editor${isFullscreen ? ' admin-editor--fullscreen' : ''}`;
+  const linkActive = Boolean(editor?.isActive?.('link'));
 
   return (
     <div className={editorClassName}>
@@ -1178,6 +1280,20 @@ export default function RichTextEditor({
             onClick={() => applyCommand((chain) => chain.toggleCode().run())}
             active={editor.isActive('code')}
             ariaLabel="Inline code"
+          />
+          <ToolbarButton
+            label="Link"
+            icon={<LinkIconGlyph />}
+            onClick={handleSetLink}
+            active={linkActive}
+            ariaLabel="Insert link"
+          />
+          <ToolbarButton
+            label="Remove link"
+            icon={<UnlinkIconGlyph />}
+            onClick={handleRemoveLink}
+            disabled={!linkActive}
+            ariaLabel="Remove link"
           />
           <ToolbarButton
             label="Quote"

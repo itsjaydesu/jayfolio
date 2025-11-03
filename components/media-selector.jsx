@@ -220,45 +220,67 @@ export default function MediaSelector({
   }, [isUploading]);
 
   const processUpload = useCallback(
-    async (file) => {
-      if (!file || isUploading) return;
-      const validationMessage = validateUploadFile(file);
-      if (validationMessage) {
-        setUploadError(validationMessage);
+    async (inputFiles) => {
+      const queue = Array.isArray(inputFiles) ? inputFiles : [inputFiles];
+      const files = queue.filter(Boolean);
+      if (!files.length || isUploading) return;
+
+      let invalidMessage = '';
+      const invalid = files.find((file) => {
+        const message = validateUploadFile(file);
+        if (message) {
+          invalidMessage = message;
+          return true;
+        }
+        return false;
+      });
+      if (invalid) {
+        setUploadError(invalidMessage || 'Unsupported file selected.');
         setUploadStatus('error');
         return;
       }
-
-      const formData = new FormData();
-      formData.append('file', file);
 
       setUploadStatus('uploading');
       setUploadError('');
 
       try {
-        const response = await adminFetch('/api/upload', {
-          method: 'POST',
-          body: formData,
-          cache: 'no-store'
-        });
-        const data = await response.json();
+        const uploaded = [];
 
-        if (!response.ok) {
-          throw new Error(data?.error || 'Upload failed');
+        for (const file of files) {
+          const formData = new FormData();
+          formData.append('file', file);
+
+          const response = await adminFetch('/api/upload', {
+            method: 'POST',
+            body: formData,
+            cache: 'no-store'
+          });
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data?.error || 'Upload failed');
+          }
+
+          const normalized = normalizeUploadedRecord(data, file);
+          uploaded.push(normalized);
+
+          setMediaItems((previous) => {
+            const withoutDuplicate = previous.filter((item) => item.pathname !== normalized.pathname);
+            return [normalized, ...withoutDuplicate];
+          });
         }
 
-        const normalized = normalizeUploadedRecord(data, file);
+        if (uploaded.length) {
+          const newest = uploaded[0];
+          setDirectUrl(newest.url);
+          onChange?.(newest.url);
+        }
 
-        setMediaItems((previous) => {
-          const withoutDuplicate = previous.filter((item) => item.pathname !== normalized.pathname);
-          return [normalized, ...withoutDuplicate];
-        });
-        setMediaOffset((previous) => (Number.isFinite(previous) ? previous + 1 : 1));
+        setMediaOffset((previous) => (Number.isFinite(previous) ? previous + uploaded.length : uploaded.length));
         setHasLoadedMedia(true);
         setHasMoreMedia(true);
-        setDirectUrl(normalized.url);
-        onChange?.(normalized.url);
         setUploadStatus('success');
+
         window.setTimeout(() => {
           setUploadStatus('idle');
           closeModal();
@@ -277,7 +299,7 @@ export default function MediaSelector({
       const files = Array.from(event.target.files || []);
       event.target.value = '';
       if (!files.length) return;
-      processUpload(files[0]);
+      processUpload(files);
     },
     [processUpload]
   );
@@ -309,7 +331,7 @@ export default function MediaSelector({
       if (isUploading) return;
       const files = Array.from(event.dataTransfer?.files || []);
       if (!files.length) return;
-      processUpload(files[0]);
+      processUpload(files);
     },
     [isUploading, processUpload]
   );
@@ -346,6 +368,7 @@ export default function MediaSelector({
                 className="media-selector__upload-input"
                 onChange={handleFileInputChange}
                 tabIndex={-1}
+                multiple
               />
               <div className="media-selector__upload-body">
                 <p className="media-selector__upload-title">Upload new media</p>
