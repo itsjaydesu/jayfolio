@@ -111,11 +111,11 @@
         "ja": "Tokyo Tech Summit 2024"
       },
       "summary": {
-        "en": "Leading a workshop on cross-cultural product development at Japan's premier tech conference.",
+        "en": "Hacker News Tokyo is a regular networking forum in Tokyo for the technology & startup community",
         "ja": "国内最大級テックカンファレンスで、異文化プロダクト開発をテーマにワークショップを担当。"
       },
       "content": {
-        "en": "<p>I co-founded the Tokyo Hacker News Tech meetup with Paul Oswald, the largest foreign developer meetup in Tokyo.</p>",
+        "en": "<p>Hacker News Tokyo is a recurring meetup and networking community in Tokyo aimed at technologists, founders, and entrepreneurs. It was founded by Jay &amp; Paul who also co-founded MakeLeaps.</p>",
         "ja": "<p>Tokyo Tech Summit 2024 にはアジア太平洋各地から5,000名を超える開発者・デザイナー・起業家が集まり、多文化な視点でのものづくりを議論しました。</p><p>私は東西のデザイン哲学を統合するプロダクト開発手法を紹介し、文化的背景の異なるチームで成果を出した事例や、陥りがちな認識のズレを共有しました。</p>"
       },
       "tags": {
@@ -134,9 +134,55 @@
         "url": "https://irq8pcmcsnz9tzjh.public.blob.vercel-storage.com/2025-10-30-at-17-5QK41i11exjPoQjYyAZDOVZZCdzIq0.jpg",
         "alt": "2025 10 30 at 17"
       },
+      "galleryImages": [
+        {
+          "url": "https://irq8pcmcsnz9tzjh.public.blob.vercel-storage.com/2025-10-30-at-19-SNJ3JUvi5btrUxlzVxTJI262GwjX5u.jpg",
+          "alt": {
+            "en": "Attendees networking under neon signage at Tokyo Tech Summit",
+            "ja": "ネオン看板が光る会場で交流する参加者たち"
+          },
+          "caption": {
+            "en": "Opening night networking in the 27th-floor atrium.",
+            "ja": "初日の夜、27階アトリウムで始まったネットワーキング。"
+          }
+        },
+        {
+          "url": "https://irq8pcmcsnz9tzjh.public.blob.vercel-storage.com/2025-10-30-at-17-03WqlguBExAyShe0BIeNPdLXCZanxb.jpg",
+          "alt": {
+            "en": "Jay presenting cross-cultural product lessons on stage",
+            "ja": "ステージで越境プロダクトの事例を紹介するジェイ"
+          },
+          "caption": {
+            "en": "Sharing the bilingual product playbook with 400 founders.",
+            "ja": "400名の起業家に向けてバイリンガルプロダクトの知見を共有。"
+          }
+        },
+        {
+          "url": "https://irq8pcmcsnz9tzjh.public.blob.vercel-storage.com/2025-10-30-at-17-dFIRAkUgTs9hIFWb2qaLBSNMeLAfVM.jpg",
+          "alt": {
+            "en": "Workshop participants co-creating around laptops during a breakout",
+            "ja": "ブレイクアウトセッションでノートPCを囲んで議論する参加者"
+          },
+          "caption": {
+            "en": "Hands-on breakout pairing founders with researchers.",
+            "ja": "創業者とリサーチャーがペアになって議論するハンズオンセッション。"
+          }
+        },
+        {
+          "url": "https://irq8pcmcsnz9tzjh.public.blob.vercel-storage.com/webnet-print-UxGMqbGLGmswPh7XdSx3NkTXf8Gkp8.jpg",
+          "alt": {
+            "en": "Printed orange signage for the Hacker News Tokyo meetup",
+            "ja": "Hacker News Tokyoミートアップ用のオレンジ色のサイネージ"
+          },
+          "caption": {
+            "en": "Wayfinding signage we printed overnight to guide attendees.",
+            "ja": "来場者の導線を整えるために徹夜で印刷したサイネージ。"
+          }
+        }
+      ],
       "status": "published",
       "createdAt": "2024-10-15",
-      "updatedAt": "2025-10-30T10:00:10.714Z"
+      "updatedAt": "2025-11-03T07:48:15.891Z"
     },
     {
       "slug": "word-battle-sim",

@@ -115,6 +115,71 @@ function ensureLocalizedTags(value) {
   return { en: toString(value), ja: '' };
 }
 
+function buildEmptyGalleryImage() {
+  return {
+    url: '',
+    alt: { en: '', ja: '' },
+    caption: { en: '', ja: '' },
+    width: '',
+    height: '',
+    blurDataURL: '',
+    placeholder: '',
+    thumbnailUrl: ''
+  };
+}
+
+function ensureGalleryImages(value) {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((item) => {
+      if (!item) return null;
+
+      if (typeof item === 'string') {
+        const url = item.trim();
+        if (!url) return null;
+        const baseStringItem = buildEmptyGalleryImage();
+        baseStringItem.url = url;
+        return baseStringItem;
+      }
+
+      if (typeof item !== 'object') {
+        return null;
+      }
+
+      const url = typeof item.url === 'string' ? item.url.trim() : '';
+      if (!url) {
+        return null;
+      }
+
+      const base = buildEmptyGalleryImage();
+      base.url = url;
+      base.alt = ensureLocalizedField(item.alt, '');
+      base.caption = ensureLocalizedField(item.caption, '');
+
+      if (item.width) {
+        base.width = item.width;
+      }
+      if (item.height) {
+        base.height = item.height;
+      }
+      if (item.blurDataURL) {
+        base.blurDataURL = item.blurDataURL;
+      }
+      if (item.placeholder) {
+        base.placeholder = item.placeholder;
+      }
+      if (item.thumbnailUrl) {
+        base.thumbnailUrl = item.thumbnailUrl;
+      }
+
+      return base;
+    })
+    .filter(Boolean);
+}
+
 function prepareLocalizedField(field) {
   if (typeof field === 'string') {
     return field.trim();
@@ -139,6 +204,63 @@ function prepareLocalizedField(field) {
     return result.en;
   }
   return result;
+}
+
+function prepareGalleryImages(field) {
+  if (!Array.isArray(field)) {
+    return [];
+  }
+
+  return field
+    .map((item) => {
+      if (!item) return null;
+
+      if (typeof item === 'string') {
+        const url = item.trim();
+        return url ? { url } : null;
+      }
+
+      const url = typeof item.url === 'string' ? item.url.trim() : '';
+      if (!url) {
+        return null;
+      }
+
+      const prepared = { url };
+      const alt = prepareLocalizedField(item.alt);
+      if (hasFieldValue(alt)) {
+        prepared.alt = alt;
+      }
+
+      const caption = prepareLocalizedField(item.caption);
+      if (hasFieldValue(caption)) {
+        prepared.caption = caption;
+      }
+
+      const width = Number.parseInt(item.width, 10);
+      if (Number.isFinite(width) && width > 0) {
+        prepared.width = width;
+      }
+
+      const height = Number.parseInt(item.height, 10);
+      if (Number.isFinite(height) && height > 0) {
+        prepared.height = height;
+      }
+
+      if (typeof item.blurDataURL === 'string' && item.blurDataURL.trim()) {
+        prepared.blurDataURL = item.blurDataURL.trim();
+      }
+
+      if (typeof item.placeholder === 'string' && item.placeholder.trim()) {
+        prepared.placeholder = item.placeholder.trim();
+      }
+
+      if (typeof item.thumbnailUrl === 'string' && item.thumbnailUrl.trim()) {
+        prepared.thumbnailUrl = item.thumbnailUrl.trim();
+      }
+
+      return prepared;
+    })
+    .filter(Boolean);
 }
 
 function prepareLocalizedTags(field) {
@@ -303,7 +425,7 @@ export default function AdminPage() {
       coverImageUrl: entry.coverImage?.url || '',
       coverImageAlt: ensureLocalizedField(entry.coverImage?.alt, ''),
       backgroundImageUrl: entry.backgroundImage || '',
-      galleryImages: entry.galleryImages || [],
+      galleryImages: ensureGalleryImages(entry.galleryImages),
       createdAt: formatDateValue(entry.createdAt),
       content: ensureLocalizedRichText(entry.content || INITIAL_CONTENT)
     });
@@ -399,6 +521,83 @@ export default function AdminPage() {
     });
   }, [activeLanguage]);
 
+  const handleGalleryUrlChange = useCallback((index, value) => {
+    setForm((prev) => {
+      const previous = Array.isArray(prev.galleryImages) ? prev.galleryImages : [];
+      const nextGallery = [...previous];
+      const current = previous[index]
+        ? { ...previous[index] }
+        : { ...buildEmptyGalleryImage() };
+      nextGallery[index] = {
+        ...current,
+        url: value
+      };
+      return {
+        ...prev,
+        galleryImages: nextGallery
+      };
+    });
+  }, []);
+
+  const handleGalleryAltChange = useCallback((index, language, value) => {
+    setForm((prev) => {
+      const previous = Array.isArray(prev.galleryImages) ? prev.galleryImages : [];
+      const nextGallery = [...previous];
+      const current = previous[index]
+        ? { ...previous[index] }
+        : { ...buildEmptyGalleryImage() };
+      const baseAlt = ensureLocalizedField(current.alt, '');
+      nextGallery[index] = {
+        ...current,
+        alt: { ...baseAlt, [language]: value }
+      };
+      return {
+        ...prev,
+        galleryImages: nextGallery
+      };
+    });
+  }, []);
+
+  const handleGalleryCaptionChange = useCallback((index, language, value) => {
+    setForm((prev) => {
+      const previous = Array.isArray(prev.galleryImages) ? prev.galleryImages : [];
+      const nextGallery = [...previous];
+      const current = previous[index]
+        ? { ...previous[index] }
+        : { ...buildEmptyGalleryImage() };
+      const baseCaption = ensureLocalizedField(current.caption, '');
+      nextGallery[index] = {
+        ...current,
+        caption: { ...baseCaption, [language]: value }
+      };
+      return {
+        ...prev,
+        galleryImages: nextGallery
+      };
+    });
+  }, []);
+
+  const handleAddGalleryImage = useCallback(() => {
+    setForm((prev) => {
+      const previous = Array.isArray(prev.galleryImages) ? prev.galleryImages : [];
+      return {
+        ...prev,
+        galleryImages: [...previous, buildEmptyGalleryImage()]
+      };
+    });
+  }, []);
+
+  const handleRemoveGalleryImage = useCallback((index) => {
+    setForm((prev) => {
+      const previous = Array.isArray(prev.galleryImages) ? prev.galleryImages : [];
+      const nextGallery = previous.filter((_, itemIndex) => itemIndex !== index);
+      return {
+        ...prev,
+        galleryImages: nextGallery
+      };
+    });
+  }, []);
+
   const toggleEntryPanel = useCallback(() => {
     setIsEntryPanelCollapsed((prev) => {
       const next = !prev;
@@ -429,7 +628,7 @@ export default function AdminPage() {
             }
           : null,
         backgroundImage: form.backgroundImageUrl?.trim() || '',
-        galleryImages: form.galleryImages || [],
+        galleryImages: prepareGalleryImages(form.galleryImages),
         createdAt: formatDateValue(form.createdAt) || new Date().toISOString().slice(0, 10)
       };
 
@@ -786,38 +985,65 @@ export default function AdminPage() {
               </header>
               <div className="editor-panel__body">
                 <div className="editor-gallery">
-                  {form.galleryImages && form.galleryImages.map((image, index) => (
-                    <div key={index} className="editor-gallery__item">
-                      <Suspense fallback={<div className="uploader-loading">Loading selector...</div>}>
-                        <MediaSelector
-                          value={image}
-                          onChange={(value) => {
-                            const newGallery = [...form.galleryImages];
-                            newGallery[index] = value;
-                            handleFieldChange('galleryImages', newGallery);
-                          }}
-                          label={`Gallery Image ${index + 1}`}
-                          placeholder="Select or paste image URL"
-                        />
-                      </Suspense>
-                      <button
-                        type="button"
-                        className="admin-ghost"
-                        onClick={() => {
-                          const newGallery = form.galleryImages.filter((_, i) => i !== index);
-                          handleFieldChange('galleryImages', newGallery);
-                        }}
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  ))}
+                  {Array.isArray(form.galleryImages) && form.galleryImages.map((image, index) => {
+                    const altValue =
+                      typeof image?.alt === 'string'
+                        ? (image?.alt ?? '')
+                        : image?.alt?.[activeLanguage] ?? '';
+                    const captionValue =
+                      typeof image?.caption === 'string'
+                        ? (image?.caption ?? '')
+                        : image?.caption?.[activeLanguage] ?? '';
+                    return (
+                      <div key={`gallery-${index}`} className="editor-gallery__item">
+                        <Suspense fallback={<div className="uploader-loading">Loading selector...</div>}>
+                          <MediaSelector
+                            value={image?.url || ''}
+                            onChange={(value) => handleGalleryUrlChange(index, value)}
+                            label={`Gallery Image ${index + 1}`}
+                            placeholder="Select or paste image URL"
+                          />
+                        </Suspense>
+                        <div className="editor-field">
+                          <label className="editor-field__label" htmlFor={`gallery-alt-${index}`}>
+                            Alt text ({activeLanguage.toUpperCase()})
+                          </label>
+                          <input
+                            id={`gallery-alt-${index}`}
+                            type="text"
+                            className="editor-input"
+                            value={altValue}
+                            onChange={(event) => handleGalleryAltChange(index, activeLanguage, event.target.value)}
+                            placeholder="Describe this image"
+                          />
+                        </div>
+                        <div className="editor-field">
+                          <label className="editor-field__label" htmlFor={`gallery-caption-${index}`}>
+                            Caption ({activeLanguage.toUpperCase()})
+                          </label>
+                          <textarea
+                            id={`gallery-caption-${index}`}
+                            className="editor-textarea"
+                            rows={2}
+                            value={captionValue}
+                            onChange={(event) => handleGalleryCaptionChange(index, activeLanguage, event.target.value)}
+                            placeholder="Optional caption shown below the image"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          className="admin-ghost"
+                          onClick={() => handleRemoveGalleryImage(index)}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    );
+                  })}
                   <button
                     type="button"
                     className="admin-primary"
-                    onClick={() => {
-                      handleFieldChange('galleryImages', [...(form.galleryImages || []), '']);
-                    }}
+                    onClick={handleAddGalleryImage}
                   >
                     Add Gallery Image
                   </button>

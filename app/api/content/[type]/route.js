@@ -127,6 +127,78 @@ function normalizeCoverImage(input) {
   return cover;
 }
 
+function normalizeGalleryImages(input) {
+  if (!Array.isArray(input)) {
+    return [];
+  }
+
+  return input
+    .map((item) => {
+      if (!item) return null;
+
+      if (typeof item === 'string') {
+        const url = item.trim();
+        return url ? { url } : null;
+      }
+
+      if (typeof item !== 'object') {
+        return null;
+      }
+
+      const url = typeof item.url === 'string' ? item.url.trim() : '';
+      if (!url) {
+        return null;
+      }
+
+      const galleryItem = { url };
+
+      const alt = normalizeLocalizedTextField(item.alt);
+      if (hasLocalizedValue(alt)) {
+        galleryItem.alt = alt;
+      }
+
+      const caption = normalizeLocalizedTextField(item.caption);
+      if (hasLocalizedValue(caption)) {
+        galleryItem.caption = caption;
+      }
+
+      const width = Number.parseInt(item.width, 10);
+      if (Number.isFinite(width) && width > 0) {
+        galleryItem.width = width;
+      }
+
+      const height = Number.parseInt(item.height, 10);
+      if (Number.isFinite(height) && height > 0) {
+        galleryItem.height = height;
+      }
+
+      const blurDataURL = typeof item.blurDataURL === 'string' ? item.blurDataURL.trim() : '';
+      if (blurDataURL) {
+        galleryItem.blurDataURL = blurDataURL;
+      }
+
+      const placeholder = typeof item.placeholder === 'string' ? item.placeholder.trim() : '';
+      if (placeholder) {
+        galleryItem.placeholder = placeholder;
+      }
+
+      const thumbnailUrl = typeof item.thumbnailUrl === 'string' ? item.thumbnailUrl.trim() : '';
+      if (thumbnailUrl) {
+        galleryItem.thumbnailUrl = thumbnailUrl;
+      }
+
+      return galleryItem;
+    })
+    .filter(Boolean);
+}
+
+function normalizeBackgroundImage(value) {
+  if (typeof value !== 'string') {
+    return '';
+  }
+  return value.trim();
+}
+
 function normalizeDate(value) {
   if (typeof value !== 'string') {
     return new Date().toISOString();
@@ -162,6 +234,8 @@ function normalizeEntry(payload) {
   const coverImage = normalizeCoverImage(payload.coverImage);
   const status = payload.status === 'published' ? 'published' : 'draft';
   const createdAt = normalizeDate(payload.createdAt);
+  const galleryImages = normalizeGalleryImages(payload.galleryImages);
+  const backgroundImage = normalizeBackgroundImage(payload.backgroundImage);
 
   return {
     slug,
@@ -170,6 +244,8 @@ function normalizeEntry(payload) {
     content: content ?? '',
     tags,
     coverImage,
+    galleryImages,
+    backgroundImage,
     status,
     createdAt,
     updatedAt: new Date().toISOString()
