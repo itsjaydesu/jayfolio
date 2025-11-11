@@ -7,7 +7,7 @@
       "route": "/about",
       "description": {
         "en": "How about that?",
-        "ja": "どうだい、なかなかでしょ？"
+        "ja": "ね、どう？"
       }
     },
     {
@@ -16,7 +16,7 @@
       "route": "/projects",
       "description": {
         "en": "Stuff I ① made ② am making ③ did",
-        "ja": "僕が ① 作ったもの ② いま作ってるもの ③ やってきたこと"
+        "ja": "ぼくの ① つくったもの ② いま作ってるもの ③ やってきたこと"
       }
     },
     {
@@ -25,7 +25,7 @@
       "route": "/content",
       "description": {
         "en": "Sharing my perspective to:\n ① make you laugh ② make you think ③ both.",
-        "ja": "僕の視点をシェアして：\n ① 笑わせる ② 考えさせる ③ その両方"
+        "ja": "ぼくの視点をシェアするのは：\n ① 笑ってもらうため ② 考えてもらうため ③ その両方のため"
       }
     },
     {
@@ -34,7 +34,7 @@
       "route": "/sounds",
       "description": {
         "en": "\"Art is how we decorate space; \nmusic is how we decorate time\"",
-        "ja": "「アートは空間を飾る方法、\n音楽は時間を彩る方法」"
+        "ja": "「アートは空間を飾り、\n音楽は時間を飾るもの」"
       }
     },
     {
@@ -43,7 +43,7 @@
       "route": "/art",
       "description": {
         "en": "Intersections of art and technology I think are cool",
-        "ja": "アートとテクノロジーが交差する、僕が'cool!'だと思うところ"
+        "ja": "アートとテクノロジーが交差して、ぼくがクールだと思う場所"
       }
     }
   ]

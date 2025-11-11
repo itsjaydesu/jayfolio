@@ -13,45 +13,45 @@
     },
     "aboutTitle": {
       "en": "about",
-      "ja": "プロフィール"
+      "ja": "概要"
     },
     "aboutSubtitle": {
       "en": "welcome, fellow internet traveller",
-      "ja": "クリエイティブ・テクノロジスト"
+      "ja": "インターネットを旅する仲間のみなさん、ようこそ"
     },
     "aboutContent": {
       "en": "I am building this site to showcase some creations, and to find friends and co-collaborators. I have far (farrr) too many ideas and not enough time, and it'd be nice to hack on some ideas together. My goal is to build with people who I'd want to spend time with anyway.\n\nI'm good on the product side. I'm great at public speaking, fundraising and communicating. I'm pretty bad at coding, but I'm good at talking to an AI until I get what I want.\n\nIf any of my ideas are interesting to you and you'd like to collaborate, find a way to contact me and let's see if we click.",
-      "ja": "クリエイティブ・テクノロジストとして、アンビエントOSや展示向けツール、シネマティックなサウンドスケープを設計しています。このドシエではスタジオの思想、コラボレーター、そして各プロジェクトを導くシグナルを紹介します。"
+      "ja": "このサイトは、つくったものを披露しつつ新しい友人や共創者を探すために育てています。アイデアは（本当に）山ほどあるのに時間が全然足りません。いくつかを一緒にハックしてくれる仲間がいたら嬉しいです。目標は、一緒に過ごしたくなる人たちとモノをつくること。\n\nプロダクトづくりには自信があります。プレゼンやファンドレイズ、コミュニケーションも得意です。コードを書くのはあまり上手じゃないけれど、欲しい結果が出るまでAIと話し続けるのは得意です。\n\nどれかのアイデアが少しでも響いたら、何らかの方法で連絡してください。相性が合うか、一度一緒に確かめてみましょう。"
     },
     "aboutDetailCards": [
       {
         "title": {
           "en": "Help me improve something",
-          "ja": "実践ベクトル"
+          "ja": "一緒に磨き上げよう"
         },
         "text": {
           "en": "Cinematic UI systems, immersive spatial audio, sensor-driven choreography, and collaborative design research.",
-          "ja": "シネマティックなUIシステム、没入型の空間オーディオ、センサー連動の振付、そして協働型リサーチを行っています。"
+          "ja": "シネマティックなUIシステム、没入型の空間オーディオ、センサー駆動の振付、共同デザインリサーチに取り組んでいます。"
         }
       },
       {
         "title": {
           "en": "Work with me",
-          "ja": "運営ポリシー"
+          "ja": "一緒にやろう"
         },
         "text": {
           "en": "I have literally hundreds of ideas waiting to be burned through. Most of them are terrible. Some, I assume, are good ideas.",
-          "ja": "まず耳を傾け、オープンに試作し、どのサーフェスにも温度を宿す。プロジェクトはコードと同じ精度で空気感を整えます。"
+          "ja": "燃やす順番待ちのアイデアが文字通り何百もあります。たいていはひどいけれど、いくつかはきっといいアイデアです。"
         }
       },
       {
         "title": {
           "en": "Stay in Touch",
-          "ja": "現在のフォーカス"
+          "ja": "つながり続けよう"
         },
         "text": {
           "en": "Building responsive worlds where light, audio, and interface gestures share the same pulse through WebGL and realtime systems.",
-          "ja": "WebGLとリアルタイムシステムを通じて、光・音・インターフェイスが同じ鼓動で呼吸する空間を構築しています。"
+          "ja": "WebGLとリアルタイムシステムで、光・音・インターフェースのジェスチャーが同じ鼓動で動く世界を仕立てています。"
         }
       }
     ],
@@ -62,9 +62,9 @@
         "tags"
       ],
       "ja": [
-        "デザイナー",
-        "コンポーザー",
-        "システムアーティスト"
+        "これ",
+        "は",
+        "タグ"
       ]
     },
     "title": "",
@@ -132,11 +132,11 @@
     },
     "title": {
       "en": "Projects",
-      "ja": "セレクト作品"
+      "ja": "Projects"
     },
     "lead": {
       "en": "An inconclusive list of some things I've built.",
-      "ja": "インタラクティブな受託案件、ツアー用インスタレーション、応答型ツール群を横断してご紹介。気になるプロジェクトを開くと、メディア・クレジット・資料までまとまった詳細を確認できます。"
+      "ja": "作ってきたもののうち、ほんの一部を気ままに並べています。"
     }
   },
   "content": {
@@ -153,11 +153,11 @@
     },
     "title": {
       "en": "Content & Writing",
-      "ja": "コンテンツ＆ライティング"
+      "ja": "Content & Writing"
     },
     "lead": {
       "en": "Essays, blog posts, and some comedy(coming soon).",
-      "ja": "テクノロジー、文化、そして現代の不条理を探求するエッセイ、ブログ、コメディ作品。どの作品を開いても、埋め込みメディアと参考文献付きで全文をお読みいただけます。"
+      "ja": "エッセイ、ブログ、それからもうすぐ公開するコメディを並べています。"
     }
   },
   "sounds": {
@@ -174,11 +174,11 @@
     },
     "title": {
       "en": "Sounds",
-      "ja": "サウンド実験室"
+      "ja": "Sounds"
     },
     "lead": {
       "en": "Some frequencies I found",
-      "ja": "ループ、ドローン、ライブスケッチを収めたサウンドアーカイブ。各エントリーにはライナーノーツと埋め込みプレイヤーを用意しました。"
+      "ja": "拾い集めた周波数のいくつかを置いています。"
     }
   },
   "art": {
@@ -195,11 +195,11 @@
     },
     "title": {
       "en": "Dot Field Studies",
-      "ja": "ドットフィールド研究"
+      "ja": "Dot Field Studies"
     },
     "lead": {
       "en": "Generative sequences that document how the homepage dot field bends, glitches, and blooms across its interactive modes.",
-      "ja": "ホームのドットフィールドが各モードでどのように歪み、滲み、咲き誇るのかを記録したジェネレーティブなシーケンス集です。"
+      "ja": "ホームのドットフィールドが各モードでどう歪み、グリッチし、花開くのかを記録したジェネレーティブなシーケンス集です。"
     }
   }
 }
