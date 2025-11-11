@@ -41,6 +41,17 @@ export default function PostCard({
   const displayDate = language === 'en' ? formattedDate.toUpperCase() : formattedDate;
   const localizedTags = getLocalizedTags(entry.tags, language);
   const coverAlt = entry.coverImage ? getLocalizedContent(entry.coverImage.alt, language) : '';
+  const hasCoverImage = Boolean(entry.coverImage?.url);
+  const fallbackTitleText =
+    typeof entry.title === 'string'
+      ? entry.title
+      : typeof entry.title?.en === 'string'
+      ? entry.title.en
+      : entry.slug;
+  const displayTitle =
+    typeof localizedTitle === 'string' && localizedTitle.trim().length > 0
+      ? localizedTitle.trim()
+      : fallbackTitleText;
   
   // Determine figure aspect ratio based on type
   const figureVariantClassMap = {
@@ -113,7 +124,9 @@ export default function PostCard({
             </div>
 
             <div className="project-entry__title-row">
-              <h2 className="project-entry__title">{localizedTitle}</h2>
+              <h2 className="project-entry__title" title={displayTitle}>
+                {localizedTitle}
+              </h2>
             </div>
           </header>
 
@@ -131,14 +144,19 @@ export default function PostCard({
         </div>
 
         {/* Visual/Figure Section */}
-        <figure className={figureClassName} aria-hidden="true">
-          {entry.coverImage?.url ? (
+        <figure
+          className={figureClassName}
+          aria-hidden="true"
+          data-has-image={hasCoverImage}
+        >
+          {hasCoverImage ? (
             <Image
               src={entry.coverImage.url}
               alt={coverAlt || `${localizedTitle} cover image`}
               fill
               sizes="(max-width: 900px) 100vw, 420px"
               className="project-entry__image"
+              style={{ objectFit: 'cover', objectPosition: 'center' }}
               onError={(e) => {
                 // Fallback to gradient art on image load error
                 e.target.style.display = 'none';

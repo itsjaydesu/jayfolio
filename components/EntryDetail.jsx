@@ -566,6 +566,7 @@ export default function EntryDetail({ type, entry }) {
   }
 
   const stageClassName = stageClasses.join(' ');
+  const hasLeadMedia = Boolean(coverImage?.url) && !audioData;
 
   return (
     <div className={stageClassName} ref={stageRef}>
@@ -592,31 +593,42 @@ export default function EntryDetail({ type, entry }) {
           </div>
         </nav>
 
-        <header className="detail-view__header">
-          <div className={titleGroupClasses.join(' ')}>
-            <div className="detail-view__title-row">
-              <h1 className="detail-view__title">{localizedTitle}</h1>
-              {isAdmin && editHref ? (
-                <Link href={editHref} className="detail-view__edit-btn">
-                  {t('edit.entry', language)}
-                </Link>
-              ) : null}
+        <section
+          className="detail-view__lead"
+          data-has-media={hasLeadMedia ? 'true' : 'false'}
+          aria-labelledby="detail-view-title"
+        >
+          <header className="detail-view__header">
+            <div className={titleGroupClasses.join(' ')}>
+              <div className="detail-view__title-row">
+                <h1 id="detail-view-title" className="detail-view__title">
+                  {localizedTitle}
+                </h1>
+                {isAdmin && editHref ? (
+                  <Link href={editHref} className="detail-view__edit-btn">
+                    {t('edit.entry', language)}
+                  </Link>
+                ) : null}
+              </div>
+              {localizedSummary ? <p className="detail-view__summary">{localizedSummary}</p> : null}
             </div>
-            {localizedSummary ? <p className="detail-view__summary">{localizedSummary}</p> : null}
-          </div>
-        </header>
+          </header>
 
-        {coverImage?.url && !audioData ? (
-          <figure className="detail-view__media">
-            <Image
-              src={coverImage.url}
-              alt={getLocalizedContent(coverImage.alt, language) || `${localizedTitle} cover image`}
-              fill
-              sizes="(max-width: 900px) 100vw, 960px"
-              className="detail-view__media-image"
-            />
-          </figure>
-        ) : null}
+          {hasLeadMedia ? (
+            <figure className="detail-view__media">
+              <Image
+                src={coverImage.url}
+                alt={
+                  getLocalizedContent(coverImage.alt, language) || `${localizedTitle} cover image`
+                }
+                fill
+                sizes="(max-width: 1024px) 100vw, 720px"
+                className="detail-view__media-image"
+                style={{ objectFit: 'cover', objectPosition: 'center', borderRadius: 'inherit' }}
+              />
+            </figure>
+          ) : null}
+        </section>
 
         {audioData && (
           <TabbedAudioPlayer
