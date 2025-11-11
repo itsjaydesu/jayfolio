@@ -225,15 +225,15 @@
     {
       "slug": "ask-lucy-ai-travel-companion",
       "title": {
-        "en": "Ask Lucy — AI Travel Companion",
+        "en": "Lucy, Your AI Travel Companion",
         "ja": "Ask Lucy — AIトラベルコンシェルジュ"
       },
       "summary": {
-        "en": "AI travel assistant that translates, explains local culture, and tailors recommendations in seconds.",
+        "en": "AI travel assistant that goes from photograph to translation and helpful explanations in 5 seconds flat.",
         "ja": "翻訳と文化解説を一瞬でこなし、旅の提案を最適化するAIトラベルアシスタント。"
       },
       "content": {
-        "en": "<p>Ask Lucy is a mobile travel concierge built to remove friction from navigating new cities. Travellers snap a photo of menus, signs, or handwritten notes and receive translations, etiquette context, and next-step suggestions tuned to their preferences in about ten seconds.</p><p>The assistant supports more than 70 languages, remembers allergies and interests, and stays available around the clock so cruise passengers and independent explorers can move with confidence from Naples to Kyoto without juggling multiple apps.</p>",
+        "en": "<p><a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://ask-lucy.ai/\">Ask Lucy</a> is a mobile travel concierge built to remove friction from navigating new cities. </p><p>Travellers snap a photo of menus, signs, or handwritten notes and receive translations, etiquette context, and next-step suggestions tuned to their preferences in about 5 seconds.</p><p>The assistant supports more than 70 languages, remembers allergies and interests, and stays available around the clock so cruise passengers and independent explorers can move with confidence from Naples to Kyoto without juggling multiple apps.</p><p>I made this app because I realised I was spending a lot of time opening ChatGPT/Grok/etc and writing out \"Please translate\", or \"What does this mean\".<br><br>Instead of these extra steps, Lucy looks at your photo, tries to figure out what would be the most interesting and useful information, and gives it to you.</p>",
         "ja": "<p>Ask Lucy は、見知らぬ街でも迷わず動けるように設計されたモバイル・トラベルコンシェルジュです。メニューや看板、手書きメモを撮影すると10秒ほどで翻訳が届き、現地のマナー解説や次の行動プランまで好みに合わせて提案します。</p><p>70以上の言語に対応し、アレルギーや興味関心も記憶。クルーズ旅行者から自由行動好きの旅人まで、ナポリから京都へと移動する間も複数アプリを切り替えることなく安心して旅を続けられます。</p>"
       },
       "tags": {
@@ -248,9 +248,15 @@
           "プロダクト"
         ]
       },
-      "coverImage": null,
-      "status": "draft",
-      "createdAt": "2024-01-01"
+      "coverImage": {
+        "url": "https://irq8pcmcsnz9tzjh.public.blob.vercel-storage.com/lucy-camera-HB05PksoTiALHdrL1KnkagqxzSu1H4.jpg",
+        "alt": "Lucy Camera"
+      },
+      "status": "published",
+      "createdAt": "2024-01-01",
+      "galleries": [],
+      "backgroundImage": "",
+      "updatedAt": "2025-11-11T04:37:59.739Z"
     },
     {
       "slug": "rabbit-hole-iykyk",
@@ -289,7 +295,7 @@
         "ja": "MakeLeaps（メイクリープス）"
       },
       "summary": {
-        "en": "Cloud invoicing platform built in Tokyo to automate quotes, invoices, and postal delivery for bilingual teams.",
+        "en": "Japan's first cloud invoicing platform to automate document management such as quotes, invoices, and postal delivery for Japanese freelancers, small businesses and corporations..",
         "ja": "東京発のクラウド請求管理プラットフォーム。見積から郵送手配までを自動化し、日英バイリンガル体制を支援します。"
       },
       "content": {
@@ -309,12 +315,14 @@
         ]
       },
       "coverImage": {
-        "url": "https://irq8pcmcsnz9tzjh.public.blob.vercel-storage.com/2025-10-30-at-17-dFIRAkUgTs9hIFWb2qaLBSNMeLAfVM.jpg",
-        "alt": "2025 10 30 at 17"
+        "url": "https://irq8pcmcsnz9tzjh.public.blob.vercel-storage.com/2025-11-11-at-13-L7fU97LcjSgvTylKTGIl8ss3qdvBvl.jpg",
+        "alt": "2025 11 11 at 13"
       },
       "status": "published",
       "createdAt": "2015-02-09",
-      "updatedAt": "2025-10-30T10:00:45.002Z"
+      "updatedAt": "2025-11-11T04:41:00.383Z",
+      "galleries": [],
+      "backgroundImage": ""
     },
     {
       "slug": "webnet-it",
