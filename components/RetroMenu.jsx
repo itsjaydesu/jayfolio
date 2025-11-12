@@ -178,12 +178,32 @@ export default function RetroMenu({
       leftPos = toggleCenterX - panelWidth / 2;
     }
 
-    if (Number.isFinite(viewportWidth) && viewportWidth > 0) {
+    const hasViewportWidth = Number.isFinite(viewportWidth) && viewportWidth > 0;
+    if (hasViewportWidth) {
       const minLeft = viewportOffsetLeft + safeMargin;
       const maxLeft =
         viewportOffsetLeft + viewportWidth - safeMargin - panelWidth;
 
-      if (Number.isFinite(maxLeft) && maxLeft >= minLeft) {
+      // --- Mobile centering plan ---
+      // 1. Detect narrow viewports (<= 720px) where aligning to the toggle
+      //    leaves the floating panel hanging off-screen.
+      // 2. Recenter the panel with the visual viewport while respecting the
+      //    computed safe margins so the panel stays fully visible.
+      // 3. Preserve the existing toggle-relative behaviour for wider
+      //    viewports to avoid desktop regressions.
+      const shouldCenterOnViewport = viewportWidth <= 720;
+
+      if (shouldCenterOnViewport) {
+        const centeredLeft =
+          viewportOffsetLeft + Math.max((viewportWidth - panelWidth) / 2, safeMargin);
+
+        if (Number.isFinite(maxLeft) && maxLeft >= minLeft) {
+          leftPos = Math.min(Math.max(centeredLeft, minLeft), maxLeft);
+        } else {
+          leftPos =
+            viewportOffsetLeft + Math.max((viewportWidth - panelWidth) / 2, 0);
+        }
+      } else if (Number.isFinite(maxLeft) && maxLeft >= minLeft) {
         leftPos = Math.min(Math.max(leftPos, minLeft), maxLeft);
       } else {
         leftPos =
