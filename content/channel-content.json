@@ -11,18 +11,22 @@
       "sideFadeWidth": "0",
       "sideFadeOpacity": "0"
     },
-    "aboutTitle": {
-      "en": "about",
-      "ja": "概要"
-    },
-    "aboutSubtitle": {
-      "en": "welcome, fellow internet traveller",
-      "ja": "インターネットを旅する仲間のみなさん、ようこそ"
-    },
-    "aboutContent": {
-      "en": "I am building this site to showcase some creations, and to find friends and co-collaborators. I have far (farrr) too many ideas and not enough time, and it'd be nice to hack on some ideas together. My goal is to build with people who I'd want to spend time with anyway.\n\nI'm good on the product side. I'm great at public speaking, fundraising and communicating. I'm pretty bad at coding, but I'm good at talking to an AI until I get what I want.\n\nIf any of my ideas are interesting to you and you'd like to collaborate, find a way to contact me and let's see if we click.",
-      "ja": "このサイトは、つくったものを披露しつつ新しい友人や共創者を探すために育てています。アイデアは（本当に）山ほどあるのに時間が全然足りません。いくつかを一緒にハックしてくれる仲間がいたら嬉しいです。目標は、一緒に過ごしたくなる人たちとモノをつくること。\n\nプロダクトづくりには自信があります。プレゼンやファンドレイズ、コミュニケーションも得意です。コードを書くのはあまり上手じゃないけれど、欲しい結果が出るまでAIと話し続けるのは得意です。\n\nどれかのアイデアが少しでも響いたら、何らかの方法で連絡してください。相性が合うか、一度一緒に確かめてみましょう。"
-    },
+  "aboutTitle": {
+    "en": "about",
+    "ja": "概要"
+  },
+  "aboutSubtitle": {
+    "en": "welcome, fellow internet traveller",
+    "ja": "インターネットを旅する仲間のみなさん、ようこそ"
+  },
+  "aboutLead": {
+    "en": "I’m a technologist who stitches playful tools and thoughtful stories together. I keep wandering through art, words, music, and comedy, and I reach for { new tools | old tricks | vintage gear | mischievous gadgets | words | code | musical instruments } to shape things that feel { useful | delightfully odd | generous | surprising | funny | beautiful | thought-provoking }.",
+    "ja": "僕は遊び心あるツールと物語を縫い合わせるテクノロジストです。アートや言葉、音楽、コメディを旅しながら、{ 新しい道具 | 古い工夫 | ヴィンテージの機材 | いたずらっぽいガジェット | 言葉 | コード | 楽器 } を手に取り、{ 役に立つ | ちょっと変 | やさしい | 驚きに満ちた | おかしい | 美しい | 考えたくなる } 体験を形にしています。"
+  },
+  "aboutContent": {
+    "en": "This site is my studio log—a place to gather experiments, stage performances, and the odd rabbit hole. I’m happiest when prototypes feel like invitations, so I’m documenting the process as much as the outcomes.\n\nBy trade I’m a product-minded technologist. I’m at ease with storytelling, fundraising, and translating between humans and machines. My typing may be clumsy, but I can coax an AI into shipping with me.\n\nIf any of these ideas spark something, reach out. Let’s build the kind of projects that you’d brag about to your past self.",
+    "ja": "このサイトは僕のスタジオログです。実験や小さな公演、ふとした脱線をまとめる場所。プロトタイプが誰かへの招待状になる瞬間がいちばん好きなので、完成品だけでなく過程そのものも記録しています。\n\n本業ではプロダクト志向のテクノロジストとして動いています。ストーリーテリングや資金調達、人と機械の通訳役は得意分野。タイピングはあやしいけれど、AIに寄り添って一緒に仕上げることはできます。\n\nもしここにあるどれかが心に引っかかったら、ぜひ声をかけてください。過去の自分に自慢したくなるようなプロジェクトを、一緒につくりましょう。"
+  },
     "aboutDetailCards": [
       {
         "title": {
