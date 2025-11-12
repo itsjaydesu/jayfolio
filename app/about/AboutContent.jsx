@@ -1,7 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import {
+  Fragment,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useAdminStatus } from "../../lib/useAdminStatus";
 import { getLocalizedContent } from "../../lib/translations";
@@ -13,12 +20,22 @@ const BLOCK_LEVEL_HTML_PATTERN =
   /<\/?(p|ul|ol|li|blockquote|h[1-6]|section|article|div|figure)[\s>]/i;
 const PLACEHOLDER_PATTERN = /\{([^{}]+)\}/g;
 const OPTIONS_DELIMITER = "⟡";
-const PRIMARY_LEAD_TEXT = `I am a technologist who loves making things. Generally software, but I also love exploring art, words, music and comedy. I love to use { new tools | old tools | vintage tools | weird tools | words | code | musical instruments } to make things that are { useful | stupid | interesting | surprising | funny | beautiful | thought-provoking }`;
-const PRIMARY_BODY_TEXT = [
-  `I am building this site to showcase some creations, and to find friends and co-collaborators. I have far (farrr) too many ideas and not enough time, and it'd be nice to hack on some ideas together. My goal is to build with people who I'd want to spend time with anyway.`,
-  `I'm good on the product side. I'm great at public speaking, fundraising and communicating. I'm pretty bad at coding, but I'm good at talking to an AI until I get what I want.`,
-  `If any of my ideas are interesting to you and you'd like to collaborate, find a way to contact me and let's see if we click.`,
-];
+const PRIMARY_LEAD_TEXT = {
+  en: `I’m a technologist who stitches playful tools and thoughtful stories together. I keep wandering through art, words, music, and comedy, and I reach for { new tools | old tricks | vintage gear | mischievous gadgets | words | code | musical instruments } to shape things that feel { useful | delightfully odd | generous | surprising | funny | beautiful | thought-provoking }`,
+  ja: `僕は遊び心あるツールと物語を縫い合わせるテクノロジストです。アートや言葉、音楽、コメディを旅しながら、{ 新しい道具 | 古い工夫 | ヴィンテージの機材 | いたずらっぽいガジェット | 言葉 | コード | 楽器 } を手に取り、{ 役に立つ | ちょっと変 | やさしい | 驚きに満ちた | おかしい | 美しい | 考えたくなる } 体験を形にしています。`,
+};
+const PRIMARY_BODY_TEXT = {
+  en: [
+    `This site is my studio log—a place to gather experiments, stage performances, and the odd rabbit hole. I’m happiest when prototypes feel like invitations, so I’m documenting the process as much as the outcomes.`,
+    `By trade I’m a product-minded technologist. I’m at ease with storytelling, fundraising, and translating between humans and machines. My typing may be clumsy, but I can coax an AI into shipping with me.`,
+    `If any of these ideas spark something, reach out. Let’s build the kind of projects that you’d brag about to your past self`,
+  ],
+  ja: [
+    `このサイトは僕のスタジオログです。実験や小さな公演、ふとした脱線をまとめる場所。プロトタイプが誰かへの招待状になる瞬間がいちばん好きなので、完成品だけでなく過程そのものも記録しています。`,
+    `本業ではプロダクト志向のテクノロジストとして動いています。ストーリーテリングや資金調達、人と機械の通訳役は得意分野。タイピングはあやしいけれど、AIに寄り添って一緒に仕上げることはできます。`,
+    `もしここにあるどれかが心に引っかかったら、ぜひ声をかけてください。過去の自分に自慢したくなるようなプロジェクトを、一緒につくりましょう。`,
+  ],
+};
 
 function normalize(value) {
   return typeof value === "string" ? value.trim() : "";
@@ -146,6 +163,8 @@ function AnimatedWordSwap({ options, signature }) {
   const [isHydrated, setIsHydrated] = useState(false);
   const [isPulsing, setIsPulsing] = useState(false);
   const randomizedRef = useRef(false);
+  const measurementRef = useRef(null);
+  const [swapDimensions, setSwapDimensions] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
     setIsHydrated(true);
@@ -237,19 +256,78 @@ function AnimatedWordSwap({ options, signature }) {
   );
   const minWidth = Math.max(maxChars, current.length, 4.5);
 
+  useLayoutEffect(() => {
+    if (!measurementRef.current) {
+      setSwapDimensions({ width: 0, height: 0 });
+      return;
+    }
+
+    const measureTargets = Array.from(
+      measurementRef.current.querySelectorAll("[data-swap-measure-item]")
+    );
+
+    if (!measureTargets.length) {
+      setSwapDimensions({ width: 0, height: 0 });
+      return;
+    }
+
+    const measurements = measureTargets.map((element) =>
+      element.getBoundingClientRect()
+    );
+    const nextWidth = Math.max(...measurements.map((entry) => entry.width));
+    const nextHeight = Math.max(...measurements.map((entry) => entry.height));
+
+    setSwapDimensions((previous) => {
+      const widthDelta = Math.abs(previous.width - nextWidth);
+      const heightDelta = Math.abs(previous.height - nextHeight);
+
+      if (widthDelta > 0.5 || heightDelta > 0.5) {
+        return {
+          width: nextWidth,
+          height: nextHeight,
+        };
+      }
+
+      return previous;
+    });
+  }, [optionsSignature]);
+
   if (!current) {
     return null;
   }
 
+  const swapStyle = minWidth ? { minWidth: `${minWidth}ch` } : {};
+  if (swapDimensions.width) {
+    swapStyle.width = `${swapDimensions.width}px`;
+    swapStyle.minWidth = `${swapDimensions.width}px`;
+  }
+  if (swapDimensions.height) {
+    swapStyle.height = `${swapDimensions.height}px`;
+  }
+
   return (
-    <span
-      className={swapClasses.join(" ")}
-      style={minWidth ? { minWidth: `${minWidth}ch` } : undefined}
-    >
-      <span key={current} className="about-page__word-swap-inner">
-        {current}
+    <Fragment>
+      <span className={swapClasses.join(" ")} style={swapStyle}>
+        <span key={current} className="about-page__word-swap-inner">
+          {current}
+        </span>
       </span>
-    </span>
+      <span
+        aria-hidden="true"
+        className="about-page__word-swap-measure"
+        ref={measurementRef}
+      >
+        {sanitizedOptions.map((option, index) => (
+          <span
+            key={`${optionsSignature}-measure-${index}`}
+            className="about-page__word-swap about-page__word-swap-measure-item"
+            data-swap-measure-item
+          >
+            <span className="about-page__word-swap-inner">{option}</span>
+          </span>
+        ))}
+      </span>
+    </Fragment>
   );
 }
 
@@ -267,6 +345,10 @@ export default function AboutContent({ initialContent }) {
       initialContent && typeof initialContent === "object"
         ? initialContent
         : {};
+    const languageKey =
+      typeof language === "string" && PRIMARY_LEAD_TEXT[language]
+        ? language
+        : "en";
 
     const title =
       normalize(getLocalizedContent(content.aboutTitle, language)) ||
@@ -307,23 +389,32 @@ export default function AboutContent({ initialContent }) {
     }
 
     // Override with the requested primary copy if legacy text is present or content is missing.
-    const defaultLeadParagraphs = toParagraphs(PRIMARY_LEAD_TEXT);
-    if (
-      !leadParagraphs.length ||
-      leadParagraphs.some((paragraph) =>
-        /creative technologist guiding teams/i.test(paragraph?.text || "")
-      )
-    ) {
+    const isLegacyLead = (paragraph) => {
+      const text = paragraph?.text || paragraph?.html || "";
+      return (
+        /creative technologist guiding teams/i.test(text) ||
+        /クリエイティブ[・･]?テクノロジスト/.test(text)
+      );
+    };
+
+    const isLegacyBody = (paragraph) => {
+      const text = paragraph?.text || paragraph?.html || "";
+      return (
+        /this dossier carries/i.test(text) ||
+        /このドシエには/.test(text)
+      );
+    };
+
+    const defaultLeadParagraphs = toParagraphs(
+      PRIMARY_LEAD_TEXT[languageKey] || PRIMARY_LEAD_TEXT.en
+    );
+    if (!leadParagraphs.length || leadParagraphs.some(isLegacyLead)) {
       leadParagraphs = defaultLeadParagraphs;
     }
 
-    const defaultBodyParagraphs = toParagraphs(PRIMARY_BODY_TEXT.join("\n\n"));
-    if (
-      !bodyParagraphs.length ||
-      bodyParagraphs.some((paragraph) =>
-        /this dossier carries/i.test(paragraph?.text || "")
-      )
-    ) {
+    const bodySource = PRIMARY_BODY_TEXT[languageKey] || PRIMARY_BODY_TEXT.en;
+    const defaultBodyParagraphs = toParagraphs(bodySource.join("\n\n"));
+    if (!bodyParagraphs.length || bodyParagraphs.some(isLegacyBody)) {
       bodyParagraphs = defaultBodyParagraphs;
     }
 
@@ -407,7 +498,10 @@ export default function AboutContent({ initialContent }) {
 
         <div className="about-page__content">
           {hasLead ? (
-            <div className="about-page__lead" aria-label="Lead description">
+            <div
+              className="about-page__copy about-page__lead"
+              aria-label="Lead description"
+            >
               {lead.map((paragraph) =>
                 renderParagraph(paragraph, "about-page__lead-paragraph")
               )}
@@ -415,7 +509,10 @@ export default function AboutContent({ initialContent }) {
           ) : null}
 
           {hasBody ? (
-            <article className="about-page__body" aria-label="About body copy">
+            <article
+              className="about-page__copy about-page__body"
+              aria-label="About body copy"
+            >
               {body.map((paragraph) =>
                 renderParagraph(paragraph, "about-page__body-paragraph")
               )}
