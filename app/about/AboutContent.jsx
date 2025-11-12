@@ -1,7 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import {
+  Fragment,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useAdminStatus } from "../../lib/useAdminStatus";
 import { getLocalizedContent } from "../../lib/translations";
@@ -14,14 +21,14 @@ const BLOCK_LEVEL_HTML_PATTERN =
 const PLACEHOLDER_PATTERN = /\{([^{}]+)\}/g;
 const OPTIONS_DELIMITER = "⟡";
 const PRIMARY_LEAD_TEXT = {
-  en: `I’m a technologist who stitches playful tools and thoughtful stories together. I keep wandering through art, words, music, and comedy, and I reach for { new tools | old tricks | vintage gear | mischievous gadgets | words | code | musical instruments } to shape things that feel { useful | delightfully odd | generous | surprising | funny | beautiful | thought-provoking }.`,
+  en: `I’m a technologist who stitches playful tools and thoughtful stories together. I keep wandering through art, words, music, and comedy, and I reach for { new tools | old tricks | vintage gear | mischievous gadgets | words | code | musical instruments } to shape things that feel { useful | delightfully odd | generous | surprising | funny | beautiful | thought-provoking }`,
   ja: `僕は遊び心あるツールと物語を縫い合わせるテクノロジストです。アートや言葉、音楽、コメディを旅しながら、{ 新しい道具 | 古い工夫 | ヴィンテージの機材 | いたずらっぽいガジェット | 言葉 | コード | 楽器 } を手に取り、{ 役に立つ | ちょっと変 | やさしい | 驚きに満ちた | おかしい | 美しい | 考えたくなる } 体験を形にしています。`,
 };
 const PRIMARY_BODY_TEXT = {
   en: [
     `This site is my studio log—a place to gather experiments, stage performances, and the odd rabbit hole. I’m happiest when prototypes feel like invitations, so I’m documenting the process as much as the outcomes.`,
     `By trade I’m a product-minded technologist. I’m at ease with storytelling, fundraising, and translating between humans and machines. My typing may be clumsy, but I can coax an AI into shipping with me.`,
-    `If any of these ideas spark something, reach out. Let’s build the kind of projects that you’d brag about to your past self.`,
+    `If any of these ideas spark something, reach out. Let’s build the kind of projects that you’d brag about to your past self`,
   ],
   ja: [
     `このサイトは僕のスタジオログです。実験や小さな公演、ふとした脱線をまとめる場所。プロトタイプが誰かへの招待状になる瞬間がいちばん好きなので、完成品だけでなく過程そのものも記録しています。`,
@@ -156,6 +163,8 @@ function AnimatedWordSwap({ options, signature }) {
   const [isHydrated, setIsHydrated] = useState(false);
   const [isPulsing, setIsPulsing] = useState(false);
   const randomizedRef = useRef(false);
+  const measurementRef = useRef(null);
+  const [swapDimensions, setSwapDimensions] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
     setIsHydrated(true);
@@ -247,19 +256,78 @@ function AnimatedWordSwap({ options, signature }) {
   );
   const minWidth = Math.max(maxChars, current.length, 4.5);
 
+  useLayoutEffect(() => {
+    if (!measurementRef.current) {
+      setSwapDimensions({ width: 0, height: 0 });
+      return;
+    }
+
+    const measureTargets = Array.from(
+      measurementRef.current.querySelectorAll("[data-swap-measure-item]")
+    );
+
+    if (!measureTargets.length) {
+      setSwapDimensions({ width: 0, height: 0 });
+      return;
+    }
+
+    const measurements = measureTargets.map((element) =>
+      element.getBoundingClientRect()
+    );
+    const nextWidth = Math.max(...measurements.map((entry) => entry.width));
+    const nextHeight = Math.max(...measurements.map((entry) => entry.height));
+
+    setSwapDimensions((previous) => {
+      const widthDelta = Math.abs(previous.width - nextWidth);
+      const heightDelta = Math.abs(previous.height - nextHeight);
+
+      if (widthDelta > 0.5 || heightDelta > 0.5) {
+        return {
+          width: nextWidth,
+          height: nextHeight,
+        };
+      }
+
+      return previous;
+    });
+  }, [optionsSignature]);
+
   if (!current) {
     return null;
   }
 
+  const swapStyle = minWidth ? { minWidth: `${minWidth}ch` } : {};
+  if (swapDimensions.width) {
+    swapStyle.width = `${swapDimensions.width}px`;
+    swapStyle.minWidth = `${swapDimensions.width}px`;
+  }
+  if (swapDimensions.height) {
+    swapStyle.height = `${swapDimensions.height}px`;
+  }
+
   return (
-    <span
-      className={swapClasses.join(" ")}
-      style={minWidth ? { minWidth: `${minWidth}ch` } : undefined}
-    >
-      <span key={current} className="about-page__word-swap-inner">
-        {current}
+    <Fragment>
+      <span className={swapClasses.join(" ")} style={swapStyle}>
+        <span key={current} className="about-page__word-swap-inner">
+          {current}
+        </span>
       </span>
-    </span>
+      <span
+        aria-hidden="true"
+        className="about-page__word-swap-measure"
+        ref={measurementRef}
+      >
+        {sanitizedOptions.map((option, index) => (
+          <span
+            key={`${optionsSignature}-measure-${index}`}
+            className="about-page__word-swap about-page__word-swap-measure-item"
+            data-swap-measure-item
+          >
+            <span className="about-page__word-swap-inner">{option}</span>
+          </span>
+        ))}
+      </span>
+    </Fragment>
   );
 }
 
@@ -430,7 +498,10 @@ export default function AboutContent({ initialContent }) {
 
         <div className="about-page__content">
           {hasLead ? (
-            <div className="about-page__lead" aria-label="Lead description">
+            <div
+              className="about-page__copy about-page__lead"
+              aria-label="Lead description"
+            >
               {lead.map((paragraph) =>
                 renderParagraph(paragraph, "about-page__lead-paragraph")
               )}
@@ -438,7 +509,10 @@ export default function AboutContent({ initialContent }) {
           ) : null}
 
           {hasBody ? (
-            <article className="about-page__body" aria-label="About body copy">
+            <article
+              className="about-page__copy about-page__body"
+              aria-label="About body copy"
+            >
               {body.map((paragraph) =>
                 renderParagraph(paragraph, "about-page__body-paragraph")
               )}
