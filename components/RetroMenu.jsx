@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { createPortal } from "react-dom";
+import { DotfieldIcon } from "./icons";
 import { useLanguage } from "../contexts/LanguageContext";
 import { t } from "../lib/translations";
 
@@ -651,48 +652,10 @@ export default function RetroMenu({
               aria-label={fieldEffectsLabel}
               title={!tooltipVisible ? fieldEffectsLabel : undefined}
             >
-              <svg
-                className="retro-menu__icon retro-menu__icon--fx"
-                viewBox="0 0 24 24"
+              <DotfieldIcon
                 aria-hidden="true"
-                fill="none"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <circle cx="12" cy="12" r="3" strokeWidth="1.6" />
-                <path d="M12 4.2v2.6M12 17.2v2.6" strokeWidth="1.2" />
-                <path d="M4.2 12h2.6M17.2 12h2.6" strokeWidth="1.2" />
-                <path d="M6.3 6.3l1.9 1.9M15.8 15.8l1.9 1.9" strokeWidth="1.2" />
-                <path d="M6.3 17.7l1.9-1.9M15.8 8.2l1.9-1.9" strokeWidth="1.2" />
-                <path
-                  d="M8.4 12a3.6 3.6 0 0 1 3.6-3.6c.9 0 1.7.3 2.4.8"
-                  className="retro-menu__icon-accent"
-                  strokeWidth="1"
-                />
-                <path
-                  d="M15.6 12a3.6 3.6 0 0 1-3.6 3.6c-.9 0-1.7-.3-2.4-.8"
-                  className="retro-menu__icon-accent"
-                  strokeWidth="1"
-                />
-                <path
-                  d="M5.2 12c0-3.8 3-6.8 6.8-6.8 1.9 0 3.7.7 5 1.9"
-                  className="retro-menu__icon-accent retro-menu__icon-accent--faint"
-                  strokeWidth="0.9"
-                />
-                <path
-                  d="M18.8 12c0 3.8-3 6.8-6.8 6.8-1.9 0-3.7-.7-5-1.9"
-                  className="retro-menu__icon-accent retro-menu__icon-accent--faint"
-                  strokeWidth="0.9"
-                />
-                <circle
-                  cx="12"
-                  cy="12"
-                  r="9.5"
-                  className="retro-menu__icon-accent retro-menu__icon-accent--halo"
-                  strokeWidth="0.35"
-                />
-              </svg>
+                className="retro-menu__icon retro-menu__icon--dots"
+              />
             </button>
             {tooltipVisible && activeEffectInfo && (
               <div

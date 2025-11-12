@@ -4413,7 +4413,8 @@ body[data-photo-gallery-toolbar='hidden'] .PhotoView-Slider__BannerWrap {
 .retro-menu__title-actions {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  justify-content: flex-end;
+  gap: clamp(0.6rem, 2vw, 0.9rem);
 }
 
 .retro-menu__title-actions > * {
@@ -4424,18 +4425,19 @@ body[data-photo-gallery-toolbar='hidden'] .PhotoView-Slider__BannerWrap {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  margin: 0 0.35rem;
+  border-radius: 999px;
   border: 1px solid rgba(244, 250, 255, 0.42);
   color: #f4faff;
   opacity: 0.88;
-  transition: opacity 150ms ease, transform 150ms ease;
+  transition: opacity 150ms ease, transform 150ms ease, box-shadow 200ms ease;
 }
 
 .retro-menu__social svg {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   fill: currentColor;
 }
 
@@ -4443,6 +4445,7 @@ body[data-photo-gallery-toolbar='hidden'] .PhotoView-Slider__BannerWrap {
 .retro-menu__social:focus-visible {
   opacity: 1;
   transform: translateY(-1px);
+  box-shadow: 0 0 12px rgba(244, 250, 255, 0.32);
 }
 
 .retro-menu__social:focus-visible {
@@ -4612,16 +4615,16 @@ body[data-photo-gallery-toolbar='hidden'] .PhotoView-Slider__BannerWrap {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 32px;
+  height: 32px;
   padding: 0;
-  margin: 0 0.25rem;
+  margin: 0 0.35rem;
   background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 999px;
   color: #daf3f4;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.22s ease;
   /* Ensure visibility */
   opacity: 1 !important;
   visibility: visible !important;
@@ -4631,8 +4634,8 @@ body[data-photo-gallery-toolbar='hidden'] .PhotoView-Slider__BannerWrap {
 }
 
 .retro-menu__language-toggle svg {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   display: block;
 }
 
@@ -4644,8 +4647,8 @@ body[data-photo-gallery-toolbar='hidden'] .PhotoView-Slider__BannerWrap {
 }
 
 .retro-menu__icon {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   display: block;
   filter: drop-shadow(0 0 2px rgba(164, 244, 255, 0.25));
   transition: transform 0.32s cubic-bezier(0.33, 1, 0.68, 1),
@@ -4671,10 +4674,22 @@ body[data-photo-gallery-toolbar='hidden'] .PhotoView-Slider__BannerWrap {
   transition: opacity 0.32s cubic-bezier(0.33, 1, 0.68, 1);
 }
 
+.retro-menu__icon--dots {
+  width: 22px;
+  height: 22px;
+}
+
+.retro-menu__icon--dots .dotfield-dot {
+  fill: currentColor;
+  opacity: 0.78;
+  transition: opacity 0.32s cubic-bezier(0.33, 1, 0.68, 1),
+    filter 0.32s cubic-bezier(0.33, 1, 0.68, 1);
+}
+
 .retro-menu__language-toggle:hover .retro-menu__icon--globe,
 .retro-menu__language-toggle:focus-visible .retro-menu__icon--globe,
-.retro-menu__settings-toggle:hover .retro-menu__icon--fx,
-.retro-menu__settings-toggle:focus-visible .retro-menu__icon--fx,
+.retro-menu__settings-toggle:hover .retro-menu__icon--dots,
+.retro-menu__settings-toggle:focus-visible .retro-menu__icon--dots,
 .retro-menu__social:hover .retro-menu__icon--social,
 .retro-menu__social:focus-visible .retro-menu__icon--social {
   filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.55));
@@ -4688,6 +4703,13 @@ body[data-photo-gallery-toolbar='hidden'] .PhotoView-Slider__BannerWrap {
 .retro-menu__social:hover .retro-menu__icon-accent,
 .retro-menu__social:focus-visible .retro-menu__icon-accent {
   opacity: 0.85;
+}
+
+.retro-menu__settings-toggle:hover .retro-menu__icon--dots .dotfield-dot,
+.retro-menu__settings-toggle:focus-visible .retro-menu__icon--dots .dotfield-dot,
+.retro-menu__settings-toggle.is-active .retro-menu__icon--dots .dotfield-dot {
+  opacity: 1;
+  filter: drop-shadow(0 0 8px rgba(0, 200, 208, 0.5));
 }
 
 .retro-menu__language-toggle:hover .retro-menu__icon-accent--halo,
@@ -4713,51 +4735,52 @@ body[data-photo-gallery-toolbar='hidden'] .PhotoView-Slider__BannerWrap {
 
 .retro-menu__language-toggle:hover,
 .retro-menu__language-toggle:focus-visible {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.34);
   color: #00f0f8;
-  transform: scale(1.05);
+  transform: translateY(-1px) scale(1.04);
 }
 
 .retro-menu__settings-toggle {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 32px;
+  height: 32px;
   padding: 0;
-  margin: 0 0.5rem;
+  margin: 0 0.35rem;
   background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
-  color: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 999px;
+  color: rgba(255, 255, 255, 0.78);
   cursor: pointer;
   transform-origin: center;
   /* Smooth transition for effect active/inactive states */
-  transition: transform 0.2s ease, background 0.8s cubic-bezier(0.4, 0, 0.6, 1),
+  transition: transform 0.22s ease, background 0.8s cubic-bezier(0.4, 0, 0.6, 1),
     border-color 0.8s cubic-bezier(0.4, 0, 0.6, 1),
     box-shadow 0.8s cubic-bezier(0.4, 0, 0.6, 1),
     color 0.8s cubic-bezier(0.4, 0, 0.6, 1);
 }
 
 .retro-menu__settings-toggle svg {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
 }
 
 .retro-menu__settings-toggle:hover,
 .retro-menu__settings-toggle:focus-visible {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.3);
-  color: rgba(255, 255, 255, 0.9);
-  transform: rotate(45deg);
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.34);
+  color: rgba(255, 255, 255, 0.95);
+  transform: translateY(-1px) scale(1.05);
 }
 
 .retro-menu__settings-toggle.is-active {
-  background: rgba(0, 200, 208, 0.3);
-  border-color: rgba(0, 200, 208, 0.5);
+  background: rgba(0, 200, 208, 0.28);
+  border-color: rgba(0, 200, 208, 0.52);
+  box-shadow: 0 0 12px rgba(0, 200, 208, 0.35);
   color: #00c8d0;
-  transform: rotate(90deg);
+  transform: translateY(-1px) scale(1.05);
 }
 
 /* Tooltip for effect status */
