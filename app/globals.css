@@ -254,13 +254,14 @@ a {
 }
 
 .menu-overlay {
+  --menu-overlay-inline-gap: clamp(2.5rem, 8vw, 5rem);
   position: fixed;
   inset: 0;
   display: grid;
   place-items: center;
   align-content: center;
   justify-content: center;
-  padding: clamp(2.5rem, 8vw, 5rem);
+  padding: var(--menu-overlay-inline-gap);
   min-height: 100vh;
   min-height: 100dvh;
   opacity: 0;
@@ -4344,7 +4345,12 @@ body[data-photo-gallery-toolbar='hidden'] .PhotoView-Slider__BannerWrap {
 .retro-menu--centerpiece {
   position: relative;
   margin: 0 auto;
-  width: min(420px, 94vw);
+  margin-inline: var(--menu-overlay-inline-gap, auto);
+  width: min(
+    420px,
+    calc(100% - 2 * var(--menu-overlay-inline-gap, 0px))
+  );
+  max-width: calc(100% - 2 * var(--menu-overlay-inline-gap, 0px));
   border-radius: 28px;
   box-shadow: 0 0 0 1px rgba(5, 120, 140, 0.55), 0 18px 35px rgba(0, 0, 0, 0.55),
     0 45px 80px rgba(0, 0, 0, 0.5);
@@ -5564,11 +5570,16 @@ body[data-photo-gallery-toolbar='hidden'] .PhotoView-Slider__BannerWrap {
 
 @media (max-width: 960px) {
   .menu-overlay {
-    padding: clamp(1.5rem, 6vw, 2.5rem);
+    --menu-overlay-inline-gap: clamp(1.5rem, 6vw, 2.5rem);
+    padding: var(--menu-overlay-inline-gap);
   }
 
   .retro-menu--centerpiece {
-    width: min(360px, 92vw);
+    width: min(
+      360px,
+      calc(100% - 2 * var(--menu-overlay-inline-gap, 0px))
+    );
+    max-width: calc(100% - 2 * var(--menu-overlay-inline-gap, 0px));
   }
 
   .content-stage {
@@ -5646,6 +5657,7 @@ body[data-photo-gallery-toolbar='hidden'] .PhotoView-Slider__BannerWrap {
 
   .menu-overlay {
     --retro-menu-mobile-pad: clamp(1.1rem, 8vw, 2rem);
+    --menu-overlay-inline-gap: var(--retro-menu-mobile-pad);
     padding: calc(env(safe-area-inset-top, 0px) + clamp(1.4rem, 8vw, 2.2rem))
       var(--retro-menu-mobile-pad)
       calc(env(safe-area-inset-bottom, 0px) + clamp(1.8rem, 10vw, 2.6rem));
@@ -5653,12 +5665,12 @@ body[data-photo-gallery-toolbar='hidden'] .PhotoView-Slider__BannerWrap {
   }
 
   .retro-menu--centerpiece {
-    margin-inline: var(--retro-menu-mobile-pad, 1.5rem);
+    margin-inline: var(--menu-overlay-inline-gap);
     width: min(
       420px,
-      calc(100% - 2 * var(--retro-menu-mobile-pad, 1.5rem))
+      calc(100% - 2 * var(--menu-overlay-inline-gap, 0px))
     );
-    max-width: calc(100% - 2 * var(--retro-menu-mobile-pad, 1.5rem));
+    max-width: calc(100% - 2 * var(--menu-overlay-inline-gap, 0px));
   }
 
   .menu-overlay .retro-menu--centerpiece {
