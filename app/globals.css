@@ -4336,16 +4336,22 @@ body[data-photo-gallery-toolbar='hidden'] .PhotoView-Slider__BannerWrap {
 /* Sidebar variant handled by the new rules above */
 
 .retro-menu--centerpiece {
+  --retro-menu-center-offset: clamp(5rem, 25vh, 11rem);
+  --retro-menu-overlay-max-width: 420px;
   position: absolute;
-  top: clamp(5rem, 25vh, 11rem);
+  top: var(--retro-menu-center-offset);
   left: 50%;
   transform: translateX(-50%);
-  width: min(420px, 94vw);
+  width: min(var(--retro-menu-overlay-max-width, 420px), 94vw);
   border-radius: 28px;
   box-shadow: 0 0 0 1px rgba(5, 120, 140, 0.55), 0 18px 35px rgba(0, 0, 0, 0.55),
     0 45px 80px rgba(0, 0, 0, 0.5);
   transition: transform 0.6s cubic-bezier(0.16, 0.84, 0.44, 1),
     box-shadow 0.4s ease;
+}
+
+.retro-menu--centerpiece[data-layout-mode="compact"] {
+  --retro-menu-titlebar-inline: clamp(0.82rem, 2.2vw, 1.05rem);
 }
 
 .menu-overlay.is-visible .retro-menu--centerpiece {
@@ -5642,12 +5648,19 @@ body[data-photo-gallery-toolbar='hidden'] .PhotoView-Slider__BannerWrap {
   }
 
   .retro-menu--centerpiece {
+    --retro-menu-overlay-max-width: min(
+      420px,
+      calc(100vw - 2 * var(--retro-menu-mobile-pad, 1.5rem))
+    );
     position: relative;
     top: auto;
     left: auto;
     transform: none;
     margin: 0;
-    width: min(420px, calc(100vw - 2 * var(--retro-menu-mobile-pad, 1.5rem)));
+    width: min(
+      var(--retro-menu-overlay-max-width, 420px),
+      calc(100vw - 2 * var(--retro-menu-mobile-pad, 1.5rem))
+    );
     max-width: 100%;
   }
 
