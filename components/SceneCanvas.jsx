@@ -432,124 +432,100 @@ const SceneCanvas = forwardRef(function SceneCanvas(
       const enqueueRipple = (x, z, strength = 1, isClick = false) => {
         // Create a beautiful multi-layered ripple effect with smooth animations
         if (isClick) {
-          // Create more shimmer waves for luxurious effect - optimized for 8s lifetime
-          for (let i = 0; i < 5; i++) {
-            createShimmerWave(x, z, i * 0.2);  // Compressed timing for 8s window
+          // Fewer, higher-fidelity shimmer waves for the drop halo
+          for (let i = 0; i < 3; i++) {
+            createShimmerWave(x, z, i * 0.18);
           }
-          
-          // Ultra-smooth, slow, beautiful multi-layer ripple system - ULTRA SLOW with 8 second lifetime
-          
-          // 1. Initial glow - soft, expanding luminescence
-          ripples.push({ 
-            x, 
-            z, 
-            start: elapsedTime, 
-            strength: strength * 1.6,  // Slightly reduced for subtlety
-            type: 'glow_initial',
-            speedMultiplier: 0.04,  // 10x slower - ultra luxury feel
-            widthMultiplier: 4.0,  // Much wider for ultra-soft edge
-            color: 1.8,  // Softer glow
-            decayMultiplier: 0.08,  // Faster decay to fit 8s lifetime
-            easing: 'easeInOutSine',  // Smoothest possible transition
-            frequency: 0.08  // Ultra-low frequency for smoothness
+
+          const dropletStrength = Math.max(0.6, strength * 1.1);
+
+          // 1. Surface flash — a quick bloom where the droplet lands
+          ripples.push({
+            x,
+            z,
+            start: elapsedTime,
+            strength: dropletStrength * 1.25,
+            type: 'droplet_flash',
+            speedMultiplier: 0.028,
+            widthMultiplier: 0.6,
+            color: 1.65,
+            decayMultiplier: 0.55,
+            easing: 'easeOutExpo',
+            frequency: 0.35,
+            maxAge: 1.6
           });
-          
-          // 2. Primary wave - the main beautiful ripple
-          ripples.push({ 
-            x, 
-            z, 
-            start: elapsedTime + 0.1,  // Quick succession for fluid feel
-            strength: strength * 1.3,
-            type: 'primary',
-            speedMultiplier: 0.035,  // 10x slower - ultra graceful expansion
-            widthMultiplier: 3.5,  // Much wider for softer appearance
-            color: 1.5,
-            decayMultiplier: 0.1,  // Adjusted for 8s lifetime
-            easing: 'easeOutQuint',  // Ultra-smooth quint easing
-            frequency: 0.1  // Ultra-low frequency
+
+          // 2. Primary wave — the crisp leading ring of the splash
+          ripples.push({
+            x,
+            z,
+            start: elapsedTime + 0.05,
+            strength: dropletStrength * 1.65,
+            type: 'droplet_front',
+            speedMultiplier: 0.046,
+            widthMultiplier: 0.95,
+            color: 1.25,
+            decayMultiplier: 0.8,
+            easing: 'easeOutQuint',
+            frequency: 1.0,
+            maxAge: 5.5
           });
-          
-          // 3. Harmonic resonance - creates beautiful interference
-          ripples.push({ 
-            x, 
-            z, 
-            start: elapsedTime + 0.3,  // Compressed timing
-            strength: strength * 1.0,
-            type: 'harmonic',
-            speedMultiplier: 0.04,  // 10x slower
-            widthMultiplier: 5.0,  // Extra wide for ultra-soft effect
-            color: 1.2,
-            frequency: 0.07,  // Ultra-low frequency for beautiful interference
-            decayMultiplier: 0.12,  // Adjusted for 8s lifetime
+
+          // 3. Inner rebound — a contracting ripple that follows the impact
+          ripples.push({
+            x,
+            z,
+            start: elapsedTime + 0.18,
+            strength: dropletStrength * 0.95,
+            type: 'droplet_inner',
+            speedMultiplier: 0.038,
+            widthMultiplier: 0.75,
+            color: 1.1,
+            decayMultiplier: 0.85,
             easing: 'easeOutQuart',
-            phase: Math.PI * 0.25  // Phase offset for variation
+            frequency: 1.35,
+            maxAge: 4.2
           });
-          
-          // 4. Secondary silk wave - smooth follow-up
-          ripples.push({ 
-            x, 
-            z, 
-            start: elapsedTime + 0.6,  // Compressed timing
-            strength: strength * 0.8,
-            type: 'secondary',
-            speedMultiplier: 0.038,  // 10x slower
-            widthMultiplier: 6.0,  // Extra wide for silk smoothness
-            color: 1.0,
-            decayMultiplier: 0.15,  // Adjusted for 8s lifetime
-            easing: 'easeInOutQuart',  // Smooth in and out
-            frequency: 0.09  // Ultra-low frequency
-          });
-          
-          // 5. Ambient glow - wide, persistent outer beauty
-          ripples.push({ 
-            x, 
-            z, 
-            start: elapsedTime + 1.0,  // Within 8s window
-            strength: strength * 0.5,
-            type: 'ambient',
-            speedMultiplier: 0.025,  // 15x slower - extremely slow expansion
-            widthMultiplier: 8.0,  // Very wide for ambient effect
-            color: 0.7,
-            decayMultiplier: 0.18,  // Adjusted for 8s lifetime
+
+          // 4. Caustic halo — soft light bloom around the crest
+          ripples.push({
+            x,
+            z,
+            start: elapsedTime + 0.08,
+            strength: dropletStrength * 0.55,
+            type: 'droplet_caustic',
+            speedMultiplier: 0.052,
+            widthMultiplier: 1.6,
+            color: 1.8,
+            decayMultiplier: 0.45,
             easing: 'easeInOutSine',
-            frequency: 0.06  // Ultra-low frequency
+            frequency: 0.55,
+            maxAge: 6.0
           });
-          
-          // 6. Luxury echo waves - fewer, slower echoes
-          for (let i = 0; i < 3; i++) {  // Reduced to 3 echoes
-            const delay = 1.5 + (i * 0.8);  // Compressed timing
-            const echoStrength = strength * (0.3 - i * 0.08);
-            
-            ripples.push({ 
-              x, 
-              z, 
-              start: elapsedTime + delay, 
-              strength: echoStrength,
-              type: 'echo',
-              speedMultiplier: 0.03 - (i * 0.005),  // Ultra slow
-              widthMultiplier: 7.0 + (i * 1.5),  // Very wide echoes
-              color: 0.6 - (i * 0.1),
-              decayMultiplier: 0.2,  // Adjusted for 8s lifetime
-              easing: 'easeInOutSine',
-              frequency: 0.05 - (i * 0.008),  // Ultra-low frequencies
-              phase: Math.PI * i * 0.5  // Phase variation for beauty
+
+          // 5. Capillary trails — secondary oscillations after the crest passes
+          for (let i = 0; i < 2; i++) {
+            ripples.push({
+              x,
+              z,
+              start: elapsedTime + 0.32 + i * 0.26,
+              strength: dropletStrength * (0.65 - i * 0.15),
+              type: 'droplet_trail',
+              speedMultiplier: 0.036 - i * 0.003,
+              widthMultiplier: 1.05 + i * 0.2,
+              color: 0.95 - i * 0.1,
+              decayMultiplier: 1.0 + i * 0.22,
+              easing: 'easeOutCubic',
+              frequency: 1.6 + i * 0.25,
+              maxAge: 5.2 + i * 0.4
             });
           }
-          
-          // 7. Final resonance - subtle ending within 8 seconds
-          ripples.push({ 
-            x, 
-            z, 
-            start: elapsedTime + 3.5,  // Within 8s window
-            strength: strength * 0.25,
-            type: 'deep_resonance',
-            speedMultiplier: 0.015,  // Extremely slow
-            widthMultiplier: 15.0,  // Very wide
-            color: 0.4,
-            decayMultiplier: 0.25,  // Faster decay to end by 8s
-            easing: 'easeInOutSine',
-            frequency: 0.03  // Ultra-low frequency
-          });
+
+          // Keep ripple count reasonable but allow more for complex effects
+          while (ripples.length > MAX_RIPPLES) {  // Trim backlog to keep rendering efficient
+            ripples.shift();
+          }
+          return;
         } else {
           // Standard ripple for non-click interactions - ultra slow with 8s lifetime
           ripples.push({ 
@@ -2062,6 +2038,56 @@ const SceneCanvas = forwardRef(function SceneCanvas(
               let rippleProfile = 0;
 
               switch (ripple.type) {
+                case 'droplet_flash': {
+                  const flashCore = Math.exp(-normalized * normalized * 14);
+                  const flashRing = Math.exp(-Math.pow(normalized - 0.18, 2) * 20);
+                  const flashFalloff = Math.exp(-Math.pow(normalized + 0.35, 2) * 6);
+                  rippleProfile = flashCore * 1.8 + flashRing * 1.1 - flashFalloff * 0.35;
+                  break;
+                }
+
+                case 'droplet_front': {
+                  const crestEdge = Math.exp(-Math.pow(normalized - 0.05, 2) * 16);
+                  const crestBody = Math.exp(-normalized * normalized * 0.6);
+                  const trough = Math.exp(-Math.pow(normalized - 0.55, 2) * 2.4);
+                  const surfaceNoise =
+                    Math.sin((normalized - 0.12) * Math.PI * 1.6 * frequency) *
+                    Math.exp(-Math.abs(normalized - 0.12) * 2.3) *
+                    0.22;
+                  rippleProfile = crestEdge * 1.1 + crestBody * 1.0 + surfaceNoise - trough * 0.6;
+                  break;
+                }
+
+                case 'droplet_inner': {
+                  const reboundPeak = Math.exp(-Math.pow(normalized + 0.18, 2) * 9);
+                  const reboundRing = Math.exp(-Math.pow(normalized + 0.42, 2) * 7);
+                  const reboundOsc =
+                    Math.sin((normalized + 0.08) * Math.PI * 2.2 * frequency) *
+                    Math.exp(-Math.abs(normalized + 0.08) * 3.2) *
+                    0.18;
+                  rippleProfile = reboundPeak * 1.2 - reboundRing * 0.5 + reboundOsc;
+                  break;
+                }
+
+                case 'droplet_trail': {
+                  const trailingEnvelope = Math.exp(-Math.pow(normalized + 0.15, 2) * 1.4);
+                  const trailingWave =
+                    Math.sin((normalized + 0.15) * Math.PI * 2.8 * frequency) *
+                    Math.exp(-Math.abs(normalized + 0.15) * 2.6) *
+                    0.6;
+                  const trailingCrest = Math.exp(-Math.pow(normalized - 0.45, 2) * 3.2) * 0.4;
+                  rippleProfile = trailingWave + trailingEnvelope * 0.45 - trailingCrest * 0.25;
+                  break;
+                }
+
+                case 'droplet_caustic': {
+                  const halo = Math.exp(-normalized * normalized * 0.25);
+                  const crest = Math.exp(-Math.pow(normalized - 0.35, 2) * 5.5);
+                  const sparkle = Math.sin((normalized - 0.22) * Math.PI) * 0.12;
+                  rippleProfile = halo * 0.45 + crest * 0.7 + sparkle * halo;
+                  break;
+                }
+
                 case 'flash': {
                   const flashPeak = Math.exp(-normalized * normalized * 5.0);
                   const flashRing = Math.exp(-Math.pow(Math.abs(normalized - 0.15), 2) * 12);
