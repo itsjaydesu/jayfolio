@@ -210,7 +210,7 @@ function AnimatedWordSwap({ options, signature }) {
       return undefined;
     }
 
-    const delay = 1400 + Math.random() * 2000;
+    const delay = (1400 + Math.random() * 2000) * 1.3;
     const timeoutId = window.setTimeout(() => {
       setCurrentIndex((previous) => {
         if (sanitizedOptions.length < 2) {
