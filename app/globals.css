@@ -280,7 +280,8 @@ a {
 
 .menu-overlay .retro-menu--centerpiece {
   opacity: 0;
-  transform: translate(-50%, 26px) scale(0.94);
+  --retro-menu-shift-y: 26px;
+  --retro-menu-scale: 0.94;
   filter: blur(20px);
   transition: opacity 0.68s cubic-bezier(0.33, 1, 0.68, 1),
     transform 0.68s cubic-bezier(0.33, 1, 0.68, 1),
@@ -289,7 +290,8 @@ a {
 
 .menu-overlay.is-visible .retro-menu--centerpiece {
   opacity: 1;
-  transform: translate(-50%, 0) scale(1);
+  --retro-menu-shift-y: 0px;
+  --retro-menu-scale: 1;
   filter: blur(0);
   transition-delay: 0.12s;
   pointer-events: auto;
@@ -4337,9 +4339,15 @@ body[data-photo-gallery-toolbar='hidden'] .PhotoView-Slider__BannerWrap {
 
 .retro-menu--centerpiece {
   position: absolute;
-  top: clamp(5rem, 25vh, 11rem);
+  top: 50%;
   left: 50%;
-  transform: translateX(-50%);
+  --retro-menu-origin-x: -50%;
+  --retro-menu-origin-y: -50%;
+  --retro-menu-shift-y: 0px;
+  --retro-menu-scale: 1;
+  transform: translateX(var(--retro-menu-origin-x))
+    translateY(calc(var(--retro-menu-origin-y) + var(--retro-menu-shift-y)))
+    scale(var(--retro-menu-scale));
   width: min(420px, 94vw);
   border-radius: 28px;
   box-shadow: 0 0 0 1px rgba(5, 120, 140, 0.55), 0 18px 35px rgba(0, 0, 0, 0.55),
@@ -4988,9 +4996,10 @@ body[data-photo-gallery-toolbar='hidden'] .PhotoView-Slider__BannerWrap {
     left: auto;
     right: auto;
     top: auto;
-    /* REMOVED: transform: translateY(var(--mobile-menu-shift)); */
-    /* Menu stays in place - no vertical movement */
-    transform: translateY(0);
+    --retro-menu-origin-x: 0%;
+    --retro-menu-origin-y: 0%;
+    --retro-menu-shift-y: 0px;
+    --retro-menu-scale: 1;
     width: 100%;
     max-width: min(50vw, 200px);
     margin: 0 auto;
@@ -5002,13 +5011,14 @@ body[data-photo-gallery-toolbar='hidden'] .PhotoView-Slider__BannerWrap {
 
   .menu-overlay.is-visible .retro-menu--centerpiece {
     /* Keep in place - no shift */
-    transform: translateY(0);
+    --retro-menu-shift-y: 0px;
+    --retro-menu-scale: 1;
     filter: none;
   }
 
   /* Mobile: centerpiece doesn't need translateX when panel is active */
   .retro-menu--centerpiece[data-panel-active="true"] {
-    transform: scale(0.85) !important; /* No translateX needed on mobile */
+    --retro-menu-scale: 0.85 !important; /* No translateX needed on mobile */
   }
 }
 
@@ -5063,8 +5073,8 @@ body[data-photo-gallery-toolbar='hidden'] .PhotoView-Slider__BannerWrap {
 
 /* Specific rule for centerpiece variant to preserve horizontal centering */
 .retro-menu--centerpiece[data-panel-active="true"] {
-  /* Preserve translateX(-50%) for centering, add scale for depth effect */
-  transform: translateX(-50%) scale(0.85) !important;
+  /* Preserve translate origin for centering while scaling for depth */
+  --retro-menu-scale: 0.85 !important;
   transform-origin: center center;
 }
 
@@ -5556,7 +5566,6 @@ body[data-photo-gallery-toolbar='hidden'] .PhotoView-Slider__BannerWrap {
   }
 
   .retro-menu--centerpiece {
-    top: clamp(3.6rem, 28vh, 5rem);
     width: min(360px, 92vw);
   }
 
@@ -5645,32 +5654,37 @@ body[data-photo-gallery-toolbar='hidden'] .PhotoView-Slider__BannerWrap {
     position: relative;
     top: auto;
     left: auto;
-    transform: none;
     margin: 0;
     width: min(420px, calc(100vw - 2 * var(--retro-menu-mobile-pad, 1.5rem)));
     max-width: 100%;
+    --retro-menu-origin-x: 0%;
+    --retro-menu-origin-y: 0%;
+    --retro-menu-shift-y: 0px;
   }
 
   .menu-overlay .retro-menu--centerpiece {
     justify-self: center;
     align-self: center;
-    transform: translateY(26px) scale(0.96);
+    --retro-menu-shift-y: 26px;
+    --retro-menu-scale: 0.96;
   }
 
   .menu-overlay.is-visible .retro-menu--centerpiece {
-    transform: translateY(0) scale(1);
+    --retro-menu-shift-y: 0px;
+    --retro-menu-scale: 1;
   }
 
   .retro-menu--centerpiece[data-panel-active="true"] {
-    transform: scale(0.92) !important;
+    --retro-menu-scale: 0.92 !important;
   }
 
   .menu-overlay .retro-menu--centerpiece[data-panel-active="true"] {
-    transform: translateY(26px) scale(0.92) !important;
+    --retro-menu-scale: 0.92 !important;
+    --retro-menu-shift-y: 26px;
   }
 
   .menu-overlay.is-visible .retro-menu--centerpiece[data-panel-active="true"] {
-    transform: translateY(0) scale(0.92) !important;
+    --retro-menu-shift-y: 0px;
   }
 
   .menu-overlay .retro-menu__body {
@@ -10858,7 +10872,8 @@ body[data-language-transitioning="true"] .language-transition-root {
 
     .menu-overlay .retro-menu--centerpiece {
       opacity: 1;
-      transform: translate(-50%, 0) scale(1);
+      --retro-menu-shift-y: 0px;
+      --retro-menu-scale: 1;
       filter: none;
     }
 
