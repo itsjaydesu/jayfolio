@@ -1,7 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useRef, useEffect, useMemo, useCallback } from "react";
+import {
+  useState,
+  useRef,
+  useEffect,
+  useMemo,
+  useCallback,
+  useLayoutEffect,
+} from "react";
 import { createPortal } from "react-dom";
 import { DotfieldIcon } from "./icons";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -26,10 +33,12 @@ export default function RetroMenu({
   // 'fading' = menu is fading out, panel not visible yet
   const [panelState, setPanelState] = useState("closed");
   const [panelPosition, setPanelPosition] = useState({ top: 0, left: 0 });
+  const menuRef = useRef(null);
   const toggleRef = useRef(null);
   const panelTimerRef = useRef(null);
   const panelAnimFrameRef = useRef(null);
   const panelRepositionFrameRef = useRef(null);
+  const layoutUpdateFrameRef = useRef(null);
   const [tooltipVisible, setTooltipVisible] = useState(false);
   const [remainingTime, setRemainingTime] = useState(null);
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
@@ -105,7 +114,7 @@ export default function RetroMenu({
       return null;
     }
 
-    const menuElement = toggleElement.closest(".retro-menu");
+    const menuElement = menuRef.current ?? toggleElement.closest(".retro-menu");
     if (!menuElement) {
       return null;
     }
@@ -257,6 +266,175 @@ export default function RetroMenu({
     return nextPosition;
   }, []);
 
+  const scheduleCenterpieceLayoutUpdate = useCallback(() => {
+    if (variant !== "centerpiece") {
+      return;
+    }
+
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const menuElement = menuRef.current;
+    if (!menuElement) {
+      return;
+    }
+
+    if (layoutUpdateFrameRef.current) {
+      cancelAnimationFrame(layoutUpdateFrameRef.current);
+      layoutUpdateFrameRef.current = null;
+    }
+
+    layoutUpdateFrameRef.current = requestAnimationFrame(() => {
+      layoutUpdateFrameRef.current = null;
+
+      const visualViewport = window.visualViewport;
+      const viewportWidth =
+        visualViewport?.width ?? window.innerWidth ?? menuElement.offsetWidth;
+      const viewportHeight =
+        visualViewport?.height ?? window.innerHeight ?? menuElement.offsetHeight;
+      const viewportOffsetTop = visualViewport?.offsetTop ?? 0;
+
+      const rect = menuElement.getBoundingClientRect();
+      const menuHeight = rect?.height ?? menuElement.offsetHeight ?? 0;
+      const menuWidth = rect?.width ?? menuElement.offsetWidth ?? 0;
+
+      const hasViewportHeight = Number.isFinite(viewportHeight) && viewportHeight > 0;
+      const hasViewportWidth = Number.isFinite(viewportWidth) && viewportWidth > 0;
+
+      const verticalMarginBase = hasViewportHeight ? viewportHeight * 0.12 : 48;
+      const safeVerticalMargin = Math.max(
+        32,
+        Math.min(128, Number.isFinite(verticalMarginBase) ? verticalMarginBase : 48)
+      );
+
+      const horizontalMarginBase = hasViewportWidth ? viewportWidth * 0.08 : 48;
+      const safeHorizontalMargin = Math.max(
+        24,
+        Math.min(
+          144,
+          Number.isFinite(horizontalMarginBase) ? horizontalMarginBase : 48
+        )
+      );
+
+      const rawCenterTop =
+        viewportOffsetTop + (hasViewportHeight ? (viewportHeight - menuHeight) / 2 : 0);
+      const minTop = viewportOffsetTop + safeVerticalMargin;
+      const maxTop = hasViewportHeight
+        ? viewportOffsetTop + viewportHeight - safeVerticalMargin - menuHeight
+        : rawCenterTop;
+
+      let resolvedTop = Number.isFinite(rawCenterTop) ? rawCenterTop : minTop;
+
+      if (
+        Number.isFinite(minTop) &&
+        Number.isFinite(maxTop) &&
+        maxTop < minTop
+      ) {
+        resolvedTop = (minTop + maxTop) / 2;
+      } else {
+        if (Number.isFinite(minTop)) {
+          resolvedTop = Math.max(resolvedTop, minTop);
+        }
+        if (Number.isFinite(maxTop)) {
+          resolvedTop = Math.min(resolvedTop, maxTop);
+        }
+      }
+
+      if (!Number.isFinite(resolvedTop)) {
+        resolvedTop = viewportOffsetTop;
+      }
+
+      const availableWidth = hasViewportWidth
+        ? viewportWidth - safeHorizontalMargin * 2
+        : menuWidth || viewportWidth;
+
+      let resolvedWidth = Number.isFinite(availableWidth)
+        ? Math.min(420, Math.max(availableWidth, 280))
+        : menuWidth || 420;
+
+      if (!Number.isFinite(resolvedWidth) || resolvedWidth <= 0) {
+        resolvedWidth = Math.min(420, Math.max(menuWidth || 320, 280));
+      }
+
+      menuElement.style.setProperty(
+        "--retro-menu-center-offset",
+        `${Math.round(resolvedTop)}px`
+      );
+      menuElement.style.setProperty(
+        "--retro-menu-overlay-max-width",
+        `${Math.round(resolvedWidth)}px`
+      );
+
+      const layoutMode = hasViewportWidth && viewportWidth <= 720
+        ? "mobile"
+        : hasViewportHeight && viewportHeight <= 720
+          ? "compact"
+          : "default";
+      menuElement.dataset.layoutMode = layoutMode;
+    });
+  }, [variant]);
+
+  useLayoutEffect(() => {
+    if (variant !== "centerpiece") {
+      return undefined;
+    }
+
+    if (typeof window === "undefined") {
+      return undefined;
+    }
+
+    const handleResize = () => {
+      scheduleCenterpieceLayoutUpdate();
+    };
+
+    scheduleCenterpieceLayoutUpdate();
+
+    window.addEventListener("resize", handleResize);
+    window.addEventListener("orientationchange", handleResize);
+
+    const visualViewport = window.visualViewport;
+    if (visualViewport) {
+      visualViewport.addEventListener("resize", handleResize);
+      visualViewport.addEventListener("scroll", handleResize);
+    }
+
+    const menuElement = menuRef.current;
+    let resizeObserver = null;
+    if (menuElement && typeof ResizeObserver !== "undefined") {
+      resizeObserver = new ResizeObserver(handleResize);
+      resizeObserver.observe(menuElement);
+    }
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("orientationchange", handleResize);
+      if (visualViewport) {
+        visualViewport.removeEventListener("resize", handleResize);
+        visualViewport.removeEventListener("scroll", handleResize);
+      }
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      }
+      if (layoutUpdateFrameRef.current) {
+        cancelAnimationFrame(layoutUpdateFrameRef.current);
+        layoutUpdateFrameRef.current = null;
+      }
+    };
+  }, [scheduleCenterpieceLayoutUpdate, variant]);
+
+  useEffect(() => {
+    scheduleCenterpieceLayoutUpdate();
+  }, [
+    scheduleCenterpieceLayoutUpdate,
+    variant,
+    activeSection,
+    activeStatus,
+    status,
+    items,
+    panelState,
+  ]);
+
   // Calculate panel position and start opening transition
   useEffect(() => {
     if (panelState === "opening") {
@@ -290,6 +468,7 @@ export default function RetroMenu({
 
       panelRepositionFrameRef.current = requestAnimationFrame(() => {
         updatePanelPosition();
+        scheduleCenterpieceLayoutUpdate();
       });
     };
 
@@ -307,7 +486,7 @@ export default function RetroMenu({
     }
 
     const menuElement =
-      toggleRef.current?.closest?.(".retro-menu") ?? null;
+      menuRef.current ?? toggleRef.current?.closest?.(".retro-menu") ?? null;
     let menuResizeObserver = null;
 
     if (menuElement && typeof ResizeObserver !== "undefined") {
@@ -331,7 +510,7 @@ export default function RetroMenu({
         panelRepositionFrameRef.current = null;
       }
     };
-  }, [panelState, updatePanelPosition]);
+  }, [panelState, scheduleCenterpieceLayoutUpdate, updatePanelPosition]);
 
   // Handle click outside to close panel
   useEffect(() => {
@@ -522,6 +701,7 @@ export default function RetroMenu({
     <nav
       id={id}
       className={`retro-menu retro-menu--${variant}${isOpen ? " is-open" : ""}`}
+      ref={menuRef}
       data-open={isOpen}
       data-scrolled={scrolled ? "true" : "false"}
       data-panel-active={
