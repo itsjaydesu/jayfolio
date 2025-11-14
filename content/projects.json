@@ -79,7 +79,7 @@
         "ja": "AIがあなたの5文字の秘密を推理する、リバースWordleスタイルの実験的パズル。"
       },
       "content": {
-        "en": "<p>DurWhirl flips the classic Wordle loop: you type a word and watch a luminous interface visualize the AI's guesses. The game leans on buttery gradients, playful animations, and a lightweight runtime that works across mobile and desktop.</p><p>Microcopy and motion states keep each round energetic while social links encourage sharing streaks directly from the finish screen.</p>",
+        "en": "<p><a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://durwhirl.com/\">DurWhirl</a> flips the classic Wordle loop: you type a word and watch a luminous interface visualize the AI's guesses. The game leans on buttery gradients, playful animations, and a lightweight runtime that works across mobile and desktop.</p><p>Microcopy and motion states keep each round energetic while social links encourage sharing streaks directly from the finish screen.</p>",
         "ja": "<p>DurWhirl はクラシックなWordleのループを反転させ、プレイヤーが単語を入力し、光るインターフェースがAIの推理を可視化する様子を見守ります。バターのように滑らかなグラデーションと遊び心のあるアニメーション、モバイルとデスクトップを問わない軽量なランタイムが支えています。</p><p>短いマイクロコピーと細やかなモーションステートが各ラウンドを軽快に保ち、フィニッシュ画面のソーシャルリンクが連勝記録のシェアを後押しします。</p>"
       },
       "tags": {
@@ -101,8 +101,11 @@
           "ja": "グラデーションのハローの上に浮かぶDurWhirlのロゴ"
         }
       },
-      "status": "draft",
-      "createdAt": "2024-11-20"
+      "status": "published",
+      "createdAt": "2024-11-20",
+      "galleries": [],
+      "backgroundImage": "",
+      "updatedAt": "2025-11-14T08:23:59.725Z"
     },
     {
       "slug": "tokyo-tech-summit-2024",
@@ -285,8 +288,11 @@
         ]
       },
       "coverImage": null,
-      "status": "draft",
-      "createdAt": "2023-05-10"
+      "status": "published",
+      "createdAt": "2023-05-10",
+      "galleries": [],
+      "backgroundImage": "",
+      "updatedAt": "2025-11-14T08:23:39.152Z"
     },
     {
       "slug": "makeleaps",
