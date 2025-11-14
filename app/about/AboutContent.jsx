@@ -22,7 +22,7 @@ const PLACEHOLDER_PATTERN = /\{([^{}]+)\}/g;
 const OPTIONS_DELIMITER = "⟡";
 const PRIMARY_LEAD_TEXT = {
   en: `I’m a technologist who stitches playful tools and thoughtful stories together. I keep wandering through art, words, music, and comedy, and I reach for { new tools | old tricks | vintage gear | mischievous gadgets | words | code | musical instruments } to shape things that feel { useful | delightfully odd | generous | surprising | funny | beautiful | thought-provoking }`,
-  ja: `僕は遊び心あるツールと物語を縫い合わせるテクノロジストです。アートや言葉、音楽、コメディを旅しながら、{ 新しい道具 | 古い工夫 | ヴィンテージの機材 | いたずらっぽいガジェット | 言葉 | コード | 楽器 } を手に取り、{ 役に立つ | ちょっと変 | やさしい | 驚きに満ちた | おかしい | 美しい | 考えたくなる } 体験を形にしています。`,
+  ja: `僕は遊び心あるツールと物語を縫い合わせるテクノロジストです。アートや言葉、音楽、コメディを旅しながら、{ 新しいツール | 古い工夫 | レトロ機材 | 遊び道具 | 言葉 | コード | 楽器 } を手に取り、{ 役立つ | ちょっと変 | 寛大 | 意外 | おかしい | 美しい | 示唆的 } 体験を形にしています。`,
 };
 const PRIMARY_BODY_TEXT = {
   en: [
