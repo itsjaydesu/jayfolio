@@ -142,63 +142,40 @@ export default function EntryDetail({ type, entry }) {
     [entry?.slug, router, stageState, type]
   );
 
-  // Extract audio URLs from content for sound posts
+  // Extract audio URLs from content for sound posts (SSR-safe; no DOM APIs)
   const audioData = useMemo(() => {
     if (type !== 'sounds' || !localizedContent) return null;
-    if (typeof window === 'undefined') {
-      return null;
+
+    const srcs = [];
+    const audioTagSrc = /<audio[^>]*\s+src=["']([^"']+)["'][^>]*>/gi;
+    let m;
+    while ((m = audioTagSrc.exec(localizedContent)) !== null) {
+      srcs.push(m[1]);
     }
-    
-    // Parse the HTML content to find audio sources
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(localizedContent, 'text/html');
-    const audioElements = doc.querySelectorAll('audio');
-    
-    let mp3Url = null;
-    let losslessUrl = null;
-    
-    audioElements.forEach(audio => {
-      const src = audio.getAttribute('src');
-      if (src) {
-        if (src.endsWith('.mp3')) {
-          mp3Url = src;
-        } else if (src.endsWith('.wav') || src.endsWith('.flac') || src.endsWith('.aiff')) {
-          losslessUrl = src;
-        }
-      }
-    });
-    
-    // Only return data if we have both formats
-    if (mp3Url && losslessUrl) {
-      return {
-        mp3Url,
-        losslessUrl,
-        title: getLocalizedContent(entry?.title, language) || entry?.title || '',
-        artist: 'Jay Winder', // You can make this configurable
-        coverImage: entry.coverImage
-      };
-    }
-    
-    return null;
-  }, [entry?.title, entry?.coverImage, language, localizedContent, type]);
+
+    if (!srcs.length) return null;
+
+    const pick = (re) => srcs.find((s) => re.test(s)) || null;
+    const mp3Url = pick(/\.mp3(\?.*)?$/i);
+    const losslessUrl = pick(/\.(wav|flac|aiff)(\?.*)?$/i);
+
+    if (!mp3Url && !losslessUrl) return null;
+
+    return {
+      mp3Url,
+      losslessUrl,
+      title: getLocalizedContent(entry?.title, language) || entry?.title || '',
+      artist: 'Jay Winder',
+      coverImage: entry.coverImage
+    };
+  }, [type, localizedContent, entry?.title, entry?.coverImage, language]);
 
   // Process content to remove audio elements if we're using the tabbed player
   const processedContent = useMemo(() => {
-    if (!audioData || !localizedContent) return localizedContent || entry?.content;
-    if (typeof window === 'undefined') {
-      return localizedContent || entry?.content;
-    }
-    
-    // Remove the audio figure elements from content
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(localizedContent, 'text/html');
-    const audioFigures = doc.querySelectorAll('figure.sound-player');
-    
-    audioFigures.forEach(figure => {
-      figure.remove();
-    });
-    
-    return doc.body.innerHTML;
+    const html = localizedContent || entry?.content || '';
+    if (!audioData) return html;
+    // Remove any <figure class="... sound-player ..."> ... </figure>
+    return html.replace(/<figure[^>]*class=["'][^"']*\bsound-player\b[^"']*["'][^>]*>[\s\S]*?<\/figure>/gi, '');
   }, [audioData, localizedContent, entry?.content]);
 
   const [isFullscreen, setIsFullscreen] = useState(false);

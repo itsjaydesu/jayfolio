@@ -11,8 +11,8 @@
         "ja": "深夜のサウンドスケープを漂うダウンテンポのストリングスとスペーシーなアルペジオ。"
       },
       "content": {
-        "en": "<p>Reviola floats a lead violin over weightless synth pads, evolving arpeggios, and granular percussion flickers. The track was written as a companion to late-night render sessions and slow-drifting visualizers.</p><p>This capture bundles 24-bit WAV and high-quality MP3 masters alongside liner notes for the generative patches and pedal chain.</p><p>Lossless master</p><p>High quality MP3</p>",
-        "ja": "<p>Reviolaは、無重力なシンセパッド、移ろうアルペジオ、粒状パーカッションのきらめきの上をリードバイオリンが漂います。深夜のレンダリングやゆったり流れるビジュアライザーの相棒として書き下ろしました。</p><p>このテイクには24bit WAVと高音質MP3のマスターに加え、ジェネレーティブパッチとペダルチェーンを解説したライナーノーツが付属します。</p><p>ロスレスマスター</p><p>高音質MP3</p>"
+        "en": "<figure class=\"sound-player\"><audio src=\"/sounds/reviola/reviola.mp3\"></audio><audio src=\"/sounds/reviola/reviola.wav\"></audio></figure><p>Reviola floats a lead violin over synth pads. It's written as a companion to late-night render sessions and slow-drifting visualizers.</p><p>This capture bundles 24-bit WAV and high-quality MP3 masters.</p><p><a class=\"download-link\" href=\"/sounds/reviola/reviola.wav\" download>Lossless master (WAV, 24‑bit)</a></p><p><a class=\"download-link\" href=\"/sounds/reviola/reviola.mp3\" download>High quality MP3</a></p><p><strong>License</strong></p><p>All tracks released here are dedicated to the <strong>public domain</strong> under <strong>CC0 1.0 Universal</strong>.<br>You may take these masters and do anything you want with them. Reproduce, modify, remix, sample, distribute, perform, or use them commercially, without attribution, permission, or restriction.<br>No rights reserved, however of course, I'd appreciate a shout-out or link back if you use them, and I'd love to hear how you use them!</p>",
+        "ja": "<figure class=\"sound-player\"><audio src=\"/sounds/reviola/reviola.mp3\"></audio><audio src=\"/sounds/reviola/reviola.wav\"></audio></figure><p>Reviolaは、無重力なシンセパッド、移ろうアルペジオ、粒状パーカッションのきらめきの上をリードバイオリンが漂います。深夜のレンダリングやゆったり流れるビジュアライザーの相棒として書き下ろしました。</p><p>このテイクには24bit WAVと高音質MP3のマスターに加え、ジェネレーティブパッチとペダルチェーンを解説したライナーノーツが付属します。</p><p><a class=\"download-link\" href=\"/sounds/reviola/reviola.wav\" download>ロスレスマスター（WAV, 24bit）</a></p><p><a class=\"download-link\" href=\"/sounds/reviola/reviola.mp3\" download>高音質MP3</a></p><p><strong>ライセンス</strong></p><p>ここに公開するすべてのトラックは、<strong>CC0 1.0 Universal</strong> に基づき <strong>パブリックドメイン</strong> として提供します。<br>これらのマスターは、改変・リミックス・サンプリング・複製・配布・上演・商用利用など、出典表示や許可なく自由にお使いいただけます。<br>権利は保持しませんが、ご利用の際にクレジットやリンクをいただけると嬉しいです。どのように使われたか、ぜひ教えてください！</p>"
       },
       "tags": {
         "en": [
@@ -35,7 +35,9 @@
       },
       "createdAt": "2024-12-12",
       "status": "published",
-      "updatedAt": "2025-10-30T10:14:24.898Z"
+      "updatedAt": "2025-11-14T07:54:54.278Z",
+      "galleries": [],
+      "backgroundImage": ""
     }
   ]
 }

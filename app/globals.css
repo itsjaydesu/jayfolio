@@ -8471,7 +8471,7 @@ body.qr-intro-active .site-shell__icon-button {
 .tabbed-audio-player__progress-bar {
   position: relative;
   width: 100%;
-  height: 4px;
+  height: 6px; /* fixed height to prevent layout shift */
   background: rgba(255, 255, 255, 0.08);
   border-radius: 2px;
   cursor: pointer;
@@ -8479,9 +8479,6 @@ body.qr-intro-active .site-shell__icon-button {
   transition: height 0.15s ease;
 }
 
-.tabbed-audio-player__progress-bar:hover {
-  height: 6px;
-}
 
 .tabbed-audio-player__progress-fill {
   position: absolute;
