@@ -250,11 +250,13 @@ const SceneCanvas = forwardRef(function SceneCanvas(
           x,
           z,
           start: elapsedTime,
-          intensity: 1.0,
-          radius: 0,
-          phase: Math.random() * Math.PI * 2  // Random phase for variation
+          intensity: 0.95 + Math.random() * 0.15,
+          phase: Math.random() * Math.PI * 2,  // Random phase for variation
+          lifetime: 2.2 + Math.random() * 0.3,
+          peakRadius: 1200 + Math.random() * 200,
+          flicker: 0.25 + Math.random() * 0.35
         });
-        
+
         // Clean up old bursts
         while (clickBursts.length > 5) {
           clickBursts.shift();
@@ -267,12 +269,14 @@ const SceneCanvas = forwardRef(function SceneCanvas(
           x,
           z,
           start: elapsedTime + delay,
-          intensity: 1.0,
-          radius: 0,
-          frequency: 2 + Math.random() * 3,  // Varying frequencies for organic feel
-          phase: Math.random() * Math.PI * 2
+          intensity: 0.75 + Math.random() * 0.4,
+          frequency: 1.4 + Math.random() * 2.2,  // Varying frequencies for organic feel
+          phase: Math.random() * Math.PI * 2,
+          lifetime: 4.2 + Math.random() * 0.8,
+          speed: 150 + Math.random() * 40,
+          width: 170 + Math.random() * 40
         });
-        
+
         // Clean up old shimmer waves
         while (shimmerWaves.length > 15) {
           shimmerWaves.shift();
@@ -432,136 +436,115 @@ const SceneCanvas = forwardRef(function SceneCanvas(
       const enqueueRipple = (x, z, strength = 1, isClick = false) => {
         // Create a beautiful multi-layered ripple effect with smooth animations
         if (isClick) {
-          // Create more shimmer waves for luxurious effect - optimized for 8s lifetime
-          for (let i = 0; i < 5; i++) {
-            createShimmerWave(x, z, i * 0.2);  // Compressed timing for 8s window
+          // Fresh shimmer accents that hug the new ripple timing
+          for (let i = 0; i < 3; i++) {
+            createShimmerWave(x, z, i * 0.18);
           }
-          
-          // Ultra-smooth, slow, beautiful multi-layer ripple system - ULTRA SLOW with 8 second lifetime
-          
-          // 1. Initial glow - soft, expanding luminescence
-          ripples.push({ 
-            x, 
-            z, 
-            start: elapsedTime, 
-            strength: strength * 1.6,  // Slightly reduced for subtlety
-            type: 'glow_initial',
-            speedMultiplier: 0.04,  // 10x slower - ultra luxury feel
-            widthMultiplier: 4.0,  // Much wider for ultra-soft edge
-            color: 1.8,  // Softer glow
-            decayMultiplier: 0.08,  // Faster decay to fit 8s lifetime
-            easing: 'easeInOutSine',  // Smoothest possible transition
-            frequency: 0.08  // Ultra-low frequency for smoothness
-          });
-          
-          // 2. Primary wave - the main beautiful ripple
-          ripples.push({ 
-            x, 
-            z, 
-            start: elapsedTime + 0.1,  // Quick succession for fluid feel
-            strength: strength * 1.3,
-            type: 'primary',
-            speedMultiplier: 0.035,  // 10x slower - ultra graceful expansion
-            widthMultiplier: 3.5,  // Much wider for softer appearance
-            color: 1.5,
-            decayMultiplier: 0.1,  // Adjusted for 8s lifetime
-            easing: 'easeOutQuint',  // Ultra-smooth quint easing
-            frequency: 0.1  // Ultra-low frequency
-          });
-          
-          // 3. Harmonic resonance - creates beautiful interference
-          ripples.push({ 
-            x, 
-            z, 
-            start: elapsedTime + 0.3,  // Compressed timing
-            strength: strength * 1.0,
-            type: 'harmonic',
-            speedMultiplier: 0.04,  // 10x slower
-            widthMultiplier: 5.0,  // Extra wide for ultra-soft effect
-            color: 1.2,
-            frequency: 0.07,  // Ultra-low frequency for beautiful interference
-            decayMultiplier: 0.12,  // Adjusted for 8s lifetime
-            easing: 'easeOutQuart',
-            phase: Math.PI * 0.25  // Phase offset for variation
-          });
-          
-          // 4. Secondary silk wave - smooth follow-up
-          ripples.push({ 
-            x, 
-            z, 
-            start: elapsedTime + 0.6,  // Compressed timing
-            strength: strength * 0.8,
-            type: 'secondary',
-            speedMultiplier: 0.038,  // 10x slower
-            widthMultiplier: 6.0,  // Extra wide for silk smoothness
-            color: 1.0,
-            decayMultiplier: 0.15,  // Adjusted for 8s lifetime
-            easing: 'easeInOutQuart',  // Smooth in and out
-            frequency: 0.09  // Ultra-low frequency
-          });
-          
-          // 5. Ambient glow - wide, persistent outer beauty
-          ripples.push({ 
-            x, 
-            z, 
-            start: elapsedTime + 1.0,  // Within 8s window
-            strength: strength * 0.5,
-            type: 'ambient',
-            speedMultiplier: 0.025,  // 15x slower - extremely slow expansion
-            widthMultiplier: 8.0,  // Very wide for ambient effect
-            color: 0.7,
-            decayMultiplier: 0.18,  // Adjusted for 8s lifetime
-            easing: 'easeInOutSine',
-            frequency: 0.06  // Ultra-low frequency
-          });
-          
-          // 6. Luxury echo waves - fewer, slower echoes
-          for (let i = 0; i < 3; i++) {  // Reduced to 3 echoes
-            const delay = 1.5 + (i * 0.8);  // Compressed timing
-            const echoStrength = strength * (0.3 - i * 0.08);
-            
-            ripples.push({ 
-              x, 
-              z, 
-              start: elapsedTime + delay, 
-              strength: echoStrength,
-              type: 'echo',
-              speedMultiplier: 0.03 - (i * 0.005),  // Ultra slow
-              widthMultiplier: 7.0 + (i * 1.5),  // Very wide echoes
-              color: 0.6 - (i * 0.1),
-              decayMultiplier: 0.2,  // Adjusted for 8s lifetime
+
+          const dropLayers = [
+            {
+              type: 'drop_core',
+              offset: 0,
+              strength: strength * 1.15,
+              speedMultiplier: 0.18,
+              widthMultiplier: 2.2,
+              decayMultiplier: 0.85,
+              frequency: 0.9,
+              easing: 'easeOutCubic',
+              color: 1.4,
+              maxAge: 5.2
+            },
+            {
+              type: 'drop_ring',
+              offset: 0.08,
+              strength: strength * 1.35,
+              speedMultiplier: 0.2,
+              widthMultiplier: 2.9,
+              decayMultiplier: 0.92,
+              frequency: 0.75,
+              easing: 'easeOutQuart',
+              color: 1.6,
+              maxAge: 5.6
+            },
+            {
+              type: 'drop_echo',
+              offset: 0.22,
+              strength: strength * 0.95,
+              speedMultiplier: 0.23,
+              widthMultiplier: 3.5,
+              decayMultiplier: 1.05,
+              frequency: 0.68,
+              easing: 'easeOutQuint',
+              color: 1.2,
+              maxAge: 6.0
+            },
+            {
+              type: 'drop_caustic',
+              offset: 0.38,
+              strength: strength * 0.7,
+              speedMultiplier: 0.26,
+              widthMultiplier: 4.6,
+              decayMultiplier: 1.12,
+              frequency: 1.35,
+              easing: 'easeOutQuart',
+              color: 1.9,
+              maxAge: 6.2
+            },
+            {
+              type: 'drop_halo',
+              offset: 0.6,
+              strength: strength * 0.55,
+              speedMultiplier: 0.19,
+              widthMultiplier: 6.0,
+              decayMultiplier: 1.25,
+              frequency: 0.52,
+              easing: 'easeOutCubic',
+              color: 0.9,
+              maxAge: 6.5
+            },
+            {
+              type: 'drop_whisper',
+              offset: 1.1,
+              strength: strength * 0.3,
+              speedMultiplier: 0.17,
+              widthMultiplier: 7.5,
+              decayMultiplier: 1.4,
+              frequency: 0.35,
               easing: 'easeInOutSine',
-              frequency: 0.05 - (i * 0.008),  // Ultra-low frequencies
-              phase: Math.PI * i * 0.5  // Phase variation for beauty
+              color: 0.7,
+              maxAge: 6.8
+            }
+          ];
+
+          for (const layer of dropLayers) {
+            ripples.push({
+              x,
+              z,
+              start: elapsedTime + layer.offset,
+              strength: layer.strength,
+              type: layer.type,
+              speedMultiplier: layer.speedMultiplier,
+              widthMultiplier: layer.widthMultiplier,
+              decayMultiplier: layer.decayMultiplier,
+              easing: layer.easing,
+              frequency: layer.frequency,
+              color: layer.color,
+              maxAge: layer.maxAge
             });
           }
-          
-          // 7. Final resonance - subtle ending within 8 seconds
-          ripples.push({ 
-            x, 
-            z, 
-            start: elapsedTime + 3.5,  // Within 8s window
-            strength: strength * 0.25,
-            type: 'deep_resonance',
-            speedMultiplier: 0.015,  // Extremely slow
-            widthMultiplier: 15.0,  // Very wide
-            color: 0.4,
-            decayMultiplier: 0.25,  // Faster decay to end by 8s
-            easing: 'easeInOutSine',
-            frequency: 0.03  // Ultra-low frequency
-          });
         } else {
-          // Standard ripple for non-click interactions - ultra slow with 8s lifetime
-          ripples.push({ 
-            x, 
-            z, 
-            start: elapsedTime, 
-            strength: strength * 0.6,  // Even gentler
+          // Standard ripple for non-click interactions tuned to the new water feel
+          ripples.push({
+            x,
+            z,
+            start: elapsedTime,
+            strength: strength * 0.55,
             type: 'standard',
-            speedMultiplier: 0.03,  // Ultra slow expansion
-            widthMultiplier: 5.0,  // Extra wide for ultimate softness
-            decayMultiplier: 0.15,  // Adjusted for 8s lifetime
-            easing: 'easeInOutSine'  // Smoothest easing
+            speedMultiplier: 0.12,
+            widthMultiplier: 3.2,
+            decayMultiplier: 0.95,
+            easing: 'easeInOutSine',
+            frequency: 0.85
           });
         }
         
@@ -1795,30 +1778,31 @@ const SceneCanvas = forwardRef(function SceneCanvas(
         const activeRipples = [];
 
         // Precompute click burst contributions for the current frame
-        const burstMaxAge = 3.0;
-        const burstBaseHeight = amplitude * 1.8;
-        const burstBaseLight = 1.5;
-        const burstRingWidth = 60;
+        const burstBaseHeight = amplitude * 1.6;
+        const burstBaseLight = 1.35;
+        const burstRingWidth = 48;
         const burstInvRingWidth = 1 / (burstRingWidth * burstRingWidth);
-        const burstInvRingWidth2 = 1 / (burstRingWidth * burstRingWidth * 1.5);
-        const burstInvRingWidth3 = 1 / (burstRingWidth * burstRingWidth * 2);
+        const burstInvRingWidth2 = 1 / (burstRingWidth * burstRingWidth * 1.6);
+        const burstInvRingWidth3 = 1 / (burstRingWidth * burstRingWidth * 2.4);
 
         for (let b = clickBursts.length - 1; b >= 0; b--) {
           const burst = clickBursts[b];
           const age = elapsedTime - burst.start;
-          if (age > burstMaxAge) {
+          const maxAge = burst.lifetime || 2.2;
+          if (age > maxAge) {
             clickBursts.splice(b, 1);
             continue;
           }
           if (age < 0) continue;
 
-          const ageProgress = age / burstMaxAge;
-          const easedProgress = 1 - Math.pow(1 - ageProgress, 4);
-          const radius = easedProgress * 2400;
-          const fade = Math.cos(ageProgress * Math.PI * 0.5);
-          const shimmerPhase = burst.phase + age * 15;
-          const shimmerBoost = Math.sin(shimmerPhase) * 0.3 + 1;
-          const influenceRadius = radius + burstRingWidth * 4;
+          const ageProgress = age / maxAge;
+          const easedProgress = Math.pow(ageProgress, 0.82);
+          const radius = easedProgress * (burst.peakRadius || 1300);
+          const crestPulse = Math.sin(Math.min(1, ageProgress) * Math.PI);
+          const fade = Math.pow(Math.max(0, 1 - ageProgress), 0.78);
+          const shimmerPhase = burst.phase + age * (16 + (burst.flicker || 0.3) * 8);
+          const shimmerBoost = 1 + Math.sin(shimmerPhase) * (burst.flicker || 0.3);
+          const influenceRadius = radius + burstRingWidth * 3.2;
 
           activeBursts.push({
             x: burst.x,
@@ -1827,44 +1811,42 @@ const SceneCanvas = forwardRef(function SceneCanvas(
             invRingWidth: burstInvRingWidth,
             invRingWidth2: burstInvRingWidth2,
             invRingWidth3: burstInvRingWidth3,
-            heightScale: fade * shimmerBoost * burstBaseHeight,
-            scaleScale: fade * 2.5,
-            lightScale: fade * shimmerBoost * burstBaseLight,
+            heightScale: fade * crestPulse * shimmerBoost * burstBaseHeight * (burst.intensity || 1),
+            scaleScale: fade * (1.6 + crestPulse * 0.6),
+            lightScale: fade * shimmerBoost * burstBaseLight * (0.9 + crestPulse * 0.4),
             influenceRadiusSq: influenceRadius * influenceRadius
           });
         }
 
         // Precompute shimmer wave data upfront to avoid redundant math per point
-        const shimmerMaxAge = 8.0;
-        const shimmerWidth = 200;
-        const shimmerInvWidth = 1 / (shimmerWidth * shimmerWidth);
-        const shimmerInfluenceOffset = shimmerWidth * 3;
-        const shimmerSpeed = 120;
-
         for (let s = shimmerWaves.length - 1; s >= 0; s--) {
           const shimmer = shimmerWaves[s];
           const age = elapsedTime - shimmer.start;
           if (age < 0) continue;
-          if (age > shimmerMaxAge) {
+          const maxAge = shimmer.lifetime || 4.6;
+          if (age > maxAge) {
             shimmerWaves.splice(s, 1);
             continue;
           }
 
-          const lifeProgress = age / shimmerMaxAge;
-          const intensity = (1 - lifeProgress) * shimmer.intensity;
+          const width = shimmer.width || 200;
+          const invWidth = 1 / (width * width);
+          const speed = shimmer.speed || 160;
+          const lifeProgress = age / maxAge;
+          const intensity = Math.pow(Math.max(0, 1 - lifeProgress), 1.05) * shimmer.intensity;
           if (intensity <= 0.0001) continue;
 
-          const radius = age * shimmerSpeed;
-          const influenceRadius = radius + shimmerInfluenceOffset;
+          const radius = age * speed;
+          const influenceRadius = radius + width * 2.6;
 
           activeShimmers.push({
             x: shimmer.x,
             z: shimmer.z,
             radius,
             intensity,
-            distFactor: 0.02 * shimmer.frequency,
-            phaseBase: shimmer.phase + age * 8,
-            invWidth: shimmerInvWidth,
+            distFactor: 0.018 * (shimmer.frequency || 2),
+            phaseBase: shimmer.phase + age * (10 + (shimmer.frequency || 2) * 2),
+            invWidth,
             influenceRadiusSq: influenceRadius * influenceRadius
           });
         }
@@ -2074,6 +2056,50 @@ const SceneCanvas = forwardRef(function SceneCanvas(
                   const impactRing1 = Math.exp(-Math.pow(Math.abs(normalized - 0.25), 2) * 10);
                   const impactRing2 = Math.exp(-Math.pow(Math.abs(normalized - 0.5), 2) * 8);
                   rippleProfile = impactPeak * 1.6 + impactRing1 * 0.9 + impactRing2 * 0.4;
+                  break;
+                }
+
+                case 'drop_core': {
+                  const crest = Math.exp(-normalized * normalized * 2.4);
+                  const innerTrough = Math.exp(-(normalized + 0.45) * (normalized + 0.45) * 8.5);
+                  const surface = Math.sin((normalized + 0.05) * Math.PI * 1.4) * Math.exp(-Math.abs(normalized) * 2.6) * 0.35;
+                  rippleProfile = crest * 1.25 - innerTrough * 0.9 + surface;
+                  break;
+                }
+
+                case 'drop_ring': {
+                  const ring = Math.exp(-Math.pow(Math.abs(normalized), 1.6) * 4.2);
+                  const glitter = Math.sin(normalized * Math.PI * 2.4) * Math.exp(-Math.abs(normalized) * 2.8) * 0.28;
+                  rippleProfile = ring * 1.05 + glitter;
+                  break;
+                }
+
+                case 'drop_echo': {
+                  const outer = Math.exp(-Math.pow(normalized - 0.45, 2) * 7.5);
+                  const undertow = -Math.exp(-Math.pow(normalized + 0.6, 2) * 5.2) * 0.45;
+                  const shimmer = Math.cos((normalized - 0.2) * Math.PI * 2.2) * Math.exp(-Math.abs(normalized - 0.2) * 2.1) * 0.22;
+                  rippleProfile = outer * 0.9 + undertow + shimmer;
+                  break;
+                }
+
+                case 'drop_caustic': {
+                  const highlight = Math.exp(-Math.pow(normalized - 0.35, 2) * 12.5);
+                  const glint = Math.sin((normalized - 0.35) * Math.PI * 3.2) * Math.exp(-Math.abs(normalized - 0.35) * 3.6) * 0.35;
+                  rippleProfile = (highlight * 0.85 + glint) * 0.95;
+                  break;
+                }
+
+                case 'drop_halo': {
+                  const halo = Math.exp(-Math.pow(normalized - 0.6, 2) * 6.2);
+                  const drift = Math.cos((normalized - 0.6) * Math.PI * 1.4) * Math.exp(-Math.abs(normalized - 0.6) * 2.0) * 0.25;
+                  rippleProfile = halo * 0.7 + drift;
+                  break;
+                }
+
+                case 'drop_whisper': {
+                  const veil = Math.exp(-Math.pow(normalized - 0.85, 2) * 4.5);
+                  const hush = Math.sin((normalized - 0.85) * Math.PI) * Math.exp(-Math.abs(normalized - 0.85) * 1.8) * 0.18;
+                  rippleProfile = veil * 0.6 + hush;
                   break;
                 }
 
