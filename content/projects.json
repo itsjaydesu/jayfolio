@@ -364,5 +364,28 @@
       "createdAt": "2015-02-09",
       "updatedAt": "2025-10-30T10:01:17.356Z"
     }
+    ,
+    {
+      "slug": "genz-annoyer",
+      "title": {
+        "en": "Gen Z Translator & Annoyer",
+        "ja": "Gen Z Translator & Annoyer"
+      },
+      "summary": {
+        "en": "Playful AI translator that converts regular sentences into over-the-top Gen Z slang — perfect for laughs or lighthearted cringe.",
+        "ja": "日常文を過剰なZ世代スラングに変換する遊び心のあるAI翻訳ツール。"
+      },
+      "content": {
+        "en": "<p><a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://genz-annoyer.lovable.app/\">Gen Z Translator & Annoyer</a> turns your straight‑laced sentences into chaotic Gen Z slang with one click. It’s intentionally silly, fast, and shareable — great for teasing friends or breaking the ice.</p>",
+        "ja": "<p><a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://genz-annoyer.lovable.app/\">Gen Z Translator & Annoyer</a> は、普通の文章をワンクリックでカオスなZ世代スラングに変換します。くだらなさが肝のライトな実験で、友だちをいじったりアイスブレイクに使えます。</p>"
+      },
+      "tags": {
+        "en": ["AI", "Humor", "Tool"],
+        "ja": ["AI", "ユーモア", "ツール"]
+      },
+      "coverImage": null,
+      "status": "published",
+      "createdAt": "2025-11-14"
+    }
   ]
 }
