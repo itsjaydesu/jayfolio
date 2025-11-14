@@ -4345,7 +4345,7 @@ body[data-photo-gallery-toolbar='hidden'] .PhotoView-Slider__BannerWrap {
 .retro-menu--centerpiece {
   position: relative;
   margin: 0 auto;
-  margin-inline: var(--menu-overlay-inline-gap, auto);
+  margin-inline: auto;
   width: min(
     420px,
     calc(100% - 2 * var(--menu-overlay-inline-gap, 0px))
@@ -5665,7 +5665,7 @@ body[data-photo-gallery-toolbar='hidden'] .PhotoView-Slider__BannerWrap {
   }
 
   .retro-menu--centerpiece {
-    margin-inline: var(--menu-overlay-inline-gap);
+    margin-inline: auto;
     width: min(
       420px,
       calc(100% - 2 * var(--menu-overlay-inline-gap, 0px))
