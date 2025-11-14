@@ -254,7 +254,7 @@ const SceneCanvas = forwardRef(function SceneCanvas(
           radius: 0,
           phase: Math.random() * Math.PI * 2  // Random phase for variation
         });
-        
+
         // Clean up old bursts
         while (clickBursts.length > 5) {
           clickBursts.shift();
@@ -287,269 +287,112 @@ const SceneCanvas = forwardRef(function SceneCanvas(
       const easeOutQuint = (t) => 1 - Math.pow(1 - t, 5);
       const easeInOutQuart = (t) => t < 0.5 ? 8 * t * t * t * t : 1 - Math.pow(-2 * t + 2, 4) / 2;
       
-      // Create a 4x slower version of the ripple effect for right-clicks
-      const enqueueRippleSlowMotion = (x, z, strength = 1) => {
-        // Create more shimmer waves for luxurious effect - optimized for 32s lifetime (4x slower)
-        for (let i = 0; i < 5; i++) {
-          createShimmerWave(x, z, i * 0.8);  // Slower timing for 32s window
+      const spawnWaterRippleStack = (x, z, strength = 1, {
+        timeScale = 1,
+        startTime = elapsedTime
+      } = {}) => {
+        const speedScale = 1 / timeScale;
+        const decayScale = 1 / timeScale;
+        const maxAge = 7.5 * timeScale;
+        const baseStrength = strength;
+
+        const shimmerSteps = timeScale > 1.5 ? 6 : 4;
+        const shimmerSpacing = 0.18;
+        for (let i = 0; i < shimmerSteps; i++) {
+          createShimmerWave(x, z, i * shimmerSpacing * timeScale);
         }
-        
-        // Ultra-ultra-slow, beautiful multi-layer ripple system - 4x slower than normal click
-        
-        // 1. Initial glow - soft, expanding luminescence
-        const glowRipple = { 
-          x, 
-          z, 
-          start: elapsedTime, 
-          strength: strength * 1.6,
-          type: 'glow_initial',
-          speedMultiplier: 0.01,  // 4x slower than 0.04
-          widthMultiplier: 4.0,
-          color: 1.8,
-          decayMultiplier: 0.02,  // 4x slower decay
-          easing: 'easeInOutSine',
-          frequency: 0.02,  // 4x slower frequency
-          isSlowMotion: true,  // Mark as slow-motion for special handling
-          maxAge: 32  // 4x longer lifetime
-        };
-        ripples.push(glowRipple);
-        
-        // 2. Primary wave - the main beautiful ripple
-        ripples.push({ 
-          x, 
-          z, 
-          start: elapsedTime + 0.4,  // 4x slower succession
-          strength: strength * 1.3,
-          type: 'primary',
-          speedMultiplier: 0.00875,  // 4x slower than 0.035
-          widthMultiplier: 3.5,
-          color: 1.5,
-          decayMultiplier: 0.025,  // 4x slower decay
-          easing: 'easeOutQuint',
-          frequency: 0.025,  // 4x slower frequency
-          isSlowMotion: true,
-          maxAge: 32
-        });
-        
-        // 3. Harmonic resonance - creates beautiful interference
-        ripples.push({ 
-          x, 
-          z, 
-          start: elapsedTime + 1.2,  // 4x slower timing
-          strength: strength * 1.0,
-          type: 'harmonic',
-          speedMultiplier: 0.01,  // 4x slower
-          widthMultiplier: 5.0,
-          color: 1.2,
-          frequency: 0.0175,  // 4x slower frequency
-          decayMultiplier: 0.03,  // 4x slower decay
-          easing: 'easeOutQuart',
-          phase: Math.PI * 0.25,
-          isSlowMotion: true,
-          maxAge: 32
-        });
-        
-        // 4. Secondary silk wave - smooth follow-up
-        ripples.push({ 
-          x, 
-          z, 
-          start: elapsedTime + 2.4,  // 4x slower timing
-          strength: strength * 0.8,
-          type: 'secondary',
-          speedMultiplier: 0.0095,  // 4x slower
-          widthMultiplier: 6.0,
-          color: 1.0,
-          decayMultiplier: 0.0375,  // 4x slower decay
-          easing: 'easeInOutQuart',
-          frequency: 0.0225,  // 4x slower frequency
-          isSlowMotion: true,
-          maxAge: 32
-        });
-        
-        // 5. Ambient glow - wide, persistent outer beauty
-        ripples.push({ 
-          x, 
-          z, 
-          start: elapsedTime + 4.0,  // 4x slower timing
-          strength: strength * 0.5,
-          type: 'ambient',
-          speedMultiplier: 0.00625,  // 4x slower
-          widthMultiplier: 8.0,
-          color: 0.7,
-          decayMultiplier: 0.045,  // 4x slower decay
-          easing: 'easeInOutSine',
-          frequency: 0.015,  // 4x slower frequency
-          isSlowMotion: true,
-          maxAge: 32
-        });
-        
-        // 6. Luxury echo waves - fewer, much slower echoes
-        for (let i = 0; i < 3; i++) {
-          const delay = 6.0 + (i * 3.2);  // 4x slower timing
-          const echoStrength = strength * (0.3 - i * 0.08);
-          
-          ripples.push({ 
-            x, 
-            z, 
-            start: elapsedTime + delay, 
-            strength: echoStrength,
-            type: 'echo',
-            speedMultiplier: 0.0075 - (i * 0.00125),  // 4x slower
-            widthMultiplier: 7.0 + (i * 1.5),
-            color: 0.6 - (i * 0.1),
-            decayMultiplier: 0.05,  // 4x slower decay
-            easing: 'easeInOutSine',
-            frequency: 0.0125 - (i * 0.002),  // 4x slower frequencies
-            phase: Math.PI * i * 0.5,
-            isSlowMotion: true,
-            maxAge: 32
+
+        const pushLayer = (offset, layerStrength, config) => {
+          ripples.push({
+            x,
+            z,
+            start: startTime + offset * timeScale,
+            strength: baseStrength * layerStrength,
+            maxAge,
+            speedMultiplier: (config.speedMultiplier ?? 0.04) * speedScale,
+            widthMultiplier: config.widthMultiplier ?? 3.5,
+            decayMultiplier: (config.decayMultiplier ?? 0.1) * decayScale,
+            easing: config.easing ?? 'easeInOutSine',
+            frequency: config.frequency ?? 0.1,
+            color: config.color,
+            type: config.type
           });
-        }
-        
-        // 7. Final resonance - subtle ending within 32 seconds
-        ripples.push({ 
-          x, 
-          z, 
-          start: elapsedTime + 14.0,  // 4x slower timing
-          strength: strength * 0.25,
-          type: 'deep_resonance',
-          speedMultiplier: 0.00375,  // 4x slower
-          widthMultiplier: 15.0,
-          color: 0.4,
-          decayMultiplier: 0.0625,  // 4x slower decay
-          easing: 'easeInOutSine',
-          frequency: 0.0075,  // 4x slower frequency
-          isSlowMotion: true,
-          maxAge: 32
+        };
+
+        pushLayer(0, 0.95, {
+          type: 'water_focus',
+          speedMultiplier: 0.056,
+          widthMultiplier: 1.8,
+          decayMultiplier: 0.08,
+          frequency: 0.9,
+          color: 1.8,
+          easing: 'easeInOutSine'
         });
-        
-        // Keep ripple count reasonable but allow more for complex effects
+
+        pushLayer(0.08, 1.35, {
+          type: 'water_crown',
+          speedMultiplier: 0.05,
+          widthMultiplier: 2.6,
+          decayMultiplier: 0.09,
+          frequency: 0.75,
+          color: 1.6,
+          easing: 'easeOutQuint'
+        });
+
+        pushLayer(0.18, 1.05, {
+          type: 'water_ring',
+          speedMultiplier: 0.052,
+          widthMultiplier: 3.4,
+          decayMultiplier: 0.11,
+          frequency: 0.68,
+          color: 1.3,
+          easing: 'easeOutQuart'
+        });
+
+        pushLayer(0.42, 0.75, {
+          type: 'water_trail',
+          speedMultiplier: 0.046,
+          widthMultiplier: 4.8,
+          decayMultiplier: 0.13,
+          frequency: 0.55,
+          color: 1.05,
+          easing: 'easeInOutQuart'
+        });
+
+        pushLayer(0.78, 0.48, {
+          type: 'water_echo',
+          speedMultiplier: 0.04,
+          widthMultiplier: 6.2,
+          decayMultiplier: 0.14,
+          frequency: 0.45,
+          color: 0.9,
+          easing: 'easeInOutSine'
+        });
+
+        pushLayer(1.32, 0.28, {
+          type: 'water_echo_soft',
+          speedMultiplier: 0.034,
+          widthMultiplier: 7.8,
+          decayMultiplier: 0.16,
+          frequency: 0.38,
+          color: 0.7,
+          easing: 'easeOutCubic'
+        });
+
         while (ripples.length > MAX_RIPPLES) {
           ripples.shift();
         }
+      };
+
+      // Create a 4x slower version of the ripple effect for right-clicks
+      const enqueueRippleSlowMotion = (x, z, strength = 1) => {
+        spawnWaterRippleStack(x, z, strength, { timeScale: 4 });
       };
       
       const enqueueRipple = (x, z, strength = 1, isClick = false) => {
         // Create a beautiful multi-layered ripple effect with smooth animations
         if (isClick) {
-          // Create more shimmer waves for luxurious effect - optimized for 8s lifetime
-          for (let i = 0; i < 5; i++) {
-            createShimmerWave(x, z, i * 0.2);  // Compressed timing for 8s window
-          }
-          
-          // Ultra-smooth, slow, beautiful multi-layer ripple system - ULTRA SLOW with 8 second lifetime
-          
-          // 1. Initial glow - soft, expanding luminescence
-          ripples.push({ 
-            x, 
-            z, 
-            start: elapsedTime, 
-            strength: strength * 1.6,  // Slightly reduced for subtlety
-            type: 'glow_initial',
-            speedMultiplier: 0.04,  // 10x slower - ultra luxury feel
-            widthMultiplier: 4.0,  // Much wider for ultra-soft edge
-            color: 1.8,  // Softer glow
-            decayMultiplier: 0.08,  // Faster decay to fit 8s lifetime
-            easing: 'easeInOutSine',  // Smoothest possible transition
-            frequency: 0.08  // Ultra-low frequency for smoothness
-          });
-          
-          // 2. Primary wave - the main beautiful ripple
-          ripples.push({ 
-            x, 
-            z, 
-            start: elapsedTime + 0.1,  // Quick succession for fluid feel
-            strength: strength * 1.3,
-            type: 'primary',
-            speedMultiplier: 0.035,  // 10x slower - ultra graceful expansion
-            widthMultiplier: 3.5,  // Much wider for softer appearance
-            color: 1.5,
-            decayMultiplier: 0.1,  // Adjusted for 8s lifetime
-            easing: 'easeOutQuint',  // Ultra-smooth quint easing
-            frequency: 0.1  // Ultra-low frequency
-          });
-          
-          // 3. Harmonic resonance - creates beautiful interference
-          ripples.push({ 
-            x, 
-            z, 
-            start: elapsedTime + 0.3,  // Compressed timing
-            strength: strength * 1.0,
-            type: 'harmonic',
-            speedMultiplier: 0.04,  // 10x slower
-            widthMultiplier: 5.0,  // Extra wide for ultra-soft effect
-            color: 1.2,
-            frequency: 0.07,  // Ultra-low frequency for beautiful interference
-            decayMultiplier: 0.12,  // Adjusted for 8s lifetime
-            easing: 'easeOutQuart',
-            phase: Math.PI * 0.25  // Phase offset for variation
-          });
-          
-          // 4. Secondary silk wave - smooth follow-up
-          ripples.push({ 
-            x, 
-            z, 
-            start: elapsedTime + 0.6,  // Compressed timing
-            strength: strength * 0.8,
-            type: 'secondary',
-            speedMultiplier: 0.038,  // 10x slower
-            widthMultiplier: 6.0,  // Extra wide for silk smoothness
-            color: 1.0,
-            decayMultiplier: 0.15,  // Adjusted for 8s lifetime
-            easing: 'easeInOutQuart',  // Smooth in and out
-            frequency: 0.09  // Ultra-low frequency
-          });
-          
-          // 5. Ambient glow - wide, persistent outer beauty
-          ripples.push({ 
-            x, 
-            z, 
-            start: elapsedTime + 1.0,  // Within 8s window
-            strength: strength * 0.5,
-            type: 'ambient',
-            speedMultiplier: 0.025,  // 15x slower - extremely slow expansion
-            widthMultiplier: 8.0,  // Very wide for ambient effect
-            color: 0.7,
-            decayMultiplier: 0.18,  // Adjusted for 8s lifetime
-            easing: 'easeInOutSine',
-            frequency: 0.06  // Ultra-low frequency
-          });
-          
-          // 6. Luxury echo waves - fewer, slower echoes
-          for (let i = 0; i < 3; i++) {  // Reduced to 3 echoes
-            const delay = 1.5 + (i * 0.8);  // Compressed timing
-            const echoStrength = strength * (0.3 - i * 0.08);
-            
-            ripples.push({ 
-              x, 
-              z, 
-              start: elapsedTime + delay, 
-              strength: echoStrength,
-              type: 'echo',
-              speedMultiplier: 0.03 - (i * 0.005),  // Ultra slow
-              widthMultiplier: 7.0 + (i * 1.5),  // Very wide echoes
-              color: 0.6 - (i * 0.1),
-              decayMultiplier: 0.2,  // Adjusted for 8s lifetime
-              easing: 'easeInOutSine',
-              frequency: 0.05 - (i * 0.008),  // Ultra-low frequencies
-              phase: Math.PI * i * 0.5  // Phase variation for beauty
-            });
-          }
-          
-          // 7. Final resonance - subtle ending within 8 seconds
-          ripples.push({ 
-            x, 
-            z, 
-            start: elapsedTime + 3.5,  // Within 8s window
-            strength: strength * 0.25,
-            type: 'deep_resonance',
-            speedMultiplier: 0.015,  // Extremely slow
-            widthMultiplier: 15.0,  // Very wide
-            color: 0.4,
-            decayMultiplier: 0.25,  // Faster decay to end by 8s
-            easing: 'easeInOutSine',
-            frequency: 0.03  // Ultra-low frequency
-          });
+          spawnWaterRippleStack(x, z, strength);
         } else {
           // Standard ripple for non-click interactions - ultra slow with 8s lifetime
           ripples.push({ 
@@ -1795,10 +1638,10 @@ const SceneCanvas = forwardRef(function SceneCanvas(
         const activeRipples = [];
 
         // Precompute click burst contributions for the current frame
-        const burstMaxAge = 3.0;
-        const burstBaseHeight = amplitude * 1.8;
-        const burstBaseLight = 1.5;
-        const burstRingWidth = 60;
+        const burstMaxAge = 2.6;
+        const burstBaseHeight = amplitude * 1.4;
+        const burstBaseLight = 1.2;
+        const burstRingWidth = 42;
         const burstInvRingWidth = 1 / (burstRingWidth * burstRingWidth);
         const burstInvRingWidth2 = 1 / (burstRingWidth * burstRingWidth * 1.5);
         const burstInvRingWidth3 = 1 / (burstRingWidth * burstRingWidth * 2);
@@ -1814,10 +1657,10 @@ const SceneCanvas = forwardRef(function SceneCanvas(
 
           const ageProgress = age / burstMaxAge;
           const easedProgress = 1 - Math.pow(1 - ageProgress, 4);
-          const radius = easedProgress * 2400;
-          const fade = Math.cos(ageProgress * Math.PI * 0.5);
-          const shimmerPhase = burst.phase + age * 15;
-          const shimmerBoost = Math.sin(shimmerPhase) * 0.3 + 1;
+          const radius = easedProgress * 1600;
+          const fade = Math.pow(Math.cos(ageProgress * Math.PI * 0.5), 1.1);
+          const shimmerPhase = burst.phase + age * 18;
+          const shimmerBoost = 0.65 + Math.sin(shimmerPhase) * 0.2;
           const influenceRadius = radius + burstRingWidth * 4;
 
           activeBursts.push({
@@ -1918,13 +1761,7 @@ const SceneCanvas = forwardRef(function SceneCanvas(
             continue;
           }
 
-          let wavefront;
-          if (ripple.isSlowMotion) {
-            const slowSpeed = rippleSpeedBase / 4.0;
-            wavefront = age * slowSpeed;
-          } else {
-            wavefront = age * rippleSpeedBase * (ripple.speedMultiplier || 1.0);
-          }
+          const wavefront = age * rippleSpeedBase * (ripple.speedMultiplier || 1.0);
 
           const widthRaw = rippleWidthBase * (ripple.widthMultiplier || 1.0);
           const width = widthRaw > 0.0001 ? widthRaw : 0.0001;
@@ -2127,6 +1964,51 @@ const SceneCanvas = forwardRef(function SceneCanvas(
                   const resonanceGaussian = Math.exp(-normalized * normalized * 0.2);
                   const resonanceWave = Math.sin(normalized * Math.PI * 0.5) * 0.2;
                   rippleProfile = resonanceGaussian * 0.3 + resonanceWave * resonanceGaussian * 0.2;
+                  break;
+                }
+
+                case 'water_focus': {
+                  const innerDip = -Math.exp(-normalized * normalized * 2.6) * 0.45;
+                  const crownRise = Math.exp(-Math.pow(normalized - 0.18, 2) * 14) * 1.4;
+                  const sparkle = Math.sin((normalized + 0.08) * Math.PI * 2.2) * 0.12 * Math.exp(-Math.abs(normalized) * 2.4);
+                  rippleProfile = innerDip + crownRise + sparkle;
+                  break;
+                }
+
+                case 'water_crown': {
+                  const crest = Math.exp(-Math.pow(Math.abs(normalized - 0.15), 2) * 10) * 1.6;
+                  const trough = Math.exp(-Math.pow(normalized + 0.28, 2) * 8) * 0.6;
+                  const spray = Math.sin((normalized - 0.05) * Math.PI * 3.2) * 0.14 * Math.exp(-Math.abs(normalized - 0.05) * 2.8);
+                  rippleProfile = crest - trough + spray;
+                  break;
+                }
+
+                case 'water_ring': {
+                  const primaryRing = Math.exp(-normalized * normalized * 1.2) * 1.2;
+                  const counterwave = Math.exp(-Math.pow(normalized - 0.55, 2) * 6) * -0.35;
+                  const fineDetail = Math.sin(normalized * Math.PI * 2.6) * 0.16 * Math.exp(-Math.abs(normalized) * 2.1);
+                  rippleProfile = primaryRing + counterwave + fineDetail;
+                  break;
+                }
+
+                case 'water_trail': {
+                  const trailBody = Math.exp(-normalized * normalized * 0.8) * 0.9;
+                  const trailingWake = Math.sin((normalized - 0.4) * Math.PI * 2) * 0.12 * Math.exp(-Math.abs(normalized - 0.4) * 2.4);
+                  rippleProfile = trailBody + trailingWake;
+                  break;
+                }
+
+                case 'water_echo': {
+                  const echoGaussian = Math.exp(-normalized * normalized * 0.6) * 0.8;
+                  const echoRing = Math.exp(-Math.pow(Math.abs(normalized - 0.7), 2) * 5) * 0.4;
+                  rippleProfile = echoGaussian + echoRing;
+                  break;
+                }
+
+                case 'water_echo_soft': {
+                  const softBody = Math.exp(-normalized * normalized * 0.45) * 0.6;
+                  const airy = Math.sin(normalized * Math.PI * 1.4) * 0.08 * Math.exp(-Math.abs(normalized) * 1.8);
+                  rippleProfile = softBody + airy;
                   break;
                 }
 
