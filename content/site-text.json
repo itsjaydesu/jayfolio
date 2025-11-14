@@ -6,8 +6,8 @@
       "label": "About",
       "route": "/about",
       "description": {
-        "en": "How about that?",
-        "ja": "ね、どう？"
+        "en": "How about \nthat?",
+        "ja": "さー、\nどう？"
       }
     },
     {
@@ -15,8 +15,8 @@
       "label": "Projects",
       "route": "/projects",
       "description": {
-        "en": "Stuff I ① made ② am making ③ did",
-        "ja": "ぼくの ① つくったもの ② いま作ってるもの ③ やってきたこと"
+        "en": "Stuff I \n① made ② am making ③ did",
+        "ja": "ぼくの \n① つくったもの ② いま作ってるもの ③ やってきたこと"
       }
     },
     {
@@ -42,8 +42,8 @@
       "label": "Art",
       "route": "/art",
       "description": {
-        "en": "Intersections of art and technology I think are cool",
-        "ja": "アートとテクノロジーが交差して、ぼくがクールだと思う場所"
+        "en": "Intersections of art and \ntechnology I think are cool",
+        "ja": "アートとテクノロジーが交差して、\nぼくがクールだと思う場所"
       }
     }
   ]
