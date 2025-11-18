@@ -13,7 +13,7 @@ const HALF_GRID_Y = ((AMOUNTY - 1) * SEPARATION) / 2;
 const DEFAULT_INFLUENCES = FIELD_DEFAULT_INFLUENCES;
 
 const CLICK_DEBOUNCE_MS = 750;
-const MAX_RIPPLES = 60;
+const MAX_RIPPLES = 30; // GPU shader limit
 
 const GOLDEN_RATIO = (1 + Math.sqrt(5)) / 2;
 
@@ -430,126 +430,29 @@ const SceneCanvas = forwardRef(function SceneCanvas(
       };
       
       const enqueueRipple = (x, z, strength = 1, isClick = false) => {
-        // Create a beautiful multi-layered ripple effect with smooth animations
-        if (isClick) {
-          // Fewer, higher-fidelity shimmer waves for the drop halo
-          for (let i = 0; i < 3; i++) {
-            createShimmerWave(x, z, i * 0.18);
-          }
+        // GPU-based ripple system
+        // We push a single event, and the shader calculates the complex wave interactions
+        ripples.push({
+          x,
+          z,
+          start: elapsedTime,
+          strength: strength * (isClick ? 2.0 : 1.0), // Boost click strength
+          type: isClick ? 1 : 0, // 1 for sharp click, 0 for soft ambient
+          maxAge: 8.0 // Longer lifetime for fluid ripples
+        });
 
-          const dropletStrength = Math.max(0.6, strength * 1.1);
-
-          // 1. Surface flash — a quick bloom where the droplet lands
-          ripples.push({
-            x,
-            z,
-            start: elapsedTime,
-            strength: dropletStrength * 1.25,
-            type: 'droplet_flash',
-            speedMultiplier: 0.028,
-            widthMultiplier: 0.6,
-            color: 1.65,
-            decayMultiplier: 0.55,
-            easing: 'easeOutExpo',
-            frequency: 0.35,
-            maxAge: 1.6
-          });
-
-          // 2. Primary wave — the crisp leading ring of the splash
-          ripples.push({
-            x,
-            z,
-            start: elapsedTime + 0.05,
-            strength: dropletStrength * 1.65,
-            type: 'droplet_front',
-            speedMultiplier: 0.046,
-            widthMultiplier: 0.95,
-            color: 1.25,
-            decayMultiplier: 0.8,
-            easing: 'easeOutQuint',
-            frequency: 1.0,
-            maxAge: 5.5
-          });
-
-          // 3. Inner rebound — a contracting ripple that follows the impact
-          ripples.push({
-            x,
-            z,
-            start: elapsedTime + 0.18,
-            strength: dropletStrength * 0.95,
-            type: 'droplet_inner',
-            speedMultiplier: 0.038,
-            widthMultiplier: 0.75,
-            color: 1.1,
-            decayMultiplier: 0.85,
-            easing: 'easeOutQuart',
-            frequency: 1.35,
-            maxAge: 4.2
-          });
-
-          // 4. Caustic halo — soft light bloom around the crest
-          ripples.push({
-            x,
-            z,
-            start: elapsedTime + 0.08,
-            strength: dropletStrength * 0.55,
-            type: 'droplet_caustic',
-            speedMultiplier: 0.052,
-            widthMultiplier: 1.6,
-            color: 1.8,
-            decayMultiplier: 0.45,
-            easing: 'easeInOutSine',
-            frequency: 0.55,
-            maxAge: 6.0
-          });
-
-          // 5. Capillary trails — secondary oscillations after the crest passes
-          for (let i = 0; i < 2; i++) {
-            ripples.push({
-              x,
-              z,
-              start: elapsedTime + 0.32 + i * 0.26,
-              strength: dropletStrength * (0.65 - i * 0.15),
-              type: 'droplet_trail',
-              speedMultiplier: 0.036 - i * 0.003,
-              widthMultiplier: 1.05 + i * 0.2,
-              color: 0.95 - i * 0.1,
-              decayMultiplier: 1.0 + i * 0.22,
-              easing: 'easeOutCubic',
-              frequency: 1.6 + i * 0.25,
-              maxAge: 5.2 + i * 0.4
-            });
-          }
-
-          // Keep ripple count reasonable but allow more for complex effects
-          while (ripples.length > MAX_RIPPLES) {  // Trim backlog to keep rendering efficient
-            ripples.shift();
-          }
-          return;
-        } else {
-          // Standard ripple for non-click interactions - ultra slow with 8s lifetime
-          ripples.push({ 
-            x, 
-            z, 
-            start: elapsedTime, 
-            strength: strength * 0.6,  // Even gentler
-            type: 'standard',
-            speedMultiplier: 0.03,  // Ultra slow expansion
-            widthMultiplier: 5.0,  // Extra wide for ultimate softness
-            decayMultiplier: 0.15,  // Adjusted for 8s lifetime
-            easing: 'easeInOutSine'  // Smoothest easing
-          });
-        }
-        
-        // Keep ripple count reasonable but allow more for complex effects
-        while (ripples.length > MAX_RIPPLES) {  // Trim backlog to keep rendering efficient
+        // Keep ripple count within shader limits
+        while (ripples.length > MAX_RIPPLES) {
           ripples.shift();
         }
       };
 
       const uniforms = {
         opacity: { value: 0.85 },
-        pointMultiplier: { value: 28 }
+        pointMultiplier: { value: 28 },
+        uTime: { value: 0 },
+        uRipplePos: { value: new Float32Array(MAX_RIPPLES * 2) }, // x, z pair
+        uRippleParams: { value: new Float32Array(MAX_RIPPLES * 3) } // startTime, strength, type
       };
 
       const settings = { ...FIELD_DEFAULT_BASE };
@@ -1670,6 +1573,40 @@ const SceneCanvas = forwardRef(function SceneCanvas(
         }
         
         animationTime += delta * settings.animationSpeed;
+        
+        // Update uniforms
+        uniforms.uTime.value = elapsedTime;
+
+        // Pack ripples into flat arrays for the shader
+        // We use a fixed size array to avoid reallocation
+        const ripplePos = uniforms.uRipplePos.value;
+        const rippleParams = uniforms.uRippleParams.value;
+        
+        // Reset arrays (optional but safer)
+        ripplePos.fill(0);
+        rippleParams.fill(0);
+
+        let activeCount = 0;
+        for (let r = ripples.length - 1; r >= 0; r--) {
+          const ripple = ripples[r];
+          const age = elapsedTime - ripple.start;
+          
+          if (age > ripple.maxAge) {
+            ripples.splice(r, 1);
+            continue;
+          }
+          
+          if (activeCount < MAX_RIPPLES) {
+            ripplePos[activeCount * 2] = ripple.x;
+            ripplePos[activeCount * 2 + 1] = ripple.z;
+            
+            rippleParams[activeCount * 3] = ripple.start;
+            rippleParams[activeCount * 3 + 1] = ripple.strength;
+            rippleParams[activeCount * 3 + 2] = ripple.type;
+            
+            activeCount++;
+          }
+        }
 
         if (settings.autoRotate) {
           autoAngle += delta * 0.1;
@@ -1709,7 +1646,6 @@ const SceneCanvas = forwardRef(function SceneCanvas(
         // Gentler energy decay
         pointer.energy = Math.max(pointer.energy * 0.97 - 0.0008, 0);
 
-        const positions = particles.geometry.attributes.position.array;
         const scales = particles.geometry.attributes.scale.array;
         const colors = particles.geometry.attributes.color.array;
 
@@ -1766,424 +1702,78 @@ const SceneCanvas = forwardRef(function SceneCanvas(
         }
 
         const amplitude = settings.amplitude;
-        const activeBursts = [];
-        const activeShimmers = [];
-        const activeRipples = [];
-
-        // Precompute click burst contributions for the current frame
-        const burstMaxAge = 3.0;
-        const burstBaseHeight = amplitude * 1.8;
-        const burstBaseLight = 1.5;
-        const burstRingWidth = 60;
-        const burstInvRingWidth = 1 / (burstRingWidth * burstRingWidth);
-        const burstInvRingWidth2 = 1 / (burstRingWidth * burstRingWidth * 1.5);
-        const burstInvRingWidth3 = 1 / (burstRingWidth * burstRingWidth * 2);
-
-        for (let b = clickBursts.length - 1; b >= 0; b--) {
-          const burst = clickBursts[b];
-          const age = elapsedTime - burst.start;
-          if (age > burstMaxAge) {
-            clickBursts.splice(b, 1);
-            continue;
-          }
-          if (age < 0) continue;
-
-          const ageProgress = age / burstMaxAge;
-          const easedProgress = 1 - Math.pow(1 - ageProgress, 4);
-          const radius = easedProgress * 2400;
-          const fade = Math.cos(ageProgress * Math.PI * 0.5);
-          const shimmerPhase = burst.phase + age * 15;
-          const shimmerBoost = Math.sin(shimmerPhase) * 0.3 + 1;
-          const influenceRadius = radius + burstRingWidth * 4;
-
-          activeBursts.push({
-            x: burst.x,
-            z: burst.z,
-            radius,
-            invRingWidth: burstInvRingWidth,
-            invRingWidth2: burstInvRingWidth2,
-            invRingWidth3: burstInvRingWidth3,
-            heightScale: fade * shimmerBoost * burstBaseHeight,
-            scaleScale: fade * 2.5,
-            lightScale: fade * shimmerBoost * burstBaseLight,
-            influenceRadiusSq: influenceRadius * influenceRadius
-          });
-        }
-
-        // Precompute shimmer wave data upfront to avoid redundant math per point
-        const shimmerMaxAge = 8.0;
-        const shimmerWidth = 200;
-        const shimmerInvWidth = 1 / (shimmerWidth * shimmerWidth);
-        const shimmerInfluenceOffset = shimmerWidth * 3;
-        const shimmerSpeed = 120;
-
-        for (let s = shimmerWaves.length - 1; s >= 0; s--) {
-          const shimmer = shimmerWaves[s];
-          const age = elapsedTime - shimmer.start;
-          if (age < 0) continue;
-          if (age > shimmerMaxAge) {
-            shimmerWaves.splice(s, 1);
-            continue;
-          }
-
-          const lifeProgress = age / shimmerMaxAge;
-          const intensity = (1 - lifeProgress) * shimmer.intensity;
-          if (intensity <= 0.0001) continue;
-
-          const radius = age * shimmerSpeed;
-          const influenceRadius = radius + shimmerInfluenceOffset;
-
-          activeShimmers.push({
-            x: shimmer.x,
-            z: shimmer.z,
-            radius,
-            intensity,
-            distFactor: 0.02 * shimmer.frequency,
-            phaseBase: shimmer.phase + age * 8,
-            invWidth: shimmerInvWidth,
-            influenceRadiusSq: influenceRadius * influenceRadius
-          });
-        }
-
-        // Precompute ripple metadata so the inner loop stays lightweight
-        const rippleDecayBase = settings.rippleDecay * 0.8;
-        const rippleSpeedBase = settings.rippleSpeed;
-        const rippleWidthBase = settings.rippleWidth;
-        const rippleStrengthBase = settings.rippleStrength * 0.6;
-
-        for (let r = ripples.length - 1; r >= 0; r--) {
-          const ripple = ripples[r];
-          const age = elapsedTime - ripple.start;
-          const maxAge = ripple.maxAge || 8;
-          if (age > maxAge) {
-            ripples.splice(r, 1);
-            continue;
-          }
-          if (age < 0) continue;
-
-          const ageNormalized = THREE.MathUtils.clamp(age / maxAge, 0, 1);
-          let easedProgress;
-          switch (ripple.easing) {
-            case 'easeOutExpo':
-              easedProgress = easeOutExpo(ageNormalized);
-              break;
-            case 'easeOutCubic':
-              easedProgress = easeOutCubic(ageNormalized);
-              break;
-            case 'easeOutQuart':
-              easedProgress = easeOutQuart(ageNormalized);
-              break;
-            case 'easeOutQuint':
-              easedProgress = easeOutQuint(ageNormalized);
-              break;
-            case 'easeOutSine':
-              easedProgress = Math.sin((ageNormalized * Math.PI) / 2);
-              break;
-            case 'easeInOutSine':
-              easedProgress = easeInOutSine(ageNormalized);
-              break;
-            case 'easeInOutQuart':
-              easedProgress = easeInOutQuart(ageNormalized);
-              break;
-            default:
-              easedProgress = ageNormalized * ageNormalized * (3 - 2 * ageNormalized);
-          }
-
-          const ageDecay = 1.0 - easedProgress;
-          if (ageDecay <= 0.0001) {
-            continue;
-          }
-
-          let wavefront;
-          if (ripple.isSlowMotion) {
-            const slowSpeed = rippleSpeedBase / 4.0;
-            wavefront = age * slowSpeed;
-          } else {
-            wavefront = age * rippleSpeedBase * (ripple.speedMultiplier || 1.0);
-          }
-
-          const widthRaw = rippleWidthBase * (ripple.widthMultiplier || 1.0);
-          const width = widthRaw > 0.0001 ? widthRaw : 0.0001;
-          const influenceRadius = Math.max(wavefront + width * 4, width * 6) + 200;
-          const strength = ripple.strength || 1.0;
-          const colorVar = ripple.color || 1.0;
-
-          activeRipples.push({
-            x: ripple.x,
-            z: ripple.z,
-            wavefront,
-            width,
-            ageDecay,
-            decayFactor: rippleDecayBase * (ripple.decayMultiplier || 1.0),
-            frequency: ripple.frequency || 1.0,
-            type: ripple.type,
-            heightScale: rippleStrengthBase * strength,
-            scaleScale: strength * 0.5,
-            lightScale: strength * 0.6 * colorVar,
-            influenceRadiusSq: influenceRadius * influenceRadius
-          });
-        }
-
+        
+        // Optimize: Only run the heavy loop if we have active effects or need base motion
+        // The shader handles the ripples now, so we just compute base wave + pointer + effects
+        
         let i = 0;
         let j = 0;
-
+        
+        // If no special effects are active, we can simplify the loop heavily
+        // We mostly just need to update colors/scales for the "breathing" or pointer effects
+        // The position.y is reset to 0 unless effects modify it
+        
         for (let ix = 0; ix < AMOUNTX; ix++) {
           for (let iy = 0; iy < AMOUNTY; iy++) {
             const px = ix * SEPARATION - HALF_GRID_X;
             const pz = iy * SEPARATION - HALF_GRID_Y;
-            const radial = Math.sqrt(px * px + pz * pz);
-            const theta = Math.atan2(pz, px);
             const index = ix * AMOUNTY + iy;
-
+            
             let height = 0;
-            height += Math.sin(ix * settings.waveXFrequency + animationTime) * settings.amplitude;
-            height += Math.cos(iy * settings.waveYFrequency - animationTime * 1.25) * settings.amplitude * 0.6;
-            height += Math.sin(radial * settings.swirlFrequency - animationTime * 1.6) * settings.swirlStrength * settings.amplitude * 0.4;
+            
+            // Only calculate complex base waves if amplitude is significant
+            // Otherwise let the shader do the heavy lifting for ripples
+            if (settings.amplitude > 1.0) {
+              height += Math.sin(ix * settings.waveXFrequency + animationTime) * settings.amplitude;
+              height += Math.cos(iy * settings.waveYFrequency - animationTime * 1.25) * settings.amplitude * 0.6;
+              
+              const radial = Math.sqrt(px * px + pz * pz);
+              height += Math.sin(radial * settings.swirlFrequency - animationTime * 1.6) * settings.swirlStrength * settings.amplitude * 0.4;
+              
+              // Pointer interaction (CPU side - could also be moved to shader but kept here for flexibility)
+              const dxMouse = px - pointer.worldX;
+              const dzMouse = pz - pointer.worldZ;
+              const mouseDist = Math.sqrt(dxMouse * dxMouse + dzMouse * dzMouse) + 0.0001;
+              
+              if (settings.mouseInfluence > 0.0001) {
+                const mouseEnvelope = Math.exp(-mouseDist * settings.mouseInfluence * 0.4);
+                const mouseWave = Math.cos(mouseDist * settings.mouseInfluence * 10 - animationTime * 1.8);
+                height += mouseWave * pointer.energy * settings.amplitude * 0.2 * mouseEnvelope;
+              }
+              
+              if (isHomeSceneRef.current) {
+                const theta = Math.atan2(pz, px);
+                const pointerReach = Math.exp(-mouseDist * 0.00055);
+                const pointerEnergyLift = pointerReach * (0.18 + pointer.energy * 0.38);
+                const glidePhase = mouseDist * 0.006 - elapsedTime * (1.6 + pointer.flowStrength * 0.22);
+                const baseGlide = Math.sin(glidePhase);
+                height += baseGlide * settings.amplitude * 0.2 * pointerEnergyLift;
+                
+                const flowStrength = pointer.flowStrength;
+                if (flowStrength > 0.001) {
+                  const directional = Math.cos(theta - pointer.flowAngle) * pointerReach;
+                  const flowWave = Math.sin(glidePhase * 0.6 + radial * 0.0008);
+                  const flowLift = (directional * 0.4 + flowWave * 0.25) * settings.amplitude * flowStrength * 0.28 * pointerReach;
+                  height += flowLift;
+                }
+              }
+            }
 
-            // Smoother mouse influence
-            const dxMouse = px - pointer.worldX;
-            const dzMouse = pz - pointer.worldZ;
-            const mouseDist = Math.sqrt(dxMouse * dxMouse + dzMouse * dzMouse) + 0.0001;
-            const mouseEnvelope = Math.exp(-mouseDist * settings.mouseInfluence * 0.4);  // Gentler falloff
-            // Smoother wave pattern with less aggressive frequency
-            const mouseWave = Math.cos(mouseDist * settings.mouseInfluence * 10 - animationTime * 1.8);
-            height += mouseWave * pointer.energy * settings.amplitude * 0.2 * mouseEnvelope;
-
+            // Handle Active Effects (Starfield, Mandelbrot, etc.)
             let scaleDelta = 0;
             let lightDelta = 0;
 
-            if (isHomeSceneRef.current) {
-              const pointerReach = Math.exp(-mouseDist * 0.00055);
-              const pointerEnergyLift = pointerReach * (0.18 + pointer.energy * 0.38);
-              const glidePhase = mouseDist * 0.006 - elapsedTime * (1.6 + pointer.flowStrength * 0.22);
-              const baseGlide = Math.sin(glidePhase);
-              height += baseGlide * settings.amplitude * 0.2 * pointerEnergyLift;
-              scaleDelta += pointerEnergyLift * 0.32;
-              lightDelta += pointerEnergyLift * 0.26;
-
-              const flowStrength = pointer.flowStrength;
-              if (flowStrength > 0.001) {
-                const directional = Math.cos(theta - pointer.flowAngle) * pointerReach;
-                const flowWave = Math.sin(glidePhase * 0.6 + radial * 0.0008);
-                const flowLift = (directional * 0.4 + flowWave * 0.25) * settings.amplitude * flowStrength * 0.28 * pointerReach;
-                height += flowLift;
-                scaleDelta += flowStrength * pointerReach * 0.14;
-                lightDelta += Math.max(0, directional) * flowStrength * 0.22 * pointerReach + flowStrength * pointerReach * 0.08;
-              }
-            }
-
-            // Click burst effects (instant feedback at click point)
-            for (let b = 0; b < activeBursts.length; b++) {
-              const burst = activeBursts[b];
-              const dx = px - burst.x;
-              const dz = pz - burst.z;
-              const distSq = dx * dx + dz * dz;
-              if (distSq > burst.influenceRadiusSq) continue;
-
-              const dist = Math.sqrt(distSq);
-              const ring1Dist = Math.abs(dist - burst.radius);
-              const ring2Dist = Math.abs(dist - burst.radius * 0.7);
-              const ring3Dist = Math.abs(dist - burst.radius * 0.4);
-
-              const ring1Profile = Math.exp(-(ring1Dist * ring1Dist) * burst.invRingWidth);
-              const ring2Profile = Math.exp(-(ring2Dist * ring2Dist) * burst.invRingWidth2);
-              const ring3Profile = Math.exp(-(ring3Dist * ring3Dist) * burst.invRingWidth3);
-
-              const composite = ring1Profile + ring2Profile * 0.6 + ring3Profile * 0.3;
-              if (composite < 1e-4) continue;
-
-              height += composite * burst.heightScale;
-              scaleDelta += composite * burst.scaleScale;
-              lightDelta += composite * burst.lightScale;
-            }
-
-            // Beautiful shimmer waves that follow ripples
-            for (let s = 0; s < activeShimmers.length; s++) {
-              const shimmer = activeShimmers[s];
-              const dx = px - shimmer.x;
-              const dz = pz - shimmer.z;
-              const distSq = dx * dx + dz * dz;
-              if (distSq > shimmer.influenceRadiusSq) continue;
-
-              const dist = Math.sqrt(distSq);
-              const shimmerDist = dist - shimmer.radius;
-              const shimmerEnvelope = Math.exp(-(shimmerDist * shimmerDist) * shimmer.invWidth);
-              if (shimmerEnvelope < 1e-5) continue;
-
-              const oscillation = Math.sin(dist * shimmer.distFactor + shimmer.phaseBase);
-              const shimmerEffect = shimmerEnvelope * oscillation * shimmer.intensity;
-
-              height += shimmerEffect * amplitude * 0.15;
-              const shimmerAbs = Math.abs(shimmerEffect);
-              scaleDelta += shimmerAbs * 0.3;
-              if (shimmerEffect > 0) {
-                lightDelta += shimmerEffect * 0.4;
-              }
-            }
-
-            // Enhanced beautiful ripple rendering with smooth easing
-            for (let r = 0; r < activeRipples.length; r++) {
-              const ripple = activeRipples[r];
-              const dx = px - ripple.x;
-              const dz = pz - ripple.z;
-              const distSq = dx * dx + dz * dz;
-              if (distSq > ripple.influenceRadiusSq) continue;
-
-              const dist = Math.sqrt(distSq) + 0.0001;
-              const envelope = Math.exp(-dist * ripple.decayFactor) * ripple.ageDecay;
-              if (envelope < 1e-4) continue;
-
-              const normalized = (dist - ripple.wavefront) / ripple.width;
-              const frequency = ripple.frequency;
-              let rippleProfile = 0;
-
-              switch (ripple.type) {
-                case 'droplet_flash': {
-                  const flashCore = Math.exp(-normalized * normalized * 14);
-                  const flashRing = Math.exp(-Math.pow(normalized - 0.18, 2) * 20);
-                  const flashFalloff = Math.exp(-Math.pow(normalized + 0.35, 2) * 6);
-                  rippleProfile = flashCore * 1.8 + flashRing * 1.1 - flashFalloff * 0.35;
-                  break;
-                }
-
-                case 'droplet_front': {
-                  const crestEdge = Math.exp(-Math.pow(normalized - 0.05, 2) * 16);
-                  const crestBody = Math.exp(-normalized * normalized * 0.6);
-                  const trough = Math.exp(-Math.pow(normalized - 0.55, 2) * 2.4);
-                  const surfaceNoise =
-                    Math.sin((normalized - 0.12) * Math.PI * 1.6 * frequency) *
-                    Math.exp(-Math.abs(normalized - 0.12) * 2.3) *
-                    0.22;
-                  rippleProfile = crestEdge * 1.1 + crestBody * 1.0 + surfaceNoise - trough * 0.6;
-                  break;
-                }
-
-                case 'droplet_inner': {
-                  const reboundPeak = Math.exp(-Math.pow(normalized + 0.18, 2) * 9);
-                  const reboundRing = Math.exp(-Math.pow(normalized + 0.42, 2) * 7);
-                  const reboundOsc =
-                    Math.sin((normalized + 0.08) * Math.PI * 2.2 * frequency) *
-                    Math.exp(-Math.abs(normalized + 0.08) * 3.2) *
-                    0.18;
-                  rippleProfile = reboundPeak * 1.2 - reboundRing * 0.5 + reboundOsc;
-                  break;
-                }
-
-                case 'droplet_trail': {
-                  const trailingEnvelope = Math.exp(-Math.pow(normalized + 0.15, 2) * 1.4);
-                  const trailingWave =
-                    Math.sin((normalized + 0.15) * Math.PI * 2.8 * frequency) *
-                    Math.exp(-Math.abs(normalized + 0.15) * 2.6) *
-                    0.6;
-                  const trailingCrest = Math.exp(-Math.pow(normalized - 0.45, 2) * 3.2) * 0.4;
-                  rippleProfile = trailingWave + trailingEnvelope * 0.45 - trailingCrest * 0.25;
-                  break;
-                }
-
-                case 'droplet_caustic': {
-                  const halo = Math.exp(-normalized * normalized * 0.25);
-                  const crest = Math.exp(-Math.pow(normalized - 0.35, 2) * 5.5);
-                  const sparkle = Math.sin((normalized - 0.22) * Math.PI) * 0.12;
-                  rippleProfile = halo * 0.45 + crest * 0.7 + sparkle * halo;
-                  break;
-                }
-
-                case 'flash': {
-                  const flashPeak = Math.exp(-normalized * normalized * 5.0);
-                  const flashRing = Math.exp(-Math.pow(Math.abs(normalized - 0.15), 2) * 12);
-                  rippleProfile = flashPeak * 2.0 + flashRing * 1.0;
-                  break;
-                }
-
-                case 'impact': {
-                  const impactPeak = Math.exp(-normalized * normalized * 3.5);
-                  const impactRing1 = Math.exp(-Math.pow(Math.abs(normalized - 0.25), 2) * 10);
-                  const impactRing2 = Math.exp(-Math.pow(Math.abs(normalized - 0.5), 2) * 8);
-                  rippleProfile = impactPeak * 1.6 + impactRing1 * 0.9 + impactRing2 * 0.4;
-                  break;
-                }
-
-                case 'primary': {
-                  const primaryGaussian = Math.exp(-normalized * normalized * 0.7);
-                  const primaryWave1 =
-                    Math.sin(normalized * Math.PI * 2 * frequency) * 0.2 * Math.exp(-Math.abs(normalized) * 1.5);
-                  const primaryWave2 =
-                    Math.cos(normalized * Math.PI * 3 * frequency) * 0.1 * Math.exp(-Math.abs(normalized) * 2);
-                  const primaryDetail =
-                    Math.sin((normalized - 0.2) * Math.PI * 4) * 0.05 * Math.exp(-Math.abs(normalized - 0.2) * 4);
-                  rippleProfile = primaryGaussian * 1.1 + primaryWave1 + primaryWave2 + primaryDetail;
-                  break;
-                }
-
-                case 'harmonic': {
-                  const harmonicBase = Math.exp(-normalized * normalized * 1.0);
-                  const harmonic1 = Math.sin(normalized * Math.PI * 2.5 * frequency) * 0.3;
-                  const harmonic2 = Math.sin(normalized * Math.PI * 3.7 * frequency) * 0.2;
-                  const harmonic3 = Math.cos(normalized * Math.PI * 1.3 * frequency) * 0.15;
-                  rippleProfile = harmonicBase * 0.8 + (harmonic1 + harmonic2 + harmonic3) * Math.exp(-Math.abs(normalized) * 1.2);
-                  break;
-                }
-
-                case 'secondary': {
-                  const secondaryGaussian = Math.exp(-normalized * normalized * 1.3);
-                  const secondaryDetail1 =
-                    Math.cos(normalized * Math.PI * 3.5) * 0.12 * Math.exp(-Math.abs(normalized) * 2.5);
-                  const secondaryDetail2 =
-                    Math.sin(normalized * Math.PI * 5) * 0.08 * Math.exp(-Math.abs(normalized) * 3);
-                  rippleProfile = secondaryGaussian * 0.8 + secondaryDetail1 + secondaryDetail2;
-                  break;
-                }
-
-                case 'glow': {
-                  const glowGaussian = Math.exp(-normalized * normalized * 0.3);
-                  const glowWave = Math.sin(normalized * Math.PI * 0.8) * 0.1;
-                  rippleProfile = (glowGaussian + glowWave * glowGaussian) * 0.5;
-                  break;
-                }
-
-                case 'echo': {
-                  const echoGaussian = Math.exp(-normalized * normalized * 0.5);
-                  const echoWave1 = Math.sin(normalized * Math.PI * 2) * 0.15;
-                  const echoWave2 = Math.cos(normalized * Math.PI * 1.5) * 0.1;
-                  rippleProfile = echoGaussian * 0.6 + (echoWave1 + echoWave2) * echoGaussian;
-                  break;
-                }
-
-                case 'resonance': {
-                  const resonanceGaussian = Math.exp(-normalized * normalized * 0.2);
-                  const resonanceWave = Math.sin(normalized * Math.PI * 0.5) * 0.2;
-                  rippleProfile = resonanceGaussian * 0.3 + resonanceWave * resonanceGaussian * 0.2;
-                  break;
-                }
-
-                default: {
-                  const standardCrest = Math.exp(-normalized * normalized * 1.0);
-                  const standardTrough = Math.exp(-(normalized + 0.8) * (normalized + 0.8) * 1.2);
-                  const standardOscillation = Math.sin(normalized * Math.PI * 1.5) * 0.18;
-                  rippleProfile = (standardCrest - standardTrough * 0.5) * 0.9 + standardOscillation;
-                }
-              }
-
-              const rippleContribution = rippleProfile * ripple.heightScale * envelope;
-              height += rippleContribution;
-
-              const sparkle = Math.max(0, rippleProfile * 0.8);
-              if (sparkle > 0) {
-                const sparkleEnvelope = sparkle * envelope;
-                scaleDelta += sparkleEnvelope * ripple.scaleScale;
-                lightDelta += sparkleEnvelope * ripple.lightScale;
-              }
-            }
-
             if (activeEffect?.perPoint) {
               // Calculate fade factor if effect is fading out
-              // This gradually reduces effect intensity over 2.5 seconds
               let fadeFactor = 1.0;
               if (effectRef.fadingOut && effectRef.fadeStartTime > 0) {
-                const fadeProgress = (elapsedTime - effectRef.fadeStartTime) / 2.5; // 2.5s fade duration
-                fadeFactor = Math.max(0, 1.0 - fadeProgress); // Linear fade from 1.0 to 0.0
-                fadeFactor = fadeFactor * fadeFactor; // Square for smoother easing (fade faster at end)
+                const fadeProgress = (elapsedTime - effectRef.fadeStartTime) / 2.5;
+                fadeFactor = Math.max(0, 1.0 - fadeProgress);
+                fadeFactor = fadeFactor * fadeFactor;
               }
+              
+              const radial = Math.sqrt(px * px + pz * pz);
+              const theta = Math.atan2(pz, px);
               
               const result = activeEffect.perPoint({
                 ix,
@@ -2201,28 +1791,29 @@ const SceneCanvas = forwardRef(function SceneCanvas(
                 pointer
               });
               
-              // Apply effect contributions with fade factor for smooth transition
               if (result) {
-                if (typeof result.height === 'number') {
-                  height += result.height * fadeFactor;
-                }
-                if (typeof result.scale === 'number') {
-                  scaleDelta += result.scale * fadeFactor;
-                }
-                if (typeof result.light === 'number') {
-                  lightDelta += result.light * fadeFactor;
-                }
+                if (typeof result.height === 'number') height += result.height * fadeFactor;
+                if (typeof result.scale === 'number') scaleDelta += result.scale * fadeFactor;
+                if (typeof result.light === 'number') lightDelta += result.light * fadeFactor;
               }
             }
 
-            positions[i + 1] = height;
+            // NOTE: We do NOT calculate ripples here anymore!
+            // Ripples are handled entirely in the Vertex Shader.
 
+            // Update attributes
+            // We still update position because base waves and effects run here
+            // The shader will ADD the ripple displacement to this value
+            particles.geometry.attributes.position.array[i + 1] = height;
+
+            // Calculate color/scale based on height + effects
             const heightNormalized = THREE.MathUtils.clamp(0.5 + height * 0.0015, 0, 1);
             const baseScale = 0.6 + heightNormalized * 2.1;
             scales[j] = THREE.MathUtils.clamp(baseScale + scaleDelta, 0.08, 6);
 
             const baseGray = THREE.MathUtils.clamp(settings.brightness + heightNormalized * settings.contrast * 0.65, 0, 1);
             const grayscale = THREE.MathUtils.clamp(baseGray + lightDelta, 0, 1);
+            
             const ci = j * 3;
             colors[ci] = grayscale;
             colors[ci + 1] = grayscale;
@@ -2317,12 +1908,81 @@ const SceneCanvas = forwardRef(function SceneCanvas(
             varying vec3 vColor;
 
             uniform float pointMultiplier;
+            uniform float uTime;
+            uniform vec2 uRipplePos[30];
+            uniform vec3 uRippleParams[30]; // start, strength, type
+
+            // Optimized Physics Constants - Tuned for organic fluidity
+            const float WAVE_SPEED = 280.0; // Slower for more weight
+            const float DECAY = 1.8;
 
             void main() {
-              vColor = color;
-              vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-              gl_PointSize = scale * pointMultiplier * (300.0 / -mvPosition.z);
+              vec3 basePos = position;
+              float heightOffset = 0.0;
+              float lightOffset = 0.0;
+              
+              // Accumulate ripple effects
+              for(int i = 0; i < 30; i++) {
+                float startTime = uRippleParams[i].x;
+                if(startTime == 0.0) continue;
+                
+                float age = uTime - startTime;
+                if(age < 0.0 || age > 8.0) continue; // Longer lifetime for smooth fade
+                
+                float strength = uRippleParams[i].y;
+                float type = uRippleParams[i].z;
+                
+                // Distance from ripple center
+                float d = distance(basePos.xz, uRipplePos[i]);
+                
+                // 1. Main Wave Packet (Sinc-like function)
+                float wavePos = age * WAVE_SPEED;
+                float distDiff = d - wavePos;
+                float width = 220.0 + age * 60.0; // Wider, spreading wave
+                
+                if(abs(distDiff) < width) {
+                   // Normalized position (-1 to 1)
+                   float t = distDiff / width;
+                   
+                   // Smooth, rolling sine wave instead of sharp packet
+                   // The 'cos' creates the peaks/troughs, exp smooths the edges
+                   float wave = cos(t * 3.14159 * 2.5) * exp(-t * t * 3.5);
+                   
+                   // Organic decay: starts strong, fades smoothly but lingers
+                   float fade = exp(-age * 0.6) * exp(-d * 0.0003);
+                   
+                   // Apply height
+                   heightOffset += wave * strength * 55.0 * fade;
+                   
+                   // Add "glint" only to the peaks
+                   lightOffset += max(0.0, wave) * strength * 0.5 * fade;
+                }
+                
+                // 2. Impact Crater (The "Splash")
+                if(age < 2.0 && d < 400.0) {
+                    float tRebound = age * 1.8; 
+                    // Damped spring motion at the center
+                    float centerMotion = -120.0 * exp(-tRebound * 1.5) * cos(tRebound * 4.0);
+                    
+                    // Soft falloff from center
+                    float centerMask = exp(-d * d * 0.00004);
+                    
+                    heightOffset += centerMotion * strength * centerMask;
+                }
+              }
+              
+              basePos.y += heightOffset;
+              vec4 mvPosition = modelViewMatrix * vec4(basePos, 1.0);
+              
+              // Modify size based on depth and activity
+              float sizeMod = 1.0 + lightOffset * 0.8;
+              gl_PointSize = scale * sizeMod * pointMultiplier * (300.0 / -mvPosition.z);
               gl_Position = projectionMatrix * mvPosition;
+              
+              // Pass color to fragment
+              // Brighten the peaks
+              vec3 finalColor = color + vec3(lightOffset);
+              vColor = finalColor;
             }
           `,
           fragmentShader: /* glsl */ `
