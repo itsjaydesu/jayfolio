@@ -2673,7 +2673,6 @@ a {
   display: grid;
   place-items: stretch;
   aspect-ratio: 3 / 2;
-  min-height: clamp(260px, 38vw, 540px);
   --detail-media-radius: clamp(20px, 3vw, 28px);
   border-radius: var(--detail-media-radius);
   clip-path: inset(0 round var(--detail-media-radius));
@@ -2699,7 +2698,6 @@ a {
 @media (max-width: 900px) {
   .detail-view__media {
     aspect-ratio: 3 / 2;
-    min-height: clamp(220px, 60vw, 400px);
     max-width: 100%;
     justify-self: stretch;
     --detail-media-radius: clamp(18px, 4vw, 24px);
@@ -10988,7 +10986,6 @@ body[data-language-transitioning="true"] .language-transition-root {
   }
 
   .detail-view__media {
-    height: clamp(220px, 68vw, 340px);
     border-radius: 24px;
   }
 
@@ -11208,8 +11205,6 @@ body[data-language-transitioning="true"] .language-transition-root {
   line-height: 1.55;
 }
 .project-entry__surface--compact .project-entry__figure {
-  min-height: 0;
-  height: clamp(140px, 32vw, 200px);
   border-radius: clamp(12px, 2.2vw, 16px);
 }
 .project-entry__surface--compact .project-entry__figure--words,
@@ -11332,7 +11327,6 @@ body[data-language-transitioning="true"] .language-transition-root {
   place-items: stretch;
   width: 100%;
   aspect-ratio: 3 / 2;
-  min-height: clamp(180px, 24vw, 260px);
   align-self: stretch;
   justify-self: stretch;
   --entry-figure-radius: clamp(18px, 3.2vw, 24px);
