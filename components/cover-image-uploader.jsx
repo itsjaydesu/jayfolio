@@ -23,8 +23,7 @@ const MAX_FILE_SIZE_BYTES = 25 * 1024 * 1024;
 const ALT_MAX_LENGTH = 180;
 const MEDIA_PAGE_SIZE = 18;
 const ASPECT_OPTIONS = [
-  { id: "three-two", label: "3:2", value: 3 / 2 },
-  { id: "one-one", label: "1:1", value: 1 }
+  { id: "three-two", label: "3:2", value: 3 / 2 }
 ];
 const DEFAULT_ASPECT = ASPECT_OPTIONS[0];
 const DEFAULT_WIDTH_PERCENT = 90;
