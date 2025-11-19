@@ -14,12 +14,14 @@ import { useAdminStatus } from "../lib/useAdminStatus";
 import { useLanguage } from "../contexts/LanguageContext";
 import { t, getLocalizedContent } from "../lib/translations";
 import LanguageTransitionRoot from "./LanguageTransitionRoot";
+import FieldEffectsPanel from "./FieldEffectsPanel";
 
 const DOTFIELD_OVERLAY_FADE_MS = 520;
 // Minimum header backdrop opacity on subpages so the menu is readable
 // over content even at scroll position 0. Kept subtle to avoid a heavy box.
 const HEADER_BASE_SHADE = 0.16; // ~16% base, escalates with scroll
 const NAV_CONDENSED_BREAKPOINT = 540;
+// eslint-disable-next-line no-unused-vars
 const DOTFIELD_EFFECT_SEQUENCE = [
   'jitter',
   'swirlPulse',
@@ -104,7 +106,7 @@ export default function SiteShell({ children, channelContent }) {
   const [mobileMenuFocusIndex, setMobileMenuFocusIndex] = useState(-1);
   const [mobileMenuPosition, setMobileMenuPosition] = useState(null);
   const [isNavCondensed, setIsNavCondensed] = useState(false);
-
+  
   const warmSceneChunk = useCallback(() => {
     if (scenePreloadTriggeredRef.current) {
       return;
@@ -257,6 +259,7 @@ export default function SiteShell({ children, channelContent }) {
     [language]
   );
 
+  // eslint-disable-next-line no-unused-vars
   const overlayEffectLabels = useMemo(
     () => ({
       calmReset: t('effects.calmReset', language),
@@ -272,6 +275,7 @@ export default function SiteShell({ children, channelContent }) {
     [language]
   );
 
+  // eslint-disable-next-line no-unused-vars
   const overlayEffectTooltips = useMemo(
     () => ({
       calmReset: t('effects.calmReset.tooltip', language),
@@ -1877,46 +1881,21 @@ export default function SiteShell({ children, channelContent }) {
             aria-label={fieldEffectsLabel}
             title={fieldEffectsLabel}
           >
-            <svg
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-              fill="currentColor"
-            >
-              <circle cx="5" cy="12" r="2" />
-              <circle cx="12" cy="12" r="2" />
-              <circle cx="19" cy="12" r="2" />
-            </svg>
+            <DotfieldIcon aria-hidden="true" />
           </button>
           {isDotfieldFieldPanelOpen ? (
-            <div className="dotfield-overlay__panel" id="dotfield-overlay-panel" role="menu">
-              <div className="dotfield-overlay__panel-header">
-                <span>{fieldEffectsLabel}</span>
-                {hasActiveEffect && activeEffectInfo ? (
-                  <span>{t('menu.tooltip.effect-active', language, { effect: activeEffectInfo.name })}</span>
-                ) : null}
-              </div>
-              <button
-                type="button"
-                className="dotfield-overlay__panel-btn dotfield-overlay__panel-btn--zen"
-                onClick={() => handleFieldEffect('calmReset')}
-                title={t('effects.calmReset.tooltip', language)}
-              >
-                <span>{t('effects.calmReset', language)}</span>
-              </button>
-              <div className="dotfield-overlay__panel-grid">
-                {DOTFIELD_EFFECT_SEQUENCE.map((effectKey) => (
-                  <button
-                    key={effectKey}
-                    type="button"
-                    className="dotfield-overlay__panel-btn"
-                    onClick={() => handleFieldEffect(effectKey)}
-                    title={overlayEffectTooltips[effectKey]}
-                  >
-                    <span>{overlayEffectLabels[effectKey]}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
+            <FieldEffectsPanel
+              activeEffectInfo={hasActiveEffect ? activeEffectInfo : null}
+              onFieldEffect={handleFieldEffect}
+              className="dotfield-overlay__panel"
+              style={{
+                position: 'absolute',
+                bottom: '100%',
+                right: 0,
+                marginBottom: '12px',
+                transformOrigin: 'bottom right'
+              }}
+            />
           ) : null}
         </div>
       </div>

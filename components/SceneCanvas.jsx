@@ -113,6 +113,9 @@ const SceneCanvas = forwardRef(function SceneCanvas(
 ) {
   const containerRef = useRef(null);
   const stateRef = useRef(null);
+  const rainIntervalRef = useRef(null);
+  const rainModeRef = useRef(false);
+
   const effectChangeRef = useRef(onEffectChange);
   useEffect(() => {
     effectChangeRef.current = onEffectChange;
@@ -141,7 +144,6 @@ const SceneCanvas = forwardRef(function SceneCanvas(
     let isCancelled = false;
 
     async function bootstrap() {
-      console.log('[SceneCanvas] 🚀 bootstrap() called at', performance.now().toFixed(2), 'ms');
       const container = containerRef.current;
       if (!container) {
         return () => {};
@@ -280,11 +282,17 @@ const SceneCanvas = forwardRef(function SceneCanvas(
       };
 
       // Beautiful easing function for ultra-smooth ripples
+      // eslint-disable-next-line no-unused-vars
       const easeInOutSine = (t) => -(Math.cos(Math.PI * t) - 1) / 2;
+      // eslint-disable-next-line no-unused-vars
       const easeOutExpo = (t) => t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
+      // eslint-disable-next-line no-unused-vars
       const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
+      // eslint-disable-next-line no-unused-vars
       const easeOutQuart = (t) => 1 - Math.pow(1 - t, 4);
+      // eslint-disable-next-line no-unused-vars
       const easeOutQuint = (t) => 1 - Math.pow(1 - t, 5);
+      // eslint-disable-next-line no-unused-vars
       const easeInOutQuart = (t) => t < 0.5 ? 8 * t * t * t * t : 1 - Math.pow(-2 * t + 2, 4) / 2;
       
       // Create a 4x slower version of the ripple effect for right-clicks
@@ -452,7 +460,9 @@ const SceneCanvas = forwardRef(function SceneCanvas(
         pointMultiplier: { value: 28 },
         uTime: { value: 0 },
         uRipplePos: { value: new Float32Array(MAX_RIPPLES * 2) }, // x, z pair
-        uRippleParams: { value: new Float32Array(MAX_RIPPLES * 3) } // startTime, strength, type
+        uRippleParams: { value: new Float32Array(MAX_RIPPLES * 3) }, // startTime, strength, type
+        uPointer: { value: new THREE.Vector3(0, 0, 0) }, // x, z, active (1.0 or 0.0)
+        uPointerConfig: { value: new THREE.Vector3(0.001, 0.2, 0.0) } // influence, energy, unused
       };
 
       const settings = { ...FIELD_DEFAULT_BASE };
@@ -467,9 +477,7 @@ const SceneCanvas = forwardRef(function SceneCanvas(
       });
 
       try {
-        console.log('[SceneCanvas] 📡 Fetching field-settings at', performance.now().toFixed(2), 'ms');
         const response = await fetch('/api/field-settings', { cache: 'no-store' });
-        console.log('[SceneCanvas] 📥 Field-settings response at', performance.now().toFixed(2), 'ms');
         if (response.ok) {
           const payload = await response.json();
           if (payload?.base) {
@@ -642,6 +650,12 @@ const SceneCanvas = forwardRef(function SceneCanvas(
             );
             bindGuiControl('autoRotate', interactionFolder.add(settings, 'autoRotate'), true);
             bindGuiControl('showStats', interactionFolder.add(settings, 'showStats').name('Show Stats'), true);
+            
+            // Add Rain Toggle to Interaction Folder
+            // eslint-disable-next-line no-unused-vars
+            const rainController = interactionFolder.add({ toggleRain: () => actions.toggleRain() }, 'toggleRain').name('Toggle Rain Mode');
+            // Keep reference if needed, though actions.toggleRain handles state
+            
             interactionFolder.open();
 
             const ranges = {
@@ -679,12 +693,39 @@ const SceneCanvas = forwardRef(function SceneCanvas(
                   controller.setValue(nextValue);
                 }
               },
+              toggleRain: () => {
+                const isActive = !rainModeRef.current;
+                rainModeRef.current = isActive;
+                if (isActive) {
+                  // Start Rain with variable timing
+                  const scheduleNextDrop = () => {
+                    if (!rainModeRef.current) return;
+                    
+                    // Randomize timing for organic feel (200ms to 1500ms)
+                    const nextDelay = 200 + Math.random() * 1300;
+                    
+                    if (!paused) {
+                        const x = (Math.random() * 2 - 1) * HALF_GRID_X * 1.2;
+                        const z = (Math.random() * 2 - 1) * HALF_GRID_Y * 1.2;
+                        const strength = 0.5 + Math.random() * 0.8;
+                        stateRef.current?.addRipple?.(x, z, strength);
+                    }
+                    rainIntervalRef.current = setTimeout(scheduleNextDrop, nextDelay);
+                  };
+                  scheduleNextDrop();
+                } else {
+                  // Stop Rain
+                  if (rainIntervalRef.current) clearTimeout(rainIntervalRef.current);
+                  rainIntervalRef.current = null;
+                }
+              },
               reset: () => {
                 stateRef.current?.resetToDefaults?.();
               }
             };
 
             instance.add(actions, 'randomize').name('Randomize');
+            // instance.add(actions, 'toggleRain').name('Toggle Rain Mode'); // Moved to Interaction folder
             instance.add(actions, 'reset').name('Reset Defaults');
 
             gui = instance;
@@ -1490,8 +1531,10 @@ const SceneCanvas = forwardRef(function SceneCanvas(
       function onPointerLeave() {
         pointer.targetX = 0;
         pointer.targetY = 0;
-        pointer.targetWorldX = 0;
-        pointer.targetWorldZ = 0;
+        // Don't reset world coords to 0, just let them linger or use last known
+        // pointer.targetWorldX = 0; 
+        // pointer.targetWorldZ = 0;
+        
         // Smoother velocity decay on pointer leave
         pointer.velocityX *= 0.6;
         pointer.velocityY *= 0.6;
@@ -1576,6 +1619,8 @@ const SceneCanvas = forwardRef(function SceneCanvas(
         
         // Update uniforms
         uniforms.uTime.value = elapsedTime;
+        uniforms.uPointer.value.set(pointer.worldX, pointer.worldZ, 1.0);
+        uniforms.uPointerConfig.value.set(settings.mouseInfluence, pointer.energy, 0.0);
 
         // Pack ripples into flat arrays for the shader
         // We use a fixed size array to avoid reallocation
@@ -1701,6 +1746,7 @@ const SceneCanvas = forwardRef(function SceneCanvas(
           }
         }
 
+        // eslint-disable-next-line no-unused-vars
         const amplitude = settings.amplitude;
         
         // Optimize: Only run the heavy loop if we have active effects or need base motion
@@ -1911,6 +1957,8 @@ const SceneCanvas = forwardRef(function SceneCanvas(
             uniform float uTime;
             uniform vec2 uRipplePos[30];
             uniform vec3 uRippleParams[30]; // start, strength, type
+            uniform vec3 uPointer; // x, z, active
+            uniform vec3 uPointerConfig; // influence, energy, unused
 
             // Optimized Physics Constants - Tuned for organic fluidity
             const float WAVE_SPEED = 280.0; // Slower for more weight
@@ -1920,6 +1968,36 @@ const SceneCanvas = forwardRef(function SceneCanvas(
               vec3 basePos = position;
               float heightOffset = 0.0;
               float lightOffset = 0.0;
+              float scaleMod = 1.0;
+              
+              // === Magnetic Cursor Effect ===
+              // Subtle repulsion/attraction that follows the mouse
+              float dPointer = distance(basePos.xz, uPointer.xy);
+              float influenceRadius = 600.0;
+              
+              // Create a smooth falloff field around cursor
+              float pointerField = max(0.0, 1.0 - dPointer / influenceRadius);
+              pointerField = pow(pointerField, 2.5); // Sharpen the peak
+              
+              // Interactive "Magnetism"
+              // Gentle wave that follows the cursor movement
+              float pointerWave = sin(dPointer * 0.015 - uTime * 3.0) * pointerField;
+              
+              // Add to height based on mouse energy (movement speed)
+              float energy = uPointerConfig.y; // pointer.energy
+              heightOffset += pointerWave * 40.0 * energy;
+              
+              // Push dots away from cursor slightly (XZ displacement)
+              if (pointerField > 0.01) {
+                  vec2 direction = normalize(basePos.xz - uPointer.xy);
+                  float pushStrength = 25.0 * pointerField * energy;
+                  basePos.x += direction.x * pushStrength;
+                  basePos.z += direction.y * pushStrength;
+                  
+                  // Highlight dots near cursor
+                  lightOffset += pointerField * 0.3 * energy;
+                  scaleMod += pointerField * 0.4 * energy;
+              }
               
               // Accumulate ripple effects
               for(int i = 0; i < 30; i++) {
@@ -1975,7 +2053,7 @@ const SceneCanvas = forwardRef(function SceneCanvas(
               vec4 mvPosition = modelViewMatrix * vec4(basePos, 1.0);
               
               // Modify size based on depth and activity
-              float sizeMod = 1.0 + lightOffset * 0.8;
+              float sizeMod = (1.0 + lightOffset * 0.8) * scaleMod;
               gl_PointSize = scale * sizeMod * pointMultiplier * (300.0 / -mvPosition.z);
               gl_Position = projectionMatrix * mvPosition;
               
@@ -1989,12 +2067,27 @@ const SceneCanvas = forwardRef(function SceneCanvas(
             varying vec3 vColor;
             uniform float opacity;
 
+            // Gradient Colors (Monochrome - Dark Gray to Bright White)
+            const vec3 COLOR_DEEP = vec3(0.1, 0.1, 0.1); 
+            const vec3 COLOR_HIGH = vec3(0.95, 0.95, 0.95);
+
             void main() {
               vec2 delta = gl_PointCoord - vec2(0.5);
               float dist = dot(delta, delta);
               if (dist > 0.25) discard;
+              
               float falloff = smoothstep(0.25, 0.0, dist);
-              gl_FragColor = vec4(vColor, falloff * opacity);
+              
+              // Dynamic Gradient Mixer based on brightness (which proxies height)
+              // vColor is essentially grayscale brightness from Vertex Shader
+              float brightness = vColor.r;
+              
+              // Mix base color with gradient based on activity
+              // Low activity = Original Grey/White
+              // High activity = Color Gradient
+              vec3 dynamicColor = mix(vColor, mix(COLOR_DEEP, COLOR_HIGH, brightness), brightness * 0.6);
+              
+              gl_FragColor = vec4(dynamicColor, falloff * opacity);
             }
           `,
           transparent: true,
@@ -2013,9 +2106,7 @@ const SceneCanvas = forwardRef(function SceneCanvas(
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.outputColorSpace = THREE.SRGBColorSpace;
         renderer.toneMapping = THREE.ReinhardToneMapping;
-        console.log('[SceneCanvas] 🎨 Appending renderer.domElement at', performance.now().toFixed(2), 'ms');
         container.appendChild(renderer.domElement);
-        console.log('[SceneCanvas] ✅ renderer.domElement appended at', performance.now().toFixed(2), 'ms');
 
         // Only load Stats lazily if explicitly enabled later
         // This avoids pulling the module and creating DOM on initial load
@@ -2032,11 +2123,9 @@ const SceneCanvas = forwardRef(function SceneCanvas(
       init();
       animate();
 
-      console.log('[SceneCanvas] 🔄 Removing is-ready class at', performance.now().toFixed(2), 'ms');
       container.classList.remove('is-ready');
 
       const markReady = () => {
-        console.log('[SceneCanvas] 🎯 Adding is-ready class at', performance.now().toFixed(2), 'ms');
         // Raise renderer pixel ratio once visible for crispness
         const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
         if (renderer?.setPixelRatio) {
@@ -2044,7 +2133,6 @@ const SceneCanvas = forwardRef(function SceneCanvas(
           renderer.setSize(window.innerWidth, window.innerHeight);
         }
         container.classList.add('is-ready');
-        console.log('[SceneCanvas] ✨ is-ready class added at', performance.now().toFixed(2), 'ms');
         readinessFrame = null;
       };
 
@@ -2086,15 +2174,20 @@ const SceneCanvas = forwardRef(function SceneCanvas(
         triggerEffect: (type, combine = false) => {
           return activateEffect(type, combine);
         }
+        // removed setRainMode as logic is now in render loop
       };
 
       updateGuiVisibility(showControlsRef.current);
       stateRef.current.applyMenuInfluence(initialSection);
 
+
       return () => {
         cancelAnimationFrame(animationFrame);
         if (readinessFrame !== null) {
           cancelAnimationFrame(readinessFrame);
+        }
+        if (rainIntervalRef.current) {
+          clearTimeout(rainIntervalRef.current);
         }
         container.classList.remove('is-ready');
         window.removeEventListener('resize', onWindowResize);

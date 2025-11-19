@@ -6,6 +6,7 @@ import { createPortal } from "react-dom";
 import { DotfieldIcon } from "./icons";
 import { useLanguage } from "../contexts/LanguageContext";
 import { t } from "../lib/translations";
+import FieldEffectsPanel from "./FieldEffectsPanel";
 
 export default function RetroMenu({
   id,
@@ -60,6 +61,7 @@ export default function RetroMenu({
     [language]
   );
 
+  /* eslint-disable-next-line no-unused-vars */
   const effectTooltips = useMemo(
     () => ({
       calmReset: t("effects.calmReset.tooltip", language),
@@ -795,7 +797,13 @@ export default function RetroMenu({
         onFieldEffect &&
         typeof window !== "undefined" &&
         createPortal(
-          <div
+          <FieldEffectsPanel
+            activeEffectInfo={hasActiveEffect ? activeEffectInfo : null}
+            onFieldEffect={(effect) => {
+              onFieldEffect(effect);
+              // Do not close panel on effect selection, per user request
+              // closePanel();
+            }}
             className={`retro-menu__settings-panel${
               panelState === "open" ? " is-visible" : ""
             }${panelState === "closing" ? " is-closing" : ""}`}
@@ -806,120 +814,14 @@ export default function RetroMenu({
               left: `${panelPosition.left}px`,
               width: `${panelPosition.width}px`,
               zIndex: 99999,
-              background:
-                "linear-gradient(180deg, rgba(0, 58, 99, 0.96), rgba(0, 139, 178, 0.92))",
-              border: "1.5px solid rgba(0, 200, 208, 0.5)",
-              borderRadius: "20px",
-              padding: "1rem",
-              boxShadow: "0 12px 32px rgba(0, 0, 0, 0.5)",
+              // Styles are now handled by FieldEffectsPanel component defaults + class
+              // We override background to match the "retro menu" theme if needed, 
+              // or just use the new "gorgeous" dark theme everywhere as requested.
+              // The user said "make them gorgeous... root panel is blue and looks very different".
+              // So I should let FieldEffectsPanel dictate the style (dark glass).
+              // However, I need to respect the positioning.
             }}
-          >
-            <div className="retro-menu__settings-header">
-              <span>{fieldEffectsLabel}</span>
-            </div>
-            <div className="retro-menu__settings-content">
-              <button
-                type="button"
-                className="retro-menu__effect-btn"
-                style={{ gridColumn: "span 2", width: "100%" }}
-                onClick={() => {
-                  onFieldEffect("calmReset");
-                  closePanel();
-                }}
-                title={effectTooltips.calmReset}
-              >
-                <span>{effectLabels.calmReset}</span>
-              </button>
-              <button
-                type="button"
-                className="retro-menu__effect-btn"
-                onClick={() => {
-                  onFieldEffect("jitter");
-                  closePanel();
-                }}
-                title={effectTooltips.jitter}
-              >
-                <span>{effectLabels.jitter}</span>
-              </button>
-              <button
-                type="button"
-                className="retro-menu__effect-btn"
-                onClick={() => {
-                  onFieldEffect("swirlPulse");
-                  closePanel();
-                }}
-                title={effectTooltips.swirlPulse}
-              >
-                <span>{effectLabels.swirlPulse}</span>
-              </button>
-              <button
-                type="button"
-                className="retro-menu__effect-btn"
-                onClick={() => {
-                  onFieldEffect("spiralFlow");
-                  closePanel();
-                }}
-                title={effectTooltips.spiralFlow}
-              >
-                <span>{effectLabels.spiralFlow}</span>
-              </button>
-              <button
-                type="button"
-                className="retro-menu__effect-btn"
-                onClick={() => {
-                  onFieldEffect("riverFlow");
-                  closePanel();
-                }}
-                title={effectTooltips.riverFlow}
-              >
-                <span>{effectLabels.riverFlow}</span>
-              </button>
-              <button
-                type="button"
-                className="retro-menu__effect-btn"
-                onClick={() => {
-                  onFieldEffect("mandelbrotZoom");
-                  closePanel();
-                }}
-                title={effectTooltips.mandelbrotZoom}
-              >
-                <span>{effectLabels.mandelbrotZoom}</span>
-              </button>
-              <button
-                type="button"
-                className="retro-menu__effect-btn"
-                onClick={() => {
-                  onFieldEffect("reactionDiffusionBloom");
-                  closePanel();
-                }}
-                title={effectTooltips.reactionDiffusionBloom}
-              >
-                <span>{effectLabels.reactionDiffusionBloom}</span>
-              </button>
-              <button
-                type="button"
-                className="retro-menu__effect-btn"
-                onClick={() => {
-                  onFieldEffect("harmonicPendulum");
-                  closePanel();
-                }}
-                title={effectTooltips.harmonicPendulum}
-              >
-                <span>{effectLabels.harmonicPendulum}</span>
-              </button>
-              <button
-                type="button"
-                className="retro-menu__effect-btn"
-                onClick={() => {
-                  onFieldEffect("starfield");
-                  closePanel();
-                }}
-                title={effectTooltips.starfield}
-              >
-                <span>{effectLabels.starfield}</span>
-              </button>
-            </div>
-          </div>,
+          />,
           document.body
         )}
       <p className="retro-menu__status" aria-live="polite">
