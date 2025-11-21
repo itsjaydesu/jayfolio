@@ -6164,6 +6164,7 @@ body:not([data-language-transitioning="true"])
 /* Force single column for projects to ensure a consistent, readable feed layout across all devices */
 .site-shell[data-channel-id="projects"] .channel__grid {
   grid-template-columns: 1fr;
+  width: 100%;
   max-width: 840px;
   margin-inline: auto;
 }
@@ -6384,7 +6385,10 @@ body:not([data-language-transitioning="true"])
   }
 
   .site-shell__container {
-    padding-top: 0;
+    padding-top: calc(
+      env(safe-area-inset-top, 0px) +
+        var(--site-shell-header-clearance, var(--site-shell-header-offset))
+    );
   }
 
   .site-shell__header-inner {
@@ -10771,11 +10775,8 @@ body[data-language-transitioning="true"] .language-transition-root {
   /* Main content container - uses same width calculation as header for alignment */
   /* Wrapped in site-shell__container which adds the padding */
   .site-shell__main {
-    width: min(
-      var(--layout-max-width),
-      calc(100vw - 2 * var(--shell-inline-pad))
-    );
-    max-width: 100%;
+    width: 100%;
+    max-width: var(--layout-max-width);
     flex: 1 0 auto;
     min-height: 0;
     /* Center main content within the grid container */
@@ -10939,11 +10940,13 @@ body[data-language-transitioning="true"] .language-transition-root {
 
 @media (max-width: 768px) {
   .detail-stage {
-    padding: clamp(1.25rem, 6vw, 1.75rem) clamp(1rem, 6vw, 1.5rem);
+    padding: clamp(1rem, 4vw, 1.5rem);
     align-items: stretch;
   }
 
   .detail-view {
+    width: 100%;
+    max-width: 100%;
     gap: clamp(1.1rem, 4vw, 1.6rem);
   }
 
