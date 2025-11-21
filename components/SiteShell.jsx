@@ -1035,25 +1035,22 @@ export default function SiteShell({ children, channelContent }) {
           Math.min(rect.width + 16, minimumComfortWidth)
         );
 
-    const buttonCenterX = viewportLeft + rect.left + rect.width / 2;
-    let left = buttonCenterX - width / 2;
+    // Center nicely on screen
+    const screenCenterX = viewportLeft + viewportWidth / 2;
+    let left = screenCenterX - width / 2;
 
+    // Ensure it doesn't touch edges
     const minLeft = viewportLeft + safeMargin;
     const maxLeft = viewportLeft + viewportWidth - safeMargin - width;
 
-    if (Number.isFinite(minLeft) && Number.isFinite(maxLeft)) {
-      if (left < minLeft) {
-        left = minLeft;
-      } else if (left > maxLeft) {
-        left = maxLeft;
-      }
-    }
+    if (left < minLeft) left = minLeft;
+    if (left > maxLeft) left = maxLeft;
 
     const top = viewportTop + rect.bottom + 14;
 
     setMobileMenuPosition({
       top: Math.round(top),
-      left: Math.round(Math.max(left, viewportLeft)),
+      left: Math.round(left),
       width: Math.round(width),
     });
   }, []);

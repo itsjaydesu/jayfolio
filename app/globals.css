@@ -6161,6 +6161,18 @@ body:not([data-language-transitioning="true"])
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 }
 
+/* Force single column for projects */
+.site-shell[data-channel-id="projects"] .channel__grid {
+  grid-template-columns: 1fr;
+  max-width: 840px;
+  margin-inline: auto;
+}
+
+/* Ensure 3:2 aspect ratio for project images */
+.site-shell[data-channel-id="projects"] .project-entry__figure {
+  aspect-ratio: 3 / 2 !important;
+}
+
 @media (max-width: 768px) {
   .channel__grid {
     grid-template-columns: minmax(0, 1fr);
