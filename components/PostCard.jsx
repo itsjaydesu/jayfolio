@@ -177,7 +177,7 @@ export default function PostCard({
               src={entry.coverImage.url}
               alt={coverAlt || `${localizedTitle} cover image`}
               fill
-              sizes="(max-width: 900px) 100vw, 420px"
+              sizes="(max-width: 1024px) 100vw, 420px"
               className="project-entry__image"
               style={{ objectFit: "cover", objectPosition: "center" }}
               onError={(e) => {

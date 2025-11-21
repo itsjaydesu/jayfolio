@@ -776,7 +776,7 @@ export default function CoverImageUploader({ value, alt, onChange }) {
             src={imageUrl}
             alt={altValue || "Cover image"}
             fill
-            sizes="(max-width: 900px) 100vw, 420px"
+            sizes="(max-width: 1024px) 100vw, 420px"
             className="cover-uploader__preview-image"
           />
         ) : (

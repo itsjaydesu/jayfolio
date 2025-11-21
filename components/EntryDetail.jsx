@@ -599,7 +599,7 @@ export default function EntryDetail({ type, entry }) {
                   getLocalizedContent(coverImage.alt, language) || `${localizedTitle} cover image`
                 }
                 fill
-                sizes="(max-width: 1024px) 100vw, 720px"
+                sizes="(max-width: 1024px) 100vw, 768px"
                 className="detail-view__media-image"
                 style={{ objectFit: 'cover', objectPosition: 'center', borderRadius: 'inherit' }}
               />

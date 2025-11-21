@@ -20,7 +20,7 @@ const DOTFIELD_OVERLAY_FADE_MS = 520;
 // Minimum header backdrop opacity on subpages so the menu is readable
 // over content even at scroll position 0. Kept subtle to avoid a heavy box.
 const HEADER_BASE_SHADE = 0.16; // ~16% base, escalates with scroll
-const NAV_CONDENSED_BREAKPOINT = 540;
+const NAV_CONDENSED_BREAKPOINT = 640;
 // eslint-disable-next-line no-unused-vars
 const DOTFIELD_EFFECT_SEQUENCE = [
   'jitter',

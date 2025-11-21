@@ -304,7 +304,7 @@ function FileCard({ file, onDelete, onSaveMeta }) {
               src={file.url}
               alt={alt || file.alt || displayName}
               fill
-              sizes="(max-width: 900px) 100vw, 320px"
+              sizes="(max-width: 1024px) 100vw, 320px"
             />
           </div>
         ) : (
