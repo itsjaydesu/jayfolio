@@ -6161,7 +6161,7 @@ body:not([data-language-transitioning="true"])
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 }
 
-/* Force single column for projects */
+/* Force single column for projects to ensure a consistent, readable feed layout across all devices */
 .site-shell[data-channel-id="projects"] .channel__grid {
   grid-template-columns: 1fr;
   max-width: 840px;

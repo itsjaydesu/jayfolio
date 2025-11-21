@@ -1043,8 +1043,13 @@ export default function SiteShell({ children, channelContent }) {
     const minLeft = viewportLeft + safeMargin;
     const maxLeft = viewportLeft + viewportWidth - safeMargin - width;
 
-    if (left < minLeft) left = minLeft;
-    if (left > maxLeft) left = maxLeft;
+    if (width >= viewportWidth - safeMargin * 2) {
+      // If it's too wide for standard margins, center it absolutely
+      left = viewportLeft + (viewportWidth - width) / 2;
+    } else {
+      if (left < minLeft) left = minLeft;
+      if (left > maxLeft) left = maxLeft;
+    }
 
     const top = viewportTop + rect.bottom + 14;
 
