@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import PostCard from '../../components/PostCard';
+import ProjectListItem from '../../components/ProjectListItem';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { t, getLocalizedContent, getLocalizedTags } from '../../lib/translations';
 import EntryReturnFocus from '../../components/EntryReturnFocus';
@@ -237,11 +237,15 @@ export default function ProjectsContent({ entries, hero }) {
         </p>
       ) : (
         <EntryReturnFocus type="projects">
-          <div className="channel__grid" key={selectedCategory} data-category={selectedCategory}>
+          <div 
+            className="channel__list" 
+            key={selectedCategory} 
+            data-category={selectedCategory}
+          >
             {filteredEntries.map((entry, index) => {
               const tone = PROJECT_TONES[entry.slug] ?? 'neutral';
               return (
-                <PostCard
+                <ProjectListItem
                   key={entry.slug}
                   entry={entry}
                   type="projects"
