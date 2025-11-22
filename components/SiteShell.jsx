@@ -20,7 +20,7 @@ const DOTFIELD_OVERLAY_FADE_MS = 520;
 // Minimum header backdrop opacity on subpages so the menu is readable
 // over content even at scroll position 0. Kept subtle to avoid a heavy box.
 const HEADER_BASE_SHADE = 0.16; // ~16% base, escalates with scroll
-const NAV_CONDENSED_BREAKPOINT = 640;
+
 // eslint-disable-next-line no-unused-vars
 const DOTFIELD_EFFECT_SEQUENCE = [
   'jitter',
@@ -104,8 +104,6 @@ export default function SiteShell({ children, channelContent }) {
   const iconGroupRef = useRef(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [mobileMenuFocusIndex, setMobileMenuFocusIndex] = useState(-1);
-  const [mobileMenuPosition, setMobileMenuPosition] = useState(null);
-  const [isNavCondensed, setIsNavCondensed] = useState(false);
   
   const warmSceneChunk = useCallback(() => {
     if (scenePreloadTriggeredRef.current) {
@@ -291,111 +289,6 @@ export default function SiteShell({ children, channelContent }) {
     [language]
   );
 
-  const updateNavCondensed = useCallback(() => {
-    if (typeof window === 'undefined') {
-      return;
-    }
-
-    const headerElement = headerInnerRef.current;
-    const navElement = navRef.current;
-
-    const viewportWidth =
-      window.innerWidth ||
-      document.documentElement?.clientWidth ||
-      0;
-    const smallViewportQuery =
-      typeof window.matchMedia === 'function'
-        ? window.matchMedia(`(max-width: ${NAV_CONDENSED_BREAKPOINT}px)`)
-        : null;
-    const shouldForceCondensed =
-      viewportWidth <= NAV_CONDENSED_BREAKPOINT ||
-      Boolean(smallViewportQuery?.matches);
-
-    if (shouldForceCondensed) {
-      setIsNavCondensed((previous) => (previous ? previous : true));
-      return;
-    }
-
-    if (!headerElement || !navElement) {
-      setIsNavCondensed(false);
-      return;
-    }
-
-    const brandElement = brandRef.current;
-    const iconElement = iconGroupRef.current;
-
-    const headerWidth = headerElement.clientWidth;
-    const brandWidth = brandElement?.getBoundingClientRect?.().width ?? 0;
-    const iconWidth = iconElement?.getBoundingClientRect?.().width ?? 0;
-    const computedStyle = window.getComputedStyle(headerElement);
-    const gapValue = parseFloat(computedStyle.columnGap || computedStyle.gap || '0');
-    const paddingLeft = parseFloat(computedStyle.paddingLeft || '0');
-    const paddingRight = parseFloat(computedStyle.paddingRight || '0');
-    const gap = Number.isNaN(gapValue) ? 0 : gapValue;
-
-    const availableNavWidth = headerWidth - brandWidth - iconWidth - paddingLeft - paddingRight - gap * 2;
-
-    if (availableNavWidth <= 0) {
-      setIsNavCondensed(true);
-      return;
-    }
-
-    const navChildren = Array.from(navElement?.children ?? []);
-    const navStyles = window.getComputedStyle(navElement);
-    const navGapValue = parseFloat(navStyles.columnGap || navStyles.gap || '0');
-    const navGap = Number.isNaN(navGapValue) ? 0 : navGapValue;
-
-    const navContentWidth = navChildren.reduce((total, child, index) => {
-      const childWidth = child?.getBoundingClientRect?.().width ?? 0;
-      if (childWidth === 0) {
-        return total;
-      }
-      const gapContribution = index > 0 ? navGap : 0;
-      return total + childWidth + gapContribution;
-    }, 0);
-
-    const measuredNavWidth = navContentWidth || navElement.scrollWidth || 0;
-    if (measuredNavWidth === 0) {
-      return;
-    }
-
-    const tolerance = 4;
-    setIsNavCondensed((previous) => {
-      const needsCondensed = measuredNavWidth > Math.max(0, availableNavWidth - tolerance);
-      return previous === needsCondensed ? previous : needsCondensed;
-    });
-  }, []);
-
-  const updateHeaderClearance = useCallback(() => {
-    if (typeof window === 'undefined') {
-      return;
-    }
-
-    const root = document.documentElement;
-    if (!root) {
-      return;
-    }
-
-    const headerElement = headerRef.current;
-    if (!headerElement || !headerVisible) {
-      root.style.removeProperty('--site-shell-header-clearance');
-      return;
-    }
-
-    const rect = headerElement.getBoundingClientRect();
-    if (!rect || !rect.height) {
-      return;
-    }
-
-    const additionalClearance = Math.max(20, rect.height * 0.12);
-    const clearance = Math.round(rect.height + additionalClearance);
-    const nextValue = `${clearance}px`;
-
-    if (root.style.getPropertyValue('--site-shell-header-clearance') !== nextValue) {
-      root.style.setProperty('--site-shell-header-clearance', nextValue);
-    }
-  }, [headerVisible]);
-
   const updateHeaderShade = useCallback((value) => {
     // Clamp incoming value and enforce a baseline shade on subpages
     const clamped = Math.min(Math.max(value, 0), 1);
@@ -414,78 +307,7 @@ export default function SiteShell({ children, channelContent }) {
     }
   }, [isHome, headerVisible]);
 
-  useEffect(() => {
-    updateNavCondensed();
-    updateHeaderClearance();
-  }, [menuItems, updateNavCondensed, updateHeaderClearance]);
 
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return undefined;
-    }
-
-    let animationFrameId = null;
-
-    const scheduleUpdate = () => {
-      if (animationFrameId && typeof window !== 'undefined') {
-        window.cancelAnimationFrame(animationFrameId);
-      }
-      animationFrameId = window.requestAnimationFrame(() => {
-        updateNavCondensed();
-        updateHeaderClearance();
-        animationFrameId = null;
-      });
-    };
-
-    scheduleUpdate();
-
-    const observedElements = [
-      headerRef.current,
-      headerInnerRef.current,
-      navRef.current,
-      brandRef.current,
-      iconGroupRef.current,
-    ].filter(Boolean);
-
-    let resizeObserver = null;
-    if (typeof ResizeObserver !== 'undefined') {
-      resizeObserver = new ResizeObserver(scheduleUpdate);
-      observedElements.forEach((element) => resizeObserver.observe(element));
-    }
-
-    window.addEventListener('resize', scheduleUpdate);
-
-    return () => {
-      if (animationFrameId && typeof window !== 'undefined') {
-        window.cancelAnimationFrame(animationFrameId);
-      }
-      window.removeEventListener('resize', scheduleUpdate);
-      if (resizeObserver) {
-        observedElements.forEach((element) => resizeObserver.unobserve(element));
-        resizeObserver.disconnect();
-      }
-    };
-  }, [updateNavCondensed, updateHeaderClearance]);
-
-  useEffect(() => {
-    updateHeaderClearance();
-  }, [isMobileMenuOpen, isNavCondensed, headerVisible, updateHeaderClearance]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return undefined;
-    }
-
-    return () => {
-      document.documentElement?.style?.removeProperty('--site-shell-header-clearance');
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!isNavCondensed && isMobileMenuOpen) {
-      setIsMobileMenuOpen(false);
-    }
-  }, [isNavCondensed, isMobileMenuOpen]);
 
   const openDotfieldOverlay = useCallback(() => {
     if (prefersReducedMotionRef.current) {
@@ -625,21 +447,7 @@ export default function SiteShell({ children, channelContent }) {
   // Simplified animation sequencing: 
   // When condensed: dropdown(0) -> icons(1,2,3)
   // When expanded: nav-items(0-4) -> icons(5,6,7)
-  const iconGroupStartIndex = isNavCondensed ? 1 : menuItems.length;
-
-  const mobileMenuInlineStyle = useMemo(() => {
-    if (!isMobileMenuOpen) {
-      return undefined;
-    }
-    if (!mobileMenuPosition) {
-      return { visibility: "hidden" };
-    }
-    return {
-      top: `${mobileMenuPosition.top}px`,
-      left: `${mobileMenuPosition.left}px`,
-      width: `${mobileMenuPosition.width}px`,
-    };
-  }, [isMobileMenuOpen, mobileMenuPosition]);
+  const iconGroupStartIndex = menuItems.length;
 
   useEffect(() => {
     if (!isListingChannel) {
@@ -997,76 +805,14 @@ export default function SiteShell({ children, channelContent }) {
     []
   );
 
-  const updateMobileMenuPosition = useCallback(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    const buttonNode = mobileMenuButtonRef.current;
-    if (!buttonNode) {
-      return;
-    }
-
-    const rect = buttonNode.getBoundingClientRect();
-    const visualViewport = window.visualViewport;
-
-    const viewportWidth = Math.max(
-      0,
-      visualViewport?.width ?? window.innerWidth ?? rect.width
-    );
-    const viewportLeft = visualViewport?.offsetLeft ?? 0;
-    const viewportTop = visualViewport?.offsetTop ?? 0;
-
-    const safeMargin = Math.max(16, Math.min(40, viewportWidth * 0.06));
-    let availableWidth = viewportWidth - safeMargin * 2;
-    if (!Number.isFinite(availableWidth) || availableWidth <= 0) {
-      availableWidth = rect.width;
-    }
-
-    const minimumComfortWidth = 220;
-    const idealWidth = Math.min(
-      360,
-      Math.max(rect.width + 32, minimumComfortWidth)
-    );
-    const width = availableWidth >= minimumComfortWidth
-      ? Math.min(idealWidth, availableWidth)
-      : Math.max(
-          availableWidth,
-          Math.min(rect.width + 16, minimumComfortWidth)
-        );
-
-    const buttonCenterX = viewportLeft + rect.left + rect.width / 2;
-    let left = buttonCenterX - width / 2;
-
-    const minLeft = viewportLeft + safeMargin;
-    const maxLeft = viewportLeft + viewportWidth - safeMargin - width;
-
-    if (Number.isFinite(minLeft) && Number.isFinite(maxLeft)) {
-      if (left < minLeft) {
-        left = minLeft;
-      } else if (left > maxLeft) {
-        left = maxLeft;
-      }
-    }
-
-    const top = viewportTop + rect.bottom + 14;
-
-    setMobileMenuPosition({
-      top: Math.round(top),
-      left: Math.round(Math.max(left, viewportLeft)),
-      width: Math.round(width),
-    });
-  }, []);
-
   const openMobileMenu = useCallback(() => {
     if (!menuItems.length) {
       return;
     }
 
-    updateMobileMenuPosition();
     setIsMobileMenuOpen(true);
     setMobileMenuFocusIndex(activeMenuIndex >= 0 ? activeMenuIndex : 0);
-  }, [menuItems.length, activeMenuIndex, updateMobileMenuPosition]);
+  }, [menuItems.length, activeMenuIndex]);
 
   const handleMobileMenuToggle = useCallback(() => {
     if (isMobileMenuOpen) {
@@ -1202,26 +948,7 @@ export default function SiteShell({ children, channelContent }) {
     };
   }, [closeMobileMenu, isMobileMenuOpen]);
 
-  useEffect(() => {
-    if (!isMobileMenuOpen) {
-      setMobileMenuPosition(null);
-      return undefined;
-    }
 
-    updateMobileMenuPosition();
-
-    const handleResize = () => {
-      updateMobileMenuPosition();
-    };
-
-    window.addEventListener("resize", handleResize);
-    window.addEventListener("scroll", handleResize, true);
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-      window.removeEventListener("scroll", handleResize, true);
-    };
-  }, [isMobileMenuOpen, updateMobileMenuPosition]);
 
   useEffect(() => {
     if (!isMobileMenuOpen) {
@@ -2006,8 +1733,6 @@ export default function SiteShell({ children, channelContent }) {
               data-nav-ready={navReady ? "true" : "false"}
               data-returning-home={isReturningHome ? "true" : "false"}
               data-scrolled={isHeaderShaded ? "true" : "false"}
-              data-mobile-menu-open={isMobileMenuOpen ? "true" : "false"}
-              data-nav-condensed={isNavCondensed ? "true" : "false"}
               style={headerStyle}
             >
               <div className="site-shell__header-inner" ref={headerInnerRef}>
@@ -2022,10 +1747,11 @@ export default function SiteShell({ children, channelContent }) {
                 >
                   <BrandWordmark className="site-shell__brand-wordmark" />
                 </Link>
+                
+                {/* Mobile Menu Button (Visible on mobile via CSS) */}
                 <div
                   className="site-shell__nav-dropdown"
                   data-has-selection={activeSection ? "true" : "false"}
-                  data-open={isMobileMenuOpen ? "true" : "false"}
                 >
                   <span id="site-shell-mobile-nav-label" className="sr-only">
                     {mobileMenuLabel}
@@ -2036,7 +1762,7 @@ export default function SiteShell({ children, channelContent }) {
                     aria-haspopup="listbox"
                     aria-labelledby="site-shell-mobile-nav-label site-shell-mobile-nav-button-text"
                     aria-expanded={isMobileMenuOpen ? "true" : "false"}
-                    aria-controls={isMobileMenuOpen ? "site-shell-mobile-nav-list" : undefined}
+                    aria-controls="site-shell-mobile-nav-list"
                     onClick={handleMobileMenuToggle}
                     onKeyDown={handleMobileMenuKeyDown}
                     disabled={!menuItems.length}
@@ -2062,61 +1788,61 @@ export default function SiteShell({ children, channelContent }) {
                       {dropdownDisplayLabel}
                     </span>
                   </button>
-                  {isMobileMenuOpen ? (
-                    <div
-                      className="site-shell__nav-dropdown-menu"
-                      ref={mobileMenuContainerRef}
-                      style={mobileMenuInlineStyle}
-                    >
-                      <ul
-                        id="site-shell-mobile-nav-list"
-                        role="listbox"
-                        aria-labelledby="site-shell-mobile-nav-label"
-                        aria-activedescendant={
-                          menuItems.length
-                            ? mobileMenuFocusIndex >= 0
-                              ? `site-shell-mobile-nav-option-${menuItems[mobileMenuFocusIndex].id}`
-                              : activeMenuIndex >= 0
-                                ? `site-shell-mobile-nav-option-${menuItems[activeMenuIndex].id}`
-                                : undefined
-                            : undefined
-                        }
-                        className="site-shell__nav-dropdown-list"
-                        ref={mobileMenuListRef}
-                        tabIndex={-1}
-                        onKeyDown={handleMobileMenuKeyDown}
-                      >
-                        {menuItems.map((item, index) => {
-                          const isActiveOption = item.id === activeSection;
-                          const isFocusedOption = index === mobileMenuFocusIndex;
-                          return (
-                            <li key={item.id} role="presentation">
-                              <button
-                                type="button"
-                                role="option"
-                                id={`site-shell-mobile-nav-option-${item.id}`}
-                                className={`site-shell__nav-dropdown-option${isActiveOption ? " is-active" : ""}${isFocusedOption ? " is-focused" : ""}`}
-                                aria-selected={isActiveOption}
-                                data-focused={isFocusedOption ? "true" : "false"}
-                                onClick={() => handleMobileMenuSelect(item)}
-                                onMouseEnter={() => setMobileMenuFocusIndex(index)}
-                                onFocus={() => setMobileMenuFocusIndex(index)}
-                                style={{ "--option-index": index }}
-                              >
-                                {item.label}
-                              </button>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    </div>
-                  ) : null}
                 </div>
+
+                {/* Mobile Menu Overlay (Fixed position, toggled via data-open) */}
+                <div
+                  className="site-shell__nav-dropdown-menu"
+                  data-open={isMobileMenuOpen ? "true" : "false"}
+                >
+                  <ul
+                    id="site-shell-mobile-nav-list"
+                    role="listbox"
+                    aria-labelledby="site-shell-mobile-nav-label"
+                    aria-activedescendant={
+                      menuItems.length
+                        ? mobileMenuFocusIndex >= 0
+                          ? `site-shell-mobile-nav-option-${menuItems[mobileMenuFocusIndex].id}`
+                          : activeMenuIndex >= 0
+                            ? `site-shell-mobile-nav-option-${menuItems[activeMenuIndex].id}`
+                            : undefined
+                        : undefined
+                    }
+                    className="site-shell__nav-dropdown-list"
+                    ref={mobileMenuListRef}
+                    tabIndex={-1}
+                    onKeyDown={handleMobileMenuKeyDown}
+                  >
+                    {menuItems.map((item, index) => {
+                      const isActiveOption = item.id === activeSection;
+                      const isFocusedOption = index === mobileMenuFocusIndex;
+                      return (
+                        <li key={item.id} role="presentation" style={{ width: '100%' }}>
+                          <button
+                            type="button"
+                            role="option"
+                            id={`site-shell-mobile-nav-option-${item.id}`}
+                            className={`site-shell__nav-dropdown-option${isActiveOption ? " is-active" : ""}${isFocusedOption ? " is-focused" : ""}`}
+                            aria-selected={isActiveOption}
+                            data-focused={isFocusedOption ? "true" : "false"}
+                            onClick={() => handleMobileMenuSelect(item)}
+                            onMouseEnter={() => setMobileMenuFocusIndex(index)}
+                            onFocus={() => setMobileMenuFocusIndex(index)}
+                            style={{ "--option-index": index }}
+                          >
+                            {item.label}
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+
+                {/* Desktop Navigation (Visible on desktop via CSS) */}
                 <nav
                   className="site-shell__nav"
                   aria-label="Primary navigation"
                   ref={navRef}
-                  aria-hidden={isNavCondensed ? "true" : undefined}
                 >
                   {menuItems.map((item, index) => {
                     const isActive = item.id === activeSection;
@@ -2133,7 +1859,6 @@ export default function SiteShell({ children, channelContent }) {
                         onMouseLeave={handleReset}
                         onFocus={() => handlePreview(item, isActive)}
                         onBlur={handleReset}
-                        tabIndex={isNavCondensed ? -1 : undefined}
                         style={
                           navReady
                             ? {

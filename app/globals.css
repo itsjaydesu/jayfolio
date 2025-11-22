@@ -8,13 +8,18 @@
 
 :root {
   color-scheme: dark;
+  /* Breakpoints */
+  --bp-mobile: 640px;
+  --bp-tablet: 1024px;
+  --bp-desktop-xl: 1400px;
+
   /* Container padding - must be at :root for global access */
   --shell-inline-pad: clamp(1.5rem, 5vw, 4rem);
   --layout-max-width: 1180px;
-  --site-shell-header-offset: calc(
-    clamp(1rem, 3vh, 1.9rem) + clamp(0.75rem, 2vw, 1.1rem) * 2 + 1.2rem
-  );
+  --site-header-height: 64px;
+  --site-shell-header-offset: calc(var(--site-header-height) + 1rem);
   --site-shell-header-clearance: var(--site-shell-header-offset);
+
   --surface-base: #030405;
   --surface-elevated: rgba(15, 18, 22, 0.78);
   --surface-soft: rgba(22, 25, 31, 0.62);
@@ -12023,5 +12028,177 @@ body[data-language-transitioning="true"] .language-transition-root {
   .site-footer__cta {
     justify-content: center;
     order: 3;
+  }
+}
+
+/* 
+   ==========================================================================
+   UNIFIED SHELL GRID & RESPONSIVENESS
+   Refactored to remove JS layout dependencies
+   ========================================================================== 
+*/
+
+.site-shell__container {
+  width: 100%;
+  max-width: var(--layout-max-width);
+  margin: 0 auto;
+  padding: 0 var(--shell-inline-pad);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.site-shell__header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--site-header-height);
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.site-shell__brand {
+  flex-shrink: 0;
+  z-index: 20;
+}
+
+/* Desktop Navigation: Hidden on Mobile */
+.site-shell__nav {
+  display: none; /* Hidden by default (mobile-first) */
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  flex: 1;
+}
+
+/* Desktop Navigation: Visible on Tablet+ */
+@media (min-width: 1024px) { /* Using 1024px as the breakpoint matching the JS */
+  .site-shell__nav {
+    display: flex;
+  }
+}
+
+/* Mobile Menu Button: Visible on Mobile */
+.site-shell__nav-dropdown {
+  display: block;
+}
+
+/* Mobile Menu Button: Hidden on Tablet+ */
+@media (min-width: 1024px) {
+  .site-shell__nav-dropdown {
+    display: none;
+  }
+}
+
+.site-shell__icon-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+/* 
+   MOBILE MENU OVERLAY 
+   Replaces the absolute positioned dropdown
+*/
+.site-shell__nav-dropdown-menu {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background: rgba(5, 8, 10, 0.85);
+  backdrop-filter: blur(12px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  padding: 2rem;
+}
+
+.site-shell__nav-dropdown-menu[data-open="true"] {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.site-shell__nav-dropdown-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 400px;
+}
+
+.site-shell__nav-dropdown-option {
+  display: block;
+  width: 100%;
+  text-align: center;
+  padding: 1rem 2rem;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid rgba(138, 248, 255, 0.1);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.site-shell__nav-dropdown-option:hover,
+.site-shell__nav-dropdown-option:focus-visible {
+  background: rgba(138, 248, 255, 0.1);
+  color: var(--text-primary);
+  border-color: rgba(138, 248, 255, 0.3);
+  transform: scale(1.02);
+  outline: none;
+}
+
+.site-shell__nav-dropdown-option.is-active {
+  background: rgba(138, 248, 255, 0.15);
+  color: #fff;
+  border-color: rgba(138, 248, 255, 0.5);
+  box-shadow: 0 0 20px rgba(138, 248, 255, 0.15);
+}
+
+/* 
+   RETRO MENU UPDATES
+   Simplifying the home page menu
+*/
+.menu-overlay {
+  /* Ensure the overlay is centered via flexbox */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.retro-menu--centerpiece {
+  /* Reset transform logic that conflicts with CSS centering */
+  transform: none !important; 
+  margin: 0;
+  max-width: 90vw;
+  width: 420px;
+}
+
+/* Field Effects Panel Positioning */
+.retro-menu__settings-panel {
+  /* CSS-driven positioning instead of JS */
+  position: absolute;
+  top: calc(100% + 1rem);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 300px; /* Fixed width for predictability */
+  max-width: 90vw;
+  z-index: 100;
+}
+
+@media (max-width: 640px) {
+  .retro-menu--centerpiece {
+     width: 100%;
   }
 }

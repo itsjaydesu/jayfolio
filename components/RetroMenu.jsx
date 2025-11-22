@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useRef, useEffect, useMemo, useCallback } from "react";
-import { createPortal } from "react-dom";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { DotfieldIcon } from "./icons";
 import { useLanguage } from "../contexts/LanguageContext";
 import { t } from "../lib/translations";
@@ -26,11 +25,9 @@ export default function RetroMenu({
   // Panel transition states: 'closed' | 'fading' | 'opening' | 'open' | 'closing'
   // 'fading' = menu is fading out, panel not visible yet
   const [panelState, setPanelState] = useState("closed");
-  const [panelPosition, setPanelPosition] = useState({ top: 0, left: 0 });
   const toggleRef = useRef(null);
   const panelTimerRef = useRef(null);
   const panelAnimFrameRef = useRef(null);
-  const panelRepositionFrameRef = useRef(null);
   const [tooltipVisible, setTooltipVisible] = useState(false);
   const [remainingTime, setRemainingTime] = useState(null);
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
@@ -97,175 +94,9 @@ export default function RetroMenu({
       window.matchMedia("(prefers-reduced-motion: reduce)").matches
   );
 
-  const updatePanelPosition = useCallback(() => {
-    if (typeof window === "undefined") {
-      return null;
-    }
-
-    const toggleElement = toggleRef.current;
-    if (!toggleElement) {
-      return null;
-    }
-
-    const menuElement = toggleElement.closest(".retro-menu");
-    if (!menuElement) {
-      return null;
-    }
-
-    const menuRect = menuElement.getBoundingClientRect();
-    if (!menuRect || menuRect.width === 0) {
-      return null;
-    }
-
-    const visualViewport = window.visualViewport;
-    const viewportWidth =
-      visualViewport?.width ?? window.innerWidth ?? menuRect.width;
-    const viewportHeight =
-      visualViewport?.height ?? window.innerHeight ?? menuRect.height;
-    const viewportOffsetLeft = visualViewport?.offsetLeft ?? 0;
-    const viewportOffsetTop = visualViewport?.offsetTop ?? 0;
-
-    const layoutWidth = menuElement.offsetWidth || menuRect.width;
-    const fallbackWidth = layoutWidth > 0 ? layoutWidth : menuRect.width;
-    const desiredWidth = Math.min(Math.max(fallbackWidth, 0), 420);
-    const safeMarginBase = (fallbackWidth || viewportWidth || 0) * 0.04;
-    const maxMargin =
-      viewportWidth > 0 ? Math.max(12, Math.min(48, viewportWidth / 2 - 8)) : 48;
-    const safeMargin = Math.max(
-      12,
-      Math.min(
-        48,
-        Number.isFinite(safeMarginBase) ? safeMarginBase : 0,
-        maxMargin
-      )
-    );
-
-    const availableWidth =
-      viewportWidth > 0 ? viewportWidth - safeMargin * 2 : fallbackWidth;
-
-    let panelWidth = desiredWidth;
-    if (Number.isFinite(availableWidth) && availableWidth > 0) {
-      panelWidth = Math.min(panelWidth, availableWidth);
-    } else if (Number.isFinite(viewportWidth) && viewportWidth > 0) {
-      panelWidth = Math.min(panelWidth, viewportWidth);
-    }
-
-    if (!Number.isFinite(panelWidth) || panelWidth <= 0) {
-      const widthFallback =
-        fallbackWidth > 0
-          ? fallbackWidth
-          : Number.isFinite(viewportWidth) && viewportWidth > 0
-            ? viewportWidth
-            : 280;
-      panelWidth = widthFallback;
-    }
-
-    if (
-      Number.isFinite(viewportWidth) &&
-      viewportWidth > 0 &&
-      panelWidth > viewportWidth
-    ) {
-      panelWidth = viewportWidth;
-    }
-
-    // Center panel relative to the toggle button, not the entire menu
-    const toggleRect = toggleElement.getBoundingClientRect();
-    let leftPos;
-    if (!toggleRect || toggleRect.width === 0) {
-      // Fallback to menu center if toggle rect is invalid
-      const menuCenterX =
-        viewportOffsetLeft + menuRect.left + menuRect.width / 2;
-      leftPos = menuCenterX - panelWidth / 2;
-    } else {
-      const toggleCenterX = viewportOffsetLeft + toggleRect.left + toggleRect.width / 2;
-      leftPos = toggleCenterX - panelWidth / 2;
-    }
-
-    const hasViewportWidth = Number.isFinite(viewportWidth) && viewportWidth > 0;
-    if (hasViewportWidth) {
-      const minLeft = viewportOffsetLeft + safeMargin;
-      const maxLeft =
-        viewportOffsetLeft + viewportWidth - safeMargin - panelWidth;
-
-      // --- Mobile centering plan ---
-      // 1. Detect narrow viewports (<= 720px) where aligning to the toggle
-      //    leaves the floating panel hanging off-screen.
-      // 2. Recenter the panel with the visual viewport while respecting the
-      //    computed safe margins so the panel stays fully visible.
-      // 3. Preserve the existing toggle-relative behaviour for wider
-      //    viewports to avoid desktop regressions.
-      const shouldCenterOnViewport = viewportWidth <= 720;
-
-      if (shouldCenterOnViewport) {
-        const centeredLeft =
-          viewportOffsetLeft + Math.max((viewportWidth - panelWidth) / 2, safeMargin);
-
-        if (Number.isFinite(maxLeft) && maxLeft >= minLeft) {
-          leftPos = Math.min(Math.max(centeredLeft, minLeft), maxLeft);
-        } else {
-          leftPos =
-            viewportOffsetLeft + Math.max((viewportWidth - panelWidth) / 2, 0);
-        }
-      } else if (Number.isFinite(maxLeft) && maxLeft >= minLeft) {
-        leftPos = Math.min(Math.max(leftPos, minLeft), maxLeft);
-      } else {
-        leftPos =
-          viewportOffsetLeft + Math.max((viewportWidth - panelWidth) / 2, 0);
-      }
-    }
-
-    const titlebar = menuElement.querySelector(".retro-menu__titlebar");
-    let topPos = viewportOffsetTop + menuRect.top;
-
-    if (titlebar) {
-      const titlebarRect = titlebar.getBoundingClientRect();
-      if (titlebarRect) {
-        topPos = viewportOffsetTop + titlebarRect.top;
-      }
-    }
-
-    if (!Number.isFinite(topPos)) {
-      topPos = viewportOffsetTop;
-    }
-
-    if (Number.isFinite(viewportHeight) && viewportHeight > 0) {
-      const maxTop = viewportOffsetTop + viewportHeight - safeMargin;
-      if (topPos > maxTop) {
-        topPos = maxTop;
-      }
-      if (topPos < viewportOffsetTop) {
-        topPos = viewportOffsetTop;
-      }
-    }
-
-    const nextPosition = {
-      top: Math.max(topPos, 0),
-      left: Math.max(leftPos, 0),
-      width: panelWidth,
-    };
-
-    setPanelPosition((prev) => {
-      if (
-        prev &&
-        Math.abs(prev.top - nextPosition.top) < 0.5 &&
-        Math.abs(prev.left - nextPosition.left) < 0.5 &&
-        Math.abs(prev.width - nextPosition.width) < 0.5
-      ) {
-        return prev;
-      }
-      return nextPosition;
-    });
-
-    return nextPosition;
-  }, []);
-
-  // Calculate panel position and start opening transition
+  // Trigger transition to 'open' state
   useEffect(() => {
     if (panelState === "opening") {
-      updatePanelPosition();
-
-      // Trigger transition to 'open' state after position is set
-      // Skip delay if reduced motion is preferred
       if (prefersReducedMotion.current) {
         setPanelState("open");
       } else {
@@ -274,66 +105,7 @@ export default function RetroMenu({
         });
       }
     }
-  }, [panelState, updatePanelPosition]);
-
-  useEffect(() => {
-    if (panelState !== "open") {
-      return undefined;
-    }
-
-    const handleViewportChange = () => {
-      if (typeof window === "undefined") {
-        return;
-      }
-
-      if (panelRepositionFrameRef.current) {
-        cancelAnimationFrame(panelRepositionFrameRef.current);
-      }
-
-      panelRepositionFrameRef.current = requestAnimationFrame(() => {
-        updatePanelPosition();
-      });
-    };
-
-    // Initial sync in case viewport changed between "opening" and "open"
-    handleViewportChange();
-
-    window.addEventListener("resize", handleViewportChange);
-    window.addEventListener("orientationchange", handleViewportChange);
-    window.addEventListener("scroll", handleViewportChange, { passive: true });
-
-    const visualViewport = window.visualViewport;
-    if (visualViewport) {
-      visualViewport.addEventListener("resize", handleViewportChange);
-      visualViewport.addEventListener("scroll", handleViewportChange);
-    }
-
-    const menuElement =
-      toggleRef.current?.closest?.(".retro-menu") ?? null;
-    let menuResizeObserver = null;
-
-    if (menuElement && typeof ResizeObserver !== "undefined") {
-      menuResizeObserver = new ResizeObserver(handleViewportChange);
-      menuResizeObserver.observe(menuElement);
-    }
-
-    return () => {
-      window.removeEventListener("resize", handleViewportChange);
-      window.removeEventListener("orientationchange", handleViewportChange);
-      window.removeEventListener("scroll", handleViewportChange);
-      if (visualViewport) {
-        visualViewport.removeEventListener("resize", handleViewportChange);
-        visualViewport.removeEventListener("scroll", handleViewportChange);
-      }
-      if (menuResizeObserver) {
-        menuResizeObserver.disconnect();
-      }
-      if (panelRepositionFrameRef.current) {
-        cancelAnimationFrame(panelRepositionFrameRef.current);
-        panelRepositionFrameRef.current = null;
-      }
-    };
-  }, [panelState, updatePanelPosition]);
+  }, [panelState]);
 
   // Handle click outside to close panel
   useEffect(() => {
@@ -496,9 +268,7 @@ export default function RetroMenu({
       if (panelAnimFrameRef.current) {
         cancelAnimationFrame(panelAnimFrameRef.current);
       }
-      if (panelRepositionFrameRef.current) {
-        cancelAnimationFrame(panelRepositionFrameRef.current);
-      }
+
       if (tooltipTimerRef.current) {
         cancelAnimationFrame(tooltipTimerRef.current);
       }
@@ -789,40 +559,20 @@ export default function RetroMenu({
           })}
         </ul>
       </div>
-      {/* Render settings panel via Portal to avoid overflow clipping */}
-      {/* Only render when actually opening/open, not during 'fading' state */}
+      {/* Render settings panel directly */}
       {(panelState === "opening" ||
         panelState === "open" ||
         panelState === "closing") &&
-        onFieldEffect &&
-        typeof window !== "undefined" &&
-        createPortal(
+        onFieldEffect && (
           <FieldEffectsPanel
             activeEffectInfo={hasActiveEffect ? activeEffectInfo : null}
             onFieldEffect={(effect) => {
               onFieldEffect(effect);
-              // Do not close panel on effect selection, per user request
-              // closePanel();
             }}
             className={`retro-menu__settings-panel${
               panelState === "open" ? " is-visible" : ""
             }${panelState === "closing" ? " is-closing" : ""}`}
-            style={{
-              display: "block",
-              position: "fixed",
-              top: `${panelPosition.top}px`,
-              left: `${panelPosition.left}px`,
-              width: `${panelPosition.width}px`,
-              zIndex: 99999,
-              // Styles are now handled by FieldEffectsPanel component defaults + class
-              // We override background to match the "retro menu" theme if needed, 
-              // or just use the new "gorgeous" dark theme everywhere as requested.
-              // The user said "make them gorgeous... root panel is blue and looks very different".
-              // So I should let FieldEffectsPanel dictate the style (dark glass).
-              // However, I need to respect the positioning.
-            }}
-          />,
-          document.body
+          />
         )}
       <p className="retro-menu__status" aria-live="polite">
         <strong>{status.title}</strong>
