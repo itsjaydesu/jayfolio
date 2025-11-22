@@ -309,7 +309,7 @@ a {
 .menu-overlay .retro-menu__list,
 .menu-overlay .retro-menu__status {
   opacity: 0;
-  transform: translateY(18px);
+  transform: translateY(-18px);
   transition: opacity 0.52s cubic-bezier(0.33, 1, 0.68, 1),
     transform 0.52s cubic-bezier(0.33, 1, 0.68, 1);
 }
@@ -322,7 +322,7 @@ a {
 
 .menu-overlay .retro-menu__item {
   opacity: 0;
-  transform: translateY(16px) scale(0.94);
+  transform: translateY(-16px) scale(0.94);
   transition: opacity 0.42s cubic-bezier(0.33, 1, 0.68, 1),
     transform 0.42s cubic-bezier(0.33, 1, 0.68, 1);
   transform-origin: center center;
