@@ -9791,6 +9791,15 @@ body[data-language-transitioning="true"] .language-transition-root {
     padding: clamp(2rem, 6vh, 3rem) var(--shell-inline-pad);
   }
 
+  /*
+   * Layout plan for the fixed header clearance:
+   * 1. Preserve the top padding that keeps content clear of the fixed header.
+   * 2. Offset that padding with a min-height calculation so the total shell
+   *    height never exceeds the viewport during the initial paint, preventing
+   *    the transient scrollbar flash that previously occurred on subpage load.
+   * 3. Guard the calculation with max(0px, …) to avoid negative values on
+   *    ultra-short viewports while keeping the experience smooth and resilient.
+   */
   .site-shell__container {
     position: relative;
     width: 100%;
@@ -9803,7 +9812,15 @@ body[data-language-transitioning="true"] .language-transition-root {
       env(safe-area-inset-top, 0px) +
         var(--site-shell-header-clearance, var(--site-shell-header-offset))
     );
-    min-height: 100vh;
+    min-height: max(
+      0px,
+      calc(
+        100vh - var(
+          --site-shell-header-clearance,
+          var(--site-shell-header-offset)
+        )
+      )
+    );
     z-index: 0;
     isolation: isolate;
   }
@@ -10037,7 +10054,9 @@ body[data-language-transitioning="true"] .language-transition-root {
   }
 
   .site-shell--detail .site-shell__container {
+    /* Detail views hide the fixed header, so restore a full-viewport minimum. */
     padding-top: 0;
+    min-height: 100vh;
   }
 
   .site-shell__brand {
