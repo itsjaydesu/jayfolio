@@ -6409,6 +6409,20 @@ body:not([data-language-transitioning="true"])
   }
 }
 
+@media (min-width: 541px) and (max-width: 720px) {
+  .site-shell__header[data-nav-condensed="true"] .site-shell__nav-dropdown {
+    width: auto;
+    justify-self: center;
+    justify-content: center;
+    align-items: center;
+    margin-inline: auto;
+  }
+
+  .site-shell__header[data-nav-condensed="true"] .site-shell__nav-dropdown-button {
+    margin-inline: auto;
+  }
+}
+
 .channel-card {
   position: relative;
   display: grid;
@@ -8771,6 +8785,10 @@ body.qr-intro-active .site-shell__icon-button {
     background 0.2s ease;
   margin-left: 12px;
   text-decoration: none;
+}
+
+.language-switcher-compact.is-hydrating {
+  pointer-events: none;
 }
 
 .site-shell__icon-button.language-switcher-compact {
